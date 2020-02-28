@@ -1,0 +1,59 @@
+﻿
+.img-control {
+    position: absolute;
+    top: 65px;
+    left: .5em;
+    background: rgba(255,255,255,0.4);
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.ol-touch .img-control {
+    top: 80px;
+}
+
+.ol-touch button {
+    font-size: 1.3em;
+}
+
+.ol-control button {
+    font-size: 1.3em;
+    font-weight: bolder;
+    margin-top: 2px;
+    cursor: pointer;
+}
+
+.img-control img {
+    display: block;
+    color: white;
+    font-size: 16px;
+    font-family: 'Lucida Grande',Verdana,Geneva,Lucida,Arial,Helvetica,sans-serif;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 2px;
+    cursor: pointer;
+    margin: 2px 1px 1px 1px;
+    background-color: rgba(0,60,136,.5);
+}
+
+.ol-touch .img-control img {
+    font-size: 20px;
+    height: 1.375em;
+    width: 1.375em;
+    line-height: 26px;
+}
+
+.img-control img:hover {
+    background: rgba(0,60,136,0.7);
+}
+
+.ol-attribution ul {
+    margin: 0;
+    padding: 0 .5em;
+    font-size: .7rem;
+    line-height: 1.375em;
+    color: #000;
+    text-shadow: 0 0 2px #fff;
+    max-width:calc(100%);
+}

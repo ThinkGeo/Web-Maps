@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Adornments_Leaflet", "Leaflet\Adornments_Leaflet.csproj", "{F786A49C-4614-4B03-8857-FE1686B90F1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Adornments_Openlayers", "Openlayers\Adornments_Openlayers.csproj", "{6A511F20-1D3E-4F30-885E-614ACEB87802}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F786A49C-4614-4B03-8857-FE1686B90F1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F786A49C-4614-4B03-8857-FE1686B90F1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F786A49C-4614-4B03-8857-FE1686B90F1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F786A49C-4614-4B03-8857-FE1686B90F1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A511F20-1D3E-4F30-885E-614ACEB87802}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A511F20-1D3E-4F30-885E-614ACEB87802}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A511F20-1D3E-4F30-885E-614ACEB87802}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A511F20-1D3E-4F30-885E-614ACEB87802}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

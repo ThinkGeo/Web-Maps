@@ -1,0 +1,322 @@
+﻿html, body {
+    margin: 0;
+    padding: 0;
+    color: #333;
+    font-size: .9em;
+    font-family: Arial, Verdana, Helvetica, Sans-Serif;
+    background-color: #f7f6f1;
+}
+
+/*leaflet control*/
+.leaflet-bar-part img {
+    cursor: pointer;
+}
+
+/*map*/
+#map {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+#loadingImage {
+    position: absolute;
+    left: 50%;
+    bottom: 50%;
+    z-index: 9000;
+    display: none;
+}
+
+.active {
+    opacity: 1;
+    cursor: pointer;
+}
+
+.deactive {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.selected {
+    border: solid 1px green;
+    box-shadow: 0px 0px 5px #666;
+}
+
+.unselected {
+    border: solid 1px #ccc;
+}
+
+/* style-options panel*/
+#styles-panel {
+    display: block;
+    width: 220px;
+    height: 100%;
+    left: 0px;
+    top: 0px;
+    position: absolute;
+    z-index: 9999;
+    background-color: #fff;
+    box-shadow: 0px 0px 10px #333;
+}
+
+#styles-header {
+    position: relative;
+    padding: 10px 10px 0 10px;
+}
+
+    #styles-header .title {
+        font-size: 110%;
+        position: absolute;
+        text-shadow: 0 1px 0 #f3f3f3;
+    }
+
+.panel-content {
+    padding: 25px 0 5px 5px;
+}
+
+#style-options {
+    margin-top: 3em;
+    list-style-type: none;
+    padding: 0px;
+    margin: 0 10px 0 3px;
+}
+    /*style list panel*/
+    #style-options ul {
+        list-style-type: none;
+        padding-left: 0px;
+    }
+
+    #style-options li {
+        margin-top: .5em;
+        cursor: pointer;
+        border-radius: 5%;
+    }
+
+    #style-options div {
+        height: 45px;
+        overflow: hidden;
+        background-repeat: no-repeat;
+        border-radius: 5%;
+        opacity: 0.7;
+    }
+
+    #style-options span {
+        background-color: #fff;
+        color: #000;
+        padding: 0.5em;
+        font-size: 80%;
+        opacity: 0.8;
+    }
+
+    #style-options #HeatStyle {
+        background-image: url(../Images/heatmapstyle.png);
+    }
+
+    #style-options #ClassBreakStyle {
+        background-image: url(../Images/classbreakstyle.png);
+    }
+
+    #style-options #DotDensityStyle {
+        background-image: url(../Images/dotdensitystyle.png);
+    }
+
+    #style-options #IsolineStyle {
+        background-image: url(../Images/isolinestyle.png);
+    }
+
+    #style-options #FilterStyle {
+        background-image: url(../Images/valueStyle.png);
+    }
+
+    #style-options #ClusterStyle {
+        background-image: url(../Images/clusterstyle.png);
+    }
+
+    #style-options #ZedGraphStyle {
+        background-image: url(../Images/zedgraphstyle.png);
+    }
+
+    #style-options #IconStyle {
+        background-image: url(../Images/iconstyle.png);
+    }
+
+    #style-options #CustomStyle {
+        background-image: url(../Images/customstyle.png);
+    }
+
+/*edit panel*/
+#edit-panel {
+    display: none;
+    position: relative;
+    background-color: #fff;
+    z-index: 9999;
+}
+
+    #edit-panel .edit-foot {
+        position: absolute;
+        bottom: 5px;
+        text-align: right;
+    }
+
+.edit-content {
+    margin-top: 15px;
+    width: 94%;
+    margin-left: 14px;
+}
+
+    .edit-content ul {
+        list-style-type: none;
+        padding-left: 10px;
+        padding-right: 10px;
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+
+    .edit-content li {
+        border-bottom: solid 1px #eee;
+        line-height: 30px;
+        margin-top: 10px;
+    }
+
+    .edit-content .edit-item-title {
+        font-size: 100%;
+    }
+
+    .edit-content .edit-item {
+        float: right;
+    }
+
+.edit-panel-header {
+    position: relative;
+    background-color: #eee;
+    border-bottom: solid 1px #ccc;
+    line-height: 30px;
+    font-size: 110%;
+    font-weight: bold;
+    text-align: center;
+}
+
+#zedgraph-legend {
+    display: none;
+    position: absolute;
+    right: 4px;
+    bottom: 20px;
+    background-color: #fff;
+    border: 1px solid #666;
+    z-index: 10000;
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 736px) {
+    #styles-panel {
+        overflow-y: scroll;
+        left: -220px;
+    }
+
+    #style-options li div {
+        height: 35px;
+    }
+
+    #edit-panel {
+        position: fixed;
+        left: 0px;
+        bottom: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9998;
+    }
+
+        #edit-panel select, input[type='text'] {
+            width: 100%;
+            padding: 4px 0 4px 0;
+        }
+
+        #edit-panel .edit-panel-header {
+            height: 30px;
+            line-height: 30px;
+        }
+
+            #edit-panel .edit-panel-header .left-btn, .edit-panel-header .right-btn {
+                display: block;
+            }
+
+        #edit-panel .edit-content {
+            border: none;
+            box-shadow: 0px 0px 0px #999;
+            margin-top: 0;
+            width: 98%;
+            margin-left: 2%;
+        }
+
+        #edit-panel .edit-foot {
+            position: relative;
+            margin-right: 10px;
+            right: 0;
+        }
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 736px) and (orientation:landscape) {
+    .leaflet-bar-part img {
+        width: 24px;
+        height: 24px;
+    }
+
+    #styles-panel {
+        overflow-y: scroll;
+    }
+
+    #style-options li div {
+        height: 25px;
+    }
+
+    #style-options li {
+        cursor: pointer;
+        border: 0;
+        border-radius: 0;
+    }
+
+    #styles-panel li {
+        margin-top: .3em;
+    }
+}
+
+/* desktop broswer [portrait + landscape] */
+@media only screen and (min-device-width: 736px) {
+    .leaflet-bar-part img {
+        margin-top: 3px;
+        width: 20px;
+        height: 20px;
+    }
+
+    .centroid {
+        top: 30%;
+        left: 50%;
+        position: absolute;
+    }
+
+    .bg-mask {
+        position: absolute;
+        left: 0pt;
+        top: 0pt;
+        width: 100%;
+        height: 100%;
+        display: none;
+        background-color: #333;
+        -moz-opacity: 0.7;
+        opacity: .7;
+        filter: alpha(opacity = 70);
+        z-index: 9998;
+    }
+
+    #edit-panel {
+        width: 500px;
+        height: 210px;
+        margin-left: -250px;
+        border-radius: 5px;
+        box-shadow: 5px 5px 5px #333;
+    }
+
+        #edit-panel .edit-foot {
+            bottom: 5px;
+            right: 5%;
+        }
+}

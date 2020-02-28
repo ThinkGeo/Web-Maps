@@ -1,0 +1,62 @@
+﻿@page "/balloon-popup"
+@using ThinkGeo.Core
+
+<style>
+    .ol-popup-closer:after {
+        color: #ffe0e0;
+    }
+
+    .ol-popup:after {
+        border-top-color: black;
+        left: 185px;
+    }
+
+    .ol-popup:before {
+        border-top-color: #cccccc;
+        border-width: 11px;
+        margin-left: -11px;
+        left: 185px;
+    }
+
+    .ol-popup {
+        background-color: #040404;
+        color: #ffffff;
+        min-width: 370px;
+        left: -185px;
+    }
+</style>
+
+<div class="map-container">
+    <MapView Id="map" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter"
+             Width="100"
+             Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-10776856.935, 3912396.025))"
+             Zoom="19">
+        <OverlaysSetting>
+            <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey"
+                                            MapType="ThinkGeoCloudRasterMapsMapType.Light" />
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool />
+            </MapTools>
+        </MapToolsSetting>
+        <PopupOverlaySetting>
+            <PopupOverlay Id="PopupOverlay">
+                <PopupSetting>
+                    <Popup Id="popup" Position="@(new PointShape(-10776840.189, 3912360.62))">
+                        <div style="font-size:12px;">
+                            <img style="width:100px;height:100px;margin-right:10px;" alt="" align="left" src="images/thinkgeo.png">
+                            ThinkGeo is a GIS (Geographic Information Systems) software company founded in 2004 and located in Frisco, TX. Our clients are in more than 40 industries including agriculture, energy, transportation, government, engineering, IT, and defense.
+                            <a href="https://thinkgeo.com/about-us" target="_blank"><br>More about ThinkGeo LLC.</a>
+                        </div>
+                    </Popup>
+                </PopupSetting>
+
+            </PopupOverlay>
+
+        </PopupOverlaySetting>
+    </MapView>
+</div>

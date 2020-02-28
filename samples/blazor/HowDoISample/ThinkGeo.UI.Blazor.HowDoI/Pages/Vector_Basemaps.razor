@@ -1,0 +1,31 @@
+@page "/"
+@using ThinkGeo.Core
+
+<div class="map-container">
+    <MapView Id="map" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter" ProgressiveZooming="true"
+             Width="100"
+             Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-11037792.463030849, 4953010.053845501))"
+             Zoom="5">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="VectorOverlay"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey"
+                                            MapType="mapType" />
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+    <div id="wrap">
+        <div class="thumb thumb-light" value="light" @onclick="@(() => this.mapType = Core.ThinkGeoCloudVectorMapsMapType.Light)">
+        </div>
+        <div class="thumb thumb-dark" value="dark" @onclick="@(() => this.mapType = Core.ThinkGeoCloudVectorMapsMapType.Dark)">
+        </div>
+    </div>
+</div>
+@code{
+    ThinkGeoCloudVectorMapsMapType mapType;
+}

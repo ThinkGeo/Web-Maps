@@ -1,0 +1,87 @@
+﻿@using System.Threading
+@implements IDisposable
+
+<ul class="list-unstyled refresh-panel">
+    <li @onclick="SwitchAutoRefresh" class="py-1" title="Turn on/off auto refresh">
+        <img src="@AutoRefreshImage" />&nbsp;<span>Auto Refresh:&nbsp;</span><span class="@(autoRefreshEnabled ? "" : "text-danger")">@(autoRefreshEnabled ? "On" : "Off")</span>
+    </li>
+    <li @onclick="OnRefresh" class="py-1" title="Refresh vehicles">
+        <img src="images/RefreshManually.png" />&nbsp;<span>Auto Manually</span>
+    </li>
+</ul>
+
+@code {
+
+    private Timer autoRefresher;
+    private bool autoRefreshEnabled = true;
+    private string autoRefreshImage = "images/AutoRefresh_1.png";
+    private string AutoRefreshImage
+    {
+        get { return autoRefreshImage; }
+        set
+        {
+            if (autoRefreshImage != value)
+            {
+                autoRefreshImage = value;
+                StateHasChanged();
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback OnRefresh { get; set; }
+
+
+    protected override Task OnInitializedAsync()
+    {
+        autoRefresher = new System.Threading.Timer(async (obj) =>
+        {
+            if (autoRefresher != null)
+            {
+                await InvokeAsync(async () =>
+                {
+                    AutoRefreshImage = AutoRefreshImage == "images/AutoRefresh_2.png"
+                        ? "images/AutoRefresh_1.png"
+                        : "images/AutoRefresh_2.png";
+                    if (OnRefresh.HasDelegate)
+                    {
+                        await OnRefresh.InvokeAsync(obj);
+                    }
+                });
+            }
+        }, null, Timeout.Infinite, Timeout.Infinite);
+
+        return base.OnInitializedAsync();
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (autoRefreshEnabled)
+        {
+            autoRefresher.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+        }
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    private void SwitchAutoRefresh()
+    {
+        if (autoRefreshEnabled)
+        {
+            autoRefresher.Change(Timeout.Infinite, Timeout.Infinite);
+            autoRefreshEnabled = false;
+            AutoRefreshImage = "images/AutoRefresh.png";
+        }
+        else
+        {
+            autoRefresher.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+            autoRefreshEnabled = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        autoRefresher.Change(Timeout.Infinite, Timeout.Infinite);
+        autoRefresher.Dispose();
+        autoRefresher = null;
+    }
+}

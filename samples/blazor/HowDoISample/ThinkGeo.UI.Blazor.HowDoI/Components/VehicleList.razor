@@ -1,0 +1,43 @@
+﻿<ul class="list-unstyled border rounded p-2" style="overflow:auto; height:calc(100vh - 400px);">
+    @if (Vehicles == null)
+    {
+        <li>Loading...</li>
+    }
+    else
+    {
+        foreach (var vehicle in Vehicles)
+        {
+            <li @key="@vehicle" class="py-1">
+                <table>
+                    <tr>
+                        <td rowspan="5" class="align-top">
+                            <img alt="@vehicle.VehicleName" src="@vehicle.VehicleIconVirtualPath" />
+                        </td>
+                        <td colspan="2">
+                            <a class="font-weight-bold">@vehicle.VehicleName</a>
+                            <img alt="ball" src="@vehicle.MotionStateIconVirtualPath" />
+                            <span class="text-success">@vehicle.MotionText</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Area:</td>
+                        <td><span class="@(vehicle.IsInFence ? "text-danger" : "")">@(vehicle.IsInFence ? "In Restrict Area" : "Out Of Restrict Area")</span></td>
+                    </tr>
+                    <tr>
+                        <td>Speed:</td>
+                        <td>@(vehicle.Location.Speed) mph</td>
+                    </tr>
+                    <tr>
+                        <td>Duration:</td>
+                        <td>@(vehicle.SpeedDuration) min</td>
+                    </tr>
+                </table>
+            </li>
+        }
+    }
+</ul>
+
+@code {
+    [Parameter]
+    public List<Vehicle> Vehicles { get; set; }
+}

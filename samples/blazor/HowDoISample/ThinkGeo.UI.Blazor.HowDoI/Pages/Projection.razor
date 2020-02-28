@@ -1,0 +1,77 @@
+﻿@page "/projection"
+@using ThinkGeo.Core
+<div class="map-container">
+    <MapView @ref="map" Id="map" BackgroundColor="@(GeoColor.FromHtml("#89d3f0ff"))"
+             Width="100"
+             Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(2587782.403071641, 5925770.032779778))"
+             Zoom="2"
+             MapUnit="@ThinkGeo.Core.GeographyUnit.Meter">
+        <OverlaysSetting>
+            <LayerOverlay Id="CustomOverlay" Layers="@layers"></LayerOverlay>
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.LowerRight" />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+
+    <div class="projection-left-panel">
+        <h5>@description</h5>
+
+        <div class="setting-row">
+            <span>Projection</span>
+            <select id="projection-type" @onchange="HandleOnProjectionChange">
+                <option value="Mercator" selected="selected">Mercator</option>
+                <option value="Mollweide">Mollweide</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+@code {
+    string description;
+    MapView map;
+    GeoCollection<Layer> layers = new GeoCollection<Layer>();
+    Dictionary<string, ProjectionConverter> projectionConverters = new Dictionary<string, ProjectionConverter>
+{
+        {"Mercator", new ProjectionConverter(4326, 3857) },
+        {"Mollweide", new ProjectionConverter(4326, "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +a=6371000 +b=6371000 +units=m +no_defs ") }
+    };
+    Dictionary<string, string> projectionDescription = new Dictionary<string, string>
+    {
+        {"Mercator", "The Mercator projection is a cylindrical map projection presented by the Flemish geographer and cartographer Gerardus Mercator in 1569." },
+        {"Mollweide", "The Mollweide projection is an equal-area, pseudocylindrical map projection generally used for global maps of the world or night sky." }
+    };
+
+
+    protected override void OnInitialized()
+    {
+        var countriesLayer = new ShapeFileFeatureLayer("./Data/Countries.shp");
+        countriesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle
+        {
+            FillBrush = new GeoSolidBrush(GeoColor.FromArgb(255, 243, 239, 228)),
+            OutlinePen = new GeoPen(GeoColor.FromArgb(255, 218, 193, 163), 1)
+        };
+        countriesLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+        layers.Add(countriesLayer);
+
+        HandleOnProjectionChange(new ChangeEventArgs { Value = "Mercator" });
+    }
+
+    private void HandleOnProjectionChange(ChangeEventArgs e)
+    {
+        var selectedProjection = e.Value.ToString();
+        description = projectionDescription[selectedProjection];
+        if (!projectionConverters[selectedProjection].IsOpen)
+        {
+            projectionConverters[selectedProjection].Open();
+        }
+        (layers[0] as ShapeFileFeatureLayer).FeatureSource.ProjectionConverter = projectionConverters[selectedProjection];
+
+        if (map != null)
+            map.Overlays[0].RedrawAsync();
+    }
+}

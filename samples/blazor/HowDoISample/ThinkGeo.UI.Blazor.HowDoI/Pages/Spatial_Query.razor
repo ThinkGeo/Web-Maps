@@ -1,0 +1,172 @@
+﻿@page "/spatial-query"
+@using ThinkGeo.Core
+
+<div class="map-container">
+    <MapView @ref="map" Id="map" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter"
+             Width="100"
+             Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Zoom="5"
+             Center="@(new PointShape(-10942463.93551491, 4880680.188637727))"
+             OnClick="@OnMapClick">
+        <OverlaysSetting>
+            <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey"
+                                            MapType="ThinkGeoCloudRasterMapsMapType.Light" />
+            <LayerOverlay Id="SourceOverlay" Layers="@sourceLayers" />
+            <LayerOverlay Id="TrackOverlay" Layers="@trackLayers" />
+            <LayerOverlay Id="SpatialQueryOverlay" Layers="@highlightLayers" />
+        </OverlaysSetting>
+        <EditOverlaySetting>
+            <EditOverlay TrackMode="@trackMode" OnFeatureDrawn="@OnPolygonDrawn" />
+        </EditOverlaySetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.LowerRight" />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+
+
+    <nav class="icon-group draw-edit-tool-bar">
+        <a href="javascript:void(0);" class="@GetCss("Identify")" title="Identify Features" @onclick="@(e => OnQueryModeChange("Identify"))">
+            <span>
+                <img src="images/mouse-pointer.svg" alt="Identify Features">
+            </span>
+        </a>
+
+        <a href="javascript:void(0);" class="@GetCss("Polygon")" title="Select Features by Polygon" @onclick="@(e => OnQueryModeChange("Polygon"))">
+            <span>
+                <img src="images/area.png" alt="Select Features by Polygon">
+            </span>
+        </a>
+    </nav>
+    @if (IsPolygonQuery())
+    {
+        <div class="featurequery-left-panel">
+            <div class="setting-row">
+                <span>Query type</span>
+                <select id="projection-type" @onchange="OnQueryTypeChange">
+                    <option value="Within">Within</option>
+                    <option value="Contains">Contains</option>
+                    <option value="Intersects">Intersects</option>
+                    <option value="Crosses">Crosses</option>
+                    <option value="Overlaps">Overlaps</option>
+                    <option value="Disjoint">Disjoint</option>
+                    <option value="TopologicalEqual">TopologicalEqual</option>
+                    <option value="Touches">Touches</option>
+                </select>
+            </div>
+        </div>
+    }
+
+    <div class="position-absolute bottom-center text-center bg-dark opacity-50 px-5 py-3">
+        <span class="text-white description">@(IsPolygonQuery() ? "Select features by tracking the map." : "Identify features by clicking the map.")</span>
+    </div>
+</div>
+
+@code {
+
+    MapView map;
+    GeoCollection<Layer> highlightLayers = new GeoCollection<Layer>();
+    GeoCollection<Layer> sourceLayers = new GeoCollection<Layer>();
+    GeoCollection<Layer> trackLayers = new GeoCollection<Layer>();
+    Feature trackFeature;
+    string spatialQueryMode = "Polygon";
+    TrackMode trackMode = TrackMode.Polygon;
+    QueryType queryType = QueryType.Within;
+
+    protected override void OnInitialized()
+    {
+        // Load the feature source for spatial query.
+        var sourceFeatureLayer = new ShapeFileFeatureLayer("./Data/USStates.shp");
+        sourceFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoPen(GeoColor.FromArgb(100, 0, 0, 0), 1f), new GeoSolidBrush(GeoColors.Transparent));
+        sourceFeatureLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+        sourceLayers.Add(sourceFeatureLayer);
+
+        // Initialize highlight layer.
+        var highlightLayer = new InMemoryFeatureLayer();
+        highlightLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoSolidBrush(new GeoColor(50, 100, 100, 200)));
+        highlightLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColors.DarkBlue;
+        highlightLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+        highlightLayers.Add(highlightLayer);
+
+        // Initialize track layer.
+        var trackLayer = new InMemoryFeatureLayer();
+        trackLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoSolidBrush(GeoColor.FromArgb(50, GeoColors.Orange)));
+        trackLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColors.Orange;
+        trackLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+        trackLayers.Add(trackLayer);
+
+    }
+
+    IEnumerable<Feature> ExecuteSptialQuery(BaseShape targetShape, QueryType queryType)
+    {
+        var sourceLayer = ((FeatureLayer)sourceLayers[0]);
+        if (!sourceLayer.IsOpen)
+            sourceLayer.Open();
+        return sourceLayer.FeatureSource.SpatialQuery(targetShape, queryType, ReturningColumnsType.AllColumns);
+    }
+
+    void OnMapClick(ClickedMapViewEventArgs args)
+    {
+        if (IsPolygonQuery()) return;
+
+        var location = new PointShape(args.WorldX, args.WorldY);
+        var features = ExecuteSptialQuery(location, QueryType.Contains);
+        HighlightSpaticalQueryFeatures(features);
+    }
+
+    void OnPolygonDrawn(FeatureDrawnEditOverlayEventArgs args)
+    {
+        map.EditOverlay.Features.Clear();
+        trackFeature = args.DrawnFeature;
+        var features = ExecuteSptialQuery(trackFeature.GetShape(), queryType);
+        HighlightSpaticalQueryFeatures(features);
+        HighlightTrackFeature(trackFeature);
+    }
+
+    void OnQueryTypeChange(ChangeEventArgs args)
+    {
+        queryType = (QueryType)Enum.Parse(typeof(QueryType), args.Value.ToString());
+        if (trackFeature != null)
+        {
+            var features = ExecuteSptialQuery(trackFeature.GetShape(), queryType);
+            HighlightSpaticalQueryFeatures(features);
+            HighlightTrackFeature(trackFeature);
+        }
+    }
+
+    void OnQueryModeChange(string queryMode)
+    {
+        spatialQueryMode = queryMode;
+        trackMode = spatialQueryMode == "Polygon" ? TrackMode.Polygon : TrackMode.None;
+        map.EditOverlay.Features.Clear();
+        HighlightSpaticalQueryFeatures(new Feature[0]);
+        HighlightTrackFeature(null);
+    }
+
+    void HighlightSpaticalQueryFeatures(IEnumerable<Feature> features)
+    {
+        ((InMemoryFeatureLayer)highlightLayers[0]).InternalFeatures.Clear();
+        foreach (var feature in features)
+        {
+            ((InMemoryFeatureLayer)highlightLayers[0]).InternalFeatures.Add(feature);
+        }
+        map.Overlays["SpatialQueryOverlay"].RedrawAsync();
+    }
+
+    void HighlightTrackFeature(Feature feature)
+    {
+        var trackLayer = ((InMemoryFeatureLayer)trackLayers[0]);
+        trackLayer.InternalFeatures.Clear();
+
+        if (feature != null)
+            trackLayer.InternalFeatures.Add(feature);
+
+        map.Overlays["TrackOverlay"].RedrawAsync();
+    }
+
+    string GetCss(string type) => type == spatialQueryMode ? "active" : string.Empty;
+    bool IsPolygonQuery() => spatialQueryMode == "Polygon";
+}

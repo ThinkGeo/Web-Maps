@@ -1,0 +1,35 @@
+﻿@page "/raster-basemaps"
+@using ThinkGeo.Core
+
+<div class="map-container">
+    <MapView Id="map"
+             Width="100"
+             Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-11037792.463030849, 4953010.053845501))"
+             Zoom="5"
+             MapUnit="@ThinkGeo.Core.GeographyUnit.Meter">
+        <OverlaysSetting>
+            <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="@mapType"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+    <div id="wrap">
+        <div class="thumb thumb-light" value="light" @onclick="@(() => mapType = Core.ThinkGeoCloudRasterMapsMapType.Light)">
+        </div>
+        <div class="thumb thumb-dark" value="dark" @onclick="@(() => mapType = Core.ThinkGeoCloudRasterMapsMapType.Dark)">
+        </div>
+        <div class="thumb thumb-hybrid" value="hybrid" style="border-color: rgb(255, 255, 255);"
+             @onclick="@(() => mapType = Core.ThinkGeoCloudRasterMapsMapType.Hybrid)">
+        </div>
+    </div>
+</div>
+
+@code{
+    ThinkGeoCloudRasterMapsMapType mapType;
+}

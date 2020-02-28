@@ -1,0 +1,76 @@
+﻿@page "/load-feature-source"
+@using ThinkGeo.Core
+
+<MapView Id="map" BackgroundColor="@(GeoColor.FromHtml("#89d3f0ff"))"
+         Width="100"
+         Height="100"
+         MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+         Center="@(new PointShape(1056665.479014, 6066042.564712))"
+         Zoom="5"
+         MapUnit="@ThinkGeo.Core.GeographyUnit.Meter">
+    <OverlaysSetting>
+        <LayerOverlay Id="CustomOverlay" Layers="@layers"></LayerOverlay>
+    </OverlaysSetting>
+    <MapToolsSetting>
+        <MapTools>
+            <ZoomBarMapTool />
+        </MapTools>
+    </MapToolsSetting>
+</MapView>
+@code {
+    GeoCollection<Layer> layers = new GeoCollection<Layer>();
+
+    protected override void OnInitialized()
+    {
+
+        // Load the Countries with themetic style.
+        var countriesLayer = new ShapeFileFeatureLayer("./Data/countries/countries.shp");
+
+        countriesLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(4326, 3857);
+        var countryStyle = new ClassBreakStyle("POP_EST");
+        countryStyle.BreakValueInclusion = BreakValueInclusion.IncludeValue;
+        countryStyle.ClassBreaks.Add(new ClassBreak(double.MinValue, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#BBD1BB"))));
+        countryStyle.ClassBreaks.Add(new ClassBreak(10000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#8A89AF"))));
+        countryStyle.ClassBreaks.Add(new ClassBreak(50000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#9B9ABA"))));
+        countryStyle.ClassBreaks.Add(new ClassBreak(100000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#ACABC6"))));
+        countryStyle.ClassBreaks.Add(new ClassBreak(500000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#BCBBD1"))));
+        countryStyle.ClassBreaks.Add(new ClassBreak(1000000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#BA9A9A"))));
+        countryStyle.ClassBreaks.Add(new ClassBreak(5000000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#C6ABAB"))));
+        countryStyle.ClassBreaks.Add(new ClassBreak(10000000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#D1BBBB"))));
+        countryStyle.ClassBreaks.Add(new ClassBreak(50000000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#9ABA9A"))));
+        countryStyle.ClassBreaks.Add(new ClassBreak(100000000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#ABC6AB"))));
+        countriesLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(countryStyle);
+        countriesLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+        layers.Add(countriesLayer);
+
+        // Show rivers with different width based on different scale_rank.
+        var riverLayer = new ShapeFileFeatureLayer("./Data/rivers/rivers.shp");
+        riverLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(4326, 3857);
+
+        var riverStyle = new ClassBreakStyle("scalerank");
+        riverStyle.BreakValueInclusion = BreakValueInclusion.IncludeValue;
+        riverStyle.ClassBreaks.Add(new ClassBreak(0, LineStyle.CreateSimpleLineStyle(GeoColor.FromHtml("#5cbdf1"), 3, false)));
+        riverStyle.ClassBreaks.Add(new ClassBreak(1.1, LineStyle.CreateSimpleLineStyle(GeoColor.FromHtml("#5cbdf1"), 2, false)));
+        riverStyle.ClassBreaks.Add(new ClassBreak(3.1, LineStyle.CreateSimpleLineStyle(GeoColor.FromHtml("#5cbdf1"), 1, false)));
+        riverLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(riverStyle);
+        riverLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+        layers.Add(riverLayer);
+
+        var pointValueStyle = new ValueStyle { ColumnName = "FEATURECLA" };
+        pointValueStyle.ValueItems.Add(new ValueItem("Admin-0 capital", new PointStyle(PointSymbolType.Star, 10, new GeoSolidBrush(new GeoColor(128, 79, 63)))));
+        pointValueStyle.ValueItems.Add(new ValueItem("Admin-1 capital", new PointStyle(PointSymbolType.Circle, 5, new GeoSolidBrush(new GeoColor(128, 79, 63)))));
+        pointValueStyle.ValueItems.Add(new ValueItem("Admin-0 region capital", new PointStyle(PointSymbolType.Circle, 5, new GeoSolidBrush(new GeoColor(128, 79, 63)))));
+        pointValueStyle.ValueItems.Add(new ValueItem("Populated place", new PointStyle(PointSymbolType.Square, 5, new GeoSolidBrush(new GeoColor(128, 79, 63)))));
+
+        var placesTextStyle = new TextStyle("name", new GeoFont("Arial", 10, DrawingFontStyles.Bold), new GeoSolidBrush(new GeoColor(128, 79, 63)));
+        placesTextStyle.YOffsetInPixel = -3;
+
+        var placeLayer = new ShapeFileFeatureLayer("./Data/place/place.shp");
+        placeLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(4326, 3857);
+        placeLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(placesTextStyle);
+        placeLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(pointValueStyle);
+        placeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+        layers.Add(placeLayer);
+    }
+}

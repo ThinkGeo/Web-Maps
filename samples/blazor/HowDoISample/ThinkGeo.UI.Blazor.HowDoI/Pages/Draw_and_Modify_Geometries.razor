@@ -1,0 +1,70 @@
+﻿@page "/draw-and-modify-geometries"
+@using ThinkGeo.Core
+
+<div class="map-container">
+    <MapView Id="map" @ref="map" Center="@(new PointShape(-10892935.00064512, 4536780.40385816))"
+             Width="100"
+             Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Zoom="15" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter">
+        <EditOverlaySetting>
+            <EditOverlay TrackMode="@trackMode" />
+        </EditOverlaySetting>
+        <OverlaysSetting>
+            <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey"
+                                            MapType="ThinkGeoCloudRasterMapsMapType.Hybrid" />
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+
+    <nav class="icon-group draw-edit-tool-bar">
+        <a href="javascript:void(0);" class="@GetCss(TrackMode.None)" title="None" @onclick="@(e => trackMode = TrackMode.None)">
+            <span>
+                <img src="images/mouse-pointer.svg" alt="None">
+            </span>
+        </a>
+        <a href="javascript:void(0);" class="@GetCss(TrackMode.Point)" title="Point" @onclick="@(e => trackMode = TrackMode.Point)">
+            <span>
+                <img src="images/map-pin.svg" alt="Point">
+            </span>
+        </a>
+        <a href="javascript:void(0);" class="@GetCss(TrackMode.LineString)" title="Line" @onclick="@(e => trackMode = TrackMode.LineString)">
+            <span>
+                <img src="images/Line-Tool.svg" alt="Line">
+            </span>
+        </a>
+        <a href="javascript:void(0);" class="@GetCss(TrackMode.Polygon)" title="Polygon" @onclick="@(e => trackMode = TrackMode.Polygon)">
+            <span>
+                <img src="images/vector-polygon.svg" alt="Polygon">
+            </span>
+        </a>
+        <a href="javascript:void(0);" class="@GetCss(TrackMode.Circle)" title="Circle" @onclick="@(e => trackMode = TrackMode.Circle)">
+            <span>
+                <img src="images/big-circle.svg" alt="Circle">
+            </span>
+        </a>
+        <a href="javascript:void(0);" class="@GetCss(TrackMode.Modify)" title="Modify" @onclick="@(e => trackMode = TrackMode.Modify)">
+            <span>
+                <img src="images/edit.svg" alt="Modify">
+            </span>
+        </a>
+        <a href="javascript:void(0);" title="Clear" @onclick="@(e => map.EditOverlay.Features.Clear())">
+            <span>
+                <img src="images/close.svg" alt="Clear">
+            </span>
+        </a>
+    </nav>
+</div>
+
+@code{
+    MapView map;
+    TrackMode trackMode = TrackMode.None;
+
+    string GetCss(TrackMode mode) => mode == trackMode ? "active" : string.Empty;
+
+}

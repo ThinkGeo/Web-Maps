@@ -1,0 +1,45 @@
+﻿<fieldset class="rounded px-3 border">
+    <legend class="d-inline-block px-2 w-auto">Fill Solid Brush</legend>
+    <div class="form-group row">
+        <label for="fillsolidbrush-color" class="col-sm-2 col-form-label">Color</label>
+        <div class="col-sm-10">
+            <input type="text" @bind-value="@Style.BrushColor" @bind-value:event="oninput" class="form-control" id="fillsolidbrush-color" />
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="fillsolidbrush-alpha" class="col-sm-2 col-form-label">Alpha</label>
+        <div class="col-sm-10">
+            <input type="number" @bind-value="@Style.BrushAlpha" @bind-value:event="oninput" class="form-control" id="fillsolidbrush-alpha" min="0" max="255" />
+        </div>
+    </div>
+</fieldset>
+
+<fieldset class="rounded px-3 border">
+    <legend class="d-inline-block px-2 w-auto">Outline Pen</legend>
+    <div class="form-group row">
+        <label for="outlinepen-color" class="col-sm-2 col-form-label">Color</label>
+        <div class="col-sm-10">
+            <input type="text" @bind-value="@Style.OutlinePenColor" @bind-value:event="oninput" class="form-control" id="outlinepen-color" />
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="outlinepen-alpha" class="col-sm-2 col-form-label">Alpha</label>
+        <div class="col-sm-10">
+            <input type="number" @bind-value="@Style.OutlinePenAlpha" @bind-value:event="oninput" class="form-control" id="outlinepen-alpha" min="0" max="255" />
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="outlinepen-width" class="col-sm-2 col-form-label">Width</label>
+        <div class="col-sm-10">
+            <input type="number" @bind-value="@Style.OutlinePenWidth" @bind-value:event="oninput" class="form-control" id="outlinepen-width" min="0" />
+        </div>
+    </div>
+</fieldset>
+
+@code{
+    [Parameter]
+    public AreaStyleModel Style { get; set; }
+}

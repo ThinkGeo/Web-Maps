@@ -1,0 +1,33 @@
+﻿@page "/work-with-ogc-services"
+@using System.Collections.ObjectModel
+@using ThinkGeo.Core
+
+<MapView Id="map" @ref="map"
+         Width="100"
+         Height="100"
+         MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+         Center="@(new PointShape(-11037792.463030849, 4953010.053845501))"
+         Zoom="5"
+         MapUnit="@ThinkGeo.Core.GeographyUnit.Meter">
+    <OverlaysSetting>
+        <WmsTileOverlay Id="WmsOverlay" Parameters="@parameters"
+                        ServerUris="@serverUris"
+                        TileHeight="512" TileWidth="512"></WmsTileOverlay>
+    </OverlaysSetting>
+    <MapToolsSetting>
+        <MapTools>
+            <ZoomBarMapTool />
+        </MapTools>
+    </MapToolsSetting>
+</MapView>
+
+@code {
+    MapView map;
+    Collection<Uri> serverUris = new Collection<Uri> { new Uri("http://ows.mundialis.de/services/service") };
+    Dictionary<string, string> parameters = new Dictionary<string, string>
+{
+        { "layers", "OSM-WMS"},
+        { "STYLE", "default"},
+        { "CRS","3857"}
+    };
+}

@@ -1,0 +1,114 @@
+[
+  {
+    "name": "Union",
+    "text": "Union",
+    "description": "Takes two or more polygons and returns a combined polygon. If the input polygons are not contiguous, this function returns a MultiPolygon feature.",
+    "featureIds": [ "1", "2" ],
+    "center": [ -10774079.826721791, 3914718.4255496957 ]
+  },
+  {
+    "name": "Difference",
+    "text": "Difference",
+    "description": "Finds the difference between two polygons by clipping the second polygon from the first.",
+    "featureIds": [ "5", "6" ],
+    "center": [ -10774138.905636605, 3914723.2395166024 ]
+  },
+  {
+    "name": "Buffer",
+    "text": "Buffer",
+    "description": "Calculates a buffer for input features for a given radius.",
+    "featureIds": [ "7" ],
+    "center": [ -10768550.275582824, 3919667.955887789 ]
+  },
+  {
+    "name": "Scale",
+    "text": "Scale",
+    "description": "Scales a feature by a given percentage.",
+    "featureIds": [ "8" ],
+    "center": [ -10774292.82818335, 3914691.4815679183 ]
+  },
+  {
+    "name": "Rotate",
+    "text": "Rotate",
+    "description": "Rotates any Feature around its centroid by a specified angle.",
+    "featureIds": [ "9" ],
+    "center": [ -10774154.2508974, 3914858.443329788 ]
+  },
+  {
+    "name": "CenterPoint",
+    "text": "Center Point",
+    "description": "Takes a Feature or FeatureCollection and returns the absolute center point of all features.",
+    "featureIds": [ "10" ],
+    "center": [ -10774196.6748408, 3915188.4566178154 ]
+  },
+  {
+    "name": "CalculateArea",
+    "text": "Area Calculation",
+    "description": "Takes one or more features and returns their area.",
+    "featureIds": [ "11" ],
+    "center": [ -10774288.53428795, 3914703.44760225 ]
+  },
+  {
+    "name": "Simplify",
+    "text": "Simplify",
+    "description": "Takes a feature and returns a simplified version.",
+    "featureIds": [ "12" ],
+    "center": [ -10778175.60373545, 3912839.813823055 ]
+  },
+  {
+    "name": "Split",
+    "text": "Split",
+    "description": "Splits a Polygon by another Line Feature.",
+    "featureIds": [ "13", "14" ],
+    "center": [ -10776994.83375115, 3911957.80438233 ]
+  },
+  {
+    "name": "CalculateShortestLine",
+    "text": "Get shortest line",
+    "description": "Takes a shortest line of the given features.",
+    "featureIds": [ "15", "16" ],
+    "center": [ -10775330.732300099, 3916015.211818595 ]
+  },
+  {
+    "name": "CalculateLength",
+    "text": "Length Calculation",
+    "description": "Calculates the length of the given Line feature.",
+    "featureIds": [ "17" ],
+    "center": [ -10777221.9468553, 3916026.8564929347 ]
+  },
+  {
+    "name": "LineOnLine",
+    "text": "Get line on a line",
+    "description": "Clips a line on the line between a start point and end distance.",
+    "featureIds": [ "18", "29", "30", "31", "32", "33", "34" ],
+    "center": [ -10778902.39964541, 3913885.427055051 ]
+  },
+  {
+    "name": "Clip",
+    "text": "Clip",
+    "description": "Gets feature for clipping other features.",
+    "featureIds": [ "19", "37", "38", "39", "40", "41", "42", "43", "44" ],
+    "center": [ -10777160.14113035, 3913655.538793915 ]
+  },
+  {
+    "name": "ConvexHull",
+    "text": "Convexhull",
+    "description": "Takes a Feature or a FeatureCollection and returns a convex hull Polygon.",
+    "featureIds": [ "20", "21", "22", "23", "24", "25" ],
+    "center": [ -10777397.960449751, 3916103.164064575 ]
+  },
+  {
+    "name": "Snapping",
+    "text": "Snapping",
+    "description": "Snaps a Feature a feature with a given distance.",
+    "featureIds": [ "26", "27", "35", "36" ],
+    "center": [ -10777252.022824649, 3913681.93021066 ]
+  },
+  {
+    "name": "EnvelopBoundingbox",
+    "text": "Envelope Boundingbox",
+    "description": "Takes any number of features and returns a rectangular Polygon that encompasses all vertices.",
+    "featureIds": [ "28" ],
+    "center": [ -10774196.6748408, 3915188.4566178154 ]
+  }
+]

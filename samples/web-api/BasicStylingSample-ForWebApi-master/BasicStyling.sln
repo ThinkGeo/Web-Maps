@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicStyling_Leaflet", "Leaflet\BasicStyling_Leaflet.csproj", "{1E000686-7B26-481E-BD0A-4EA74541E83D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicStyling_Openlayers", "Openlayers\BasicStyling_Openlayers.csproj", "{D05D6338-9C57-4DC5-B614-5EAAB7FA8789}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1E000686-7B26-481E-BD0A-4EA74541E83D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E000686-7B26-481E-BD0A-4EA74541E83D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E000686-7B26-481E-BD0A-4EA74541E83D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E000686-7B26-481E-BD0A-4EA74541E83D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D05D6338-9C57-4DC5-B614-5EAAB7FA8789}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D05D6338-9C57-4DC5-B614-5EAAB7FA8789}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D05D6338-9C57-4DC5-B614-5EAAB7FA8789}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D05D6338-9C57-4DC5-B614-5EAAB7FA8789}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

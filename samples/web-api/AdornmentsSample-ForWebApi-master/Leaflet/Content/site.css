@@ -1,0 +1,174 @@
+﻿html, body {
+    font-size: 13px;
+    font-family: Arial, Verdana, Helvetica, Sans-Serif;
+    margin: 0px;
+    color: #333;
+}
+
+#map {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+#loadingImage {
+    position: absolute;
+    left: 50%;
+    bottom: 50%;
+    z-index: 9000;
+    display: none;
+}
+
+#leftControlBar {
+    overflow-y: auto;
+    display: block;
+    width: 220px;
+    height: 100%;
+    position: absolute;
+    z-index: 9999;
+    background-color: #fff;
+    box-shadow: 0px 0px 10px #333;
+}
+
+.leftControlBarTitle {
+    margin: 10px 0 0 10px;
+    position: absolute;
+    font-size: 115%;
+}
+
+.leftControlBarBody {
+    margin: 0 10px 0 3px;
+    padding: 25px 0 5px 5px;
+}
+
+    .leftControlBarBody h3 {
+        margin: 10px 0;
+    }
+
+    .leftControlBarBody ul {
+        list-style-type: none;
+        margin: 13px 0px 13px 0px;
+        padding: 0px;
+    }
+
+    .leftControlBarBody li {
+        margin-top: 7px;
+        cursor: pointer;
+        line-height: 20px;
+    }
+
+    .leftControlBarBody span {
+        background-color: #fff;
+        opacity: 0.8;
+        font-size: 90%;
+    }
+
+    .leftControlBarBody div {
+        height: 45px;
+    }
+
+.selected {
+    border: solid 1px green;
+    box-shadow: 0px 0px 5px #666;
+}
+
+.unselected {
+    border: solid 1px #ccc;
+}
+
+.adornments-pane {
+    z-index: 4;
+    display: block;
+    top: 0px;
+    left: 0px;
+    position: absolute;
+}
+
+.adornments {
+    opacity: 0.7;
+    float: left;
+}
+
+#locationExpandOrCollapseButton {
+    position: absolute;
+    width: 17px;
+    height: 17px;
+    right: 0px;
+    cursor: pointer;
+    z-index: 5002;
+}
+
+.validationDescriptionCollapse {
+    background-image: url(../Images/description_maximize.gif);
+}
+
+.validationDescriptionExpand {
+    background-image: url(../Images/description_minimize.gif);
+}
+
+#ScaleBarAdornment{
+    background-image:url(../Images/Control_Icons/ScaleBar.png);
+}
+
+#ScaleLineAdornment{
+    background-image:url(../Images/Control_Icons/ScaleLine.png);
+}
+
+#ScaleTextAdornment{
+    background-image:url(../Images/Control_Icons/ScaleText.png);
+}
+
+#LogoAdornment{
+    background-image:url(../Images/Control_Icons/Logo.png);
+}
+
+#GraticuleAdornment{
+    background-image:url(../Images/Control_Icons/Graticule.png);
+}
+
+#LegendAdornment{
+    background-image:url(../Images/Control_Icons/Legend.png);
+}
+
+#MagneticDeclinationAdornment{
+    background-image:url(../Images/Control_Icons/MagneticDeclination.png);
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 736px) {
+    #layers-panel {
+        overflow-y: auto;
+        left: -220px;
+    }
+
+    .layers-item li div {
+        height: 35px;
+    }
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 736px) and (orientation:landscape) {
+    .leaflet-bar-part img {
+        width: 24px;
+        height: 24px;
+    }
+
+    #leftControlBar {
+        overflow-y: auto;
+    }
+
+        #leftControlBar li {
+            margin-top: 5px;
+        }
+}
+
+/* desktop broswer [portrait + landscape] */
+@media only screen and (min-device-width: 736px) {
+    #leftControlBar {
+        overflow-y: auto;
+    }
+
+    .leaflet-bar-part img {
+        margin-top: 3px;
+        width: 20px;
+        height: 20px;
+    }
+}

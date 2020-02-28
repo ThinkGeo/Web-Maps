@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PrintingInfo>
+  <MapExtent>POLYGON((-20037508.342789 18418382.328923,-20037508.342789 -32536475.165437,20037508.342789 -32536475.165437,20037508.342789 18418382.328923,-20037508.342789 18418382.328923))</MapExtent>
+  <LabelPrinterLayer>false</LabelPrinterLayer>
+  <ImagePrinterLayer>false</ImagePrinterLayer>
+  <ScaleLinePrinterLayer>false</ScaleLinePrinterLayer>
+  <ScaleBarPrinterLayer>false</ScaleBarPrinterLayer>
+  <DataGridPrinterLayer>false</DataGridPrinterLayer>
+  <PaperSize>ANSI A-8.5 x 11 (A4)</PaperSize>
+  <Orientation>Portrait</Orientation>
+  <Percentage>50%</Percentage>
+</PrintingInfo>

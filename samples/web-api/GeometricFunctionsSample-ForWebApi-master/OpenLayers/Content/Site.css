@@ -1,0 +1,276 @@
+﻿html, body
+{
+    margin: 0;
+    padding: 0;
+    color: #333;
+    font-size: .9em;
+    font-family: Arial, Verdana, Helvetica, Sans-Serif;
+    background-color: #f7f6f1;
+}
+
+/*leaflet control*/
+.leaflet-bar-part img
+{
+    cursor: pointer;
+}
+
+/*map*/
+#map
+{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+#loadingImage
+{
+    position: absolute;
+    left: 50%;
+    bottom: 50%;
+    z-index: 9000;
+    display: none;
+}
+
+.active
+{
+    opacity: 1;
+    cursor: pointer;
+}
+
+.deactive
+{
+    opacity: 0.2;
+    cursor: default;
+}
+
+.selected
+{
+    border: solid 1px green;
+    box-shadow: 0px 0px 5px #666;
+}
+
+.unselected
+{
+    border: solid 1px #ccc;
+}
+
+/* style-options panel*/
+#styles-panel
+{
+    display: block;
+    width: 220px;
+    height: 100%;
+    left: 0px;
+    top: 0px;
+    position: absolute;
+    z-index: 9999;
+    background-color: #fff;
+    box-shadow: 0px 0px 10px #333;
+}
+
+#styles-header
+{
+    position: relative;
+    padding: 10px 10px 0 10px;
+}
+
+    #styles-header .title
+    {
+        font-size: 110%;
+        position: absolute;
+        text-shadow: 0 1px 0 #f3f3f3;
+    }
+
+.panel-content
+{
+    padding: 25px 0 5px 5px;
+}
+
+#style-options
+{
+    margin-top: 3em;
+    list-style-type: none;
+    padding: 0px;
+    margin: 0 10px 0 3px;
+}
+    /*style list panel*/
+    #style-options ul
+    {
+        list-style-type: none;
+        padding-left: 0px;
+    }
+
+    #style-options li
+    {
+        margin-top: .5em;
+        cursor: pointer;
+        border-radius: 5%;
+    }
+
+    #style-options div
+    {
+        height: 45px;
+        overflow: hidden;
+        background-repeat: no-repeat;
+        border-radius: 5%;
+        opacity: 0.7;
+    }
+
+    #style-options span
+    {
+        background-color: #fff;
+        color: #000;
+        padding: 0.5em;
+        font-size: 80%;
+        opacity: 0.8;
+    }
+
+    #style-options #Union
+    {
+        background-image: url(../Images/union.png);
+    }
+
+    #style-options #Difference
+    {
+        background-image: url(../Images/difference.png);
+    }
+
+    #style-options #Buffer
+    {
+        background-image: url(../Images/buffer.png);
+    }
+
+    #style-options #Scale
+    {
+        background-image: url(../Images/scale.png);
+    }
+
+    #style-options #Rotate
+    {
+        background-image: url(../Images/rotate.png);
+    }
+
+    #style-options #CenterPoint
+    {
+        background-image: url(../Images/getcenter.png);
+    }
+
+    #style-options #CalculateArea
+    {
+        background-image: url(../Images/getaera.png);
+    }
+
+    #style-options #Simplify
+    {
+        background-image: url(../Images/simplify.png);
+    }
+
+    #style-options #Split
+    {
+        background-image: url(../Images/split.png);
+    }
+
+    #style-options #CalculateLength
+    {
+        background-image: url(../Images/getlength.png);
+    }
+
+    #style-options #CalculateShortestLine
+    {
+        background-image: url(../Images/getshortestline.png);
+    }
+
+    #style-options #LineOnLine
+    {
+        background-image: url(../Images/getlineonline.png);
+    }
+
+    #style-options #Clip
+    {
+        background-image: url(../Images/clip.png);
+    }
+
+    #style-options #ConvexHull
+    {
+        background-image: url(../Images/convexhull.png);
+    }
+
+    #style-options #Snapping
+    {
+        background-image: url(../Images/snapGPS.png);
+    }
+
+    #style-options #EnvelopBoundingbox
+    {
+        background-image: url(../Images/envelop.png);
+    }
+
+/* desktop broswer [portrait + landscape] */
+@media only screen and (min-device-width: 736px)
+{
+    #styles-panel
+    {
+        overflow-y: auto;
+    }
+
+    .centroid
+    {
+        top: 30%;
+        left: 50%;
+        position: absolute;
+    }
+
+    .bg-mask
+    {
+        position: absolute;
+        left: 0pt;
+        top: 0pt;
+        width: 100%;
+        height: 100%;
+        display: block;
+        background-color: #333;
+        -moz-opacity: 0.7;
+        opacity: .7;
+        filter: alpha(opacity = 70);
+        z-index: 9998;
+    }
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 736px)
+{
+    #styles-panel
+    {
+        overflow-y: scroll;
+        left: -220px;
+    }
+
+    #style-options li div
+    {
+        height: 35px;
+    }
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 736px) and (orientation:landscape)
+{
+    #styles-panel
+    {
+        overflow-y: scroll;
+    }
+
+    #style-options li div
+    {
+        height: 25px;
+    }
+
+    #style-options li
+    {
+        cursor: pointer;
+        border: 0;
+        border-radius: 0;
+    }
+
+    #styles-panel li
+    {
+        margin-top: .3em;
+    }
+}

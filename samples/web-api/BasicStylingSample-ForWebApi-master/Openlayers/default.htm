@@ -1,0 +1,227 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>BasicStyling Openlayers</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE10" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="apple-mobile-web-app-title" content="BasicStyling" />
+    <link href="images/desktop.png" rel="apple-touch-icon" />
+    <link href="images/favicon.ico" rel="shortcut icon" type="Images/x-icon" />
+    <link href="Content/ol.css" rel="stylesheet" />
+    <link href="Content/thinkgeo.openlayers.css" rel="stylesheet" />
+    <link href="Content/site.css" rel="stylesheet" />
+    <link href="Content/Colorpicker/colorpicker.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="map"></div>
+    <div id="bg-mask"></div>
+    <div id="styleDescription">Predefined styles (US highway and Major cities)</div>
+    <div id="leftPanel">
+        <div id="panelHeader">
+            <span>Basic Styling List</span>
+        </div>
+        <div id="panelContent">
+            <ul id="stylingOptions">
+                <li>
+                    <div id="PredefinedStyles" title="Predefined Styles" class="selected" center="40.14711, -95.81131" zoom="4" hassetting="false" description='Predefined styles (US highway and Major cities)'>
+                        <span>Predefined Styles</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="AreaStyle" title="Area Style" class="unselected" center="33.1292851274428,-96.8099704169396" zoom="17" hassetting="true" description='Area Style (School and Parks)'>
+                        <span>Area Style</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="LineStyle" title="LineStyle" class="unselected" center="33.1560,-96.8255" zoom="12" hassetting="true" description='Line Style (Major Roads in Frisco)'>
+                        <span>Line Style</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="ImagePointStyle" title="Image Point Style" class="unselected" center="33.1560,-96.8255" zoom="13" hassetting="false" description='Image Point Style (High Schools in Frisco)'>
+                        <span>Image Point Style</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="SymbolPoint" title="Symbol Point Style" class="unselected" center="33.1282851274428,-96.8099704169396" zoom="17" hassetting="true" description='Symbol Point Style (ThinkGeo Headquarters)'>
+                        <span>Symbol Point Style</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="CharacterPoint" title="Character Point Style" class="unselected" center="33.1260,-96.8255" zoom="13" hassetting="false" description='Character Point Style (Hospitals in Frisco)'>
+                        <span>Character Point Style</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="StyleByZoomLevel" title="Styles by ZoomLevels" class="unselected" center="33.1292851274428,-96.8099704169396" zoom="17" hassetting="false" description='Zoom in/out and we can tell the style changes through different zoomlevels (ThinkGeo Headquarters)'>
+                        <span>Styles by ZoomLevels</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="CompoundStyle" title="Compound Style" class="unselected" center="33.1282851274428,-96.8099704169396" zoom="17" hassetting="false" description='Put multiple styles together and we get a compound style(ThinkGeo Headquarters)'>
+                        <span>Compound Style</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div id="editPanel">
+        <div id="editPanelHeader">
+            <span id="settingTitle"></span>
+        </div>
+        <div id="areaStyleEdit" class="editContent">
+            <p>Fill Solid Brush</p>
+            <ul>
+                <li>
+                    <span>Color</span>
+                    <div class="colorSelector" id="areaStyleFillSolidBrushColorSelector">
+                    </div>
+                    <input id="areaStyleFillSolidBrushColorText" type="text" class="colorpickerText" />
+                </li>
+                <li>
+                    <span>Alpha</span>
+                    <input id="areaStyleFillSolidBrushAlpha" type="text" class="normalInput" />
+                </li>
+            </ul>
+            <p>Outline Pen</p>
+            <ul>
+                <li>
+                    <span>Color</span>
+                    <div class="colorSelector" id="areaStyleOutlinePenColorSelector">
+                    </div>
+                    <input id="areaStyleOutlinePenColorText" type="text" class="colorpickerText" />
+                </li>
+                <li>
+                    <span>Alpha</span>
+                    <input id="areaStyleOutlinePenAlpha" type="text" class="normalInput" />
+                </li>
+                <li>
+                    <span>Width</span>
+                    <input id="areaStyleOutlinePenWidth" type="text" class="normalInput" />
+                </li>
+            </ul>
+        </div>
+        <div id="lineStyleEdit" class="editContent">
+            <p>Center Pen</p>
+            <ul>
+                <li>
+                    <span>Color</span>
+                    <div class="colorSelector" id="lineStyleCenterPenColorSelector">
+                    </div>
+                    <input id="lineStyleCenterPenColorText" type="text" class="colorpickerText" />
+                </li>
+                <li>
+                    <span>Alpha</span>
+                    <input id="lineStyleCenterPenAlpha" type="text" class="normalInput" />
+                </li>
+                <li>
+                    <span>Width</span>
+                    <input id="lineStyleCenterPenWidth" type="text" class="normalInput" />
+                </li>
+            </ul>
+
+            <p>Inner Pen</p>
+            <ul>
+                <li>
+                    <span>Color</span>
+                    <div class="colorSelector" id="lineStyleInnerPenColorSelector">
+                    </div>
+                    <input id="lineStyleInnerPenColorText" type="text" class="colorpickerText" />
+                </li>
+                <li>
+                    <span>Alpha</span>
+                    <input id="lineStyleInnerPenAlpha" type="text" class="normalInput" />
+                </li>
+                <li>
+                    <span>Width</span>
+                    <input id="lineStyleInnerPenWidth" type="text" class="normalInput" />
+                </li>
+            </ul>
+            <p>Outer Pen</p>
+            <ul>
+                <li>
+                    <span>Color</span>
+                    <div class="colorSelector" id="lineStyleOuterPenColorSelector">
+                    </div>
+                    <input id="lineStyleOuterPenColorText" type="text" class="colorpickerText" />
+                </li>
+                <li>
+                    <span>Alpha</span>
+                    <input id="lineStyleOuterPenAlpha" type="text" class="normalInput" />
+                </li>
+                <li>
+                    <span>Width</span>
+                    <input id="lineStyleOuterPenWidth" type="text" class="normalInput" />
+                </li>
+            </ul>
+        </div>
+        <div id="symbolPointEdit" class="editContent">
+            <ul>
+                <li>
+                    <span class="edit-title">Symbol Type</span>
+                    <select id="symbolPointType">
+                        <option value="Circle">Circle</option>
+                        <option value="Square">Square</option>
+                        <option value="Triangle">Triangle</option>
+                        <option value="Cross">Cross</option>
+                        <option value="Diamond">Diamond</option>
+                        <option value="Diamond2">Diamond2</option>
+                        <option value="Star">Star</option>
+                        <option value="Star2">Star2</option>
+                    </select>
+                </li>
+                <li>
+                    <span>Symbol Size</span>
+                    <input id="symbolPointSize" type="text" class="normalInput" />
+                </li>
+                <li>
+                    <span>Rotation Angle</span>
+                    <input id="symbolPointRotationAngle" type="text" class="normalInput" />
+                </li>
+            </ul>
+            <p>Symbol Solid Brush</p>
+            <ul>
+                <li>
+                    <span>Color</span>
+                    <div class="colorSelector" id="symbolPointSolidBrushColorSelector">
+                    </div>
+                    <input id="symbolPointSolidBrushColorText" type="text" class="colorpickerText" />
+                </li>
+                <li>
+                    <span>Alpha</span>
+                    <input id="symbolPointSolidBrushAlpha" type="text" class="normalInput" />
+                </li>
+            </ul>
+            <p>Symbol Pen</p>
+            <ul>
+                <li>
+                    <span>Color</span>
+                    <div class="colorSelector" id="symbolPointPenColorSelector">
+                    </div>
+                    <input id="symbolPointPenColorText" type="text" class="colorpickerText" />
+                </li>
+                <li>
+                    <span>Alpha</span>
+                    <input id="symbolPointPenAlpha" type="text" class="normalInput" />
+                </li>
+                <li>
+                    <span>Width</span>
+                    <input id="symbolPointPenWidth" type="text" class="normalInput" />
+                </li>
+            </ul>
+        </div>
+        <div id="editFooter">
+            <a id="btnCancel" href="#" role="button">Cancel</a>
+            <a id="btnSave" href="#" role="button">Save</a>
+        </div>
+    </div>
+
+    <script src="Scripts/jquery-1.11.1.min.js"></script>
+    <script src="Scripts/ol.js"></script>
+    <script src="Scripts/thinkgeo.openlayers.js"></script>
+    <script src="Scripts/thinkgeo.js"></script>
+    <script src="Scripts/Colorpicker/colorpicker.js"></script>
+</body>
+</html>

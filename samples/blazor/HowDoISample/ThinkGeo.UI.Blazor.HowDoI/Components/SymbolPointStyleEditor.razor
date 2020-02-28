@@ -1,0 +1,79 @@
+﻿<fieldset class="rounded px-3 border">
+    <legend class="d-inline-block px-2 w-auto">Basic</legend>
+    <div class="form-group row">
+        <label for="symbol-type" class="col-sm-4 col-form-label">Symbol Type</label>
+        <div class="col-sm-8">
+            <select @bind-value="@Style.Type" @bind-value:event="onchange" id="symbol-type" class="form-control">
+                <option value="Circle">Circle</option>
+                <option value="Square">Square</option>
+                <option value="Triangle">Triangle</option>
+                <option value="Cross">Cross</option>
+                <option value="Diamond">Diamond</option>
+                <option value="Diamond2">Diamond2</option>
+                <option value="Star">Star</option>
+                <option value="Star2">Star2</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="symbol-size" class="col-sm-4 col-form-label">Symbol Size</label>
+        <div class="col-sm-8">
+            <input type="number" @bind-value="@Style.Size" @bind-value:event="oninput" class="form-control" id="symbol-size" min="10" max="255" />
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="symbol-rotationangle" class="col-sm-4 col-form-label">Rotation Angle</label>
+        <div class="col-sm-8">
+            <input type="number" @bind-value="@Style.RotationAngle" @bind-value:event="oninput" class="form-control" id="symbol-rotationangle" min="0" />
+        </div>
+    </div>
+</fieldset>
+
+<fieldset class="rounded px-3 border">
+    <legend class="d-inline-block px-2 w-auto">Symbol Solid Brush</legend>
+    <div class="form-group row">
+        <label for="symbolsolidbrush-color" class="col-sm-2 col-form-label">Color</label>
+        <div class="col-sm-10">
+            <input type="text" @bind-value="@Style.BrushColor" @bind-value:event="oninput" class="form-control" id="symbolsolidbrush-color" />
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="symbolsolidbrush-alpha" class="col-sm-2 col-form-label">Alpha</label>
+        <div class="col-sm-10">
+            <input type="number" @bind-value="@Style.BrushAlpha" @bind-value:event="oninput" class="form-control" id="symbolsolidbrush-alpha" min="0" max="255" />
+        </div>
+    </div>
+
+</fieldset>
+
+<fieldset class="rounded px-3 border">
+    <legend class="d-inline-block px-2 w-auto">Symbol Pen</legend>
+    <div class="form-group row">
+        <label for="symbolpen-color" class="col-sm-2 col-form-label">Color</label>
+        <div class="col-sm-10">
+            <input type="text" @bind-value="@Style.PenColor" @bind-value:event="oninput" class="form-control" id="symbolpen-color" />
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="symbolpen-alpha" class="col-sm-2 col-form-label">Alpha</label>
+        <div class="col-sm-10">
+            <input type="number" @bind-value="@Style.PenAlpha" @bind-value:event="oninput" class="form-control" id="symbolpen-alpha" min="0" max="255" />
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="symbolpen-width" class="col-sm-2 col-form-label">Width</label>
+        <div class="col-sm-10">
+            <input type="number" @bind-value="@Style.PenWidth" @bind-value:event="oninput" class="form-control" id="symbolpen-width" min="0" />
+        </div>
+    </div>
+</fieldset>
+
+@code{
+    [Parameter]
+    public SymbolPointStyleModel Style { get; set; }
+}

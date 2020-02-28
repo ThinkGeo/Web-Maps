@@ -1,0 +1,57 @@
+﻿@inject MenuService menuService
+@inject NavigationManager navigationManager
+
+<ul id="menu-bar" class="nav nav-sidebar">
+    @if (menus != null)
+    {
+        @foreach (var menu in menus)
+        {
+            <li class="@(GetCss(menu.Id))">
+                <NavLink @key="menu" href="@menu.Href" @onclick="@(e => HandleOnMenuClick(menu))" Match="NavLinkMatch.All"><span class="sub-arrow @menu.Preicon">@menu.Title</span></NavLink>
+            </li>
+        }
+    }
+</ul>
+
+@code {
+    private List<MenuModel> menus;
+    private bool isLoaded;
+    private MenuModel currentMenu;
+
+    [Parameter]
+    public EventCallback<MenuModel> OnMenuClick { get; set; }
+
+    async void HandleOnMenuClick(MenuModel menu)
+    {
+        currentMenu = menu;
+        if (OnMenuClick.HasDelegate)
+        {
+            await OnMenuClick.InvokeAsync(menu);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        menus = menuService.GetMenus();
+        var currentUri = navigationManager.Uri;
+        var lastSlashIndex = currentUri.LastIndexOf('/') + 1;
+        var queryStringIndex = currentUri.IndexOf('?');
+        var currentPath = queryStringIndex == -1 ? currentUri.Substring(lastSlashIndex) : currentUri.Substring(lastSlashIndex, queryStringIndex - lastSlashIndex);
+        currentMenu = menus.FirstOrDefault(p => currentPath == p.Href) ?? menus[0];
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!isLoaded)
+        {
+            HandleOnMenuClick(currentMenu);
+            isLoaded = true;
+        }
+    }
+
+    string GetCss(string menuId)
+    {
+        return currentMenu?.Id == menuId ? "active" : string.Empty;
+    }
+
+}

@@ -1,0 +1,441 @@
+﻿@page "/geometric-functions"
+@using ThinkGeo.Core
+@using System.Collections.ObjectModel
+@using System.Globalization
+<div class="map-container">
+    <MapView @ref="map" Id="map" BackgroundColor="@(GeoColor.FromHtml("#89d3f0ff"))"
+             Width="100"
+             Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-10774179.366367, 3914858.6395301))"
+             Zoom="17"
+             MapUnit="@ThinkGeo.Core.GeographyUnit.Meter">
+        <OverlaysSetting>
+            <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="@ThinkGeoCloudRasterMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            <LayerOverlay Id="CustomOverlay" Layers="@layers"></LayerOverlay>
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.LowerRight" />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+
+    <div class="geofunction-left-panel">
+        <h5>@description</h5>
+
+        <div class="setting-row">
+            <span>GeoFunction</span>
+            <select id="geofunction-type" @onchange="HandleOnGeoFunctionChange">
+                @foreach (var item in geoFuncs)
+                {
+                    <option value="@item.Name">@item.Text</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>
+
+@code {
+    string description;
+    MapView map;
+    GeoCollection<Layer> layers = new GeoCollection<Layer>();
+    GeoCollection<Feature> inputFeatures = GeometricFunctionHelper.LoadInputFeatures();
+    IEnumerable<GeometricFunctionModel> geoFuncs = GeometricFunctionHelper.GetGeometricFunctions();
+
+
+    protected override void OnInitialized()
+    {
+        HandleOnGeoFunctionChange(new ChangeEventArgs { Value = "Union" });
+    }
+
+    private Feature Union(IEnumerable<Feature> features)
+    {
+        var result = Feature.Union(features);
+        result.ColumnValues["Display"] = "Union";
+
+        for (var i = 0; i < features.Count(); i++)
+        {
+            var feature = features.ElementAt(i);
+            feature.ColumnValues["Display"] = i.ToString();
+        }
+        return result;
+    }
+
+    private Feature Difference(IEnumerable<Feature> features)
+    {
+        // Get the feature as an element for doing geoprocessing.
+        Feature sourceFeature = features.ElementAt(0);
+        sourceFeature.ColumnValues["Display"] = "Source";
+
+        // Get the feature as another element for doing geoprocessing.
+        var targetFeature = features.ElementAt(1);
+        targetFeature.ColumnValues["Display"] = "Target";
+        // Do Diference geoprocessing.
+        var result = sourceFeature.GetDifference(targetFeature);
+
+        result.ColumnValues["Display"] = "Difference";
+
+        return result;
+    }
+
+    private Feature Buffer(IEnumerable<Feature> features)
+    {
+        // Get the feature for buffer.
+        var inputFeature = features.First();
+
+        // Do buffer.
+        var result = inputFeature.Buffer(15, GeographyUnit.Meter, DistanceUnit.Meter);
+        result.ColumnValues["Name"] = "Buffering";
+
+        return result;
+    }
+
+    private Feature Scale(IEnumerable<Feature> features)
+    {
+        // Get the feature for Scaling.
+        var inputFeature = features.First();
+
+        var polygonShape = inputFeature.GetShape() as MultipolygonShape;
+        // Scale up the input feature.
+        double percentage = 20;
+        polygonShape.ScaleUp(percentage);
+        var result = new Feature(polygonShape, inputFeature.ColumnValues);
+
+        return result;
+    }
+
+    private Feature Rotate(IEnumerable<Feature> features)
+    {
+        // Get the feature for rotate.
+        var inputFeature = features.First();
+
+        var shape = inputFeature.GetShape();
+
+        // Get the rotation angle.
+        var degreeAngle = 22.5f;
+        // Rotate the input feature.
+        var result = new Feature(BaseShape.Rotate(shape, shape.GetCenterPoint(), (float)degreeAngle));
+
+        return result;
+    }
+
+    private IEnumerable<Feature> CalculateCenterPoint(IEnumerable<Feature> features)
+    {
+        // Get the feature for calculating the center point.
+        var inputFeature = features.First();
+
+        // Get the center point of boundingBox.
+        var centerPointShape = inputFeature.GetBoundingBox().GetCenterPoint();
+        var centerFeature = new Feature(centerPointShape);
+        centerFeature.ColumnValues["Display"] = "BoundingBox Center Point";
+
+        // Get the centroid point of the geometry.
+        var centroidPointShape = inputFeature.GetShape().GetCenterPoint();
+        var centroidFeature = new Feature(centroidPointShape);
+        centroidFeature.ColumnValues["Display"] = "Polygon Center Point";
+
+        return new[] { centerFeature, centroidFeature };
+    }
+
+    private Feature CalculateArea(IEnumerable<Feature> features)
+    {
+        // Get the feature for calculating the center point.
+        var inputFeature = features.First();
+        var areaBaseShape = inputFeature.GetShape() as AreaBaseShape;
+
+        double areaInHectares = areaBaseShape.GetArea(GeographyUnit.Meter, AreaUnit.Hectares);
+        double areaInAcres = areaBaseShape.GetArea(GeographyUnit.Meter, AreaUnit.Acres);
+
+        // Display the geometry labeling with area.
+        string acreaText = string.Format("{0:N3} {1}\r\n{2:N3} {3}", areaInHectares, "Hectares", areaInAcres, "Acres");
+        var result = new Feature(areaBaseShape, new Dictionary<string, string> { { "Display", acreaText } });
+
+        return result;
+    }
+
+    private Feature Simplify(IEnumerable<Feature> features)
+    {
+        // Get the feature used for geoprocessing.
+        var inputFeature = features.First();
+        // Get the distance passed from client side.
+        var distance = 30d;
+        // Get the buffer distance unit passed from client side.
+        var distanceUnit = DistanceUnit.Meter;
+
+        // Simplify the polygon shape.
+        var polygonShape = inputFeature.GetShape() as MultipolygonShape;
+        polygonShape = polygonShape.Simplify(GeographyUnit.Meter, distance, distanceUnit, SimplificationType.DouglasPeucker);
+
+        var result = new Feature(polygonShape);
+        result.ColumnValues["Display"] = "SimplifiedPolygon";
+        result.ColumnValues["Name"] = "SimplifiedPolygon";
+
+        return result;
+    }
+
+    private IEnumerable<Feature> Split(IEnumerable<Feature> features)
+    {
+        // Get the polygon shape used for split.
+        var polygonShape = features.ElementAt(0).GetShape() as PolygonShape;
+        // Get the line for splitting the polygon shape.
+        var lineShape = features.ElementAt(1).GetShape() as LineShape;
+
+        var resultPolygon = GeometricFunctionHelper.Split(polygonShape, lineShape);
+        var result = new List<Feature>();
+        for (int i = 0; i < resultPolygon.Polygons.Count; i++)
+        {
+            var feature = new Feature(resultPolygon.Polygons[i]);
+            feature.ColumnValues["Display"] = "Subcommunity" + (i + 1).ToString(CultureInfo.InvariantCulture);
+            feature.ColumnValues["Name"] = feature.ColumnValues["Display"];
+            result.Add(feature);
+        }
+
+        return result;
+    }
+
+    private Feature CalculateShortestLine(IEnumerable<Feature> features)
+    {
+        // Get the 2 shapes passed from client side for calculating the shortest distance.
+        var shape1 = features.ElementAt(0).GetShape();
+        var shape2 = features.ElementAt(1).GetShape();
+
+        // Calculate the shortest distance.
+        var resultShape = shape1.GetShortestLineTo(shape2, GeographyUnit.Meter);
+        double distance = shape1.GetDistanceTo(shape2, GeographyUnit.Meter, DistanceUnit.Feet);
+
+        var result = new Feature(resultShape);
+        result.ColumnValues["Display"] = string.Format("Distance is {0:N2} feet.", distance);
+
+        return result;
+    }
+
+    private Feature CalculateLength(IEnumerable<Feature> features)
+    {
+        var inputFeature = features.First();
+
+        // Get the line shape used for calculating the length.
+        var lineShape = inputFeature.GetShape() as LineShape;
+        // Calculate the length of the line shape.
+        var length = lineShape.GetLength(GeographyUnit.Meter, DistanceUnit.Feet);
+
+        var result = new Feature(lineShape);
+        result.ColumnValues["Display"] = string.Format("Length is {0:N0} feet.", length);
+        result.ColumnValues["Name"] = "Length";
+
+        return result;
+    }
+
+    private Feature LineOnLine(IEnumerable<Feature> features)
+    {
+
+        // Get the first distance from the start vertex of the line.
+        var startingDistance = 80;
+        // Get the second distance from the start vertex of the line.
+        var distance = 450;
+        // Get the distance unit passed from client side.
+        var distanceUnit = DistanceUnit.Meter;
+
+        var lineShape = (LineShape)features.First().GetShape();
+        // Clip a line on the line between start and end distance.
+        var resultLineShape = lineShape.GetLineOnALine(StartingPoint.FirstPoint, startingDistance, distance, GeographyUnit.Meter, distanceUnit);
+
+        var result = new Feature(resultLineShape);
+        result.ColumnValues["Name"] = "GetLineOnLineResult";
+
+        return result;
+    }
+
+    private IEnumerable<Feature> Clip(IEnumerable<Feature> features)
+    {
+        var resultFeatures = new List<Feature>();
+        // Get the feature for clipping other features.
+        var clippingFeature = features.First();
+        // Get the features which will be clipped by a specified polygon.
+        var clippingSourceIds = new[] { "37", "38", "39", "40", "41", "42", "43", "44" };
+        var clippingSourceFeatures = clippingSourceIds.Select(tempId => inputFeatures[tempId]).ToArray();
+        foreach (var feature in clippingSourceFeatures)
+        {
+            // Clip the feature.
+            var processedFeature = feature.GetIntersection(clippingFeature);
+            if (processedFeature != null)
+            {
+                processedFeature.ColumnValues["Name"] = "ClippingResult";
+                resultFeatures.Add(processedFeature);
+            }
+        }
+
+        return resultFeatures;
+    }
+
+    private IEnumerable<Feature> ConvexHull(IEnumerable<Feature> features)
+    {
+        // Create a MultiPointShape for calculating the convex hull of it.
+        var multipointShape = new MultipointShape();
+        var pointIds = new[] { "21", "22", "23", "24", "25" };
+        foreach (var feature in pointIds.Select(id => inputFeatures[id]))
+        {
+            multipointShape.Points.Add((PointShape)feature.GetShape());
+        }
+        // Calculate the context hull of points.
+        PolygonShape pointsContextHull = new PolygonShape(multipointShape.ConvexHull());
+
+        // Create a polygon shape for calculating the convex hull of it.
+        string polygonId = "20";
+
+        MultipolygonShape multipolygonShape = inputFeatures[polygonId].GetShape() as MultipolygonShape;
+
+        // Calculate the context hull of the polygon shape.
+        PolygonShape polygonContextHull = new PolygonShape(multipolygonShape.GetConvexHull());
+
+        return new[] { new Feature(pointsContextHull), new Feature(polygonContextHull) };
+    }
+
+    private IEnumerable<Feature> Snap(IEnumerable<Feature> features)
+    {
+
+        List<Feature> resultFeatures = new List<Feature>();
+        // Get a MultiLineShape for snapping.
+        MultilineShape multilineShape = features.ElementAt(0).GetShape() as MultilineShape;
+        // Display the output features.
+        resultFeatures.Add(new Feature(multilineShape));
+
+        Feature[] allFeatures = new Feature[] { features.ElementAt(1) };
+        Collection<Feature> matchFeatures = new Collection<Feature>();
+        // Get the fetaures which are in a specific distance from the MultiLineShape.
+        foreach (var item in allFeatures)
+        {
+            double tempDistance = multilineShape.GetShortestLineTo(item, GeographyUnit.Meter).GetLength(GeographyUnit.Meter, DistanceUnit.Feet);
+            if (tempDistance < 100)
+            {
+                matchFeatures.Add(item);
+            }
+        }
+        foreach (var feature in matchFeatures)
+        {
+            Collection<Vertex> vertices = new Collection<Vertex>();
+
+            PointShape resultShape = multilineShape.GetClosestPointTo(feature, GeographyUnit.Meter);
+            MultilineShape tempMultilineShape = feature.GetShape() as MultilineShape;
+            if (tempMultilineShape != null)
+            {
+                double offsetX = resultShape.X - tempMultilineShape.Lines[0].Vertices[0].X;
+                double offsetY = resultShape.Y - tempMultilineShape.Lines[0].Vertices[0].Y;
+                vertices.Add(new Vertex(resultShape));
+
+                double x = offsetX + tempMultilineShape.Lines[0].Vertices[1].X;
+                double y = offsetY + tempMultilineShape.Lines[0].Vertices[1].Y;
+                vertices.Add(new Vertex(x, y));
+            }
+
+            resultFeatures.Add(new Feature(new MultilineShape(new LineShape[] { new LineShape(vertices) })));
+        }
+
+        foreach (var feature in allFeatures)
+        {
+            if (!matchFeatures.Contains(feature))
+            {
+                resultFeatures.Add(feature);
+            }
+        }
+
+        resultFeatures.AddRange(GeometricFunctionHelper.GetSnappingBufferFeatures(resultFeatures.Skip(1).ToArray()));
+
+        return resultFeatures;
+    }
+
+    private Feature EnvelopBoundingbox(IEnumerable<Feature> features)
+    {
+        var inputFeature = features.First();
+        Feature envelope = new Feature(inputFeature.GetBoundingBox());
+        envelope.ColumnValues["Name"] = "EnvelopeResult";
+
+        return envelope;
+    }
+
+    private void HandleOnGeoFunctionChange(ChangeEventArgs e)
+    {
+        var selectedGeoFunc = e.Value.ToString();
+        var geoFuncConfig = geoFuncs.First(p => p.Name == selectedGeoFunc);
+        description = geoFuncConfig.Description;
+
+        var features = inputFeatures.Where(f => geoFuncConfig.FeatureIds.Contains(f.ColumnValues["id"])).ToList();
+        var center = new PointShape(geoFuncConfig.Center[0], geoFuncConfig.Center[1]);
+        IEnumerable<Feature> result;
+        switch (selectedGeoFunc)
+        {
+            case "Union":
+                result = new List<Feature> { Union(features) };
+                break;
+            case "Difference":
+                result = new List<Feature> { Difference(features) };
+                break;
+            case "Buffer":
+                result = new List<Feature> { Buffer(features) };
+                break;
+            case "Scale":
+                result = new List<Feature> { Scale(features) };
+                break;
+            case "Rotate":
+                result = new List<Feature> { Rotate(features) };
+                break;
+            case "CenterPoint":
+                result = CalculateCenterPoint(features);
+                break;
+            case "CalculateArea":
+                result = new List<Feature> { CalculateArea(features) };
+                break;
+            case "Simplify":
+                result = new List<Feature> { Simplify(features) };
+                break;
+            case "Split":
+                result = Split(features);
+                break;
+            case "CalculateShortestLine":
+                result = new List<Feature> { CalculateShortestLine(features) };
+                break;
+            case "CalculateLength":
+                result = new List<Feature> { CalculateLength(features) };
+                break;
+            case "LineOnLine":
+                result = new List<Feature> { LineOnLine(features) };
+                break;
+            case "Clip":
+                result = Clip(features);
+                break;
+            case "ConvexHull":
+                result = ConvexHull(features);
+                break;
+            case "Snapping":
+                result = Snap(features);
+                break;
+            case "EnvelopBoundingbox":
+                result = new List<Feature> { EnvelopBoundingbox(features) };
+                break;
+            default:
+                result = new List<Feature>();
+                break;
+        }
+
+        layers.Clear();
+        var inputFeatureLayer = GeometricFunctionHelper.InitInputLayer();
+        var outputFeatureLayer = GeometricFunctionHelper.InitOutputLayer();
+        foreach (var item in features)
+        {
+            inputFeatureLayer.InternalFeatures.Add(item);
+        }
+        foreach (var item in result)
+        {
+            outputFeatureLayer.InternalFeatures.Add(item);
+        }
+        layers.Add(inputFeatureLayer);
+        layers.Add(outputFeatureLayer);
+
+        if (map != null)
+        {
+            map.PanToAsync(center);
+            map.Overlays[1].RedrawAsync();
+        }
+    }
+}

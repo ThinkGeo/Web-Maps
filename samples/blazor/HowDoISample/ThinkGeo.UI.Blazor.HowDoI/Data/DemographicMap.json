@@ -1,0 +1,145 @@
+[
+  {
+    "name": "Population",
+    "icon": "Images/Demograph_Population.png",
+    "legends": [
+      {
+        "columnName": "Population",
+        "alias": "Population",
+        "legendTitle": "Population"
+      }
+    ]
+  },
+  {
+    "name": "Population Density",
+    "icon": "Images/DemoGraph_PopDensity.png",
+    "legends": [
+      {
+        "columnName": "PopDensity",
+        "alias": "Population Density"
+      }
+    ]
+  },
+  {
+    "name": "Gender",
+    "icon": "Images/Demograph_Gender.png",
+    "legends": [
+      {
+        "columnName": "Female",
+        "alias": "Female"
+      },
+      {
+        "columnName": "Male",
+        "alias": "Male"
+      }
+    ]
+  },
+  {
+    "name": "Total Land Area",
+    "icon": "Images/Demograph_LandArea.png",
+    "legends": [
+      {
+        "columnName": "AREALAND",
+        "alias": "Total Land Area"
+      }
+    ]
+  },
+  {
+    "name": "Total Water Area",
+    "icon": "Images/Demograph_WaterArea.png",
+    "legends": [
+      {
+        "columnName": "AREAWATR",
+        "alias": "Total Water Area"
+      }
+    ]
+  },
+  {
+    "name": "Race and Ethnicity",
+    "icon": "Images/Demograph_Nationality.png",
+    "legends": [
+      {
+        "columnName": "Indian",
+        "alias": "American Indian"
+      },
+      {
+        "columnName": "Asian",
+        "alias": "Asian"
+      },
+      {
+        "columnName": "Black",
+        "alias": "Black"
+      },
+      {
+        "columnName": "MultiRace",
+        "alias": "Multiracial"
+      },
+      {
+        "columnName": "Islander",
+        "alias": "Native Pacific Islander"
+      },
+      {
+        "columnName": "White",
+        "alias": "White"
+      },
+      {
+        "columnName": "Other",
+        "alias": "Other"
+      }
+    ]
+  },
+  {
+    "name": "Age",
+    "icon": "Images/Demograph_Age.png",
+    "legends": [
+      {
+        "columnName": "Under5",
+        "alias": "0 ~ 5"
+      },
+      {
+        "columnName": "5to9",
+        "alias": "5 ~ 10"
+      },
+      {
+        "columnName": "10to14",
+        "alias": "10 ~ 15"
+      },
+      {
+        "columnName": "15to17",
+        "alias": "15 ~ 18"
+      },
+      {
+        "columnName": "18to24",
+        "alias": "18 ~ 25"
+      },
+      {
+        "columnName": "25to34",
+        "alias": "25 ~ 35"
+      },
+      {
+        "columnName": "35to44",
+        "alias": "35 ~ 45"
+      },
+      {
+        "columnName": "45to54",
+        "alias": "45 ~ 55"
+      },
+      {
+        "columnName": "55to64",
+        "alias": "55 ~ 65"
+      },
+      {
+        "columnName": "65to74",
+        "alias": "65 ~ 75"
+      },
+      {
+        "columnName": "75to84",
+        "alias": "75 ~ 85"
+      },
+      {
+        "columnName": "over85",
+        "alias": ">= 85"
+      }
+    ]
+  }
+]

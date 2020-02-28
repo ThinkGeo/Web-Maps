@@ -1,0 +1,66 @@
+﻿@page "/load-raster-source"
+@using ThinkGeo.Core
+
+<div class="map-container raster-basemaps">
+    <MapView Id="map"
+             Width="100"
+             Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-86.88901329980723, 50.34679797978212))"
+             Zoom="4"
+             MapUnit="@ThinkGeo.Core.GeographyUnit.DecimalDegree">
+        <OverlaysSetting>
+            <LayerOverlay Id="JPEGOverlay" Layers="@jpegLayers" IsVisible="@showJpeg"></LayerOverlay>
+            <LayerOverlay Id="ECWOverlay" Layers="@ecwLayers" IsVisible="@showEcw"></LayerOverlay>
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+
+    <nav class="icon-group  draw-edit-tool-bar">
+        <a href="javascript:void(0);" class="@GetCss(RasterDataType.JPEG)" @onclick="@(e => SwitchDataSource(RasterDataType.JPEG))" tabindex="-1" title="JPEG">
+            <span>JPEG2000</span>
+        </a>
+        <a href="javascript:void(0);" class="@GetCss(RasterDataType.ECW)" @onclick="@(e => SwitchDataSource(RasterDataType.ECW))" tabindex="-1" title="ECW"><span>ECW</span></a>
+        <a href="https://wiki.thinkgeo.com/wiki/thinkgeo_data_format_guide" class="a-link" tabindex="-1" target="_blank" title="Others"><span>Others</span></a>
+    </nav>
+</div>
+
+@code {
+    RasterDataType currentRasterDataType = RasterDataType.JPEG;
+    GeoCollection<Layer> jpegLayers = new GeoCollection<Layer>();
+    GeoCollection<Layer> ecwLayers = new GeoCollection<Layer>();
+    bool showJpeg = true;
+    bool showEcw = false;
+
+    protected override void OnInitialized()
+    {
+        var jpegLayer = new NativeImageRasterLayer("./Data/World2.jpg");
+        jpegLayers.Add(jpegLayer);
+
+        var ecwLayer = new EcwRasterLayer("./Data/World.ecw");
+        ecwLayers.Add(ecwLayer);
+    }
+
+    private void SwitchDataSource(RasterDataType dataType)
+    {
+        if (currentRasterDataType == dataType) return;
+
+        currentRasterDataType = dataType;
+        if (dataType == RasterDataType.ECW)
+        {
+            showEcw = true;
+            showJpeg = false;
+        }
+        else if (dataType == RasterDataType.JPEG)
+        {
+            showEcw = false;
+            showJpeg = true;
+        }
+    }
+
+    string GetCss(RasterDataType rasterDataType) => rasterDataType == currentRasterDataType ? "active" : string.Empty;
+}

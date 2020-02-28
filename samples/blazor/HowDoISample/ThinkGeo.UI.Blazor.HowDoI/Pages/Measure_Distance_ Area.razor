@@ -1,0 +1,55 @@
+﻿@page "/measure-distance-area"
+@using ThinkGeo.Core
+
+<div class="map-container">
+    <MapView @ref="map" Id="map" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter"
+             Width="100"
+             Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Zoom="15"
+             Center="@(new PointShape(-10770581.83051296, 3865538.8613018664))">
+        <OverlaysSetting>
+            <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey"
+                                            MapType="ThinkGeoCloudRasterMapsMapType.Light" />
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <MeasureMapTool MeasureType="@measureType" />
+                <ZoomBarMapTool />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+
+    <nav class="icon-group draw-edit-tool-bar">
+        <a href="javascript:void(0);" class="@GetCss(MeasureType.None)" title="None" @onclick="@(e => measureType = MeasureType.None)">
+            <span>
+                <img src="images/mouse-pointer.svg" alt="None">
+            </span>
+        </a>
+        <a href="javascript:void(0);" class="@GetCss(MeasureType.Line)" title="Measure Distance" @onclick="@(e => measureType = MeasureType.Line)">
+            <span>
+                <img src="images/distance.png" alt="Measure Distance">
+            </span>
+        </a>
+        <a href="javascript:void(0);" class="@GetCss(MeasureType.Area)" title="Measure Area" @onclick="@(e => measureType = MeasureType.Area)">
+            <span>
+                <img src="images/area.png" alt="Measure Area">
+            </span>
+        </a>
+
+        <a href="javascript:void(0);" title="Clear" @onclick="@(e => map.MapTools.MeasureMapTool.MeasuredFeatures.Clear())">
+            <span>
+                <img src="images/close.svg" alt="Clear">
+            </span>
+        </a>
+    </nav>
+
+</div>
+
+@code{
+    MapView map;
+    MeasureType measureType = MeasureType.None;
+
+    string GetCss(MeasureType type) => type == measureType ? "active" : string.Empty;
+}

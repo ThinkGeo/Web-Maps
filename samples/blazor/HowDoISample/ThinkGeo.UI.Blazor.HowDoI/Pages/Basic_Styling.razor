@@ -1,0 +1,227 @@
+﻿@page "/basic-styling"
+@using ThinkGeo.Core
+@inject IJSRuntime jsRuntime
+
+<div class="map-container" @ref="@mapContainer">
+
+    <MapView Id="map" @ref="@map" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter"
+             Width="100"
+             Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Zoom="@currentStyle.Zoom" Center="@currentStyle.Center">
+        <OverlaysSetting>
+            <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="ThinkGeoCloudRasterMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" IsVisible="@currentBaseLayerVisible"></ThinkGeoCloudRasterMapsOverlay>
+
+            @foreach (var style in stylings)
+            {
+                <LayerOverlay Id="@style.Id" TileHeight="512" TileWidth="512"
+                              IsVisible="@style.IsActive"
+                              Layers="@style.Layers"></LayerOverlay>
+            }
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+
+    <ul id="stylings" class="list-unstyled">
+        @foreach (var item in stylings)
+        {
+            <li id="@item.Id" @onclick="@(e => ChangeStyleAsync(item))" @key="item" class="unselected position-relative @(item.IsActive ? "selected":"")">
+                <span class="title">@item.Title</span>
+            </li>
+        }
+    </ul>
+
+    <div class="position-absolute bottom-center text-center bg-dark opacity-50 px-5 py-3"><span class="text-white description">@currentStyle?.Description</span></div>
+</div>
+
+@code {
+    private MapView map;
+    private List<StylingModel> stylings;
+    private ElementReference mapContainer;
+    private string accessId = Guid.NewGuid().ToString();
+    private StylingModel currentStyle;
+    private LineStyleModel lineStyle;
+    private AreaStyleModel areaStyle;
+    private SymbolPointStyleModel symbolPointStyle;
+
+    private bool currentBaseLayerVisible = false;
+
+    protected override void OnInitialized()
+    {
+        stylings = new List<StylingModel>();
+
+        stylings.Add(new StylingModel
+        {
+            Id = "PredefinedStyles",
+            IsActive = true,
+            Title = "Predefined Styles",
+            Center = new PointShape(-10665666.24143648, 4887342.98880350),
+            Zoom = 5,
+            Description = "Predefined styles (US highway and Major cities)",
+            Layers = GetStyleLayers("PredefinedStyles", accessId)
+        });
+
+        stylings.Add(new StylingModel
+        {
+            Id = "AreaStyle",
+            Title = "Area Style",
+            Center = new PointShape(-10776836.61052119, 3912477.00167586),
+            Zoom = 17,
+            Description = "Area Style (School and Parks)",
+            Layers = GetStyleLayers("AreaStyle", accessId)
+        });
+
+        stylings.Add(new StylingModel
+        {
+            Id = "LineStyle",
+            Title = "Line Style",
+            Center = new PointShape(-10778565.35580411, 3916028.70749045),
+            Zoom = 12,
+            Description = "Line Style (Major Roads in Frisco)",
+            Layers = GetStyleLayers("LineStyle", accessId)
+        });
+
+        stylings.Add(new StylingModel
+        {
+            Id = "ImagePointStyle",
+            Title = "Image Point Style",
+            Center = new PointShape(-10778565.35580411, 3916028.70749045),
+            Zoom = 13,
+            Description = "Image Point Style (High Schools in Frisco)",
+            Layers = GetStyleLayers("ImagePointStyle", accessId)
+        });
+
+        stylings.Add(new StylingModel
+        {
+            Id = "SymbolPoint",
+            Title = "Symbol Point Style",
+            Center = new PointShape(-10776836.61052119, 3912344.07403256),
+            Zoom = 17,
+            Description = "Symbol Point Style (ThinkGeo Headquarters)",
+            Layers = GetStyleLayers("SymbolPoint", accessId)
+        });
+
+        stylings.Add(new StylingModel
+        {
+            Id = "CharacterPoint",
+            Title = "Character Point Style",
+            Center = new PointShape(-10778565.35580411, 3912040.32311538),
+            Zoom = 13,
+            Description = "Character Point Style (Hospitals in Frisco)",
+            Layers = GetStyleLayers("CharacterPoint", accessId)
+        });
+
+        stylings.Add(new StylingModel
+        {
+            Id = "StyleByZoomLevel",
+            Title = "Styles by ZoomLevels",
+            Center = new PointShape(-10776836.61052119, 3912477.00167586),
+            Zoom = 17,
+            Description = "Zoom in/out and we can tell the style changes through different zoomlevels (ThinkGeo Headquarters)",
+            Layers = GetStyleLayers("StyleByZoomLevel", accessId)
+        });
+
+        stylings.Add(new StylingModel
+        {
+            Id = "CompoundStyle",
+            Title = "Compound Style",
+            Center = new PointShape(-10776836.61052119, 3912344.07403256),
+            Zoom = 17,
+            Description = "Put multiple styles together and we get a compound style(ThinkGeo Headquarters)",
+            Layers = GetStyleLayers("CompoundStyle", accessId)
+        });
+
+        currentStyle = stylings[0];
+        currentStyle.Layers = GetStyleLayers(currentStyle.Id, accessId);
+        base.OnInitialized();
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            await ChangeStyleAsync(currentStyle);
+            await map.Overlays[currentStyle.Id].RedrawAsync();
+            await jsRuntime.InvokeAsync<object>("hideLoadingBackdrop");
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task ChangeStyleAsync(StylingModel styling)
+    {
+        if (currentStyle == styling) return;
+
+        await jsRuntime.InvokeAsync<object>("showLoadingBackdrop", mapContainer);
+
+
+        bool baseLayerVisible = true;
+        if (styling.Id == "PredefinedStyles")
+        {
+            baseLayerVisible = false;
+        }
+
+        if (baseLayerVisible != currentBaseLayerVisible)
+        {
+            currentBaseLayerVisible = baseLayerVisible;
+        }
+
+        currentStyle = styling;
+        stylings.ForEach(p => p.IsActive = false);
+        styling.IsActive = true;
+        await map.ZoomToCenterAsync(styling.Zoom, currentStyle.Center);
+    }
+
+    private GeoCollection<Layer> GetStyleLayers(string styleId, string accessId)
+    {
+        var layers = new GeoCollection<Layer>();
+        switch (styleId)
+        {
+            case "PredefinedStyles":
+                foreach (var layer in LayerBuilder.GetPredefinedStyleLayers())
+                {
+                    layers.Add(layer);
+                }
+                break;
+
+            case "AreaStyle":
+                layers.Add(LayerBuilder.GetAreaStyleLayer(styleId, accessId));
+                break;
+
+            case "LineStyle":
+                layers.Add(LayerBuilder.GetLineStyleLayer(styleId, accessId));
+                break;
+
+            case "ImagePointStyle":
+                layers.Add(LayerBuilder.GeImagePointStyleLayer());
+                break;
+
+            case "SymbolPoint":
+                layers.Add(LayerBuilder.GetSymbolPointLayer(styleId, accessId));
+                break;
+
+            case "CharacterPoint":
+                layers.Add(LayerBuilder.GetGlyphLayer());
+                break;
+
+            case "StyleByZoomLevel":
+                foreach (var layer in LayerBuilder.GetMultipleStyleLayers())
+                {
+                    layers.Add(layer);
+                }
+                break;
+
+            case "CompoundStyle":
+                layers.Add(LayerBuilder.GetCompoundStyleLayer());
+                break;
+
+            default:
+                break;
+        }
+        return layers;
+    }
+}

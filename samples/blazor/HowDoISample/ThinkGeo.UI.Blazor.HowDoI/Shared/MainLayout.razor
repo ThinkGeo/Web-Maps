@@ -1,0 +1,98 @@
+﻿@inherits LayoutComponentBase
+@inject SourceCodeLoader SourceCodeLoader
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime
+
+<nav class="navbar bg-dark fixed-top">
+    <a class="navbar-brand" href="https://thinkgeo.com/"> </a>
+    <span class="navbar-text mr-auto">
+        <h4>ThinkGeo Web UI for Blazor Samples<span class="preview">Preview</span></h4>
+        <h6>Explore the features of ThinkGeo web mapping UI controls for Blazor</h6>
+    </span>
+    <!-- <button type="button" class="btn fa fa-bars collapsed mr-4" data-toggle="collapse" data-target="" aria-expanded="false">
+    </button> -->
+    <button class="navbar-toggler collapsed mr-4" type="button" data-toggle="collapse" @onclick="SwithToggleMenu"
+            aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="fa fa-bars"></span>
+    </button>
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a href="https://thinkgeo.com/gis-ui-web" target="_blank" rel="noopener">ThinkGeo UI Web for Blazor</a>
+        </li>
+        |
+        <li class="nav-item">
+            <a href="https://community.thinkgeo.com/" target="_blank" rel="noopener">Support</a>
+        </li>
+        |
+        <li class="nav-item">
+            <a href="https://wiki.thinkgeo.com/wiki/thinkgeo_web_for_blazor" target="_blank" rel="noopener">Wiki</a>
+        </li>
+    </ul>
+</nav>
+<div class="container-fluid">
+    <div class="row justify-content-end">
+        <div class="sidebar @(collapsedCss)" id="sidebar">
+            <NavMenu OnMenuClick="@OnMenuClick" />
+        </div>
+        <main class="main" id="content">
+            @if (currentMenu != null)
+            {
+                <div id="child-page-title" class="pl-md-0 pl-3">
+                    <h1>
+                        <span class="title">@currentMenu.Title</span>
+                        <a type="button" class="download-sample" target="_blank" href="https://github.com/ThinkGeo/HowDoISample-ForBlazor" id="download-sample">Download Source</a>
+                    </h1>
+                    <div class="description-wrap">
+                        <p class="sample-description" style="padding-right: 132px;">@currentMenu.Description </p>
+                    </div>
+                </div>
+            }
+
+            <nav class="embed-nav group" id="embed-nav">
+                <ul class="code-types">
+                    <li id="code-type" class="code-type">
+                        <a id="html-link" href="javascript:void(0);" aria-pressed="true" role="button">
+                            Razor
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div id="output" data-border-style="thin" data-header="true">
+                <div id="razor-box" class="code-wrap code-box box" role="region" aria-label="Razor">
+                    <pre><code class="cs cshtml razor razor-cshtml">
+                        @razorCode
+                    </code></pre>
+                </div>
+                <div id="result-box" class="code-box active" role="region" aria-label="Result">
+                    @Body
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div id="loadingImage">
+    <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+</div>
+
+@code{
+    MenuModel currentMenu;
+    string razorCode;
+    string collapsedCss = "collapse";
+
+    async Task OnMenuClick(MenuModel menu)
+    {
+        if (currentMenu != menu)
+        {
+            currentMenu = menu;
+            razorCode = await SourceCodeLoader.LoadRazorCodeAsync(menu.Source);
+            razorCode = razorCode.Replace("<", "&lt").Replace(">", "&gt");
+            await JSRuntime.InvokeVoidAsync("formatCode", razorCode);
+            await JSRuntime.InvokeVoidAsync("closeRazor");
+        }
+    }
+
+    void SwithToggleMenu()
+    {
+        collapsedCss = string.IsNullOrEmpty(collapsedCss) ? "collapse" : string.Empty;
+    }
+}

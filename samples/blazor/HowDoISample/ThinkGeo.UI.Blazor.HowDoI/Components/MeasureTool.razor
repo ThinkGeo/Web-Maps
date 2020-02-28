@@ -1,0 +1,191 @@
+﻿<ul class="list-inline border rounded p-2">
+    <li title="None" class="list-inline-item @panClass" @onclick="@HideActions">
+        <img src="images/pan.png" />
+    </li>
+    <li title="Draw Shapes" class="list-inline-item @drawClass" @onclick="@ShowDrawActions">
+        <img src="images/draw.png" />
+    </li>
+    <li title="Measure" class="list-inline-item @measureClass" @onclick="@ShowDistanceMeasureActions">
+        <img src="images/measure.png" />
+    </li>
+</ul>
+
+@if (showDrawActions)
+{
+    <ul class="list-inline">
+        <li class="list-inline-item @DrawPolygonClass">
+            <img id="btnDrawPolygon" @onclick="@DrawPolygonAction" alt="Draw" title="Track new fences" src="images/draw_polygon.png" class=" imgButton" />
+        </li>
+        <li class="list-inline-item @EditPolygonClass">
+            <img id="btnEditPolygon" @onclick="@EditPolygonAction" alt="Edit" title="Edit the selected fence" src="images/edit_polygon.png" class="imgButton" />
+        </li>
+        <li class="list-inline-item @RemovePolygonClass">
+            <img id="btnRemovePolygon" @onclick="@RemovePolygonAction" alt="Delete" title="Delete the clicked polygon" src="images/Remove_Polygon.png" class="imgButton" />
+        </li>
+        <li class="list-inline-item">
+            <img id="btnSave" @onclick="@HandleOnSave" alt="Save" title="Save" src="images/save.png" class="imgButton" />
+        </li>
+        <li class="list-inline-item">
+            <img id="btnClearShapes" @onclick="@HandleOnCancelDrawAction" title="Clear" alt="Clear" src="images/close.png" class="imgButton" />
+        </li>
+    </ul>
+}
+
+@if (showDistanceMeasure)
+{
+    <ul class="list-inline">
+        <li class="list-inline-item @LineMeasureClass">
+            <img id="btnMeasureLength" @onclick="@LineMeasureAction" alt="Distance" title="Measure line" src="images/line.png" class=" imgButton" />
+        </li>
+        <li class="list-inline-item @AreaMeasureClass">
+            <img id="btnMeasureArea" @onclick="@AreaMeasureAction" alt="Area" title="Measure polygon" src="images/Polygon.png" class="imgButton" />
+        </li>
+        <li class="list-inline-item">
+            <img id="btnClearMeasure" @onclick="@HandleOnCancelMeasureAction" alt="Clear" title="Clear" src="images/close.png" class="imgButton" />
+        </li>
+        @*<li class="list-inline-item">
+                <span class="title">Measure Unit:</span>
+                <select>
+                    <option value="Metric">Metric</option>
+                    <option value="Imperial">Imperial</option>
+                </select>
+            </li>*@
+    </ul>
+}
+
+@code {
+    private string active = "active";
+
+    private string panClass = "active";
+    private string drawClass = "";
+    private string measureClass = "";
+
+    private string DrawPolygonClass = "";
+    private string EditPolygonClass = "";
+    private string RemovePolygonClass = "";
+
+    private string LineMeasureClass = "";
+    private string AreaMeasureClass = "";
+
+    [Parameter]
+    public EventCallback OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancelMeasureAction { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancelDrawAction { get; set; }
+
+    [Parameter]
+    public EventCallback<MeasureType> OnMeasureTypeChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<TrackMode> OnTrackModeChanged { get; set; }
+
+    private bool showDistanceMeasure = false;
+    private bool showDrawActions = false;
+
+    private async void HandleOnCancelMeasureAction()
+    {
+        await OnCancelMeasureAction.InvokeAsync(null);
+    }
+
+    private async void HandleOnCancelDrawAction()
+    {
+        await OnCancelDrawAction.InvokeAsync(null);
+    }
+
+    private async void HandleOnTrackModeChanged(TrackMode trackMode)
+    {
+        await OnTrackModeChanged.InvokeAsync(trackMode);
+    }
+
+
+    private async void HandleOnMeasureModeChanged(MeasureType measureMode)
+    {
+        await OnMeasureTypeChanged.InvokeAsync(measureMode);
+    }
+
+    private void HideActions()
+    {
+        showDrawActions = false;
+        showDistanceMeasure = false;
+        panClass = active;
+        drawClass = "";
+        measureClass = "";
+        HandleOnTrackModeChanged(TrackMode.None);
+        HandleOnMeasureModeChanged(MeasureType.None);
+    }
+
+    private void ShowDrawActions()
+    {
+        showDrawActions = true;
+        showDistanceMeasure = false;
+        panClass = "";
+        drawClass = active;
+        measureClass = "";
+
+        DrawPolygonClass = "";
+        EditPolygonClass = "";
+        RemovePolygonClass = "";
+
+        HandleOnMeasureModeChanged(MeasureType.None);
+    }
+
+    private void ShowDistanceMeasureActions()
+    {
+        showDistanceMeasure = true;
+        showDrawActions = false;
+        panClass = "";
+        drawClass = "";
+        measureClass = active;
+
+        LineMeasureClass = "";
+        AreaMeasureClass = "";
+
+        HandleOnTrackModeChanged(TrackMode.None);
+    }
+
+    private void DrawPolygonAction()
+    {
+        DrawPolygonClass = active;
+        EditPolygonClass = "";
+        RemovePolygonClass = "";
+        HandleOnTrackModeChanged(TrackMode.Polygon);
+    }
+
+    private void EditPolygonAction()
+    {
+        DrawPolygonClass = "";
+        EditPolygonClass = active;
+        RemovePolygonClass = "";
+        HandleOnTrackModeChanged(TrackMode.Modify);
+    }
+
+    private void RemovePolygonAction()
+    {
+        DrawPolygonClass = "";
+        EditPolygonClass = "";
+        RemovePolygonClass = active;
+        HandleOnTrackModeChanged(TrackMode.None);
+    }
+
+    private async void HandleOnSave()
+    {
+        await OnSave.InvokeAsync(null);
+    }
+
+    private void LineMeasureAction()
+    {
+        LineMeasureClass = active;
+        AreaMeasureClass = "";
+        HandleOnMeasureModeChanged(MeasureType.Line);
+    }
+
+    private void AreaMeasureAction()
+    {
+        LineMeasureClass = "";
+        AreaMeasureClass = active;
+        HandleOnMeasureModeChanged(MeasureType.Area);
+    }
+}

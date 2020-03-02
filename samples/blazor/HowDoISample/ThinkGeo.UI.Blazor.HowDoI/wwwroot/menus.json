@@ -1,0 +1,130 @@
+[
+  {
+    "id": "vector-maps",
+    "title": "Vector Basemaps",
+    "description": "Displays an attractive background map using vector tiles from the ThinkGeo Cloud.",
+    "href": "",
+    "source": "Vector_Basemaps",
+    "preicon": "fal fa-bezier-curve"
+  },
+  {
+    "id": "raster-maps",
+    "title": "Raster Basemaps",
+    "description": "Displays an attractive background map using raster tiles from the ThinkGeo Cloud.",
+    "href": "raster-basemaps",
+    "source": "Raster_Basemaps",
+    "preicon": "fas fa-layer-group"
+  },
+  {
+    "id": "marker",
+    "title": "Mark the Places",
+    "description": "Shows how to mark a place with beautiful icons and detailed information.",
+    "href": "mark-the-places",
+    "source": "Mark_the_Places",
+    "preicon": "fas fa-map-marked-alt"
+  },
+  {
+    "id": "popup",
+    "title": "Popup",
+    "description": "Shows how to display a popup balloon with images and descriptions included.",
+    "href": "balloon-popup",
+    "source": "Balloon_Popup",
+    "preicon": "far fa-comment-alt"
+  },
+  {
+    "id": "draw",
+    "title": "Draw and Modify Geometries",
+    "description": "Shows how to draw and modify the geometries loaded on the map.",
+    "href": "draw-and-modify-geometries",
+    "source": "Draw_and_Modify_Geometries",
+    "preicon": "fas fa-pencil-ruler"
+  },
+  {
+    "id": "measure",
+    "title": "Measure Distance & Area",
+    "description": "Demonstrates how to measure distances and areas on the map.",
+    "href": "measure-distance-area",
+    "source": "Measure_Distance_ Area",
+    "preicon": "fas fa-ruler"
+  },
+  {
+    "id": "vehicle-tracking",
+    "title": "Vehicle Tracking",
+    "description": "A simple vehicle tracking sample showing how to plot markers, interact with features and manipulate the map.",
+    "href": "vehicle-tracking",
+    "source": "Vehicle_Tracking",
+    "preicon": "fas fa-truck-moving"
+  },
+  {
+    "id": "basic-styling",
+    "title": "Basic Styling",
+    "description": "Visualize your data with some of ThinkGeo's built-in styles, including PointStyle, LineStyle, AreaStyle, CompoundStyles, and PredefinedStyles.",
+    "href": "basic-styling",
+    "source": "Basic_Styling",
+    "preicon": "fas fa-palette"
+  },
+  {
+    "id": "load-featuresource",
+    "title": "Load Feature Source",
+    "description": "Shows how to render common vector-based GIS formats on your map, including ESRI ShapeFile and more.",
+    "href": "load-feature-source",
+    "source": "Load_Feature_Source",
+    "preicon": "far fa-map"
+  },
+  {
+    "id": "load-rastersource",
+    "title": "Load Raster Source",
+    "description": "Shows how to render common raster-based GIS formats on your map, including GeoTiff, ECW and more.",
+    "href": "load-raster-source",
+    "source": "Load_Raster_Source",
+    "preicon": "fas fa-file-image"
+  },
+  {
+    "id": "load-wms",
+    "title": "Work with OGC Services",
+    "description": "Shows how to work with OGC standard services such as WMS, WFS, WMTS etc. in ThinkGeo UI Web for Blazor.",
+    "href": "work-with-ogc-services",
+    "source": "Work_with_OGC_Services",
+    "preicon": "fas fa-server"
+  },
+  {
+    "id": "projection",
+    "title": "Use different projections",
+    "description": "Shows how to convert a layer's projection from EPSG:4326 to another projection.",
+    "href": "projection",
+    "source": "Projection",
+    "preicon": "far fa-map"
+  },
+  {
+    "id": "geometric-functions",
+    "title": "Geometric Functions",
+    "description": "Shows how to explore all the different APIs for Geometric Functions.",
+    "href": "geometric-functions",
+    "source": "Geometric_Functions",
+    "preicon": "far fa-object-group"
+  },
+  {
+    "id": "spatial-query",
+    "title": "Spatial Query",
+    "description": "Shows how to select features by running a Spatial Query.",
+    "href": "spatial-query",
+    "source": "Spatial_Query",
+    "preicon": "far fa-info-circle"
+  },
+  {
+    "id": "find-nearby-places",
+    "title": "Find nearby places",
+    "description": "Shows how to consume the ThinkGeo Cloud Reverse Geocoding service in a ThinkGeo UI Web for Blazor app.",
+    "href": "find-nearby-places",
+    "source": "Find_Nearby_Places",
+    "preicon": "far fa-search-location"
+  },
+  {
+    "id": "us-demographic",
+    "title": "US Demographic Map",
+    "description": "Gives you a head start on your statistics project, which includes details about race, age, gender, land usage, and more for all the states in U.S.",
+    "href": "us-demographic",
+    "source": "US_Demographic",
+    "preicon": "fas fa-chart-bar"
+  }
+]

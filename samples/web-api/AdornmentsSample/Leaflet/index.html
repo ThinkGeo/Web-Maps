@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Adornments</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE10" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-title" content="Adornments" />
+    <link href="Images/desktop.png" rel="apple-touch-icon">
+    <link href="Images/favicon.ico" rel="shortcut icon" type="Images/x-icon" />
+    <link href="Content/leaflet.css" rel="stylesheet" />
+    <link href="Content/site.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="map"></div>
+    <div id="loadingImage">
+        <img src="Images/ajax-loader.gif" />
+    </div>
+    <div id="leftControlBar">
+        <div class="leftControlBarTitle">
+            <span>Adornment</span>
+        </div>
+        <div class="leftControlBarBody">
+            <ul id="Adornments">
+                <li>
+                    <div id="ScaleBarAdornment" class="selected">
+                        <span>Scale Bar Adornment</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="ScaleLineAdornment" class="unselected">
+                        <span>Scale Line Adornment</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="ScaleTextAdornment" class="unselected">
+                        <span>Scale Text Adornment</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="LogoAdornment" class="unselected">
+                        <span>Logo Adornment</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="GraticuleAdornment" class="unselected">
+                        <span>Graticule Adornment</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="MagneticDeclinationAdornment" class="unselected">
+                        <span>Magnetic Declination Adornment</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="LegendAdornment" class="unselected">
+                        <span>Legend Adornment</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="Scripts/jquery-1.11.1.min.js"></script>
+    <script src="Scripts/leaflet.js"></script>
+    <script src="Scripts/thinkgeo.leaflet.js"></script>
+    <script src="Scripts/AdornmentsOverlay.js"></script>
+    <script src="Scripts/thinkgeo.js"></script>
+</body>
+</html>

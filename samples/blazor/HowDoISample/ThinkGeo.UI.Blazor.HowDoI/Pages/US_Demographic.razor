@@ -1,0 +1,197 @@
+﻿@page "/us-demographic"
+@using ThinkGeo.Core
+@inject IJSRuntime JSRuntime
+@inject DemographicMapService DemographicMapService
+
+<div class="map-container" @ref="@mapContainer">
+
+    <MapView Id="map" @ref="@map" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter"
+             Width="100"
+             Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-11037792.463030849, 4953010.053845501))"
+             Zoom="5">
+        <OverlaysSetting>
+            <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="ThinkGeoCloudRasterMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+
+            <LayerOverlay Id="DemographicLayerOverlay" TileHeight="512" TileWidth="512"
+                          Layers="layers" />
+        </OverlaysSetting>
+        <AdornmentOverlaySetting>
+            <AdornmentOverlay Layers="adornmentLayers" />
+        </AdornmentOverlaySetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+
+    <ul id="demographic-categories" class="list-unstyled">
+        @foreach (var item in categories)
+        {
+            <li id="@item.Name" @onclick="@(e => ChangeCategoryAsync(item))" @key="item" class="unselected position-relative @(IsActive(item) ? "selected":"")">
+                <span class="title">@item.Name</span>
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    private MapView map;
+    private List<DemographicCategoryModel> categories;
+    private ElementReference mapContainer;
+    private DemographicCategoryModel currentCategory;
+    private GeoCollection<Layer> layers;
+    private GeoCollection<AdornmentLayer> adornmentLayers;
+
+    protected override void OnInitialized()
+    {
+        categories = DemographicMapService.GetDemographicCategories();
+        currentCategory = categories[0];
+
+        layers = new GeoCollection<Layer>();
+
+        var statesLayer = new ShapeFileFeatureLayer("./Data/usStatesCensus2010.shp");
+        var selectedStyle = new ThematicDemographicStyleBuilder(currentCategory.Legends.Select(l => l.ColumnName));
+        statesLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(selectedStyle.GetStyle(statesLayer.FeatureSource));
+        statesLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+        layers.Add("usStatesLayer", statesLayer);
+
+        adornmentLayers = new GeoCollection<AdornmentLayer>();
+        var legendAdornmentLayer = new LegendAdornmentLayer
+        {
+            Location = AdornmentLocation.LowerLeft,
+            XOffsetInPixel = 10,
+            YOffsetInPixel = -10,
+            Title = new LegendItem
+            {
+                ImageJustificationMode = LegendImageJustificationMode.JustifyImageRight,
+                TopPadding = 10,
+                BottomPadding = 10,
+                TextStyle = new TextStyle("Population", new GeoFont("Segoe UI", 12), new GeoSolidBrush(GeoColors.Black))
+            }
+        };
+
+        adornmentLayers.Add(legendAdornmentLayer);
+        ApplyThematicLegendItems(GetDemographicStyleFromLayer(statesLayer), legendAdornmentLayer);
+        base.OnInitialized();
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            await ChangeCategoryAsync(currentCategory);
+            await map.Overlays[1].RedrawAsync();
+            await map.AdornmentOverlay.RedrawAsync();
+            await JSRuntime.InvokeAsync<object>("hideLoadingBackdrop");
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private static void ApplyThematicLegendItems(ClassBreakStyle thematicStyle, LegendAdornmentLayer legendAdornmentLayer)
+    {
+        legendAdornmentLayer.LegendItems.Clear();
+        for (int i = 0; i < thematicStyle.ClassBreaks.Count; i++)
+        {
+            var legendItem = new LegendItem();
+
+            if (i < thematicStyle.ClassBreaks.Count)
+            {
+                legendItem.ImageStyle = thematicStyle.ClassBreaks[i].DefaultAreaStyle;
+                legendItem.ImageWidth = 20;
+                legendItem.TextRightPadding = 5;
+                legendItem.RightPadding = 10;
+
+                string text = string.Empty;
+                if (i != thematicStyle.ClassBreaks.Count - 1)
+                {
+                    text = string.Format("{0:#,0.####} ~ {1:#,0.####}",
+                        DemographicStyleTextFormatter.GetFormatedStringForLegendItem(thematicStyle.ColumnName, thematicStyle.ClassBreaks[i].Value),
+                        DemographicStyleTextFormatter.GetFormatedStringForLegendItem(thematicStyle.ColumnName, thematicStyle.ClassBreaks[i + 1].Value));
+                }
+                else
+                {
+                    text = string.Format("> {0:#,0.####}",
+                        DemographicStyleTextFormatter.GetFormatedStringForLegendItem(thematicStyle.ColumnName, thematicStyle.ClassBreaks[i].Value));
+                }
+                legendItem.TextStyle = new TextStyle(text, new GeoFont("Segoe UI", 10), new GeoSolidBrush(GeoColors.Black));
+            }
+            legendAdornmentLayer.LegendItems.Add(legendItem);
+        }
+        legendAdornmentLayer.Height = GetLegendHeight(legendAdornmentLayer);
+        legendAdornmentLayer.Width = GetLegendWidth(legendAdornmentLayer);
+    }
+
+    private static float GetLegendWidth(LegendAdornmentLayer legendAdornmentLayer)
+    {
+        using (var bitmap = new GeoImage((int)legendAdornmentLayer.Width, (int)legendAdornmentLayer.Height))
+        {
+            var geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
+            geoCanvas.BeginDrawing(bitmap, MaxExtents.SphericalMercator, GeographyUnit.Meter);
+            LegendItem title = legendAdornmentLayer.Title;
+            float width = geoCanvas.MeasureText(title.TextStyle.TextColumnName, new GeoFont("Segoe UI", 12)).Width
+               + title.ImageWidth + title.ImageRightPadding + title.ImageLeftPadding + title.TextRightPadding + title.TextLeftPadding + title.LeftPadding + title.RightPadding;
+
+            foreach (LegendItem legendItem in legendAdornmentLayer.LegendItems)
+            {
+                float legendItemWidth = geoCanvas.MeasureText(legendItem.TextStyle.TextColumnName, new GeoFont("Segoe UI", 10)).Width
+                    + legendItem.ImageWidth + legendItem.ImageRightPadding + legendItem.ImageLeftPadding + legendItem.TextRightPadding + legendItem.TextLeftPadding + legendItem.LeftPadding + legendItem.RightPadding;
+                if (width < legendItemWidth)
+                {
+                    width = legendItemWidth;
+                }
+            }
+            return width;
+        }
+    }
+
+    private static float GetLegendHeight(LegendAdornmentLayer legendAdornmentLayer)
+    {
+        using (var bitmap = new GeoImage((int)legendAdornmentLayer.Width, (int)legendAdornmentLayer.Height))
+        {
+            var geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
+            geoCanvas.BeginDrawing(bitmap, MaxExtents.SphericalMercator, GeographyUnit.Meter);
+
+            LegendItem title = legendAdornmentLayer.Title;
+            float legendHeight = Math.Max(geoCanvas.MeasureText(title.TextStyle.TextColumnName, new GeoFont("Segoe UI", 12)).Height, title.ImageHeight);
+            legendHeight = Math.Max(legendHeight, title.Height);
+            float height = legendHeight + Math.Max(title.ImageTopPadding, title.TextTopPadding) + title.TopPadding + Math.Max(title.ImageBottomPadding, title.TextBottomPadding) + title.BottomPadding;
+
+            foreach (LegendItem legendItem in legendAdornmentLayer.LegendItems)
+            {
+                float itemLegendHeight = Math.Max(geoCanvas.MeasureText(legendItem.TextStyle.TextColumnName, new GeoFont("Segoe UI", 10)).Height, legendItem.ImageHeight);
+                float itemHeight = itemLegendHeight + Math.Max(legendItem.ImageTopPadding, legendItem.TextTopPadding) + legendItem.TopPadding + Math.Max(legendItem.ImageBottomPadding, legendItem.TextBottomPadding) + legendItem.BottomPadding;
+
+                height += itemHeight;
+            }
+            return height;
+        }
+    }
+
+    private async Task ChangeCategoryAsync(DemographicCategoryModel category)
+    {
+        if (currentCategory == category) return;
+
+        await JSRuntime.InvokeVoidAsync("showLoadingBackdrop", mapContainer);
+
+        currentCategory = category;
+        var selectedStyle = new ThematicDemographicStyleBuilder(currentCategory.Legends.Select(l => l.ColumnName));
+
+        var statesLayer = ((ShapeFileFeatureLayer)layers[0]);
+        statesLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Clear();
+        statesLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(selectedStyle.GetStyle(statesLayer.FeatureSource));
+
+        var legendAdornmentLayer = adornmentLayers[0] as LegendAdornmentLayer;
+        ApplyThematicLegendItems(GetDemographicStyleFromLayer(statesLayer), legendAdornmentLayer);
+    }
+
+    private static ClassBreakStyle GetDemographicStyleFromLayer(FeatureLayer layer)
+    {
+        return layer.ZoomLevelSet.ZoomLevel01.CustomStyles[0] as ClassBreakStyle;
+    }
+
+    private bool IsActive(DemographicCategoryModel category) => currentCategory == category;
+}

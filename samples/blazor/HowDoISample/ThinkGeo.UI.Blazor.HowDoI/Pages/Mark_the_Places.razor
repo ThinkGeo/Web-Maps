@@ -1,0 +1,87 @@
+﻿@page "/mark-the-places"
+@using ThinkGeo.Core
+
+<style>
+    .ol-popup-closer:after {
+        color: #ffe0e0;
+    }
+
+    .ol-popup:after {
+        border-top-color: black;
+        left: 185px;
+    }
+
+    .ol-popup:before {
+        border-top-color: #cccccc;
+        border-width: 11px;
+        margin-left: -11px;
+        left: 185px;
+    }
+
+    .ol-popup {
+        background-color: #040404;
+        color: #ffffff;
+        min-width: 370px;
+        left: -185px;
+    }
+</style>
+
+<div class="map-container">
+    <MapView Id="map" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter"
+             Width="100"
+             Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(1056665.479014, 6066042.564712))"
+             Zoom="5">
+        <OverlaysSetting>
+            <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey"
+                                            MapType="ThinkGeoCloudRasterMapsMapType.Light" />
+        </OverlaysSetting>
+        <MarkerOverlaySetting>
+            <SimpleMarkerOverlay MarkerSource="@markerPlaces">
+                <MarkersSetting>
+                    @{
+                        var ctx = context as MarkerPlaceModel;
+                        <Marker Id="@ctx.Id" Position="@ctx.Position"
+                                Style="@ctx.Style" OnClick="HandleOnMarkerClick" />
+                    }
+
+                </MarkersSetting>
+            </SimpleMarkerOverlay>
+        </MarkerOverlaySetting>
+        <PopupOverlaySetting>
+            <PopupOverlay Id="PopupOverlay">
+                <PopupSetting>
+                    <Popup Id="popup" Position="@(clickedMarker?.Position)" OffsetY="-35" AutoPan="true">
+                        @if (clickedMarker != null)
+                        {
+                            <p><strong>@clickedMarker.Id</strong> @clickedMarker.Description</p>
+                        }
+                    </Popup>
+                </PopupSetting>
+            </PopupOverlay>
+        </PopupOverlaySetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+    <div class="position-absolute bottom-center text-center bg-dark opacity-50 px-5 py-3"><span class="text-white description">Check information by clicking on marker</span></div>
+</div>
+
+@code{
+    MarkerPlaceModel clickedMarker;
+    List<MarkerPlaceModel> markerPlaces;
+
+    protected override void OnInitialized()
+    {
+        markerPlaces = MarkerPlaceModel.GetMarkerPlaces();
+    }
+    void HandleOnMarkerClick(ClickedMarkerEventArgs args)
+    {
+        var marker = args.ClickedMarker;
+        clickedMarker = markerPlaces.First(p => p.Id == marker.Id);
+    }
+}

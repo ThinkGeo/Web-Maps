@@ -1,0 +1,363 @@
+﻿@page "/vehicle-tracking"
+@using ThinkGeo.Core
+@using System.IO
+@using System.Globalization
+
+<div class="map-container vehicle-tracking">
+
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100"
+             Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Zoom="15"
+             Center="@(new PointShape(-10781993.083973099, 3914348.0415160246))"
+             ZoomLevelSet="@(new ThinkGeoCloudMapsZoomLevelSet())">
+        <OverlaysSetting>
+            <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="ThinkGeoCloudRasterMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+
+            <LayerOverlay Id="SpatialFenceOverlay" TileWidth="512" TileHeight="512"
+                          Layers="@spatialFenceLayers"></LayerOverlay>
+        </OverlaysSetting>
+        <EditOverlaySetting>
+            <EditOverlay TrackMode="@trackMode"
+                         OnFeatureClick="RemoveDrwanFeature"></EditOverlay>
+        </EditOverlaySetting>
+        <MarkerOverlaySetting>
+            <InMemoryMarkerOverlay Id="InMemoryMarkerOverlay"
+                                   ZoomLevelSet="@zoomLevelSet"
+                                   FeatureSource="@inMemoryFeatureSource"
+                                   OnClick="@HandleMarkerClick"></InMemoryMarkerOverlay>
+        </MarkerOverlaySetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="@(ZoomBarLocation.LowerRight)" />
+                <MeasureMapTool MeasureType="@measureType" />
+            </MapTools>
+        </MapToolsSetting>
+        <PopupOverlaySetting>
+            <PopupOverlay Id="PopupOverlay" PopupSource="popups">
+                <PopupSetting>
+                    <Popup Position="@popupPosition" OnClose="@(() => popupPosition = null)">
+                        @{
+                            var item = popupItem as Dictionary<string, string>;
+                            if (item != null)
+                            {
+                                <table>
+                                    <tr>
+                                        <td colspan="2">@item["VehicleName"]</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"><hr /></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Longitude:</td>
+                                        <td>@item["Longitude"]</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Latitude:</td>
+                                        <td>@item["Latitude"]</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Speed:</td>
+                                        <td>@item["Speed"] mph</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Time:</td>
+                                        <td>@item["DateTime"]</td>
+                                    </tr>
+                                </table>
+                            }
+                        }
+                    </Popup>
+                </PopupSetting>
+            </PopupOverlay>
+        </PopupOverlaySetting>
+    </MapView>
+
+    <div class="icon-group draw-edit-tool-bar">
+        <RefreshTool OnRefresh="@Refresh" />
+    </div>
+    <div class="vehicle-left-panel">
+        <div class="measure-tool-bar">
+            <MeasureTool OnTrackModeChanged="@(trackMode => this.trackMode = trackMode)"
+                         OnMeasureTypeChanged="@(measureType => this.measureType = measureType)"
+                         OnCancelMeasureAction="CancelMeasureAction"
+                         OnCancelDrawAction="CancelDrawAction"
+                         OnSave="SaveDrawnFeatureAction" />
+        </div>
+
+        <div class="vehicle-list">
+            <VehicleList Vehicles="@vehicles" />
+        </div>
+    </div>
+
+    <div class="vehicle-tracking-bottom-box @(bottomBoxCss)">
+        <button type="button" @onclick="SwithToggleMenu">
+            <span class="fa fa-bars"></span>
+        </button>
+        @if (bottomBoxListStyle == true)
+        {
+            <div class="vehicle-list">
+                <VehicleList Vehicles="@vehicles" />
+            </div>
+        }
+    </div>
+</div>
+@code {
+    bool bottomBoxListStyle = true;
+    string bottomBoxCss = "vehicle-tracking-bottom-box-show";
+    private DateTime adjustedStartTime = new DateTime(2019, 7, 10, 11, 31, 0);
+    private InMemoryFeatureSource inMemoryFeatureSource;
+    private MapView map;
+    private MeasureTool measureTool;
+    private MeasureType measureType;
+    private object popupItem;
+    private PointShape popupPosition;
+    private List<object> popups = new List<object> { new object() };
+    private GeoCollection<Layer> spatialFenceLayers;
+    private DateTime? startTime;
+    private TrackMode trackMode;
+    private List<Vehicle> vehicles;
+    private MarkerZoomLevelSet zoomLevelSet;
+
+    protected override void OnInitialized()
+    {
+        spatialFenceLayers = new GeoCollection<Layer>();
+        spatialFenceLayers.Add("SpatialFenceLayer", GetSpatialFenceLayer());
+        vehicles = GetVehicles();
+        zoomLevelSet = new MarkerZoomLevelSet();
+        zoomLevelSet.ZoomLevel01.CustomMarkerStyle = GetCustomMarkerStyle(vehicles);
+        zoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+        var columns = new List<FeatureSourceColumn>
+{
+            new FeatureSourceColumn("IsCurrentPosition"),
+            new FeatureSourceColumn("Speed"),
+            new FeatureSourceColumn("DateTime"),
+            new FeatureSourceColumn("Longitude"),
+            new FeatureSourceColumn("Latitude"),
+            new FeatureSourceColumn("VehicleName"),
+            new FeatureSourceColumn("Duration")
+        };
+        inMemoryFeatureSource = new InMemoryFeatureSource(columns);
+    }
+
+    protected async void Refresh()
+    {
+        if (map.IsLoaded)
+        {
+            var vehicles = GetVehicles();
+            this.vehicles.Clear();
+            this.vehicles.AddRange(vehicles);
+            UpdateVehiclesFeatures();
+            await map.MarkerOverlay.RedrawAsync();
+        }
+    }
+
+    private static CompositeValueMarkerStyle GetCustomMarkerStyle(IEnumerable<Vehicle> vehicles)
+    {
+        var style = new CompositeValueMarkerStyle("VehicleName");
+        foreach (var vehicle in vehicles)
+        {
+            style.Add(vehicle.VehicleName, GetValueMarkerStyle(vehicle.VehicleIconVirtualPath));
+        }
+
+        return style;
+    }
+
+    private static ValueMarkerStyle GetValueMarkerStyle(string vehicleIconVirtualPath)
+    {
+        ValueMarkerStyle valueStyle = new ValueMarkerStyle("IsCurrentPosition");
+
+        PointMarkerStyle currentPositionStyle = new PointMarkerStyle(vehicleIconVirtualPath);
+        MarkerValueItem currentPositionItem = new MarkerValueItem("IsCurrentPosition", currentPositionStyle);
+        valueStyle.ValueItems.Add(currentPositionItem);
+
+        PointMarkerStyle historyPositionStyle = new PointMarkerStyle("images/trail point.png", -3, -3);
+        MarkerValueItem historyPositionItem = new MarkerValueItem("IsNotCurrentPosition", historyPositionStyle);
+        valueStyle.ValueItems.Add(historyPositionItem);
+
+        return valueStyle;
+    }
+
+    private void CancelDrawAction()
+    {
+        map.EditOverlay.Features.Clear();
+    }
+
+    private void CancelMeasureAction()
+    {
+        map.MapTools.MeasureMapTool.MeasuredFeatures.Clear();
+    }
+
+    private bool CheckIsInSpatialFence(Vehicle vehicle)
+    {
+        LayerOverlay spatialFenceOverlay = (LayerOverlay)map.Overlays.First(p => p.Id == "SpatialFenceOverlay");
+        InMemoryFeatureLayer spatialFenceLayer = (InMemoryFeatureLayer)spatialFenceOverlay.Layers[0];
+
+        // Get the point shape and then check if it is within any of the sptail fences using the QueryTools
+        PointShape pointShape = new PointShape(vehicle.Location.Longitude, vehicle.Location.Latitude);
+        spatialFenceLayer.Open();
+        var spatialFencesWithin = spatialFenceLayer.QueryTools.GetFeaturesContaining(pointShape, ReturningColumnsType.NoColumns);
+        spatialFenceLayer.Close();
+
+        bool isInFence = false;
+        if (spatialFencesWithin.Count > 0)
+        {
+            isInFence = true;
+        }
+
+        return isInFence;
+    }
+
+    private DateTime GetAdjustedCurrentDateTime()
+    {
+        DateTime currentSampleTime;
+        if (!startTime.HasValue)
+        {
+            startTime = DateTime.Now;
+            currentSampleTime = adjustedStartTime;
+        }
+        else
+        {
+            double sampleSecondPerActualSecond = 12;
+            double realSpentTime = TimeSpan.FromTicks(DateTime.Now.Ticks - startTime.Value.Ticks).TotalSeconds;
+            int sampleSpentTime = (int)(realSpentTime * sampleSecondPerActualSecond);
+            currentSampleTime = adjustedStartTime.AddSeconds(sampleSpentTime);
+        }
+
+        return currentSampleTime;
+    }
+
+    private Layer GetSpatialFenceLayer()
+    {
+        InMemoryFeatureLayer spatialFenceLayer = new InMemoryFeatureLayer() { Name = "SpatialFenceLayer" };
+        spatialFenceLayer.Open();
+        spatialFenceLayer.Columns.Add(new FeatureSourceColumn("Restricted", "Charater", 10));
+        spatialFenceLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoPen(GeoColor.FromArgb(255, 204, 204, 204), 2), new GeoSolidBrush(GeoColor.FromArgb(112, 255, 0, 0)));
+        spatialFenceLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = new TextStyle("Restricted", new GeoFont("Arial", 12, DrawingFontStyles.Regular), new GeoSolidBrush(GeoColors.Black));
+        spatialFenceLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle.OverlappingRule = LabelOverlappingRule.AllowOverlapping;
+        spatialFenceLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+        // Get the spatial fences from the database and insert fences from database into fence layer
+        List<Feature> spatialFences = GetSpatialFences();
+        foreach (Feature spatialFence in spatialFences)
+        {
+            spatialFence.ColumnValues["Restricted"] = "Restricted";
+            spatialFenceLayer.InternalFeatures.Add(spatialFence);
+        }
+
+        return spatialFenceLayer;
+    }
+
+    private List<Feature> GetSpatialFences()
+    {
+        // Get the spatial fences from the database
+        var vehicleProvider = new TrackingAccessProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "appdata"));
+        var spatialFences = vehicleProvider.GetSpatialFences();
+
+        return spatialFences;
+    }
+
+    private List<Vehicle> GetVehicles()
+    {
+        // Read vehicles from database
+        DateTime currentTime = GetAdjustedCurrentDateTime();
+        List<Vehicle> vehicles = GetVehicles(currentTime);
+
+        return vehicles;
+    }
+
+    private List<Vehicle> GetVehicles(DateTime currentTime)
+    {
+        var vehicleProvider = new TrackingAccessProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "appdata"));
+        var vehicles = vehicleProvider.GetCurrentVehicles(currentTime);
+
+        return vehicles;
+    }
+
+    private void HandleMarkerClick(ClickedMarkerOverlayEventArgs e)
+    {
+        var clickedMarker = e.ClickedMarker;
+        inMemoryFeatureSource.Open();
+        var feature = inMemoryFeatureSource.GetFeatureById(clickedMarker.Id, ReturningColumnsType.AllColumns);
+        inMemoryFeatureSource.Close();
+        popupItem = feature.ColumnValues;
+        var position = new PointShape(e.ClickedMarker.Position.X, e.ClickedMarker.Position.Y);
+        popupPosition = position;
+    }
+
+    private void RemoveDrwanFeature(FeatureClickedEditOverlayEventArgs e)
+    {
+        if (trackMode == TrackMode.None)
+            map.EditOverlay.Features.Remove(e.ClickedFeature);
+    }
+
+    private void SaveDrawnFeatureAction()
+    {
+        // Get the spatial fences from the database
+        var vehicleProvider = new TrackingAccessProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "appdata"));
+
+        foreach (var item in map.EditOverlay.Features)
+        {
+            vehicleProvider.InsertSpatialFence(item);
+        }
+
+        var spatialFenceOverlay = map.Overlays["SpatialFenceOverlay"] as LayerOverlay;
+
+        var spatialFenceLayer = spatialFenceOverlay.Layers["SpatialFenceLayer"] as InMemoryFeatureLayer;
+        spatialFenceLayer.InternalFeatures.Clear();
+
+        List<Feature> spatialFences = GetSpatialFences();
+        foreach (Feature spatialFence in spatialFences)
+        {
+            spatialFence.ColumnValues["Restricted"] = "Restricted";
+            spatialFenceLayer.InternalFeatures.Add(spatialFence);
+        }
+        spatialFenceOverlay.RedrawAsync();
+        map.EditOverlay.Features.Clear();
+    }
+
+    private void UpdateVehiclesFeatures()
+    {
+        inMemoryFeatureSource.InternalFeatures.Clear();
+
+        foreach (var currentVehicle in vehicles)
+        {
+            currentVehicle.IsInFence = CheckIsInSpatialFence(currentVehicle);
+
+            // Add the vheicle's location histories
+            foreach (Location historyLocation in currentVehicle.HistoryLocations.Take(5))
+            {
+                Feature breadcrumbFeature = new Feature(historyLocation.GetLocationPointShape().GetWellKnownBinary(), currentVehicle.VehicleName + historyLocation.DateTime.ToString());
+                breadcrumbFeature.ColumnValues["DateTime"] = historyLocation.DateTime.ToString();
+                breadcrumbFeature.ColumnValues["IsCurrentPosition"] = "IsNotCurrentPosition";
+                breadcrumbFeature.ColumnValues["Speed"] = historyLocation.Speed.ToString(CultureInfo.InvariantCulture);
+
+                breadcrumbFeature.ColumnValues["Longitude"] = historyLocation.Longitude.ToString("N6", CultureInfo.InvariantCulture);
+                breadcrumbFeature.ColumnValues["Latitude"] = historyLocation.Latitude.ToString("N6", CultureInfo.InvariantCulture);
+                breadcrumbFeature.ColumnValues["VehicleName"] = currentVehicle.VehicleName;
+                breadcrumbFeature.ColumnValues["Duration"] = currentVehicle.SpeedDuration.ToString(CultureInfo.InvariantCulture);
+                inMemoryFeatureSource.InternalFeatures.Add(breadcrumbFeature.Id, breadcrumbFeature);
+            }
+
+            // Add the vehicle's latest position
+            Feature latestPositionFeature = new Feature(currentVehicle.Location.GetLocationPointShape().GetWellKnownBinary(), currentVehicle.VehicleName);
+            latestPositionFeature.ColumnValues["DateTime"] = currentVehicle.Location.DateTime.ToString();
+            latestPositionFeature.ColumnValues["IsCurrentPosition"] = "IsCurrentPosition";
+            latestPositionFeature.ColumnValues["Speed"] = currentVehicle.Location.Speed.ToString(CultureInfo.InvariantCulture);
+
+            latestPositionFeature.ColumnValues["Longitude"] = currentVehicle.Location.Longitude.ToString("N6", CultureInfo.InvariantCulture);
+            latestPositionFeature.ColumnValues["Latitude"] = currentVehicle.Location.Latitude.ToString("N6", CultureInfo.InvariantCulture);
+            latestPositionFeature.ColumnValues["VehicleName"] = currentVehicle.VehicleName;
+            latestPositionFeature.ColumnValues["Duration"] = currentVehicle.SpeedDuration.ToString(CultureInfo.InvariantCulture);
+            inMemoryFeatureSource.InternalFeatures.Add(latestPositionFeature.Id, latestPositionFeature);
+        }
+    }
+
+    void SwithToggleMenu()
+    {
+        bottomBoxCss = string.IsNullOrEmpty(bottomBoxCss) ? "vehicle-tracking-bottom-box-show" : string.Empty;
+        bottomBoxListStyle = string.IsNullOrEmpty(bottomBoxCss) ? false : true;
+    }
+}

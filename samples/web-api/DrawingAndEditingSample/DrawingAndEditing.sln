@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2042
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrawingAndEditing_Leaflet", "Leaflet\DrawingAndEditing_Leaflet.csproj", "{69429537-0ED2-4263-A66E-0456F17CC7B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrawingAndEditing_Openlayers", "OpenLayers\DrawingAndEditing_Openlayers.csproj", "{60531091-7CB7-4FDE-AA5E-FEF9EE15A424}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{69429537-0ED2-4263-A66E-0456F17CC7B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69429537-0ED2-4263-A66E-0456F17CC7B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69429537-0ED2-4263-A66E-0456F17CC7B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69429537-0ED2-4263-A66E-0456F17CC7B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60531091-7CB7-4FDE-AA5E-FEF9EE15A424}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60531091-7CB7-4FDE-AA5E-FEF9EE15A424}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60531091-7CB7-4FDE-AA5E-FEF9EE15A424}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60531091-7CB7-4FDE-AA5E-FEF9EE15A424}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

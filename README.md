@@ -42,55 +42,69 @@ dotnet add package ThinkGeo.UI.WebApi
 dotnet add package ThinkGeo.UI.Blazor
 ```
 
+#### ASP.NET Core Web - API Project ####
+
 ### Step 3: Create "MapServiceController" by selecting "API Controller - Empty" tempate in `Controller` directory ###
 
-Add the new namespace to the `MainWindow.xaml` exisiting XAML namespaces.
-
-```xml
-xmlns:uc1="clr-namespace:ThinkGeo.UI.Wpf;assembly=ThinkGeo.UI.Wpf"
-```
-
-Add the control to `MainWindow.xaml` file inside the Grid element.
-
-```xml
-<uc1:MapView x:Name="mapView" Loaded="mapView_Loaded"></uc1:MapView>
-```
-
-### Step 4: Add Namespaces and the MapViewLoaded Event to `MainWindow.xaml.cs` ###
-
-Add the required usings.
+Add the required usings in `MapServiceController.cs`.
 
 ```csharp
 using ThinkGeo.Core;
-using ThinkGeo.UI.Wpf;
+using ThinkGeo.UI.WebApi;
 ```
 
-Setup the `mapView_Loaded` event which will run when the map control is finsihed being loaded.
+Add an empty action method "GetTile" to serve the map tile images, following z/x/y tile system describling the earth in [Mercator projection](https://en.wikipedia.org/wiki/Mercator_projection)):
 
 ```csharp
-private void mapView_Loaded(object sender, RoutedEventArgs e)
+[Route("tile/{z}/{x}/{y}")]
+[HttpGet]
+public HttpResponseMessage GetTile(int z, int x, int y)
 {
-    // Set the Map Unit.
-    mapView.MapUnit = GeographyUnit.Meter;
+    
 }
 ```
 
-### Step 5: Add the Background World Overlay ###
+### Step 4: Prepare spatial data required. ###
 
-Add the code below to the `mapView_Loaded` event of the `MainWindow.xaml.cs`.
+Download the required spatial data from [GitLab](/samples/Data) and put it into "Data" directory locating at the root project. 
+
+### Step 5: Create the Background World Overlay ###
+
+Add the code below to the `GetTile` action method in  `MapServiceController.cs`.
 
 ```csharp
-  // Set the Map Unit.
-  mapView.MapUnit = GeographyUnit.Meter;
+ LayerOverlay layerOverlay = new LayerOverlay();
+ ThinkGeoCloudVectorMapsLayer worldstreetsLayer = new ThinkGeoCloudVectorMapsLayer("R4RaogtPoU3aTomla-2EErvZT9OOEJBRI5OrRGeHUyk~", "sdC-p_eh9i1Q95j9LCTxHn9jldT57YVsvHJLvCmI8WAtDxd8Yn1CBg~~", ThinkGeoCloudVectorMapsMapType.Light);
+ layerOverlay.Layers.Add(worldstreetsLayer);
 
-  // Add a base map overlay.
-  var cloudVectorBaseMapOverlay = new ThinkGeoCloudVectorMapsOverlay("USlbIyO5uIMja2y0qoM21RRM6NBXUad4hjK3NBD6pD0~", "f6OJsvCDDzmccnevX55nL7nXpPDXXKANe5cN6czVjCH0s8jhpCH-2A~~", ThinkGeoCloudVectorMapsMapType.Light);
-  mapView.Overlays.Add(cloudVectorBaseMapOverlay);
+ // Set the tile width and height as 256 pixel. A customized TileMatrix is required for other values. 
+ var tileWidth = 256;
+ var tileHeight = 256;
 
-  mapView.CurrentExtent = new RectangleShape(-20000000, 20000000, 20000000, -20000000);
+ // Set the Map Unit.
+ var tileMapUnit = GeographyUnit.Meter;
+
+ // Draw the LayerOverlay to the image and serve the clients as "image/png".
+ using (GeoImage bitmap = new GeoImage(tileWidth, tileHeight))
+ {
+     GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
+     RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, tileMapUnit);
+     geoCanvas.BeginDrawing(bitmap, boundingBox, tileMapUnit);
+     layerOverlay.Draw(geoCanvas);
+     geoCanvas.EndDrawing();
+     MemoryStream ms = new MemoryStream();
+     bitmap.Save(ms, GeoImageFormat.Png);
+     HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+     response.Content = new ByteArrayContent(ms.ToArray());
+     response.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+     return response;
+ }
 ```
 
-### Step 5: Run the Sample & Register for Your Free Evaluation ###
+#### Blazor App Project ####
+
+
+### Step 6: Run the Sample & Register for Your Free Evaluation ###
 
 The first time you run your application, you will be presented with ThinkGeo's Product Center which will create and manage your licenses for all of ThinkGeo's products. Create a new account to begin a 60-day free evaluation. 
 

@@ -1,5 +1,17 @@
 # Web Maps
 
+## Repository Layout
+
+`/api-docs`: An offline version the API documentation HTML pages.
+
+`/hero-app`: A real world application that shows off many of this products features along with best practices.
+
+`/samples`: A collection of feature by feature samples.  We suggest you start with the [How Do I Sample](samples/web-api) as it shows dozens of features in one easy to navigate app. 
+
+`/.assets`: Any assets needed for the readme.md.
+
+`README.md`: A quick start guide to show you how to quickly get up and running. 
+
 ## Introduction
 
   Welcome, we're glad you're here!  If you're new to ThinkGeo's Web Maps we suggest that you start by taking a quick look below.  This will introduce you to getting a nice looking map up and running with some external data and styling.  After reviewing this we strongly reccomend that you open the [How Do I Sample](samples).  It's packed with dozens of examples covering nearly everything you can do with the control.
@@ -18,6 +30,8 @@
 ## Display a Simple Map
 
 We will begin by creating a **ASP.NET Core Web - API** project as the service and a *Blazor App* as the client to consuming the service in your favorite editor.  Next we will walk you through adding the required packages and getting a map on the default form.  Next we will add some code to show a nice looking background map and finally add some custom which will be styled and labeled.  After reading this you will be in a good position to look over the [How Do I Sample](samples) and explore our other features.
+
+![alt text](.assets/quickstart_webmaps_shapefile_pointstyle_screenshot.png "Simple Map")
 
  Intro: what you'll be doing, and priming them on Product Center
 

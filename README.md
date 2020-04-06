@@ -95,7 +95,7 @@ public string GetCapitalData()
 
 ### Step 4: Prepare spatial data required. ###
 
-Download the required spatial data from [GitLab](/samples/Data) and put it into "Data" directory locating at the root project. 
+Download the required spatial data from [GitLab](/samples/data) and put it into "Data" directory locating at the root project. 
 
 
 #### Blazor App Project ####

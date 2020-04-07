@@ -12,22 +12,7 @@
 
 `README.md`: A quick start guide to show you how to quickly get up and running.
 
-## Introduction
-
-Welcome, we're glad you're here!  If you're new to ThinkGeo's Web Maps we suggest that you start by taking a quick look below.  This will introduce you to getting a nice looking map up and running with some external data and styling.  After reviewing this we strongly recommend that you open the [How Do I Sample](samples).  It's packed with dozens of examples covering nearly everything you can do with the control.
-
-### Recap
-
-1. Take a quick look at the code below.
-2. Open the [How Do I Sample](samples) and explore all our features.
-
-## Samples
-
-  We have a number of samples and the are
-
-[check out HowDoI samples](samples)
-
-## Display a Simple Map
+## Quick Start: Display a Simple Map
 
 We will begin by creating an **ASP.NET Core Web - API** project as the service and a **Blazor App** as the client to consuming the service in your favorite editor.  Next, we will walk you through adding the required packages and getting a map on the default form.  Then, we will add some code to show a nice looking background map, and finally, add some custom data to the map and style it.  After reading this, you will be in a good position to look over the [How Do I Sample](samples) and explore our other features.
 

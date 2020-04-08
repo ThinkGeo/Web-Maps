@@ -40,7 +40,7 @@ map.addControl(imgControls);
 // Add ThinkGeoCloudMap as the map's background layer.
 var thinkGeoCloudMapsLayer = new ol.layer.Tile({
     source: new ol.source.XYZ({
-        url: 'https://cloud{1-6}.thinkgeo.com/api/v1/maps/raster/light/x1/3857/512/{z}/{x}/{y}.png?apikey=ThinkGeo Cloud API Key',
+        url: 'https://cloud{1-6}.thinkgeo.com/api/v1/maps/raster/light/x1/3857/512/{z}/{x}/{y}.png?apikey=PIbGd76RyHKod99KptWTeb-Jg9JUPEPUBFD3SZJYLDE~',
         maxZoom: 19,
         tileSize: 512,
         params:

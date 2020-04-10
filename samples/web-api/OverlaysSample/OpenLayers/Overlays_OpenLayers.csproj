@@ -43,10 +43,4 @@
     <None Include="wwwroot\Scripts\thinkgeo.js" />
     <None Include="wwwroot\Scripts\thinkgeo.openlayers.js" />
   </ItemGroup>
-
- 
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
 </Project>

@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Leaflet\Controllers\OverlayController.cs" Link="Controllers\OverlayController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="ThinkGeo.UI.WebApi" Version="12.2.4" />
   </ItemGroup>
@@ -38,6 +42,11 @@
     <None Include="wwwroot\Scripts\ol.js" />
     <None Include="wwwroot\Scripts\thinkgeo.js" />
     <None Include="wwwroot\Scripts\thinkgeo.openlayers.js" />
+  </ItemGroup>
+
+ 
+  <ItemGroup>
+    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>

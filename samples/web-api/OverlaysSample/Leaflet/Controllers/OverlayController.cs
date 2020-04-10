@@ -16,10 +16,12 @@ namespace ThinkGeo.MapSuite.Overlays
     [Route("Overlays")]
     public class OverlayController : ControllerBase
     {
-        private static Collection<Layer> customLayers;
+        private static Collection<Layer> customLayers = null;
+        private static string baseDirectory = null;
 
         static OverlayController()
         {
+            baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
             InitializeCustomLayers();
         }
 
@@ -78,7 +80,7 @@ namespace ThinkGeo.MapSuite.Overlays
                 geoCanvas.EndDrawing();
 
                 byte[] imageBytes = image.GetImageBytes(GeoImageFormat.Png);
-                  
+
                 return File(imageBytes, "image/png");
             }
         }
@@ -89,12 +91,10 @@ namespace ThinkGeo.MapSuite.Overlays
         private static void InitializeCustomLayers()
         {
             customLayers = new Collection<Layer>();
-            string shpFilePathName = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "AppData\\POIs", "Schools.shp");
-            string schoolImage = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "AppData\\Images", "School.png");
-            ShapeFileFeatureLayer schoolsLayer = new ShapeFileFeatureLayer(shpFilePathName);
+            ShapeFileFeatureLayer schoolsLayer = new ShapeFileFeatureLayer($@"{baseDirectory}\AppData\POIs\Schools.shp");
             schoolsLayer.Name = "schoolLayer";
             schoolsLayer.Transparency = 200f;
-            schoolsLayer.ZoomLevelSet.ZoomLevel10.DefaultPointStyle = new PointStyle(new GeoImage(schoolImage));
+            schoolsLayer.ZoomLevelSet.ZoomLevel10.DefaultPointStyle = new PointStyle(new GeoImage($@"{baseDirectory}\AppData\Images\School.png"));
             schoolsLayer.ZoomLevelSet.ZoomLevel10.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
             schoolsLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(4326, 3857);
             customLayers.Add(schoolsLayer);

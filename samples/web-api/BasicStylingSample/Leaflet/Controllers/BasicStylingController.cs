@@ -1,28 +1,20 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Web.Http;
-using ThinkGeo.MapSuite;
-using ThinkGeo.MapSuite.Drawing;
-using ThinkGeo.MapSuite.Shapes;
-using ThinkGeo.MapSuite.WebApi;
+using ThinkGeo.Core;
+using ThinkGeo.UI.WebApi;
 
 namespace BasicStyling.Controllers
 {
-    [RoutePrefix("BasicStyling")]
-    public class BasicStylingController : ApiController
+    [Route("BasicStyling")]
+    public class BasicStylingController : ControllerBase
     {
         static BasicStylingController()
         { }
 
         [Route("{styleId}/{z}/{x}/{y}/{accessId}")]
         [HttpGet]
-        public HttpResponseMessage GetDynamicLayerTile(string styleId, int z, int x, int y, string accessId)
+        public IActionResult GetDynamicLayerTile(string styleId, int z, int x, int y, string accessId)
         {
             // Create the LayerOverlay for displaying the map with different styles.
             LayerOverlay layerOverlay = GetStyleOverlay(styleId, accessId);
@@ -127,24 +119,19 @@ namespace BasicStyling.Controllers
         /// <summary>
         /// Draw the map and return the image back to client in an HttpResponseMessage.
         /// </summary>
-        private HttpResponseMessage DrawTileImage(LayerOverlay layerOverlay, int z, int x, int y)
+        private IActionResult DrawTileImage(LayerOverlay layerOverlay, int z, int x, int y)
         {
-            using (Bitmap bitmap = new Bitmap(256, 256))
+            using (GeoImage image = new GeoImage(256, 256))
             {
-                PlatformGeoCanvas geoCanvas = new PlatformGeoCanvas();
+                GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
                 RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
-                geoCanvas.BeginDrawing(bitmap, boundingBox, GeographyUnit.Meter);
+                geoCanvas.BeginDrawing(image, boundingBox, GeographyUnit.Meter);
                 layerOverlay.Draw(geoCanvas);
                 geoCanvas.EndDrawing();
 
-                MemoryStream ms = new MemoryStream();
-                bitmap.Save(ms, ImageFormat.Png);
+                byte[] imageBytes = image.GetImageBytes(GeoImageFormat.Png);
 
-                HttpResponseMessage msg = new HttpResponseMessage(HttpStatusCode.OK);
-                msg.Content = new ByteArrayContent(ms.ToArray());
-                msg.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-
-                return msg;
+                return File(imageBytes, "image/png");
             }
         }
     }

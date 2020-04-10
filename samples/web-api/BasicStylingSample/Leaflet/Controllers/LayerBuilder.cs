@@ -3,15 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using ThinkGeo.MapSuite.Drawing;
-using ThinkGeo.MapSuite.Layers;
-using ThinkGeo.MapSuite.Styles;
+using ThinkGeo.Core;
 
 namespace BasicStyling.Controllers
 {
     public static class LayerBuilder
     {
-        private static readonly string baseDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Data");
+        private static readonly string baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "App_Data");
 
         /// <summary>
         /// Gets area style options by style id and access id.
@@ -26,7 +24,7 @@ namespace BasicStyling.Controllers
 
             // Get the option values of the area style.
             Dictionary<string, object> styles = new Dictionary<string, object>();
-            GeoColor fillSolidBrushColor = featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillSolidBrush.Color;
+            GeoColor fillSolidBrushColor = (featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillBrush as GeoSolidBrush).Color;
             styles["FillSolidBrushColor"] = GeoColor.ToHtml(fillSolidBrushColor);
             styles["FillSolidBrushAalpha"] = fillSolidBrushColor.AlphaComponent;
             GeoColor outlinePenColor = featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color;
@@ -84,12 +82,14 @@ namespace BasicStyling.Controllers
             styles["SymbolPointSize"] = targetPointStyle.SymbolSize;
             styles["symbolPointRotationAngle"] = targetPointStyle.RotationAngle;
 
-            GeoPen symbolPen = targetPointStyle.SymbolPen;
+            //GeoPen symbolPen = targetPointStyle.SymbolPen;
+            GeoPen symbolPen = targetPointStyle.OutlinePen;
             styles["SymbolPenColor"] = GeoColor.ToHtml(symbolPen.Color);
             styles["SymbolPointPenAlpha"] = symbolPen.Color.AlphaComponent;
             styles["SymbolPointPenWidth"] = symbolPen.Width;
 
-            GeoColor symbolSolidBrushColor = targetPointStyle.SymbolSolidBrush.Color;
+            //GeoColor symbolSolidBrushColor = targetPointStyle.SymbolSolidBrush.Color;
+            GeoColor symbolSolidBrushColor = (targetPointStyle.FillBrush as GeoSolidBrush).Color;
             styles["SymbolSolidBrushColor"] = GeoColor.ToHtml(symbolSolidBrushColor);
             styles["SymbolSolidBrushAlpha"] = symbolSolidBrushColor.AlphaComponent;
             return styles;
@@ -119,32 +119,40 @@ namespace BasicStyling.Controllers
         internal static Collection<Layer> GetPredefinedStyleLayers()
         {
             Collection<Layer> layers = new Collection<Layer>();
-            BackgroundLayer backgroundLayer = new BackgroundLayer(WorldStreetsAreaStyles.Water().FillSolidBrush);
+            BackgroundLayer backgroundLayer = new BackgroundLayer(new GeoSolidBrush(new GeoColor(255, 160, 207, 235)));
             layers.Add(backgroundLayer);
 
             ShapeFileFeatureLayer countriesLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "Countries.shp"));
-            countriesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = WorldStreetsAreaStyles.BaseLand();
-            countriesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen = new GeoPen(GeoColors.Gray);
+            countriesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoPen(GeoColors.Gray), new GeoSolidBrush(new GeoColor(255, 250, 247, 243)));
             countriesLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
             layers.Add(countriesLayer);
 
             ShapeFileFeatureLayer lakeLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "lake.shp"));
-            lakeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = WorldStreetsAreaStyles.Water();
+            lakeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoPen(GeoColors.Transparent, 0), new GeoSolidBrush(new GeoColor(255, 160, 207, 235)));
             lakeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
             layers.Add(lakeLayer);
 
             ShapeFileFeatureLayer usStatesLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "USStates.shp"));
-            usStatesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = WorldStreetsAreaStyles.BaseLand();
+            usStatesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoPen(GeoColors.Transparent), new GeoSolidBrush(new GeoColor(255, 250, 247, 243)));
             usStatesLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
             layers.Add(usStatesLayer);
 
             ShapeFileFeatureLayer highwayNetworkShapeLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "USHighwayNetwork.shp"));
-            highwayNetworkShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = WorldStreetsLineStyles.Highway(1);
+            highwayNetworkShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = new LineStyle(new GeoPen(new GeoColor(255, 255, 222, 190), 1) { StartCap = DrawingLineCap.Round, EndCap = DrawingLineCap.Round });
             highwayNetworkShapeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
             layers.Add(highwayNetworkShapeLayer);
 
             ShapeFileFeatureLayer majorCitiesLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "USMajorCities.shp"));
-            majorCitiesLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = WorldStreetsTextStyles.Poi("AREANAME", 7, 7);
+            majorCitiesLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = new TextStyle("AREANAME", new GeoFont("Verdana", 7), new GeoSolidBrush(new GeoColor(255, 102, 102, 102)))
+            {
+                HaloPen = new GeoPen(new GeoColor(200, 255, 255, 255), 3),
+                DuplicateRule = LabelDuplicateRule.UnlimitedDuplicateLabels,
+                ForceLineCarriage = true,
+                OverlappingRule = LabelOverlappingRule.NoOverlapping,
+                GridSize = 0,
+                TextPlacement = TextPlacement.Lower,
+                YOffsetInPixel = 7
+            };
             majorCitiesLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
             layers.Add(majorCitiesLayer);
 
@@ -160,11 +168,12 @@ namespace BasicStyling.Controllers
         internal static Layer GetAreaStyleLayer(string styleId, string accessId)
         {
             ShapeFileFeatureLayer areaShapeLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "ThinkGeoArea.shp"));
-            AreaStyle areaStyle = new AreaStyle();
-            areaStyle.FillSolidBrush = new GeoSolidBrush(new GeoColor(200, GeoColor.SimpleColors.LightOrange));
-            areaStyle.OutlinePen = new GeoPen(new GeoSolidBrush(new GeoColor(200, GeoColor.SimpleColors.LightBlue)), 2);
-            areaShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = areaStyle;
             areaShapeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+            areaShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle()
+            {
+                FillBrush = new GeoSolidBrush(new GeoColor(200, GeoColors.LightOrange)),
+                OutlinePen = new GeoPen(new GeoSolidBrush(new GeoColor(200, GeoColors.LightBlue)), 2)
+            };
 
             // Refresh styles if the user has saved styles.
             Dictionary<string, string> savedStyle = GetSavedStyleByAccessId(styleId, accessId);
@@ -182,12 +191,14 @@ namespace BasicStyling.Controllers
         internal static Layer GetLineStyleLayer(string styleId, string accessId)
         {
             ShapeFileFeatureLayer lineShapeLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "MajorRoadsInFrisco.shp"));
-            LineStyle lineStyle = new LineStyle();
-            lineStyle.CenterPen = new GeoPen(new GeoColor(255, GeoColor.SimpleColors.PastelGreen), 2);
-            lineStyle.InnerPen = new GeoPen(new GeoColor(255, GeoColors.Black), 5);
-            lineStyle.OuterPen = new GeoPen(new GeoColor(255, GeoColors.YellowGreen), 10);
-            lineShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = lineStyle;
             lineShapeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+            lineShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = new LineStyle()
+            {
+                CenterPen = new GeoPen(new GeoColor(255, GeoColors.PastelGreen), 2),
+                InnerPen = new GeoPen(new GeoColor(255, GeoColors.Black), 5),
+                OuterPen = new GeoPen(new GeoColor(255, GeoColors.YellowGreen), 10)
+            };
+
 
             // Refresh styles if the user has saved styles.
             Dictionary<string, string> savedStyle = GetSavedStyleByAccessId(styleId, accessId);
@@ -203,13 +214,15 @@ namespace BasicStyling.Controllers
         internal static Layer GeImagePointStyleLayer()
         {
             ShapeFileFeatureLayer ImagePointStyleLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "HighSchoolInFrisco.shp"));
-            PointStyle pointOfHighSchoolStyle = new PointStyle();
-            pointOfHighSchoolStyle.Image = new GeoImage(Path.Combine(baseDirectory, "school.png"));
-            pointOfHighSchoolStyle.PointType = PointType.Bitmap;
-            pointOfHighSchoolStyle.RotationAngle = 0;
-
-            ImagePointStyleLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = pointOfHighSchoolStyle;
             ImagePointStyleLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+            ImagePointStyleLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = new PointStyle()
+            {
+                Image = new GeoImage(Path.Combine(baseDirectory, "school.png")),
+                PointType = PointType.Image,
+                RotationAngle = 0
+            };
+
 
             return ImagePointStyleLayer;
         }
@@ -223,9 +236,9 @@ namespace BasicStyling.Controllers
         internal static Layer GetSymbolPointLayer(string styleId, string accessId)
         {
             ShapeFileFeatureLayer symblePointLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "ThinkGeoLocation.shp"));
-            var colors = GeoColor.GetColorsInHueFamily(GeoColor.SimpleColors.Red, 10);
+            var colors = GeoColor.GetColorsInHueFamily(GeoColors.Red, 10);
 
-            symblePointLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = PointStyles.CreateSimplePointStyle(PointSymbolType.Triangle, colors[1], GeoColor.SimpleColors.Blue, 1, 20);
+            symblePointLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = PointStyle.CreateSimplePointStyle(PointSymbolType.Triangle, colors[1], GeoColors.Blue, 1, 20);
             symblePointLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
 
             // Refresh styles if the user has saved styles.
@@ -242,17 +255,15 @@ namespace BasicStyling.Controllers
         internal static Layer GetCharacterPointLayer()
         {
             ShapeFileFeatureLayer characterPointLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "HospitalInFrisco.shp"));
-
-            PointStyle hospitalPointStyle = new PointStyle();
-            hospitalPointStyle.PointType = PointType.Character;
-            hospitalPointStyle.RotationAngle = 0;
-            hospitalPointStyle.CharacterIndex = 72;
-            GeoFont geoFont = new GeoFont("Arial", 20, DrawingFontStyles.Bold);
-            hospitalPointStyle.CharacterFont = geoFont;
-            hospitalPointStyle.CharacterSolidBrush = new GeoSolidBrush(GeoColors.Blue);
-
-            characterPointLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = hospitalPointStyle;
             characterPointLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+            characterPointLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = new PointStyle()
+            {
+                PointType = PointType.Glyph,
+                RotationAngle = 0,
+                GlyphContent = GeoFont.GetGlyphContent(72),
+                GlyphFont = new GeoFont("Arial", 20, DrawingFontStyles.Bold),
+                FillBrush = new GeoSolidBrush(GeoColors.Blue)
+            };
 
             return characterPointLayer;
         }
@@ -268,76 +279,106 @@ namespace BasicStyling.Controllers
             ShapeFileFeatureLayer ZoomLevelAreaShapeLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "ThinkGeoArea.shp"));
 
             // Initialization four area styles  for different zoomlevel.
-            AreaStyle ZoomLevelAreaStyleFrom01To16 = new AreaStyle();
-            ZoomLevelAreaStyleFrom01To16.FillSolidBrush = new GeoSolidBrush(new GeoColor(100, GeoColor.SimpleColors.BrightOrange));
-            ZoomLevelAreaStyleFrom01To16.OutlinePen = new GeoPen(new GeoColor(255, GeoColor.SimpleColors.Black));
-            ZoomLevelAreaShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = ZoomLevelAreaStyleFrom01To16;
             ZoomLevelAreaShapeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level16;
+            ZoomLevelAreaShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle()
+            {
+                FillBrush = new GeoSolidBrush(new GeoColor(100, GeoColors.BrightOrange)),
+                OutlinePen = new GeoPen(new GeoColor(255, GeoColors.Black))
+            };
 
-            AreaStyle ZoomLevelAreaStyle17 = new AreaStyle();
-            ZoomLevelAreaStyle17.FillSolidBrush = new GeoSolidBrush(new GeoColor(100, GeoColor.SimpleColors.Blue));
-            ZoomLevelAreaStyle17.OutlinePen = new GeoPen(new GeoColor(255, 0, 0, 0));
-            ZoomLevelAreaShapeLayer.ZoomLevelSet.ZoomLevel17.DefaultAreaStyle = ZoomLevelAreaStyle17;
+            // ZoomLevel 17 Style
+            ZoomLevelAreaShapeLayer.ZoomLevelSet.ZoomLevel17.DefaultAreaStyle = new AreaStyle()
+            {
+                FillBrush = new GeoSolidBrush(new GeoColor(100, GeoColors.Blue)),
+                OutlinePen = new GeoPen(new GeoColor(255, 0, 0, 0))
+            };
 
-            AreaStyle ZoomLevelAreaStyle18 = new AreaStyle();
-            ZoomLevelAreaStyle18.FillSolidBrush = new GeoSolidBrush(new GeoColor(100, GeoColor.SimpleColors.Red));
-            ZoomLevelAreaStyle18.OutlinePen = new GeoPen(new GeoColor(255, 0, 0, 0));
-            ZoomLevelAreaShapeLayer.ZoomLevelSet.ZoomLevel18.DefaultAreaStyle = ZoomLevelAreaStyle18;
+            // ZoomLevel 18 Style
+            ZoomLevelAreaShapeLayer.ZoomLevelSet.ZoomLevel18.DefaultAreaStyle = new AreaStyle()
+            {
+                FillBrush = new GeoSolidBrush(new GeoColor(100, GeoColors.Red)),
+                OutlinePen = new GeoPen(new GeoColor(255, 0, 0, 0))
+            };
 
-            AreaStyle ZoomLevelAreaStyle19 = new AreaStyle();
-            ZoomLevelAreaStyle19.FillSolidBrush = new GeoSolidBrush(new GeoColor(100, GeoColor.SimpleColors.Green));
-            ZoomLevelAreaStyle19.OutlinePen = new GeoPen(new GeoColor(255, 0, 0, 0));
-            ZoomLevelAreaShapeLayer.ZoomLevelSet.ZoomLevel19.DefaultAreaStyle = ZoomLevelAreaStyle19;
-
+            // ZoomLevel 19 Style
+            ZoomLevelAreaShapeLayer.ZoomLevelSet.ZoomLevel19.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+            ZoomLevelAreaShapeLayer.ZoomLevelSet.ZoomLevel19.DefaultAreaStyle = new AreaStyle()
+            {
+                FillBrush = new GeoSolidBrush(new GeoColor(100, GeoColors.Green)),
+                OutlinePen = new GeoPen(new GeoColor(255, 0, 0, 0))
+            };
             layers.Add(ZoomLevelAreaShapeLayer);
+
 
             ShapeFileFeatureLayer zoomLevelLineLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "ThinkGeoLine.shp"));
 
-            // Initialization four line styles  for different zoomlevel.
-            LineStyle zoomLevelLineStyleFrom01To16 = new LineStyle();
-            zoomLevelLineStyleFrom01To16.CenterPen = new GeoPen(new GeoColor(255, GeoColor.SimpleColors.DarkOrange), 5);
-            zoomLevelLineLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = zoomLevelLineStyleFrom01To16;
+            // ZoolLevel 1-16 style
             zoomLevelLineLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level16;
+            zoomLevelLineLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = new LineStyle()
+            {
+                CenterPen = new GeoPen(new GeoColor(255, GeoColors.DarkOrange), 5)
+            };
 
-            LineStyle zoomLevelLineStyle17 = new LineStyle();
-            zoomLevelLineStyle17.CenterPen = new GeoPen(new GeoColor(255, GeoColor.SimpleColors.DarkBlue), 5);
-            zoomLevelLineLayer.ZoomLevelSet.ZoomLevel17.DefaultLineStyle = zoomLevelLineStyle17;
+            // ZoolLevel 17 style
+            zoomLevelLineLayer.ZoomLevelSet.ZoomLevel17.DefaultLineStyle = new LineStyle()
+            {
+                CenterPen = new GeoPen(new GeoColor(255, GeoColors.DarkBlue), 5)
+            };
 
-            LineStyle zoomLevelLineStyle18 = new LineStyle();
-            zoomLevelLineStyle18.CenterPen = new GeoPen(new GeoColor(255, GeoColor.SimpleColors.LightOrange), 5);
-            zoomLevelLineLayer.ZoomLevelSet.ZoomLevel18.DefaultLineStyle = zoomLevelLineStyle18;
+            // ZoolLevel 18 style
+            zoomLevelLineLayer.ZoomLevelSet.ZoomLevel18.DefaultLineStyle = new LineStyle()
+            {
+                CenterPen = new GeoPen(new GeoColor(255, GeoColors.LightOrange), 5)
+            };
 
-            LineStyle zoomLevelLineStyle19 = new LineStyle();
-            zoomLevelLineStyle19.CenterPen = new GeoPen(new GeoColor(255, GeoColor.SimpleColors.LightGreen), 5);
-            zoomLevelLineLayer.ZoomLevelSet.ZoomLevel19.DefaultLineStyle = zoomLevelLineStyle19;
+            // ZoolLevel 19 style
+            zoomLevelLineLayer.ZoomLevelSet.ZoomLevel19.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+            zoomLevelLineLayer.ZoomLevelSet.ZoomLevel19.DefaultLineStyle = new LineStyle()
+            {
+                CenterPen = new GeoPen(new GeoColor(255, GeoColors.LightGreen), 5)
+            };
             layers.Add(zoomLevelLineLayer);
+
 
             ShapeFileFeatureLayer ZoomLevelPointLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "ThinkGeoLocation.shp"));
             ZoomLevelPointLayer.Transparency = 200f;
 
             // Initialization four point styles  for different zoomlevel.
-            PointStyle pointStyleForZoomLevelFrom01To16 = new PointStyle();
-            pointStyleForZoomLevelFrom01To16.Image = new GeoImage(Path.Combine(baseDirectory, "ThinkGeoLogo.png"));
-            pointStyleForZoomLevelFrom01To16.PointType = PointType.Bitmap;
-            pointStyleForZoomLevelFrom01To16.RotationAngle = 0;
-            ZoomLevelPointLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = pointStyleForZoomLevelFrom01To16;
             ZoomLevelPointLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level16;
+            ZoomLevelPointLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = new PointStyle()
+            {
+                Image = new GeoImage(Path.Combine(baseDirectory, "ThinkGeoLogo.png")),
+                PointType = PointType.Image,
+                RotationAngle = 0
+            };
 
-            PointStyle pointStyleForZoomLevel17 = new PointStyle();
-            pointStyleForZoomLevel17.SymbolPen = new GeoPen(GeoColor.FromArgb(255, GeoColor.SimpleColors.DarkBlue), 8);
-            ZoomLevelPointLayer.ZoomLevelSet.ZoomLevel17.DefaultPointStyle = pointStyleForZoomLevel17;
+            // ZoomLevel 17 Style
+            ZoomLevelPointLayer.ZoomLevelSet.ZoomLevel17.DefaultPointStyle = new PointStyle()
+            {
+                OutlinePen = new GeoPen(GeoColor.FromArgb(255, GeoColors.DarkBlue), 8)
+            };
 
-            TextStyle textStyleForZoomLevel18 = new TextStyle("name", (new GeoFont("Arial", 12)), new GeoSolidBrush(GeoColor.SimpleColors.LightRed));
-            textStyleForZoomLevel18.HaloPen = new GeoPen(GeoColor.StandardColors.FloralWhite, 5);
-            textStyleForZoomLevel18.SplineType = SplineType.ForceSplining;
-            PointStyle pointStyleForZoomLevel18 = new PointStyle();
-            pointStyleForZoomLevel18.SymbolPen = new GeoPen(GeoColor.FromArgb(255, GeoColor.SimpleColors.LightRed), 8);
+            // ZoomLevel 18 Style
+            TextStyle textStyleForZoomLevel18 = new TextStyle("name", (new GeoFont("Arial", 12)), new GeoSolidBrush(GeoColors.LightRed))
+            {
+                HaloPen = new GeoPen(GeoColors.FloralWhite, 5),
+                SplineType = SplineType.ForceSplining
+            };
+
+            PointStyle pointStyleForZoomLevel18 = new PointStyle()
+            {
+                OutlinePen = new GeoPen(GeoColor.FromArgb(255, GeoColors.LightRed), 8)
+            };
+
             ZoomLevelPointLayer.ZoomLevelSet.ZoomLevel18.CustomStyles.Add(textStyleForZoomLevel18);
             ZoomLevelPointLayer.ZoomLevelSet.ZoomLevel18.CustomStyles.Add(pointStyleForZoomLevel18);
 
-            PointStyle pointStyleForZoomLevel19 = new PointStyle();
-            pointStyleForZoomLevel19.SymbolPen = new GeoPen(GeoColor.FromArgb(255, GeoColor.SimpleColors.DarkGreen), 8);
-            ZoomLevelPointLayer.ZoomLevelSet.ZoomLevel19.DefaultPointStyle = pointStyleForZoomLevel19;
+            // ZoomLevel 19 Style
+            ZoomLevelPointLayer.ZoomLevelSet.ZoomLevel19.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+            ZoomLevelPointLayer.ZoomLevelSet.ZoomLevel19.DefaultPointStyle = new PointStyle()
+            {
+                OutlinePen = new GeoPen(GeoColor.FromArgb(255, GeoColors.DarkGreen), 8)
+            };
 
             layers.Add(ZoomLevelPointLayer);
 
@@ -353,19 +394,23 @@ namespace BasicStyling.Controllers
             ShapeFileFeatureLayer compoundStyleLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "ThinkGeoLocation.shp"));
 
             // Initialization two point styles for custom style.
-            PointStyle circleStyle = new PointStyle();
-            circleStyle.PointType = PointType.Symbol;
-            circleStyle.SymbolPen = new GeoPen(new GeoColor(255, GeoColor.SimpleColors.Red), 3);
-            circleStyle.SymbolType = PointSymbolType.Circle;
-            circleStyle.SymbolSize = 25;
+            PointStyle circleStyle = new PointStyle()
+            {
+                PointType = PointType.Symbol,
+                OutlinePen = new GeoPen(new GeoColor(255, GeoColors.Red), 3),
+                SymbolType = PointSymbolType.Circle,
+                SymbolSize = 25
+            };
 
-            PointStyle starStyle = new PointStyle();
-            starStyle.PointType = PointType.Symbol;
-            starStyle.SymbolSolidBrush = new GeoSolidBrush(new GeoColor(255, GeoColor.SimpleColors.Blue));
-            starStyle.SymbolType = PointSymbolType.Star;
-            starStyle.SymbolSize = 20;
-            starStyle.XOffsetInPixel = 1;
-            starStyle.YOffsetInPixel = 3;
+            PointStyle starStyle = new PointStyle()
+            {
+                PointType = PointType.Symbol,
+                FillBrush = new GeoSolidBrush(new GeoColor(255, GeoColors.Blue)),
+                SymbolType = PointSymbolType.Star,
+                SymbolSize = 20,
+                XOffsetInPixel = 1,
+                YOffsetInPixel = 3
+            };
 
             compoundStyleLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(circleStyle);
             compoundStyleLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(starStyle);
@@ -402,13 +447,13 @@ namespace BasicStyling.Controllers
         private static void UpdateAreaStyle(FeatureLayer featureLayer, Dictionary<string, string> savedStyle)
         {
             string fillSolidBrushStr = savedStyle["fillSolidBrushColor"];
-            int fillSolidBrushAlpha = int.Parse(savedStyle["fillSolidBrushAlpha"]);
+            byte fillSolidBrushAlpha = byte.Parse(savedStyle["fillSolidBrushAlpha"]);
             string outerPenStr = savedStyle["outerPenColor"];
-            int outerPenAlpha = int.Parse(savedStyle["outerPenAlpha"]);
+            byte outerPenAlpha = byte.Parse(savedStyle["outerPenAlpha"]);
             int outerPenWidth = int.Parse(savedStyle["outerPenWidth"]);
 
             AreaStyle areaStyle = new AreaStyle();
-            areaStyle.FillSolidBrush = new GeoSolidBrush(new GeoColor(fillSolidBrushAlpha, GeoColor.FromHtml(fillSolidBrushStr)));
+            areaStyle.FillBrush = new GeoSolidBrush(new GeoColor(fillSolidBrushAlpha, GeoColor.FromHtml(fillSolidBrushStr)));
             areaStyle.OutlinePen = new GeoPen(new GeoColor(outerPenAlpha, GeoColor.FromHtml(outerPenStr)), outerPenWidth);
             featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = areaStyle;
             featureLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
@@ -422,24 +467,21 @@ namespace BasicStyling.Controllers
         private static void UpdateLineStyle(FeatureLayer featureLayer, Dictionary<string, string> savedStyle)
         {
             string centerPenColor = savedStyle["centerPenColor"];
-            int centerPenColorAlpha = int.Parse(savedStyle["centerPenColorAlpha"]);
+            byte centerPenColorAlpha = byte.Parse(savedStyle["centerPenColorAlpha"]);
             int centerPenWidth = int.Parse(savedStyle["centerPenWidth"]);
 
             string outterPenColor = savedStyle["outterPenColor"];
-            int outterPenColorAlpha = int.Parse(savedStyle["outterPenColorAlpha"]);
+            byte outterPenColorAlpha = byte.Parse(savedStyle["outterPenColorAlpha"]);
             int outterPenWidth = int.Parse(savedStyle["outterPenWidth"]);
 
             string innerPenColor = savedStyle["innerPenColor"];
-            int innerPenColorAlpha = int.Parse(savedStyle["innerPenColorAlpha"]);
+            byte innerPenColorAlpha = byte.Parse(savedStyle["innerPenColorAlpha"]);
             int innerPenWidth = int.Parse(savedStyle["innerPenWidth"]);
-            GeoPen centerPen = new GeoPen(new GeoColor(centerPenColorAlpha, GeoColor.FromHtml(centerPenColor)), centerPenWidth);
-            GeoPen outterPen = new GeoPen(new GeoColor(outterPenColorAlpha, GeoColor.FromHtml(outterPenColor)), outterPenWidth);
-            GeoPen innerPen = new GeoPen(new GeoColor(innerPenColorAlpha, GeoColor.FromHtml(innerPenColor)), innerPenWidth);
 
             LineStyle lineStyle = new LineStyle();
-            lineStyle.CenterPen = centerPen;
-            lineStyle.OuterPen = outterPen;
-            lineStyle.InnerPen = innerPen;
+            lineStyle.CenterPen = new GeoPen(new GeoColor(centerPenColorAlpha, GeoColor.FromHtml(centerPenColor)), centerPenWidth);
+            lineStyle.OuterPen = new GeoPen(new GeoColor(outterPenColorAlpha, GeoColor.FromHtml(outterPenColor)), outterPenWidth);
+            lineStyle.InnerPen = new GeoPen(new GeoColor(innerPenColorAlpha, GeoColor.FromHtml(innerPenColor)), innerPenWidth);
 
             featureLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = lineStyle;
             featureLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
@@ -452,27 +494,30 @@ namespace BasicStyling.Controllers
         /// <param name="savedStyle">new symbol point style options</param>
         private static void UpdateSymbolPointStyle(FeatureLayer featureLayer, Dictionary<string, string> savedStyle)
         {
+
+
             string symbolPointType = savedStyle["symbolPointType"];
             int symbolPointSize = int.Parse(savedStyle["symbolPointSize"]);
             float symbolPointRotationAngle = float.Parse(savedStyle["symbolPointRotationAngle"]);
 
             string symbolPointPenColor = savedStyle["symbolPointPenColor"];
-            int symbolPointPenAlpha = int.Parse(savedStyle["symbolPointPenAlpha"]);
+            byte symbolPointPenAlpha = byte.Parse(savedStyle["symbolPointPenAlpha"]);
             int symbolPointPenWidth = int.Parse(savedStyle["symbolPointPenWidth"]);
 
             string symbolPointSolidBrushColor = savedStyle["symbolPointSolidBrushColor"];
-            int symbolPointSolidBrushAlpha = int.Parse(savedStyle["symbolPointSolidBrushAlpha"]);
+            byte symbolPointSolidBrushAlpha = byte.Parse(savedStyle["symbolPointSolidBrushAlpha"]);
 
-            PointStyle thinkGeoLocationStyle = new PointStyle();
-            thinkGeoLocationStyle.PointType = PointType.Symbol;
-            thinkGeoLocationStyle.SymbolType = (PointSymbolType)Enum.Parse(typeof(PointSymbolType), symbolPointType, true);
-            thinkGeoLocationStyle.SymbolSize = symbolPointSize;
-            thinkGeoLocationStyle.RotationAngle = symbolPointRotationAngle;
-            thinkGeoLocationStyle.SymbolPen = new GeoPen(new GeoColor(symbolPointPenAlpha, GeoColor.FromHtml(symbolPointPenColor)), symbolPointPenWidth);
-            thinkGeoLocationStyle.SymbolSolidBrush = new GeoSolidBrush(new GeoColor(symbolPointSolidBrushAlpha, GeoColor.FromHtml(symbolPointSolidBrushColor)));
 
-            featureLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = thinkGeoLocationStyle;
             featureLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+            featureLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = new PointStyle()
+            {
+                PointType = PointType.Symbol,
+                SymbolType = (PointSymbolType)Enum.Parse(typeof(PointSymbolType), symbolPointType, true),
+                SymbolSize = symbolPointSize,
+                RotationAngle = symbolPointRotationAngle,
+                OutlinePen = new GeoPen(new GeoColor(symbolPointPenAlpha, GeoColor.FromHtml(symbolPointPenColor)), symbolPointPenWidth),
+                FillBrush = new GeoSolidBrush(new GeoColor(symbolPointSolidBrushAlpha, GeoColor.FromHtml(symbolPointSolidBrushColor)))
+            };
         }
     }
 }

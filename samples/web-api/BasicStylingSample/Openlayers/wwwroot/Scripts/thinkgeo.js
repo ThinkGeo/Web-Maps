@@ -17,96 +17,128 @@ $(document).ready(function () {
 });
 
 // Initialize the map.
-var map = L.map('map').setView([40.14711, -95.81131], 4);
-
-// Add image buttons for layers, settings, help etc.
-L.imageButtons({
-    imgs: [
-        {
-            src: 'images/layers.png',
-            id: 'lyrOptions',
-            title: 'Show layers',
-            callback: function () {
-                $('#leftPanel').animate({
-                    'left': '0px'
-                });
-            }
-        },
-        {
-            src: 'images/gear.png',
-            id: 'btnConfig',
-            title: 'Show style settings',
-            css: 'leaflet-disabled',
-            callback: function () {
-                loadStyleDlg();
-                showStyleDlg();
-            }
-        },
-        {
-            src: 'images/info.png',
-            id: 'btnInfo',
-            title: 'Show help',
-            callback: function () { window.open('http://wiki.thinkgeo.com/wiki/map_suite_styling', '_blank'); }
-        }
-    ]
-}).addTo(map);
-
-// Add ThinkGeo Cloud Maps as the map's background layer. 
-var thinkgeoCloudMapsLayer = L.tileLayer('https://{s}.thinkgeo.com/api/v1/maps/raster/light/x1/3857/256/{z}/{x}/{y}.png?apikey=ThinkGeo Cloud API Key', {
-    subdomains: ['cloud1', 'cloud2', 'cloud3', 'cloud4', 'cloud5', 'cloud6'],
-    layers: 'ThinkGeoCloudMaps',
-    format: 'image/png',
-    styles: 'Light',
-    version: '1.1.1'
-})
-    // --------------------------------------------------------------------------------------
-    // Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require
-    // an API Key. The following function is just for reminding you to input the key. 
-    // Feel free to remove this function after the key was input. 
-    // --------------------------------------------------------------------------------------
-    .on('tileloadstart', function (e) {
-        //e.tile.src = drawException();
-        fetch(e.tile.src).then((response) => {
-            if (response.status === 401) {
-                var canvas = document.createElement("canvas");
-                canvas.width = 256;
-                canvas.height = 256;
-                var context = canvas.getContext("2d");
-                context.font = "14px Arial";
-                context.strokeText("Backgrounds for this sample are", 10, 20);
-                context.strokeText("powered by ThinkGeo Cloud Maps and", 10, 40);
-                context.strokeText("require an API Key. This was sent", 10, 60);
-                context.strokeText("to you via email when you signed up", 10, 80);
-                context.strokeText("with ThinkGeo, or you can register", 10, 100);
-                context.strokeText("now at https://cloud.thinkgeo.com", 10, 120);
-                e.tile.src = canvas.toDataURL("image/png", 1);
-            }
-            else {
-                response.blob().then((blob) => {
-                    if (blob) {
-                        e.tile.src = URL.createObjectURL(blob);
-                    }
-                    else {
-                        e.tile.src = "";
-                    }
-                });
-            }
-        });
+var map = new ol.Map({
+    target: 'map',
+    controls: ol.control.defaults({ attribution: false }).extend(
+        [new ol.control.Attribution({
+            collapsible: false
+        })]),
+    view: new ol.View({
+        center: ol.proj.transform([-95.81131, 40.14711], 'EPSG:4326', 'EPSG:3857'),
+        zoom: 4
     })
-    .addTo(map);
+});
 
-// Initialize default value.
+// Add image buttons for layers, edit, help etc.
+var imgControls = new app.ImagesControl({
+    imgs: [
+            {
+                id: 'lyrOptions',
+                src: 'images/layers.png',
+                title: 'Show layers',
+                callback: function () {
+                    $('#leftPanel').animate({
+                        'left': '0px'
+                    });
+                }
+            },
+            {
+                src: 'images/gear.png',
+                id: 'btnConfig',
+                title: 'Show style settings',
+                css: 'openlayers-disabled',
+                callback: function () {
+                    loadStyleDlg();
+                    showStyleDlg();
+                }
+            },
+            {
+                id: 'btnInfo',
+                src: 'images/info.png',
+                title: 'Show help',
+                callback: function () { window.open('http://wiki.thinkgeo.com/wiki/map_suite_styling', '_blank'); }
+            }
+    ]
+});
+map.addControl(imgControls);
+
+// Added ThinkGeoCloudMaps as the background map. 
+var thinkgeoCloudMapsLayer = new ol.layer.Tile({
+    source: new ol.source.XYZ({
+        url: 'https://cloud{1-6}.thinkgeo.com/api/v1/maps/raster/light/x1/3857/512/{z}/{x}/{y}.png?apikey=PIbGd76RyHKod99KptWTeb-Jg9JUPEPUBFD3SZJYLDE~',
+        maxZoom: 19,
+        tileSize: 512,
+        params:
+        {
+            'LAYERS': 'ThinkGeoCloudMaps',
+            'VERSION': '10.4.0',
+            'STYLE': 'Light'
+        },
+
+        // --------------------------------------------------------------------------------------
+        // Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require
+        // an API Key. The following function is just for reminding you to input the key. 
+        // Feel free to remove this function after the key was input. 
+        // --------------------------------------------------------------------------------------
+        tileLoadFunction: function (imageTile, src) {
+            fetch(src).then((response) => {
+                if (response.status === 401) {
+                    var canvas = document.createElement("canvas");
+                    canvas.width = 512;
+                    canvas.height = 512;
+                    var context = canvas.getContext("2d");
+                    context.font = "14px Arial";
+                    context.strokeText("Backgrounds for this sample are", 256, 100);
+                    context.strokeText("powered by ThinkGeo Cloud Maps and", 256, 120);
+                    context.strokeText("require an API Key. This was sent", 256, 140);
+                    context.strokeText("to you via email when you signed up", 256, 160);
+                    context.strokeText("with ThinkGeo, or you can register", 256, 180);
+                    context.strokeText("now at https://cloud.thinkgeo.com", 256, 200);
+                    var url = canvas.toDataURL("image/png", 1);
+                    imageTile.getImage().src = url;
+                }
+                else {
+                    response.blob().then((blob) => {
+                        if (blob) {
+                            imageTile.getImage().src = URL.createObjectURL(blob);
+                        }
+                        else {
+                            imageTile.getImage().src = "";
+                        }
+                    });
+                }
+            });
+        }
+    })
+});
+
+
+// Initialize default value .
 var selectedLayer = 'PredefinedStyles';
 
 // Get access id.
 var accessId = guid();
 
+
 // Add dynamic tile layer to the map, it can be refreshed dynamically
-var shapeLayer = L.dynamicLayer(L.Util.getRootPath() + '/BasicStyling/PredefinedStyles/{z}/{x}/{y}/' + accessId, { unloadInvisibleTiles: true, reuseTiles: false }).addTo(map);
+var xyzSource = new ol.source.XYZ({
+    url: getRootPath() + '/BasicStyling/PredefinedStyles/{z}/{x}/{y}/' + accessId,
+    maxZoom: 19,
+    attributions: [new ol.Attribution({
+        html: '<a href="http://thinkgeo.com/map-suite-developer-gis/world-map-kit-sdk/">ThinkGeo</a> | &copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors <a href="http://www.openstreetmap.org/copyright">ODbL</a>'
+    })]
+});
+xyzSource.tileLoadFunction = function (imageTile, src) {
+    imageTile.getImage().src = src + '?t=' + new Date().getTime();
+};
+map.addLayer(new ol.layer.Tile({
+    source: xyzSource
+}));
 
 // Load style editing page.
 var loadStyleDlg = function () {
-    var url = L.Util.getRootPath() + '/BasicStyling/GetStyle/' + selectedLayer + '/' + accessId;
+
+    var url = getRootPath() + '/BasicStyling/GetStyle/' + selectedLayer + '/' + accessId;
     switch (selectedLayer) {
         case 'AreaStyle':
             $("#areaStyleEdit").show();
@@ -192,11 +224,10 @@ function showStyleDlg() {
         case 'AreaStyle':
         case 'LineStyle':
         case 'SymbolPoint':
-            this.bgmask = L.DomUtil.create('div', 'bg-mask');
-            $('body').append(this.bgmask);
-            var offsetY = -$('#editPanel').height() / 2;
+            $('#bg-mask').show();
+            var offsetY = -$('#editPanel').height()/2;
             $('#editPanel').css('margin-top', offsetY + 'px');
-            $("#editPanel").slideToggle("fast");
+            $('#editPanel').slideToggle("fast");
             break;
         default:
             break;
@@ -205,7 +236,7 @@ function showStyleDlg() {
 
 // Hide edit dialog.
 function hideStyleDlg() {
-    $('.bg-mask').remove();
+    $('#bg-mask').hide();
     $('#editPanel').slideToggle("fast");
     $(".editContent").hide();
 }
@@ -213,6 +244,7 @@ function hideStyleDlg() {
 // Save the style modified.
 $('#btnSave').click(function () {
     var paras;
+    var url;
     switch (selectedLayer) {
         case 'AreaStyle':
             paras = {
@@ -222,6 +254,7 @@ $('#btnSave').click(function () {
                 outerPenAlpha: document.getElementById("areaStyleOutlinePenAlpha").value,
                 outerPenWidth: document.getElementById("areaStyleOutlinePenWidth").value
             };
+            url = getRootPath() + 'BasicStyling/UpdateStyle/AreaStyle/' + accessId;
             break;
         case 'LineStyle':
             paras = {
@@ -237,6 +270,7 @@ $('#btnSave').click(function () {
                 innerPenColorAlpha: document.getElementById("lineStyleInnerPenAlpha").value,
                 innerPenWidth: document.getElementById("lineStyleInnerPenWidth").value
             };
+            url = getRootPath() + 'BasicStyling/UpdateStyle/LineStyle/' + accessId;
             break;
         case 'SymbolPoint':
             paras = {
@@ -247,13 +281,13 @@ $('#btnSave').click(function () {
                 symbolPointPenAlpha: document.getElementById("symbolPointPenAlpha").value,
                 symbolPointPenWidth: document.getElementById("symbolPointPenWidth").value,
                 symbolPointSolidBrushColor: document.getElementById("symbolPointSolidBrushColorText").value,
-                symbolPointSolidBrushAlpha: document.getElementById("symbolPointSolidBrushAlpha").value,
+                symbolPointSolidBrushAlpha: document.getElementById("symbolPointSolidBrushAlpha").value
             };
+            url = getRootPath() + 'BasicStyling/UpdateStyle/SymbolPoint/' + accessId;
             break;
         default:
             break;
     }
-    var url = L.Util.getRootPath() + 'BasicStyling/UpdateStyle/' + selectedLayer + '/' + accessId;
     SettingPost(url, paras);
 });
 
@@ -262,8 +296,7 @@ function SettingPost(url, paras) {
     $.post(url, { '': JSON.stringify(paras) }, function (data) {
         if (data) {
             hideStyleDlg();
-            shapeLayer.setUrl(L.Util.getRootPath() + 'BasicStyling/' + selectedLayer + '/{z}/{x}/{y}/' + accessId);
-            shapeLayer.redraw();
+            xyzSource.setUrl(getRootPath() + 'BasicStyling/' + selectedLayer + '/{z}/{x}/{y}/' + accessId);
         } else {
             alert("error:Invalid parameter");
         }
@@ -281,27 +314,29 @@ $("#stylingOptions div").bind("click", function () {
     }
     $(this).attr("class", "selected");
 
-    // Redraw the map.
     selectedLayer = $(this).attr("id");
     var center = $(this).attr('center').split(',');
     var zoom = $(this).attr('zoom');
     $('#styleDescription').text($(this).attr('description'));
 
     if ($(this).attr('hasSetting') === 'true') {
-        $("#btnConfig").removeClass('leaflet-disabled');
+        $("#btnConfig").removeClass('openlayers-disabled');
     } else {
-        $("#btnConfig").addClass('leaflet-disabled');
+        $("#btnConfig").addClass('openlayers-disabled');
     }
-
     map.removeLayer(thinkgeoCloudMapsLayer);
     if (selectedLayer !== "PredefinedStyles") {
         map.addLayer(thinkgeoCloudMapsLayer);
-        thinkgeoCloudMapsLayer.bringToBack();
     }
-
-    shapeLayer.setUrl(L.Util.getRootPath() + 'BasicStyling/' + selectedLayer + '/{z}/{x}/{y}/' + accessId);
-    map.setView(L.latLng(center[0], center[1]), zoom);
-    shapeLayer.redraw();
+    // Redraw the map
+    xyzSource.setUrl(getRootPath() + 'BasicStyling/' + selectedLayer + '/{z}/{x}/{y}/' + accessId);
+    map.addLayer(new ol.layer.Tile({
+        source: xyzSource
+    }));
+    map.setView(new ol.View({
+        center: ol.proj.transform([parseFloat(center[1]), parseFloat(center[0])], 'EPSG:4326', 'EPSG:3857'),
+        zoom: zoom
+    }));
 });
 
 // Show or hide left navigation panel.

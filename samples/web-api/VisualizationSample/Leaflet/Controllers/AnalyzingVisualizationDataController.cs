@@ -1,25 +1,20 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Web.Http;
-using ThinkGeo.MapSuite;
-using ThinkGeo.MapSuite.Drawing;
-using ThinkGeo.MapSuite.Layers;
-using ThinkGeo.MapSuite.Shapes;
-using ThinkGeo.MapSuite.Styles;
-using ThinkGeo.MapSuite.WebApi;
+using ThinkGeo.Core;
+using ThinkGeo.UI.WebApi;
 
 namespace Visualization.Controllers
 {
-    [RoutePrefix("tile")]
-    public class VisualizationController : ApiController
+    [Route("tile")]
+    public class VisualizationController : ControllerBase
     {
+        private static readonly string baseDirectory;
         private const string filterOverlayKey = "filterStyle";
 
         // Initialize the overlays for drawing, which is cached for whole website.
@@ -30,13 +25,15 @@ namespace Visualization.Controllers
 
         static VisualizationController()
         {
-            cachedOverlays = new Dictionary<string, LayerOverlay>() { 
+            baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+            cachedOverlays = new Dictionary<string, LayerOverlay>() {
             {"HeatStyle",  OverlayBuilder.GetOverlayWithHeatStyle()},
             {"ClassBreakStyle", OverlayBuilder.GetOverlayWithClassBreakStyle()},
             {"DotDensityStyle", OverlayBuilder.GetOverlayWithDotDensityStyle()},
             {"IsolineStyle", OverlayBuilder.GetOverlayWithIsoLineStyle()},
             {"ClusterStyle", OverlayBuilder.GetOverlayWithClusterPointStyle()},
-            {"ZedGraphStyle", OverlayBuilder.GetOverlayWithZedGraphStyle()},
+            //{"ZedGraphStyle", OverlayBuilder.GetOverlayWithZedGraphStyle()},
             {"IconStyle", OverlayBuilder.GetOverlayWithIconStyle()},
             {"CustomStyle", OverlayBuilder.GetOverlayWithCustomeStyle()} };
 
@@ -50,7 +47,7 @@ namespace Visualization.Controllers
         }
 
         [Route("{layerId}/{z}/{x}/{y}/{accessId}")]
-        public HttpResponseMessage GetTile(string layerId, string accessId, int z, int x, int y)
+        public IActionResult GetTile(string layerId, string accessId, int z, int x, int y)
         {
             // Create the LayerOverlay for displaying the map.
             LayerOverlay layerOverlay;
@@ -65,22 +62,17 @@ namespace Visualization.Controllers
             }
 
             // Draw the map and return the image back to client in an HttpResponseMessage. 
-            using (Bitmap bitmap = new Bitmap(256, 256))
+            using (GeoImage image = new GeoImage(256, 256))
             {
-                PlatformGeoCanvas geoCanvas = new PlatformGeoCanvas();
+                GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
                 RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
-                geoCanvas.BeginDrawing(bitmap, boundingBox, GeographyUnit.Meter);
+                geoCanvas.BeginDrawing(image, boundingBox, GeographyUnit.Meter);
                 layerOverlay.Draw(geoCanvas);
                 geoCanvas.EndDrawing();
 
-                MemoryStream memoryStream = new MemoryStream();
-                bitmap.Save(memoryStream, ImageFormat.Png);
+                byte[] imageBytes = image.GetImageBytes(GeoImageFormat.Png);
 
-                HttpResponseMessage responseMessage = new HttpResponseMessage(HttpStatusCode.OK);
-                responseMessage.Content = new ByteArrayContent(memoryStream.ToArray());
-                responseMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-
-                return responseMessage;
+                return File(imageBytes, "image/png");
             }
         }
 
@@ -139,12 +131,11 @@ namespace Visualization.Controllers
 
         private static Dictionary<string, string> GetSavedStyle(string accessId)
         {
-            string styleFile = string.Format("{0}.json", accessId);
-            string styleFilePath = Path.Combine(GetTempDirectory(), styleFile);
+            string styleFilePath = Path.Combine(baseDirectory, "App_Data", "Temp" , string.Format("{0}.json", accessId));
 
-            if (File.Exists(styleFilePath))
+            if (System.IO.File.Exists(styleFilePath))
             {
-                return JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(styleFilePath));
+                return JsonConvert.DeserializeObject<Dictionary<string, string>>(System.IO.File.ReadAllText(styleFilePath));
             }
 
             return null;
@@ -152,21 +143,12 @@ namespace Visualization.Controllers
 
         private static void SaveStyle(string accessId, Dictionary<string, string> styleContent)
         {
-            string styleFile = string.Format("{0}.json", accessId);
-            string styleFilePath = Path.Combine(GetTempDirectory(), styleFile);
+            string styleFilePath = Path.Combine(baseDirectory, "App_Data", "Temp", string.Format("{0}.json", accessId));
 
             using (StreamWriter sw = new StreamWriter(styleFilePath, false))
             {
                 sw.WriteLine(JsonConvert.SerializeObject(styleContent));
             }
-        }
-
-        private static string GetTempDirectory()
-        {
-            Uri uri = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
-            string rootDirectory = Path.GetDirectoryName(Path.GetDirectoryName(uri.LocalPath));
-
-            return Path.Combine(rootDirectory, "App_Data", "Temp");
-        }
+        } 
     }
 }

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using ThinkGeo.MapSuite.Drawing;
-using ThinkGeo.MapSuite.Shapes;
-using ThinkGeo.MapSuite.Styles;
+using ThinkGeo.Core;
 
 namespace Labeling
 {
@@ -34,7 +32,7 @@ namespace Labeling
 
         protected override void DrawCore(IEnumerable<Feature> features, GeoCanvas canvas, Collection<SimpleCandidate> labelsInThisLayer, Collection<SimpleCandidate> labelsInAllLayers)
         {
-            TextStyle clonedStyle = new TextStyle(this.TextColumnName, this.Font, this.TextSolidBrush);
+            TextStyle clonedStyle = new TextStyle(this.TextColumnName, this.Font, this.TextBrush);
             clonedStyle.HaloPen = this.HaloPen;
             clonedStyle.Mask = this.Mask;
             clonedStyle.GridSize = this.GridSize;

@@ -1,36 +1,28 @@
-using PdfSharp;
-using PdfSharp.Pdf;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.ObjectModel;
 using System.Data;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Web.Http;
 using System.Xml.Linq;
 using System.Xml.XPath;
-using ThinkGeo.MapSuite;
-using ThinkGeo.MapSuite.Drawing;
-using ThinkGeo.MapSuite.Layers;
-using ThinkGeo.MapSuite.Shapes;
-using ThinkGeo.MapSuite.Styles;
-using ThinkGeo.MapSuite.WebApi;
+using ThinkGeo.Core;
+using ThinkGeo.UI.WebApi;
 
 namespace Printing.Controllers
 {
-    [RoutePrefix("Printing")]
-    public class PrintingController : ApiController
+    [Route("Printing")]
+    public class PrintingController : ControllerBase
     {
         private static readonly string baseDirectory;
 
         static PrintingController()
         {
-            baseDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Data");
+            baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
         }
 
         /// <summary>
@@ -45,14 +37,14 @@ namespace Printing.Controllers
 
             LayerOverlay printerInteractiveOverlay = GetPrinterOverlay(printingInfo);
 
-            Bitmap bitmap = DrawOverlayToBitmap(printerInteractiveOverlay);
+            GeoImage image = DrawOverlayToImage(printerInteractiveOverlay);
 
             // Save printing layers bitmap.
-            string accessIdFolder = Path.Combine(baseDirectory, "Temp", accessId);
+            string accessIdFolder = Path.Combine(baseDirectory, "App_Data","Temp", accessId);
             if (!Directory.Exists(accessIdFolder)) Directory.CreateDirectory(accessIdFolder);
 
             string imagePath = Path.Combine(accessIdFolder, DateTime.Now.ToString("yyyy-MM-dd_hh_mm_ss.fff") + ".png");
-            bitmap.Save(imagePath, ImageFormat.Png);
+            image.Save(imagePath, GeoImageFormat.Png);
         }
 
         /// <summary>
@@ -60,14 +52,15 @@ namespace Printing.Controllers
         /// </summary>
         [Route("LoadPrinterOverlay/{z}/{x}/{y}/{accessId}")]
         [HttpGet]
-        public HttpResponseMessage LoadPrinterOverlay(int z, int x, int y, string accessId)
+        public IActionResult LoadPrinterOverlay(int z, int x, int y, string accessId)
         {
             PrintingInfo printingInfo = GetPrintingInfo(accessId);
+
 
             PagePrinterLayer pagePrinterLayer = new PagePrinterLayer(printingInfo.PaperSize, printingInfo.Orientation);
             pagePrinterLayer.Open();
 
-            string folder = Path.Combine(baseDirectory, "Temp", accessId);
+            string folder = Path.Combine(baseDirectory, "App_Data", "Temp", accessId);
             string imagePath = Directory.GetFiles(folder, "*.png").LastOrDefault();
 
             RectangleShape extent = UpdateMapExtent(pagePrinterLayer.GetBoundingBox(), printingInfo.Percentage);
@@ -89,8 +82,11 @@ namespace Printing.Controllers
             PrintingInfo printingInfo = GetPrintingInfo(accessId);
 
             // Update xml file by key and value.
-            string printingInfoFilePath = Path.Combine(baseDirectory, "Temp", accessId, "PrintingInfo.xml");
-            if (!File.Exists(printingInfoFilePath)) printingInfo.Save(printingInfoFilePath);
+            string printingInfoFilePath = Path.Combine(baseDirectory, "App_Data","Temp", accessId, "PrintingInfo.xml");
+            if (!System.IO.File.Exists(printingInfoFilePath))
+            {
+                printingInfo.Save(printingInfoFilePath);
+            }
 
             XDocument xDocument = XDocument.Load(printingInfoFilePath);
             XElement node = xDocument.XPathSelectElement("PrintingInfo/" + key);
@@ -118,30 +114,30 @@ namespace Printing.Controllers
             HttpResponseMessage msg = new HttpResponseMessage(HttpStatusCode.OK);
             if (exportType == "To PDF")
             {
-                PdfDocument pdfDocument = new PdfDocument();
-                PdfPage pdfPage = pdfDocument.AddPage();
-                pdfPage.Orientation = printingInfo.Orientation == PrinterOrientation.Portrait ? PageOrientation.Portrait : PageOrientation.Landscape;
-                pdfPage.Size = GetPdfPageSize(printingInfo.PaperSize);
+                //PdfDocument pdfDocument = new PdfDocument();
+                //PdfPage pdfPage = pdfDocument.AddPage();
+                //pdfPage.Orientation = printingInfo.Orientation == PrinterOrientation.Portrait ? PageOrientation.Portrait : PageOrientation.Landscape;
+                //pdfPage.Size = GetPdfPageSize(printingInfo.PaperSize);
 
-                PdfGeoCanvas pdfGeoCanvas = new PdfGeoCanvas();
-                RectangleShape extent = printerInteractiveOverlay.Layers["pagePrinterLayer"].GetBoundingBox();
+                //PdfGeoCanvas pdfGeoCanvas = new PdfGeoCanvas();
+                //RectangleShape extent = printerInteractiveOverlay.Layers["pagePrinterLayer"].GetBoundingBox();
 
-                pdfGeoCanvas.BeginDrawing(pdfPage, extent, GeographyUnit.Meter);
-                printerInteractiveOverlay.Draw(pdfGeoCanvas);
-                pdfGeoCanvas.EndDrawing();
+                //pdfGeoCanvas.BeginDrawing(pdfPage, extent, GeographyUnit.Meter);
+                //printerInteractiveOverlay.Draw(pdfGeoCanvas);
+                //pdfGeoCanvas.EndDrawing();
 
-                MemoryStream ms = new MemoryStream();
-                pdfDocument.Save(ms);
-                msg.Content = new ByteArrayContent(ms.ToArray());
-                msg.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileName = "PrintingResults.pdf" };
-                msg.Content.Headers.ContentType = new MediaTypeHeaderValue("file/pdf");
+                //MemoryStream ms = new MemoryStream();
+                //pdfDocument.Save(ms);
+                //msg.Content = new ByteArrayContent(ms.ToArray());
+                //msg.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileName = "PrintingResults.pdf" };
+                //msg.Content.Headers.ContentType = new MediaTypeHeaderValue("file/pdf");
             }
             else
             {
                 // Draw printing layers.
-                Bitmap bitmap = DrawOverlayToBitmap(printerInteractiveOverlay);
+                GeoImage image = DrawOverlayToImage(printerInteractiveOverlay);
                 MemoryStream ms = new MemoryStream();
-                bitmap.Save(ms, ImageFormat.Png);
+                image.Save(ms, GeoImageFormat.Png);
                 msg.Content = new ByteArrayContent(ms.ToArray());
                 msg.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
                 msg.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileName = "PrintingResults.png" };
@@ -152,20 +148,20 @@ namespace Printing.Controllers
         /// <summary>
         /// Draws overlay to bitmap
         /// </summary>
-        private static Bitmap DrawOverlayToBitmap(LayerOverlay overlay)
+        private static GeoImage DrawOverlayToImage(LayerOverlay overlay)
         {
             RectangleShape extent = overlay.Layers["pagePrinterLayer"].GetBoundingBox();
 
             int width = (int)extent.Width;
             int height = (int)extent.Height;
             // Draw printing layers.
-            Bitmap bitmap = new Bitmap(width, height);
+            GeoImage image = new GeoImage(width, height);
 
-            PlatformGeoCanvas geoCanvas = new PlatformGeoCanvas();
-            geoCanvas.BeginDrawing(bitmap, extent, GeographyUnit.Meter);
+            GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
+            geoCanvas.BeginDrawing(image, extent, GeographyUnit.Meter);
             overlay.Draw(geoCanvas);
             geoCanvas.EndDrawing();
-            return bitmap;
+            return image;
         }
 
         /// <summary>
@@ -224,12 +220,11 @@ namespace Printing.Controllers
         /// </summary>
         private static ShapeFileFeatureLayer GetSourceLayer()
         {
-            ShapeFileFeatureLayer countriesLayer =
-                new ShapeFileFeatureLayer(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Data") + "/Countries02.shp");
-            countriesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = WorldStreetsAreaStyles.BaseLand();
+            ShapeFileFeatureLayer countriesLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "App_Data","Countries02.shp"));
+            countriesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoPen(GeoColors.Transparent), new GeoSolidBrush(new GeoColor(255, 250, 247, 243)));
             countriesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen = new GeoPen(GeoColors.Gray);
             countriesLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
-            countriesLayer.FeatureSource.Projection = new Proj4Projection(Proj4Projection.GetDecimalDegreesParametersString(), Proj4Projection.GetGoogleMapParametersString());
+            countriesLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(4326, 3857);
             countriesLayer.Open();
             return countriesLayer;
         }
@@ -240,7 +235,7 @@ namespace Printing.Controllers
         private static MapPrinterLayer GetMapPrinterLayer(RectangleShape pageBoundingbox)
         {
             MapPrinterLayer mapPrinterLayer = new MapPrinterLayer();
-            mapPrinterLayer.BackgroundMask = WorldStreetsAreaStyles.Water();
+            mapPrinterLayer.BackgroundMask = new AreaStyle(new GeoPen(GeoColors.Transparent, 0), new GeoSolidBrush(new GeoColor(255, 160, 207, 235)));
             mapPrinterLayer.MapUnit = GeographyUnit.Meter;
             mapPrinterLayer.Layers.Add(GetSourceLayer());
             mapPrinterLayer.SetPosition(8, 7, pageBoundingbox.GetCenterPoint().X, pageBoundingbox.GetCenterPoint().Y,
@@ -256,7 +251,7 @@ namespace Printing.Controllers
             LabelPrinterLayer labelPrinterLayer = new LabelPrinterLayer();
             labelPrinterLayer.Text = "Population > 150 Million";
             labelPrinterLayer.Font = new GeoFont("Arial", 10, DrawingFontStyles.Bold);
-            labelPrinterLayer.TextBrush = new GeoSolidBrush(GeoColor.StandardColors.Black);
+            labelPrinterLayer.TextBrush = new GeoSolidBrush(GeoColors.Black);
             labelPrinterLayer.PrinterWrapMode = PrinterWrapMode.AutoSizeText;
 
             PointShape labelCenter = new PointShape();
@@ -282,7 +277,7 @@ namespace Printing.Controllers
             LabelPrinterLayer labelPrinterLayer = new LabelPrinterLayer();
             labelPrinterLayer.Text = noteSpace.ToString();
             labelPrinterLayer.Font = new GeoFont("Arial", 14, DrawingFontStyles.Regular);
-            labelPrinterLayer.TextBrush = new GeoSolidBrush(GeoColor.StandardColors.Black);
+            labelPrinterLayer.TextBrush = new GeoSolidBrush(GeoColors.Black);
             labelPrinterLayer.PrinterWrapMode = PrinterWrapMode.WrapText;
 
             double noteSpaceWidth = 3.6;
@@ -296,8 +291,7 @@ namespace Printing.Controllers
         /// </summary>
         private static ImagePrinterLayer GetImagePrinterLayer(RectangleShape pageBoundingbox)
         {
-            GeoImage compassGeoImage =
-                new GeoImage(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images") + "/Compass.png");
+            GeoImage compassGeoImage = new GeoImage(Path.Combine(baseDirectory, "Images", "Compass.png"));
             ImagePrinterLayer imagePrinterLayer = new ImagePrinterLayer(compassGeoImage);
 
             imagePrinterLayer.SetPosition(.75, .75, pageBoundingbox.GetCenterPoint().X + 3.5,
@@ -362,32 +356,32 @@ namespace Printing.Controllers
             return dataGridPrinterLayer;
         }
 
-        /// <summary>
-        /// Gets pdf page size.
-        /// </summary>
-        private static PageSize GetPdfPageSize(PrinterPageSize pageSize)
-        {
-            PageSize pdfPageSize = PageSize.Letter;
-            switch (pageSize)
-            {
-                case PrinterPageSize.AnsiA:
-                    pdfPageSize = PageSize.Letter;
-                    break;
-                case PrinterPageSize.AnsiB:
-                    pdfPageSize = PageSize.Ledger;
-                    break;
-                case PrinterPageSize.AnsiC:
-                    pdfPageSize = PageSize.A2;
-                    break;
-                case PrinterPageSize.AnsiD:
-                    pdfPageSize = PageSize.A1;
-                    break;
-                case PrinterPageSize.AnsiE:
-                    pdfPageSize = PageSize.A0;
-                    break;
-            }
-            return pdfPageSize;
-        }
+        ///// <summary>
+        ///// Gets pdf page size.
+        ///// </summary>
+        //private static PageSize GetPdfPageSize(PrinterPageSize pageSize)
+        //{
+        //    PageSize pdfPageSize = PageSize.Letter;
+        //    switch (pageSize)
+        //    {
+        //        case PrinterPageSize.AnsiA:
+        //            pdfPageSize = PageSize.Letter;
+        //            break;
+        //        case PrinterPageSize.AnsiB:
+        //            pdfPageSize = PageSize.Ledger;
+        //            break;
+        //        case PrinterPageSize.AnsiC:
+        //            pdfPageSize = PageSize.A2;
+        //            break;
+        //        case PrinterPageSize.AnsiD:
+        //            pdfPageSize = PageSize.A1;
+        //            break;
+        //        case PrinterPageSize.AnsiE:
+        //            pdfPageSize = PageSize.A0;
+        //            break;
+        //    }
+        //    return pdfPageSize;
+        //}
 
         /// <summary>
         /// Gets printing information.
@@ -395,9 +389,11 @@ namespace Printing.Controllers
         private static PrintingInfo GetPrintingInfo(string accessId)
         {
             PrintingInfo printingInfo = new PrintingInfo();
-            string printingInfoFilePath = Path.Combine(baseDirectory, "Temp", accessId, "PrintingInfo.xml");
-            if (File.Exists(printingInfoFilePath)) printingInfo = PrintingInfo.Load(printingInfoFilePath);
-
+            string printingInfoFilePath = Path.Combine(baseDirectory, "App_Data","Temp", accessId, "PrintingInfo.xml");
+            if (System.IO.File.Exists(printingInfoFilePath))
+            {
+                printingInfo = PrintingInfo.Load(printingInfoFilePath);
+            }
             return printingInfo;
         }
 
@@ -409,27 +405,27 @@ namespace Printing.Controllers
             RectangleShape rectangleShape = oldExtent;
             if (updateID == "ZoomIn")
             {
-                rectangleShape = ExtentHelper.ZoomIn(rectangleShape, 30);
+                rectangleShape = MapUtil.ZoomIn(rectangleShape, 30);
             }
             else if (updateID == "ZoomOut")
             {
-                rectangleShape = ExtentHelper.ZoomOut(rectangleShape, 30);
+                rectangleShape = MapUtil.ZoomOut(rectangleShape, 30);
             }
             else if (updateID == "N")
             {
-                rectangleShape = ExtentHelper.Pan(rectangleShape, PanDirection.Up, 30);
+                rectangleShape = MapUtil.Pan(rectangleShape, PanDirection.Up, 30);
             }
             else if (updateID == "W")
             {
-                rectangleShape = ExtentHelper.Pan(rectangleShape, PanDirection.Left, 30);
+                rectangleShape = MapUtil.Pan(rectangleShape, PanDirection.Left, 30);
             }
             else if (updateID == "E")
             {
-                rectangleShape = ExtentHelper.Pan(rectangleShape, PanDirection.Right, 30);
+                rectangleShape = MapUtil.Pan(rectangleShape, PanDirection.Right, 30);
             }
             else if (updateID == "S")
             {
-                rectangleShape = ExtentHelper.Pan(rectangleShape, PanDirection.Down, 30);
+                rectangleShape = MapUtil.Pan(rectangleShape, PanDirection.Down, 30);
             }
             else if (updateID.Contains("%"))
             {
@@ -438,12 +434,12 @@ namespace Printing.Controllers
                 if (percentage > 100)
                 {
                     percentage = percentage - 100;
-                    rectangleShape = ExtentHelper.ZoomOut(rectangleShape, percentage);
+                    rectangleShape = MapUtil.ZoomOut(rectangleShape, percentage);
                 }
                 else if (percentage < 100)
                 {
                     percentage = 100 - percentage;
-                    rectangleShape = ExtentHelper.ZoomIn(rectangleShape, percentage);
+                    rectangleShape = MapUtil.ZoomIn(rectangleShape, percentage);
                 }
 
             }
@@ -454,23 +450,19 @@ namespace Printing.Controllers
         /// <summary>
         ///  Draw the map and return the image back to client in an HttpResponseMessage.
         /// </summary>
-        private static HttpResponseMessage DrawTileImage(LayerOverlay layerOverlay, int z, int x, int y)
+        private IActionResult DrawTileImage(LayerOverlay layerOverlay, int z, int x, int y)
         {
-            using (Bitmap bitmap = new Bitmap(256, 256))
+            using (GeoImage image = new GeoImage(256, 256))
             {
-                PlatformGeoCanvas geoCanvas = new PlatformGeoCanvas();
+                GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
                 RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
-                geoCanvas.BeginDrawing(bitmap, boundingBox, GeographyUnit.Meter);
+                geoCanvas.BeginDrawing(image, boundingBox, GeographyUnit.Meter);
                 layerOverlay.Draw(geoCanvas);
                 geoCanvas.EndDrawing();
 
-                MemoryStream ms = new MemoryStream();
-                bitmap.Save(ms, ImageFormat.Png);
+                byte[] imageBytes = image.GetImageBytes(GeoImageFormat.Png);
 
-                HttpResponseMessage msg = new HttpResponseMessage(HttpStatusCode.OK);
-                msg.Content = new ByteArrayContent(ms.ToArray());
-                msg.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-                return msg;
+                return File(imageBytes, "image/png");
             }
         }
     }

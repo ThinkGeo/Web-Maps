@@ -18,7 +18,7 @@
     <None Include="wwwroot\Scripts\leaflet.contextmenu.js" />
     <None Include="wwwroot\Scripts\leaflet.js" />
     <None Include="wwwroot\Scripts\wmk.js" />
-    <None Include="wwwroot\thinkgeo.leaflet.js" />
+    <None Include="wwwroot\Scripts\thinkgeo.leaflet.js" />
   </ItemGroup>
 
   <ItemGroup>

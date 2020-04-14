@@ -25,7 +25,7 @@
     <None Include="wwwroot\Scripts\jquery-1.11.1.min.js" />
     <None Include="wwwroot\Scripts\leaflet.draw.js" />
     <None Include="wwwroot\Scripts\leaflet.js" />
-    <None Include="wwwroot\thinkgeo.leaflet.js" />
+    <None Include="wwwroot\Scripts\thinkgeo.leaflet.js" />
   </ItemGroup>
 
   <ItemGroup>

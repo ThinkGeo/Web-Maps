@@ -191,7 +191,7 @@ namespace Projection.Controllers
         }
 
         /// <summary>
-        /// Draws the map and return the image back to client in an HttpResponseMessage. 
+        /// Draws the map and return the image back to client in an IActionResult. 
         /// </summary>
         private IActionResult DrawTileImage(LayerOverlay layerOverlay, GeographyUnit geographyUnit, int z, int x, int y)
         {

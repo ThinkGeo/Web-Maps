@@ -33,7 +33,7 @@ namespace GeometricFunctions.Controllers
             // Get the sample input features by ids passed from client side.
             Feature[] tempFeatures = featureIds.Split(',').Select(id => inputFeatures[id]).ToArray();
 
-            // Draw the map and return the image back to client in an HttpResponseMessage.
+            // Draw the map and return the image back to client in an IActionResult.
             return DrawTile(z, x, y, tempFeatures, new Feature[] { });
         }
 
@@ -43,7 +43,7 @@ namespace GeometricFunctions.Controllers
             // Get the result of the geoprocessing made by the speicific access id.
             Collection<Feature> outputFeatures = GetGeoprocessingResultFeatures(accessId);
 
-            // Draw the map and return the image back to client in an HttpResponseMessage.
+            // Draw the map and return the image back to client in an IActionResult.
             return DrawTile(z, x, y, new Feature[] { }, outputFeatures);
         }
 
@@ -395,7 +395,7 @@ namespace GeometricFunctions.Controllers
             layerOverlay.Layers.Add(inputFeatureLayer);
             layerOverlay.Layers.Add(outputFeatureLayer);
 
-            // Draw the map and return the image back to client in an HttpResponseMessage.
+            // Draw the map and return the image back to client in an IActionResult.
             using (GeoImage image = new GeoImage(256, 256))
             {
                 GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();

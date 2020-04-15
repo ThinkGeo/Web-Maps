@@ -40,7 +40,7 @@ namespace Printing.Controllers
             GeoImage image = DrawOverlayToImage(printerInteractiveOverlay);
 
             // Save printing layers bitmap.
-            string accessIdFolder = Path.Combine(baseDirectory, "App_Data","Temp", accessId);
+            string accessIdFolder = Path.Combine(baseDirectory, "App_Data", "Temp", accessId);
             if (!Directory.Exists(accessIdFolder)) Directory.CreateDirectory(accessIdFolder);
 
             string imagePath = Path.Combine(accessIdFolder, DateTime.Now.ToString("yyyy-MM-dd_hh_mm_ss.fff") + ".png");
@@ -82,7 +82,7 @@ namespace Printing.Controllers
             PrintingInfo printingInfo = GetPrintingInfo(accessId);
 
             // Update xml file by key and value.
-            string printingInfoFilePath = Path.Combine(baseDirectory, "App_Data","Temp", accessId, "PrintingInfo.xml");
+            string printingInfoFilePath = Path.Combine(baseDirectory, "App_Data", "Temp", accessId, "PrintingInfo.xml");
             if (!System.IO.File.Exists(printingInfoFilePath))
             {
                 printingInfo.Save(printingInfoFilePath);
@@ -106,43 +106,17 @@ namespace Printing.Controllers
         /// </summary>
         [Route("Export/{accessId}/{exportType}")]
         [HttpGet]
-        public HttpResponseMessage Export(string accessId, string exportType)
+        public IActionResult Export(string accessId, string exportType)
         {
             PrintingInfo printingInfo = GetPrintingInfo(accessId);
             LayerOverlay printerInteractiveOverlay = GetPrinterOverlay(printingInfo);
 
-            HttpResponseMessage msg = new HttpResponseMessage(HttpStatusCode.OK);
-            if (exportType == "To PDF")
-            {
-                //PdfDocument pdfDocument = new PdfDocument();
-                //PdfPage pdfPage = pdfDocument.AddPage();
-                //pdfPage.Orientation = printingInfo.Orientation == PrinterOrientation.Portrait ? PageOrientation.Portrait : PageOrientation.Landscape;
-                //pdfPage.Size = GetPdfPageSize(printingInfo.PaperSize);
+            // Draw printing layers.
+            GeoImage image = DrawOverlayToImage(printerInteractiveOverlay);
 
-                //PdfGeoCanvas pdfGeoCanvas = new PdfGeoCanvas();
-                //RectangleShape extent = printerInteractiveOverlay.Layers["pagePrinterLayer"].GetBoundingBox();
+            byte[] imageBytes = image.GetImageBytes(GeoImageFormat.Png);
+            return File(imageBytes, "application/octet-stream", "Printing Sample.png");
 
-                //pdfGeoCanvas.BeginDrawing(pdfPage, extent, GeographyUnit.Meter);
-                //printerInteractiveOverlay.Draw(pdfGeoCanvas);
-                //pdfGeoCanvas.EndDrawing();
-
-                //MemoryStream ms = new MemoryStream();
-                //pdfDocument.Save(ms);
-                //msg.Content = new ByteArrayContent(ms.ToArray());
-                //msg.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileName = "PrintingResults.pdf" };
-                //msg.Content.Headers.ContentType = new MediaTypeHeaderValue("file/pdf");
-            }
-            else
-            {
-                // Draw printing layers.
-                GeoImage image = DrawOverlayToImage(printerInteractiveOverlay);
-                MemoryStream ms = new MemoryStream();
-                image.Save(ms, GeoImageFormat.Png);
-                msg.Content = new ByteArrayContent(ms.ToArray());
-                msg.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-                msg.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileName = "PrintingResults.png" };
-            }
-            return msg;
         }
 
         /// <summary>
@@ -220,7 +194,7 @@ namespace Printing.Controllers
         /// </summary>
         private static ShapeFileFeatureLayer GetSourceLayer()
         {
-            ShapeFileFeatureLayer countriesLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "App_Data","Countries02.shp"));
+            ShapeFileFeatureLayer countriesLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "App_Data", "Countries02.shp"));
             countriesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoPen(GeoColors.Transparent), new GeoSolidBrush(new GeoColor(255, 250, 247, 243)));
             countriesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen = new GeoPen(GeoColors.Gray);
             countriesLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
@@ -356,40 +330,13 @@ namespace Printing.Controllers
             return dataGridPrinterLayer;
         }
 
-        ///// <summary>
-        ///// Gets pdf page size.
-        ///// </summary>
-        //private static PageSize GetPdfPageSize(PrinterPageSize pageSize)
-        //{
-        //    PageSize pdfPageSize = PageSize.Letter;
-        //    switch (pageSize)
-        //    {
-        //        case PrinterPageSize.AnsiA:
-        //            pdfPageSize = PageSize.Letter;
-        //            break;
-        //        case PrinterPageSize.AnsiB:
-        //            pdfPageSize = PageSize.Ledger;
-        //            break;
-        //        case PrinterPageSize.AnsiC:
-        //            pdfPageSize = PageSize.A2;
-        //            break;
-        //        case PrinterPageSize.AnsiD:
-        //            pdfPageSize = PageSize.A1;
-        //            break;
-        //        case PrinterPageSize.AnsiE:
-        //            pdfPageSize = PageSize.A0;
-        //            break;
-        //    }
-        //    return pdfPageSize;
-        //}
-
         /// <summary>
         /// Gets printing information.
         /// </summary>
         private static PrintingInfo GetPrintingInfo(string accessId)
         {
             PrintingInfo printingInfo = new PrintingInfo();
-            string printingInfoFilePath = Path.Combine(baseDirectory, "App_Data","Temp", accessId, "PrintingInfo.xml");
+            string printingInfoFilePath = Path.Combine(baseDirectory, "App_Data", "Temp", accessId, "PrintingInfo.xml");
             if (System.IO.File.Exists(printingInfoFilePath))
             {
                 printingInfo = PrintingInfo.Load(printingInfoFilePath);
@@ -448,7 +395,7 @@ namespace Printing.Controllers
         }
 
         /// <summary>
-        ///  Draw the map and return the image back to client in an HttpResponseMessage.
+        ///  Draw the map and return the image back to client in an IActionResult.
         /// </summary>
         private IActionResult DrawTileImage(LayerOverlay layerOverlay, int z, int x, int y)
         {

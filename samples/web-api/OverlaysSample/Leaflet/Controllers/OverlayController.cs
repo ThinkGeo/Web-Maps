@@ -67,7 +67,7 @@ namespace ThinkGeo.MapSuite.Overlays
         }
 
         /// <summary>
-        /// Draws the map and return the image back to client in an HttpResponseMessage. 
+        /// Draws the map and return the image back to client in an IActionResult. 
         /// </summary>
         private IActionResult DrawTileImage(LayerOverlay layerOverlay, int z, int x, int y)
         {

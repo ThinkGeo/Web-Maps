@@ -38,7 +38,7 @@ namespace DrawingAndEditing.Controllers
                 layerOverlay.Layers.Add(drawnShapesFeatureLayer);
             }
 
-            // Draw the map and return the image back to client in an HttpResponseMessage.
+            // Draw the map and return the image back to client in an IActionResult.
             using (GeoImage image = new GeoImage(256, 256))
             {
                 GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();

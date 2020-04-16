@@ -49,12 +49,22 @@ app.ImagesControl = function (opt_options) {
 ol.inherits(app.ImagesControl, ol.control.Control);
 
 // Extend OpenLayers map to calculate the scale 
-app.getScale = function (zoom) {
-    var pixelScales = [295829355.45, 147914677.73, 73957338.86, 36978669.43, 18489334.72, 9244667.36, 4622333.68,
-        2311166.84, 1155583.42, 577791.71, 288895.85, 144447.93, 72223.96, 36111.98, 18055.99, 9028.00, 4514.00,
-        2257.00, 1128.50, 564.25, 282.12, 141.06, 70.53];
-    return pixelScales[zoom];
+//app.getScale = function (zoom) {
+//    var pixelScales = [295829355.45, 147914677.73, 73957338.86, 36978669.43, 18489334.72, 9244667.36, 4622333.68,
+//        2311166.84, 1155583.42, 577791.71, 288895.85, 144447.93, 72223.96, 36111.98, 18055.99, 9028.00, 4514.00,
+//        2257.00, 1128.50, 564.25, 282.12, 141.06, 70.53];
+//    return pixelScales[zoom];
+//};
+
+app.getMapScale = function (map) {
+    var dpi = 96;
+    var unit = map.getView().getProjection().getUnits();
+    var resolution = map.getView().getResolution();
+    var inchesPerMetre = 39.37;
+
+    return resolution * ol.proj.METERS_PER_UNIT[unit] * inchesPerMetre * dpi;
 };
+
 
 /**
  * create a customized context-menu

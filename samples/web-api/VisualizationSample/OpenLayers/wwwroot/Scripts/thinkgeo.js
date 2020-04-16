@@ -140,6 +140,7 @@ function redrawLayer() {
             break;
     }
     xyzSource.setUrl(getRootPath() + '/tile/' + selectedLayer + '/{z}/{x}/{y}/' + accessId);
+    xyzSource.refresh();
 }
 
 // Show/hide "edit" dialog in model mode

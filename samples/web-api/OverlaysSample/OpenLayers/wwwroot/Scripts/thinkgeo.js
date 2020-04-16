@@ -16,10 +16,7 @@ var bingMapLayer = new ol.layer.Tile({});
 var openStreetMapLayer = new ol.layer.Tile({
     source: new ol.source.OSM({
         attributions: [
-            new ol.Attribution({
-                html: 'All maps &copy; ' +
-                    '<a href="http://www.openstreetmap.org/">OpenStreetMap</a>'
-            }),
+            'All maps © <a href="http://www.openseamap.org/">OpenSeaMap</a>',
             ol.source.OSM.ATTRIBUTION
         ]
     }),
@@ -192,7 +189,7 @@ $('#leftPanelOptions div').bind('click', function () {
                 bingMapLayer.setVisible(true);
                 break;
             case "thinkgeoCloudMap":
-                thinkGeoCloudMapsLayer.setVisible(true);
+                thinkgeoCloudMapsLayer.setVisible(true);
                 break;
             case "openStreetMap":
                 openStreetMapLayer.setVisible(true);

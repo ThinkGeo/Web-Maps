@@ -31,7 +31,6 @@
     <None Include="wwwroot\Images\SpatialQuery.png" />
     <None Include="wwwroot\Images\SQLQuery.png" />
     <None Include="wwwroot\Scripts\jquery-1.11.1.min.js" />
-    <None Include="wwwroot\Scripts\ol.js" />
     <None Include="wwwroot\Scripts\thinkgeo.js" />
     <None Include="wwwroot\Scripts\thinkgeo.openlayers.js" />
   </ItemGroup>

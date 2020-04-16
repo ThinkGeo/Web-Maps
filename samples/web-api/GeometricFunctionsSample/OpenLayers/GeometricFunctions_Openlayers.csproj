@@ -37,7 +37,6 @@
     <None Include="wwwroot\Images\union.png" />
     <None Include="wwwroot\Scripts\jquery-1.11.1.min.js" />
     <None Include="wwwroot\Scripts\leaflet-ext.js" />
-    <None Include="wwwroot\Scripts\ol.js" />
     <None Include="wwwroot\Scripts\thinkgeo.openlayers.js" />
   </ItemGroup>
 

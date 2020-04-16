@@ -1,4 +1,5 @@
-﻿// Initialize access id.
+﻿
+// Initialize access id.
 var accessId = guid();
 
 // Initialize map.

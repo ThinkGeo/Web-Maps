@@ -1,9 +1,13 @@
 ﻿var zoom = 7;
 var center = [33.150205, -96.8277325];
 var selectedAdornment = 'ScaleBarAdornment';
+var thinkgeoApiKey = 'PIbGd76RyHKod99KptWTeb-Jg9JUPEPUBFD3SZJYLDE~';
 
 var map = new ol.Map({
     target: 'map',
+    renderer: 'webgl',
+    loadTilesWhileAnimating: true,
+    loadTilesWhileInteracting: true,
     controls: ol.control.defaults({ attribution: false }).extend(
         [new ol.control.Attribution({
             collapsible: false
@@ -34,57 +38,11 @@ var imgControls = new app.ImagesControl({
 });
 map.addControl(imgControls);
 
-var url = 'https://cloud{1-6}.thinkgeo.com/api/v1/maps/raster/light/x1/3857/512/{z}/{x}/{y}.png?apikey=PIbGd76RyHKod99KptWTeb-Jg9JUPEPUBFD3SZJYLDE~';
-
-var thinkgeoCloudMapsLayer = new ol.layer.Tile({
-    source: new ol.source.XYZ({
-        url: url,
-        maxZoom: 19,
-        tileSize: 512,
-        params:
-        {
-            'LAYERS': 'ThinkGeoCloudMaps',
-            'VERSION': '10.4.0',
-            'STYLE': 'Light'
-        },
-
-        // --------------------------------------------------------------------------------------
-        // Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require
-        // An API Key. The following function is just for reminding you to input the key. 
-        // Feel free to remove this function after the key was input. 
-        // --------------------------------------------------------------------------------------
-        tileLoadFunction: function (imageTile, src) {
-            fetch(src).then((response) => {
-                if (response.status === 401) {
-                    var canvas = document.createElement("canvas");
-                    canvas.width = 512;
-                    canvas.height = 512;
-                    var context = canvas.getContext("2d");
-                    context.font = "14px Arial";
-                    context.strokeText("Backgrounds for this sample are", 256, 100);
-                    context.strokeText("powered by ThinkGeo Cloud Maps and", 256, 120);
-                    context.strokeText("require an API Key. This was sent", 256, 140);
-                    context.strokeText("to you via email when you signed up", 256, 160);
-                    context.strokeText("with ThinkGeo, or you can register", 256, 180);
-                    context.strokeText("now at https://cloud.thinkgeo.com", 256, 200);
-                    var url = canvas.toDataURL("image/png", 1);
-                    imageTile.getImage().src = url;
-                }
-                else {
-                    response.blob().then((blob) => {
-                        if (blob) {
-                            imageTile.getImage().src = URL.createObjectURL(blob);
-                        }
-                        else {
-                            imageTile.getImage().src = "";
-                        }
-                    });
-                }
-            });
-        }
-    })
-});
-map.addLayer(thinkgeoCloudMapsLayer);
+// Add ThinkgeoVectorTileLayer as the map's background layer.
+map.addLayer(new ol.mapsuite.VectorTileLayer('https://cdn.thinkgeo.com/worldstreets-styles/3.0.0/light.json', {
+    apiKey: thinkgeoApiKey,
+    layerName: 'light'
+}));
 
 var xyzSource = new ol.source.XYZ({
     url: getRootPath() + 'Adornments/SchoolShapeFileLayer/{z}/{x}/{y}',

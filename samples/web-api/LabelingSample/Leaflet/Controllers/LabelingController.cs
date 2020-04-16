@@ -1,26 +1,20 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Web.Http;
-using ThinkGeo.MapSuite;
-using ThinkGeo.MapSuite.Drawing;
-using ThinkGeo.MapSuite.Layers;
-using ThinkGeo.MapSuite.Shapes;
-using ThinkGeo.MapSuite.Styles;
-using ThinkGeo.MapSuite.WebApi;
+using ThinkGeo.Core;
+using ThinkGeo.UI.WebApi;
 
 namespace Labeling.Controllers
 {
-    [RoutePrefix("label")]
-    public class LabelingController : ApiController
+    [Route("label")]
+    public class LabelingController : ControllerBase
     {
         [Route("{z}/{x}/{y}")]
-        public HttpResponseMessage GetBaseMapTile(int z, int x, int y)
+        public IActionResult GetBaseMapTile(int z, int x, int y)
         {
             // Create the LayerOverlay for displaying the map.
             LayerOverlay layerOverlay = OverlayBuilder.GetOverlayAsBaseMap();
@@ -29,7 +23,7 @@ namespace Labeling.Controllers
         }
 
         [Route("{overlayId}/{z}/{x}/{y}/{accessId}")]
-        public HttpResponseMessage GetDynamicLayerTile(string overlayId, int z, int x, int y, string accessId)
+        public IActionResult GetDynamicLayerTile(string overlayId, int z, int x, int y, string accessId)
         {
             // Get layerOverlay specified by the access id passed from client side.
             LayerOverlay layerOverlay = GetLabelingOverlay(overlayId, accessId);
@@ -82,13 +76,13 @@ namespace Labeling.Controllers
             OverlayBuilder.SaveLabelStyle(overlayId, styles, accessId);
         }
 
-        private static HttpResponseMessage DrawTileImage(LayerOverlay layerOverlay, int x, int y, int z)
+        private IActionResult DrawTileImage(LayerOverlay layerOverlay, int x, int y, int z)
         {
-            using (Bitmap bitmap = new Bitmap(256, 256))
+            using (GeoImage image = new GeoImage(256, 256))
             {
-                PlatformGeoCanvas geoCanvas = new PlatformGeoCanvas();
+                GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
                 RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
-                geoCanvas.BeginDrawing(bitmap, boundingBox, GeographyUnit.Meter);
+                geoCanvas.BeginDrawing(image, boundingBox, GeographyUnit.Meter);
 
                 if (layerOverlay != null)
                 {
@@ -96,14 +90,9 @@ namespace Labeling.Controllers
                 }
                 geoCanvas.EndDrawing();
 
-                MemoryStream memoryStream = new MemoryStream();
-                bitmap.Save(memoryStream, ImageFormat.Png);
+                byte[] imageBytes = image.GetImageBytes(GeoImageFormat.Png);
 
-                HttpResponseMessage message = new HttpResponseMessage(HttpStatusCode.OK);
-                message.Content = new ByteArrayContent(memoryStream.ToArray());
-                message.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-
-                return message;
+                return File(imageBytes, "image/png");
             }
         }
 

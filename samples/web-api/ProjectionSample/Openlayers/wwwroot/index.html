@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Projection</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE10" />
+    <meta name="author" content="ThinkGeo" />
+    <meta name="apple-mobile-web-app-title" content="Projection" />
+    <link href="Images/desktop.png" rel="apple-touch-icon" />
+    <link href="Images/favicon.ico" rel="shortcut icon" type="Images/x-icon" />
+    <link href="Content/ol.css" rel="stylesheet" />
+    <link href="Content/thinkgeo.openlayers.css" rel="stylesheet" />
+    <link href="Content/site.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="map"></div>
+    <div id="leftPanel">
+        <div id="leftPanelHeader">
+            <span>Projection List</span>
+        </div>
+        <div id="leftPanelContent">
+            <ul id="leftPanelOptions">
+                <li>
+                    <div id="webMercatorProjection" class="selected" epsg="3857">
+                        <span>Web Mercator Projection</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="rotationProjection" class="unselected" epsg="3857">
+                        <span>Rotation Projection</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="customProjection" class="unselected" epsg="2163">
+                        <span>Custom Projection</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="descriptionExpandOrCollapseButton" class="expand"></div>
+    <div id="descriptionPanel">
+        <div id="descriptionPanelContent">
+            <div id="projectionDescription" class="selectedDescription">
+                <label>Geography Unit:</label>
+                <br />
+                <textarea id="unit" disabled="disabled">Meter</textarea>
+                <br />
+                <label>EPSG Id:</label>
+                <br />
+                <textarea id="epsgId" disabled="disabled">3857</textarea>
+                <br />
+                <label>Proj4 String:</label>
+                <br />
+                <textarea id="proj4String" disabled="disabled">+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs</textarea>
+                <br />
+            </div>
+            <div id="rotationProjectionDescription" class="unselectedDescription">
+                <label>Pivot Center:</label>
+                <br />
+                <label id="pivotCenter">X: -10776836.6105256,<br />
+                    Y: 3912344.07403825</label>
+                <br />
+                <label id="currentAngle">Current angle: 10</label>
+                <br />
+                <br />
+                <button id="leftRotation" onclick="LeftRotation()"></button>
+                <button id="rightRotation" onclick="RightRotation()"></button>
+            </div>
+        </div>
+    </div>
+    <script src="Scripts/jquery-1.11.1.min.js"></script>
+    <script src="https://cdn.thinkgeo.com/vectormap-js/3.0.0/vectormap.js"></script>
+    <script src="Scripts/proj4.js"></script>
+    <script src="Scripts/thinkgeo.openlayers.js"></script>
+    <script src="Scripts/thinkgeo.js"></script>
+</body>
+</html>

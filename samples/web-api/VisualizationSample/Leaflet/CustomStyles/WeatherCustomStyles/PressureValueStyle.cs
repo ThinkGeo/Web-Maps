@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using ThinkGeo.MapSuite.Drawing;
-using ThinkGeo.MapSuite.Shapes;
-using ThinkGeo.MapSuite.Styles;
+using ThinkGeo.Core;
 
 namespace Visualization
 {
@@ -16,13 +14,13 @@ namespace Visualization
         {
             SquareTextPointStyle highPressurePointStyle = new SquareTextPointStyle();
             highPressurePointStyle.Text = "L";
-            highPressurePointStyle.SymbolSolidBrush = new GeoSolidBrush(GeoColor.FromArgb(255, 39, 39, 245));
+            highPressurePointStyle.FillBrush = new GeoSolidBrush(GeoColor.FromArgb(255, 39, 39, 245));
             highPressureValueItem = new ValueItem("H", highPressurePointStyle);
             ValueItems.Add(highPressureValueItem);
 
             SquareTextPointStyle lowPressurePointStyle = new SquareTextPointStyle();
             lowPressurePointStyle.Text = "H";
-            lowPressurePointStyle.SymbolSolidBrush = new GeoSolidBrush(GeoColor.StandardColors.Red);
+            lowPressurePointStyle.FillBrush = new GeoSolidBrush(GeoColors.Red);
             lowPressureValueItem = new ValueItem("L", lowPressurePointStyle);
             ValueItems.Add(lowPressureValueItem);
         }
@@ -44,8 +42,8 @@ namespace Visualization
                 SymbolSize = 30;
                 PointType = PointType.Symbol;
                 font = new GeoFont("Verdana", 14);
-                textBrush = new GeoSolidBrush(GeoColor.StandardColors.White);
-                SymbolPen = new GeoPen(GeoColor.StandardColors.White, 1);
+                textBrush = new GeoSolidBrush(GeoColors.White);
+                OutlinePen = new GeoPen(GeoColors.White, 1);
             }
 
             public string Text
@@ -67,7 +65,7 @@ namespace Visualization
                         float screenOffsetX = (float)((pointShape.X - canvas.CurrentWorldExtent.UpperLeftPoint.X) / resolution);
                         float screenOffsetY = (float)((canvas.CurrentWorldExtent.UpperLeftPoint.Y - pointShape.Y) / resolution);
 
-                        canvas.DrawTextWithScreenCoordinate(Text, font, textBrush, screenOffsetX, screenOffsetY, ThinkGeo.MapSuite.Drawing.DrawingLevel.LabelLevel);
+                        canvas.DrawTextWithScreenCoordinate(Text, font, textBrush, screenOffsetX, screenOffsetY, DrawingLevel.LabelLevel);
                     }
                 }
             }

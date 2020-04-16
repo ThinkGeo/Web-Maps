@@ -3,12 +3,19 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using ThinkGeo.MapSuite.Shapes;
+using ThinkGeo.Core;
 
 namespace ThinkGeo.MapSuite.Layers
 {
     public static class SampleHelper
     {
+        private static readonly string baseDirectory = null;
+
+        static SampleHelper()
+        {
+            baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "App_Data");
+        }
+
         /// <summary>
         /// Get Features from XML file by layer type.
         /// </summary>
@@ -17,7 +24,7 @@ namespace ThinkGeo.MapSuite.Layers
         public static Collection<Feature> GetFeatures(string layerType)
         {
             Collection<Feature> features = new Collection<Feature>();
-            XElement layerData = XElement.Load(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Data/LayerData.xml"));
+            XElement layerData = XElement.Load(Path.Combine(baseDirectory, "LayerData.xml"));
             XElement featureElements = layerData.Elements("Layer").FirstOrDefault(a => a.Attribute("type").Value.Contains(layerType));
             if (featureElements != null)
             {

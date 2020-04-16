@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>MarkerAndPopup</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE10" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link href="Images/desktop.png" rel="apple-touch-icon" />
+    <link href="Images/favicon.ico" rel="shortcut icon" type="Images/x-icon" />
+    <link href="Content/ol.css" rel="stylesheet" />
+    <link href="Content/thinkgeo.openlayers.css" rel="stylesheet" />
+    <link href="Content/site.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="map">
+    </div>
+    <div id="popup" class="ol-popup">
+        <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+        <div id="popup-content"></div>
+    </div>
+    <div id="description">Click on the map or drag the marker to relocate it</div>
+    <div id="leftPanel">
+        <div id="leftPanelHeader">
+            <span>Markers and Popups</span>
+        </div>
+        <div id="leftPanelContent">
+            <ul id="leftPanelOptions">
+                <li>
+                    <div id="Marker" title="Marker" class="selected" description="Click on the map or drag the marker to relocate it">
+                        <span>Marker</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="MarkerEvent" title="Marker and Popup" class="unselected" description="Click on the marker to hide or show the popup">
+                        <span>Marker and Popup</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script src="Scripts/jquery-1.11.1.min.js"></script>
+    <script src="https://cdn.thinkgeo.com/vectormap-js/3.0.0/vectormap.js"></script>
+    <script src="Scripts/thinkgeo.openlayers.js"></script>
+    <script src="Scripts/thinkgeo.js"></script>
+</body>
+</html>

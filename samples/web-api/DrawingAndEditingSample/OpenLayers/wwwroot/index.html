@@ -1,0 +1,381 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Draw edit features</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="author" content="ThinkGeo" />
+    <link rel="apple-touch-icon" href="desktop.png" />
+    <meta name="apple-mobile-web-app-title" content="Draw edit features" />
+    <link href="favicon.ico" rel="shortcut icon" type="Images/x-icon" />
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/ol.css" rel="stylesheet" />
+    <link href="Content/Site.css" rel="stylesheet" />
+    <link href="Content/thinkgeo.openlayers.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="map">
+    </div>
+    <div id="bg-mask">
+    </div>
+    <div class="centroid">
+        <div id="dlgName">
+            <div class="edit-panel-header">
+                <span>Description of drawn shape</span>
+            </div>
+            <div class="edit-content">
+                <input type="text" id="txtName" />
+                <span id="spWarning" class="warning">The name is required.</span>
+            </div>
+            <div class="edit-foot">
+                <a id="btnSaveName" href="#" class="btn btn-primary" role="button">OK</a>
+            </div>
+        </div>
+    </div>
+    <script src="Scripts/jquery-1.11.1.min.js"></script>
+    <script src="https://cdn.thinkgeo.com/vectormap-js/3.0.0/vectormap.js"></script>
+    <script src="Scripts/thinkgeo.openlayers.js"></script>
+    <script>
+        var accessId = guid();
+        var draw,
+            drawingFeature,
+            editServerShapes = false,
+            editingData = {
+                removedIds: [],
+                newShapes: []
+            },
+            attribution = new ol.control.Attribution({
+                collapsible: false
+            });
+        // Initialize the map.
+        var map = new ol.Map({
+            target: 'map',
+            controls: ol.control.defaults({ attribution: false }).extend([attribution]),
+            view: new ol.View({
+                center: [-10777396.5012, 3914579.4368],
+                zoom: 16
+            })
+        });
+
+        // Add image buttons for shapes, editing, help etc.
+        var imgControls = new app.ImagesControl({
+            imgs: [{
+                src: 'Images/Point.png',
+                title: 'Draw Point',
+                callback: function () {
+                    setDrawMode('Point');
+                }
+            }, {
+                src: 'Images/Line.png',
+                title: 'Draw Line',
+                callback: function () {
+                    setDrawMode('LineString');
+                }
+            }, {
+                src: 'Images/Polygon.png',
+                title: 'Draw Polygon',
+                callback: function () {
+                    setDrawMode('Polygon');
+                }
+            },
+            {
+                src: 'Images/Edit.png',
+                title: 'Edit Shape',
+                callback: function () {
+                    if (!editServerShapes) {
+                        editServerShapes = true;
+                        $.get(getRootPath() + 'edit/getshapes/' + accessId, function (data) {
+                            var geoJsons = JSON.parse(data);
+                            for (var i = 0; i < geoJsons.length; i++) {
+                                tempGeoJSON = geoJsons[i];
+                                transfterGeoJSON(tempGeoJSON, 'EPSG:4326', 'EPSG:3857');
+                                var tempFeature = getFeatureFromGeoJson(tempGeoJSON);
+                                source.addFeature(tempFeature);
+                                editingData.removedIds.push(tempFeature.getId());
+                            }
+                            tileLayer.setVisible(false);
+                        });
+
+                        disenableAllInteractions();
+                        map.addInteraction(modify);
+                        map.addInteraction(selectInteraction);
+                    }
+                }
+            },
+            {
+                src: 'Images/Delete.png',
+                title: 'Delete Polygon',
+                callback: function () {
+                    disenableAllInteractions();
+                    var selectionFeatures = selectInteraction.getFeatures();
+                    selectionFeatures.on('add', deleteFeature);
+                    map.addInteraction(selectInteraction);
+                }
+            },
+            {
+                src: 'Images/save.png',
+                id: 'imgSave',
+                title: 'Save to server',
+                callback: function () {
+                    var features = source.getFeatures();
+                    var featureLength = features.length;
+                    for (var i = 0; i < featureLength; i++) {
+                        var tempGeoJSON = JSON.parse(getGeoJsonFromFeature(features[i]));
+                        transfterGeoJSON(tempGeoJSON, 'EPSG:3857', 'EPSG:4326');
+
+                        editingData.newShapes.push(tempGeoJSON);
+                    }
+
+                    // Save the drawn features to server side in GeoJson format
+                    $.post(getRootPath() + 'edit/saveshapes/' + accessId, { '': JSON.stringify(editingData) }, function (data) {
+                        xyzSource.setUrl(getRootPath() + "edit/{z}/{x}/{y}/" + accessId + '?autokey=' + Math.random());
+                        tileLayer.setVisible(true);
+
+                        editingData.removedIds.length = 0;
+                        editingData.newShapes.length = 0;
+                    });
+
+                    for (var i = featureLength - 1; i > -1; i--) {
+                        source.removeFeature(features[i]);
+                    }
+
+                    disenableAllInteractions();
+                    editServerShapes = false;
+                }
+            }
+            ]
+        });
+        map.addControl(imgControls);
+
+        // Add thinkgeo map
+        var thinkGeoCloudMapLayer = new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                url: 'https://cloud{1-6}.thinkgeo.com/api/v1/maps/raster/light/x1/3857/512/{z}/{x}/{y}.png?apikey=PIbGd76RyHKod99KptWTeb-Jg9JUPEPUBFD3SZJYLDE~',
+                maxZoom: 19,
+                tileSize: 512,
+                params:
+                {
+                    'LAYERS': 'ThinkGeoCloudMaps',
+                    'VERSION': '10.4.0',
+                    'STYLE': 'Light'
+                },
+
+                // --------------------------------------------------------------------------------------
+                // Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require
+                // an API Key. The following function is just for reminding you to input the key.
+                // Feel free to remove this function after the key was input.
+                // --------------------------------------------------------------------------------------
+                tileLoadFunction: function (imageTile, src) {
+                    fetch(src).then((response) => {
+                        if (response.status === 401) {
+                            var canvas = document.createElement("canvas");
+                            canvas.width = 512;
+                            canvas.height = 512;
+                            var context = canvas.getContext("2d");
+                            context.font = "14px Arial";
+                            context.strokeText("Backgrounds for this sample are", 256, 100);
+                            context.strokeText("powered by ThinkGeo Cloud Maps and", 256, 120);
+                            context.strokeText("require an API Key. This was sent", 256, 140);
+                            context.strokeText("to you via email when you signed up", 256, 160);
+                            context.strokeText("with ThinkGeo, or you can register", 256, 180);
+                            context.strokeText("now at https://cloud.thinkgeo.com", 256, 200);
+                            var url = canvas.toDataURL("image/png", 1);
+                            imageTile.getImage().src = url;
+                        }
+                        else {
+                            response.blob().then((blob) => {
+                                if (blob) {
+                                    imageTile.getImage().src = URL.createObjectURL(blob);
+                                }
+                                else {
+                                    imageTile.getImage().src = "";
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        });
+        map.addLayer(thinkGeoCloudMapLayer);
+
+        // Add the layer to the map to render the shapes which we will be editing.
+        var xyzSource = new ol.source.XYZ({
+            url: getRootPath() + "edit/{z}/{x}/{y}/" + accessId,
+            maxZoom: 19
+        });
+        xyzSource.tileLoadFunction = function (imageTile, src) {
+            imageTile.getImage().src = src + '?t=' + new Date().getTime();;
+        };
+        var tileLayer = new ol.layer.Tile({
+            source: xyzSource
+        })
+        map.addLayer(tileLayer);
+
+        var source = new ol.source.Vector();
+
+        var layer = new ol.layer.Vector({
+            source: source,
+            style: new ol.style.Style({
+                fill: new ol.style.Fill({
+                    color: 'rgba(0, 153, 255, 0.4)'
+                }),
+                stroke: new ol.style.Stroke({
+                    color: '#0099FF',
+                    width: 3
+                }),
+                image: new ol.style.Circle({
+                    radius: 7,
+                    fill: new ol.style.Fill({
+                        color: '#0099FF'
+                    })
+                })
+            })
+        });
+        map.addLayer(layer);
+
+
+        // Initialise the select interaction for selecting features for edit
+        var selectInteraction = new ol.interaction.Select({
+            style: new ol.style.Style({
+                fill: new ol.style.Fill({
+                    color: 'rgba(240, 110, 170,0.2)'
+                }),
+                stroke: new ol.style.Stroke({
+                    color: 'rgba(240, 110, 170,0.5)',
+                    width: 3
+                }),
+                image: new ol.style.Circle({
+                    radius: 7,
+                    fill: new ol.style.Fill({
+                        color: 'rgba(240, 110, 170,0.2)'
+                    })
+                })
+            })
+        });
+
+        // Initialise the draw control and pass it the FeatureGroup of editable layers
+        var modify = new ol.interaction.Modify({
+            features: selectInteraction.getFeatures(),
+            // the SHIFT key must be pressed to delete vertices, so
+            // that new vertices can be drawn at the same position
+            // of existing vertices
+            deleteCondition: function (event) {
+                return ol.events.condition.shiftKeyOnly(event) &&
+                    ol.events.condition.singleClick(event);
+            }
+        });
+
+        function setDrawMode(drawType) {
+            disenableAllInteractions();
+            draw = new ol.interaction.Draw({
+                features: source.getFeatures(),
+                type: drawType
+            });
+            draw.on('drawend', function (e) {
+                var id = guid();
+                e.feature.setId(id);
+                drawingFeature = e.feature;
+                showDlg();
+            });
+            map.addInteraction(draw);
+        }
+
+        function disenableAllInteractions() {
+            if (draw) {
+                map.removeInteraction(draw);
+            }
+            if (modify) {
+                map.removeInteraction(modify);
+            }
+            if (selectInteraction) {
+                map.removeInteraction(selectInteraction);
+                var selectionFeatures = selectInteraction.getFeatures();
+                selectionFeatures.un('add', deleteFeature);
+            }
+        }
+
+        function transfterGeoJSON(geoJSON, sourceProjection, targetProjection) {
+            var coordinates = geoJSON.geometry.coordinates;
+            var transfer = function (vertex) {
+                return ol.proj.transform(vertex, sourceProjection, targetProjection)
+            }
+            switch (geoJSON.geometry.type) {
+                case 'LineString':
+                    for (var j = 0; j < coordinates.length; j++) {
+                        coordinates[j] = transfer(coordinates[j]);
+                    }
+                    break;
+                case 'Polygon':
+                    for (var j = 0; j < coordinates[0].length; j++) {
+                        coordinates[0][j] = transfer(coordinates[0][j]);
+                    }
+                    break;
+                case 'Point':
+                    geoJSON.geometry.coordinates = transfer(coordinates);
+                    break;
+            }
+        }
+
+        function getGeoJsonFromFeature(feature) {
+            var geoJSONFomat = new ol.format.GeoJSON();
+            var geoJSON = geoJSONFomat.writeFeature(feature);
+            var id = feature.getId();
+            if (id) {
+                geoJSON.id = id;
+            }
+            else {
+                geoJSON.id = guid();
+            }
+            return geoJSON;
+        }
+
+        function getFeatureFromGeoJson(geoJSON) {
+            var geoJSONFomat = new ol.format.GeoJSON();
+            var feature = geoJSONFomat.readFeature(geoJSON);
+            feature.setId(geoJSON.id);
+            return feature;
+        }
+
+        var deleteFeature = function (e) {
+            var features = e.target.getArray();
+            if (features.length > 0) {
+                var id = features[0].getId();
+                source.removeFeature(features[0]);
+                var selectionFeatures = selectInteraction.getFeatures();
+                selectionFeatures.remove(features[0]);
+                editingData.removedIds.push(id);
+            }
+        }
+
+        $('#btnSaveName').click(function () {
+            if ($('#txtName').val() == '') {
+                $('#spWarning').show();
+                return;
+            } else {
+                $('#spWarning').hide();
+            }
+
+            // Take the input name or description of the drawn shape
+            if (drawingFeature) {
+                var shapeName = $('#txtName').val();
+                drawingFeature.setProperties({ name: shapeName });
+                source.addFeature(drawingFeature);
+                $('#txtName').val('');
+                drawingFeature = null;
+            }
+            hideDlg();
+        });
+
+        // Show/hide edit dialog in model mode
+        function showDlg() {
+            $('#bg-mask').show();
+            $('#dlgName').slideToggle("fast");
+        }
+
+        function hideDlg() {
+            $('#bg-mask').hide();
+            $('#dlgName').slideToggle("fast");
+        }
+    </script>
+</body>
+</html>

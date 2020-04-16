@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Getting started with map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="desktop.png">
+    <meta name="apple-mobile-web-app-title" content="ThinkGeo Getting started" />
+    <link href="Content/ol.css" rel="stylesheet" />
+    <link href="Content/thinkgeo.openlayers.css" rel="stylesheet" />
+    <link href="Content/Site.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.thinkgeo.com/vectormap-js/3.0.0/vectormap.css">
+</head>
+<body>
+    <div id="map-page">
+        <div id="map">
+            <div id="popup" class="ol-popup">
+                <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                <div id="popup-content"></div>
+            </div>
+            <div id="contextMenu" class="ol-menu">
+                <a class="menu-item" href="#" onclick="centerHere();">Center map here</a>
+                <div class="menu-separator"></div>
+                <a class="menu-item" href="#" onclick="zoom(5);">Zoom to zoomlevel 5 (Country Level)</a>
+                <a class="menu-item" href="#" onclick="zoom(8);">Zoom to zoomlevel 8 (State Level)</a>
+                <a class="menu-item" href="#" onclick="zoom(12);">Zoom to zoomlevel 12 (City Level)</a>
+                <a class="menu-item" href="#" onclick="zoom(17);">Zoom to zoomlevel 17 (Street Level)</a>
+            </div>
+        </div>
+        <div id="tips">
+            <ul>
+                <li id="scale">Scale: 1:73,957,338</li>
+                <li id="zoom">Zoom: 2</li>
+                <li id="lat">Latitude: 37.80014 </li>
+                <li id="lng">Longitude: -96.1010</li>
+            </ul>
+        </div>
+        <div id="locateError"></div>
+    </div>
+    <script src="Scripts/jquery-1.11.1.min.js"></script>
+
+    <!-- Include the latest version of ThinkGeo's VectorMap.js library from our CDN. -->
+    <script src="https://cdn.thinkgeo.com/vectormap-js/3.0.0/vectormap.js"></script>
+
+    <!-- Include ThinkGeo's Map Icon Font loader for POI icons on the background layer. -->
+    <script src="https://cdn.thinkgeo.com/vectormap-icons/3.0.0/webfontloader.js"></script>
+
+    <script src="Scripts/thinkgeo.openlayers.js"></script>
+    <script src="Scripts/thinkgeo.js"></script>
+</body>
+</html>

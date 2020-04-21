@@ -308,7 +308,7 @@ namespace Layers.Controllers
                 TextLineSegmentRatio = 4,
                 GridSize = 0,
                 ForceHorizontalLabelForLine = true,
-                //MaskMargin = 2,
+                MaskMargin = new DrawingMargin(2, 2, 2, 2),
                 MaskType = MaskType.RoundedCorners,
                 SuppressPartialLabels = true,
                 Mask = new AreaStyle(new GeoPen(new GeoColor(255, 153, 153, 153), 2)) { DrawingLevel = DrawingLevel.LabelLevel }

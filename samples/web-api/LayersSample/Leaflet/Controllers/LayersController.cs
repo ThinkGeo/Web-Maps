@@ -13,14 +13,13 @@ namespace Layers.Controllers
     {
         private static readonly string baseDirectory = null;
         private static ProjectionConverter wgs84ToGoogleProjectionConverter;
-        private static ProjectionConverter feetToGoogleProjectionConverter;
         private static readonly NoaaRadarRasterLayer noaaRadarRasterLayer;
         private static readonly NoaaWeatherStationFeatureLayer noaaWeatherStationFeatureLayer;
 
         static LayersController()
         {
             baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "App_Data");
-            InitializeProjection();
+            wgs84ToGoogleProjectionConverter = new ProjectionConverter(4326, 3857);
 
             // Noaa layers need to download the imformantion from server, we can open to start downloading data when application starting.
             noaaRadarRasterLayer = new NoaaRadarRasterLayer();
@@ -150,7 +149,7 @@ namespace Layers.Controllers
         [HttpGet]
         public IActionResult LoadWkbFile(int z, int x, int y)
         {
-            string wkbFilePathName = Path .Combine (baseDirectory, "Wkb", "USStates.wkb") ;
+            string wkbFilePathName = Path.Combine(baseDirectory, "Wkb", "USStates.wkb");
             WkbFileFeatureLayer wkbFileFeatureLayer = new WkbFileFeatureLayer(wkbFilePathName);
             wkbFileFeatureLayer.Name = "wkb";
             wkbFileFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillBrush = new GeoSolidBrush(new GeoColor(50, GeoColors.Orange));
@@ -265,6 +264,13 @@ namespace Layers.Controllers
         public IActionResult LoadMrsidFile(int z, int x, int y)
         {
             LayerOverlay layerOverlay = new LayerOverlay();
+
+            string projWkt = System.IO.File.ReadAllText(Path.Combine(baseDirectory, "MrSid", "US380AndGeeRoad.prj"));
+            ProjectionConverter feetToGoogleProjectionConverter = new ProjectionConverter()
+            {
+                InternalProjection = new Projection(Projection.ConvertWktToProjString(projWkt)),
+                ExternalProjection = new Projection(Projection.GetGoogleMapProjString())
+            };
 
             string mrSidFilePathName = Path.Combine(baseDirectory, "MrSid", "US380AndGeeRoad.sid");
             MrSidRasterLayer mrsidRasterLayer = new MrSidRasterLayer(mrSidFilePathName);
@@ -406,7 +412,7 @@ namespace Layers.Controllers
             wmsLayer.Parameters.Add("STYLES", "Light");
             wmsLayer.Parameters.Add("apikey", "PIbGd76RyHKod99KptWTeb-Jg9JUPEPUBFD3SZJYLDE~");
 
-              LayerOverlay layerOverlay = new LayerOverlay();
+            LayerOverlay layerOverlay = new LayerOverlay();
             layerOverlay.Layers.Add(wmsLayer);
 
             return DrawTileImage(layerOverlay, z, x, y);
@@ -457,19 +463,6 @@ namespace Layers.Controllers
 
                 return File(imageBytes, "image/png");
             }
-        }
-
-        /// <summary>
-        /// Initializes projection.
-        /// </summary>
-        private static void InitializeProjection()
-        {
-            wgs84ToGoogleProjectionConverter = new ProjectionConverter(4326, 3857);
-
-            feetToGoogleProjectionConverter = new ProjectionConverter();
-            string projStr = System.IO.File.ReadAllText(string.Format(@"{0}/MrSid/US380AndGeeRoad.prj", baseDirectory));
-            feetToGoogleProjectionConverter.InternalProjection = new Projection(projStr);
-            feetToGoogleProjectionConverter.ExternalProjection = new Projection(Projection.GetGoogleMapProjString());
         }
     }
 }

@@ -38,6 +38,7 @@ namespace Labeling
             clonedStyle.GridSize = this.GridSize;
             clonedStyle.OverlappingRule = this.OverlappingRule;
             clonedStyle.DuplicateRule = this.DuplicateRule;
+            clonedStyle.TextPlacement = TextPlacement.Right;
 
             float fontSize = Convert.ToInt32(50000 / canvas.CurrentScale);
 

@@ -102,16 +102,8 @@ namespace Labeling
             poiLayer.ZoomLevelSet.ZoomLevel10.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
 
             poiLayer.ZoomLevelSet.ZoomLevel10.DefaultPointStyle = new PointStyle(PointSymbolType.Circle, 7, new GeoSolidBrush(GeoColor.FromHtml("#99cc33")), new GeoPen(GeoColor.FromHtml("#666666"), 1));
-            poiLayer.ZoomLevelSet.ZoomLevel10.DefaultTextStyle = new CustomTextStyle("Name", new GeoFont("Arail", 9, DrawingFontStyles.Bold), new GeoSolidBrush(GeoColors.Black))
-            {
-                HaloPen = new GeoPen(GeoColors.White, 1),
-                Mask = new AreaStyle(),
-                XOffsetInPixel = 10,
-                YOffsetInPixel = 10,
-                TextPlacement = TextPlacement.Center,
-                OverlappingRule = LabelOverlappingRule.NoOverlapping,
-            };
-
+            poiLayer.ZoomLevelSet.ZoomLevel10.DefaultTextStyle = new CustomTextStyle("Name", new GeoFont("Arail", 9, DrawingFontStyles.Bold), new GeoSolidBrush(GeoColors.Black));
+           
             // Set DrawingMarginPercentage to a proper value to avoid some labels are cut-off
             poiLayer.DrawingMarginInPixel = 600;
             customLabelingOverlay.Layers.Add("customLabeling_Label", poiLayer);
@@ -267,7 +259,7 @@ namespace Labeling
             poiLayer.ZoomLevelSet.ZoomLevel10.DefaultTextStyle.HaloPen = new GeoPen(GeoColors.White, 2);
             poiLayer.ZoomLevelSet.ZoomLevel10.DefaultTextStyle.Mask = new AreaStyle(new GeoPen(GeoColor.FromHtml("#999999"), 1), new GeoSolidBrush(new GeoColor(100, GeoColor.FromHtml("#cccc99"))), PenBrushDrawingOrder.PenFirst);
             poiLayer.ZoomLevelSet.ZoomLevel10.DefaultTextStyle.XOffsetInPixel = 0;
-            poiLayer.ZoomLevelSet.ZoomLevel10.DefaultTextStyle.YOffsetInPixel = 8;
+            poiLayer.ZoomLevelSet.ZoomLevel10.DefaultTextStyle.YOffsetInPixel = -2;
             poiLayer.ZoomLevelSet.ZoomLevel10.DefaultTextStyle.TextPlacement = TextPlacement.Upper;
             poiLayer.ZoomLevelSet.ZoomLevel10.DefaultTextStyle.OverlappingRule = LabelOverlappingRule.NoOverlapping;
             poiLayer.ZoomLevelSet.ZoomLevel10.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;

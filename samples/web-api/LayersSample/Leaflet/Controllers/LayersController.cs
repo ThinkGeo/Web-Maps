@@ -24,7 +24,7 @@ namespace Layers.Controllers
             // Noaa layers need to download the imformantion from server, we can open to start downloading data when application starting.
             noaaRadarRasterLayer = new NoaaRadarRasterLayer();
             noaaRadarRasterLayer.Name = "noaaRadar";
-            noaaRadarRasterLayer.ImageSource.ProjectionConverter = wgs84ToGoogleProjectionConverter;
+            noaaRadarRasterLayer.ImageSource.ProjectionConverter = new UnmanagedProjectionConverter(4326, 3857);
             NoaaRadarMonitor.RadarUpdated += (sender, args) => NoaaRadarMonitor.StopMonitoring();
             noaaRadarRasterLayer.Open();
 

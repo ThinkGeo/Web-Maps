@@ -1,0 +1,132 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Printing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE10" />
+    <meta name="author" content="ThinkGeo" />
+    <meta name="apple-mobile-web-app-title" content="Printing" />
+    <link href="Images/desktop.png" rel="apple-touch-icon" />
+    <link href="Images/favicon.ico" rel="shortcut icon" type="Images/x-icon" />
+    <link href="Content/leaflet.css" rel="stylesheet" />
+    <link href="Content/site.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="container">
+        <div id="left" class="wing">
+            <div class="title">Printer Layers</div>
+            <div id="discription">Please click one of the items below to add it to the Print Out</div>
+            <ul id="printerLayers">
+                <li>
+                    <div class="unselected" key="LabelPrinterLayer">
+                        <img src="Images/Label.png" />
+                        <span>Label Printer Layer</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="unselected" key="ImagePrinterLayer">
+                        <img src="Images/Image.png" />
+                        <span>Image Printer Layer</span>
+                    </div>
+                </li>
+                <li>
+
+                    <div class="unselected" key="ScaleLinePrinterLayer">
+                        <img src="Images/Scale_line.png" />
+                        <span>Scale Line Printer Layer</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="unselected" key="ScaleBarPrinterLayer">
+                        <img src="Images/Scale_Bar.png" />
+                        <span>Scale Bar Printer Layer</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="unselected" key="DataGridPrinterLayer">
+                        <img src="Images/Grid.png" />
+                        <span>Data Grid Printer Layer</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div id="map"></div>
+
+        <div id="right" class="wing">
+            <div class="title">Print Preview Settings</div>
+            <div class="detailPanel">
+                <span>Paper Size:</span>
+                <select id="PaperSize" onchange="UpdatePrintInformation('PaperSize',this.value)">
+                    <option value="AnsiA">ANSI A-8.5 x 11 (A4)</option>
+                    <option value="AnsiB">ANSI B-11 x 17 (A3)</option>
+                    <option value="AnsiC">ANSI C-17 x 22 (A2)</option>
+                    <option value="AnsiD">ANSI D-22 x 34 (A1)</option>
+                    <option value="AnsiE">ANSI E-34 x 44 (A0)</option>
+                </select>
+                <span>Orientation:</span>
+                <select id="Orientation" onchange="UpdatePrintInformation('Orientation', this.value)">
+                    <option value="Portrait">Portrait</option>
+                    <option value="Landscape">Landscape</option>
+                </select>
+                <span>Percentage:</span>
+                <select id="Percentage" onchange="UpdatePrintInformation('Percentage', this.value)">
+                    <option value="5">5%</option>
+                    <option value="10">10%</option>
+                    <option value="20">20%</option>
+                    <option value="30">30%</option>
+                    <option value="40">40%</option>
+                    <option value="50">50%</option>
+                    <option value="60">60%</option>
+                    <option value="70">70%</option>
+                    <option value="80">80%</option>
+                    <option value="90">90%</option>
+                    <option value="100" selected="selected">100%</option>
+                    <option value="110">110%</option>
+                    <option value="120">120%</option>
+                    <option value="150">150%</option>
+                    <option value="200">200%</option>
+                    <option value="300">300%</option>
+                    <option value="400">400%</option>
+                    <option value="500">500%</option>
+                    <option value="600">600%</option>
+                    <option value="700">700%</option>
+                </select>
+            </div>
+
+            <div class="detailPanel">
+                <span>Export:</span>
+                <div id="exportPanel">
+                    <input type="button" value="To Bitmap" />
+                    <input type="button" value="To Printer" />
+                </div>
+            </div>
+
+            <div class="detailPanel">
+                <span>Pan or Zoom The Map Within the Print Out.</span>
+                <div class="detail">
+                    <div>
+                        <input class="updateMapExtent" id="zoomIn" type="button" value="ZoomIn" />
+                        <input class="updateMapExtent" id="zoomOut" type="button" value="ZoomOut" />
+                    </div>
+                    <hr />
+                    <div id="panPanel">
+                        <input class="updateMapExtent" type="button" value="N" />
+                        <div>
+                            <input class="updateMapExtent" id="panW" type="button" value="W" />
+                            <input class="updateMapExtent" id="panE" type="button" value="E" />
+                        </div>
+
+                        <input class="updateMapExtent" type="button" value="S" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="Scripts/jquery-1.11.1.min.js"></script>
+    <script src="Scripts/leaflet.js"></script>
+    <script src="Scripts/thinkgeo.leaflet.js"></script>
+    <script src="Scripts/thinkgeo.js"></script>
+</body>
+</html>

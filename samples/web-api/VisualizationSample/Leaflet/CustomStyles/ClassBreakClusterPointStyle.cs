@@ -4,10 +4,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using ThinkGeo.MapSuite.Drawing;
-using ThinkGeo.MapSuite.Layers;
-using ThinkGeo.MapSuite.Shapes;
-using ThinkGeo.MapSuite.Styles;
+using ThinkGeo.Core;
 
 namespace ThinkGeo.MapSuite.Core
 {
@@ -58,13 +55,13 @@ namespace ThinkGeo.MapSuite.Core
         protected override void DrawCore(IEnumerable<Feature> features, GeoCanvas canvas, Collection<SimpleCandidate> labelsInThisLayer, Collection<SimpleCandidate> labelsInAllLayers)
         {
             //  We get the scale to determine the grid.  This scale property should really be on the Canvas!
-            double scale = ExtentHelper.GetScale(canvas.CurrentWorldExtent, canvas.Width, canvas.MapUnit);
+            double scale = MapUtil.GetScale(canvas.CurrentWorldExtent, canvas.Width, canvas.MapUnit);
 
             // Setup our grid for clustering the points.  This is where we specify our cell size in pixels
-            MapSuiteTileMatrix mapSuiteTileMatrix = new MapSuiteTileMatrix(scale, cellSize, cellSize, canvas.MapUnit);
+            TileMatrix mapSuiteTileMatrix = TileMatrix.GetDefaultMatrix(scale, cellSize, cellSize, canvas.MapUnit);
 
             // Pass in the current extent to get our grid cells.  All points in these cells will be consolidated
-            IEnumerable<TileMatrixCell> tileMatricCells = mapSuiteTileMatrix.GetContainedCells(canvas.CurrentWorldExtent);
+            IEnumerable<MatrixCell> tileMatricCells = mapSuiteTileMatrix.GetContainedCells(canvas.CurrentWorldExtent);
 
             // Create an unused features list, as we add them to clusters we will remove them from here
             // This is just for speed so we don't re-test lots of already associated features
@@ -80,7 +77,7 @@ namespace ThinkGeo.MapSuite.Core
             }
 
             // Loop through each cell and find the features that fit inside of it
-            foreach (TileMatrixCell cell in tileMatricCells)
+            foreach (MatrixCell cell in tileMatricCells)
             {
                 int featureCount = 0;
                 MultipointShape tempMultiPointShape = new MultipointShape();

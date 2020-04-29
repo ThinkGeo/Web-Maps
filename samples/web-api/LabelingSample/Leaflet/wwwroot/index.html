@@ -1,0 +1,283 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Labeling</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="author" content="ThinkGeo" />
+    <link rel="apple-touch-icon" href="desktop.png">
+    <meta name="apple-mobile-web-app-title" content="Labeling" />
+    <link href="favicon.ico" rel="shortcut icon" type="Images/x-icon" />
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/leaflet.css" rel="stylesheet" />
+    <link href="Content/Site.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="map">
+    </div>
+    <div id="left-panel">
+        <div class="panel-header" title="Close">
+            <span class="title">Layer List</span>
+        </div>
+        <div class="panel-content">
+            <ul id="layer-options">
+                <li>
+                    <div id="layer-styling" title="LabelStyling" class="selected">
+                        <span>Label Styling</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="layer-point" title="LabelingPoints" class="unselected">
+                        <span>Labeling Points</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="layer-line" title="LabelingLines" class="unselected">
+                        <span>Labeling Lines</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="layer-area" title="LabelingPolygons" class="unselected">
+                        <span>Labeling Polygons</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="layer-custom" title="CustomLabeling" class="unselected">
+                        <span>Custom Labeling – Auto Scaling</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+    <div class="centroid">
+        <div id="edit-panel">
+            <div class="edit-panel-header">
+                <span id="settingTitle">LabelStyling Settings</span>
+            </div>
+            <div id="labelingStyleEdit" class="edit-content">
+                <!--please put the dialog here-->
+            </div>
+            <div class="edit-foot">
+                <a id="btnCancel" href="#" class="btn btn-default" role="button">Cancel</a>
+                <a id="btnSave" href="#" class="btn btn-primary" role="button">Save</a>
+            </div>
+        </div>
+    </div>
+    <script src="Scripts/jquery-1.11.1.min.js"></script>
+    <script src="Scripts/leaflet.js"></script>
+    <script src="Scripts/thinkgeo.leaflet.js"></script>
+    <script>
+        var selectedLayer = 'LabelStyling';
+        var accessId = guid();
+
+        $(function () {
+
+            // Create the map.
+            var map = L.map('map').setView([33.1010, -96.8134], 17);
+
+            // Add base street layer without any label from the web API controller of this Project.
+            var streetLayer = L.tileLayer(L.Util.getRootPath() + '/label/{z}/{x}/{y}').addTo(map);
+
+            // Add dynamic tile layer to map from the web API controller of this Project.
+            var tileLayer = L.dynamicLayer(L.Util.getRootPath() + '/label/LabelStyling/{z}/{x}/{y}/' + accessId).addTo(map);
+
+            // Add image buttons for layers, settings, help etc.
+            L.imageButtons({
+                imgs: [
+                    {
+                        src: 'images/layers.png',
+                        id: 'lyrOptions',
+                        title: 'Show layers',
+                        callback: function () {
+                            $('#left-panel').animate({
+                                'left': '0px'
+                            });
+                        }
+                    },
+                    {
+                        src: 'images/gear.png',
+                        id: 'btnConfig',
+                        title: 'Show style settings',
+                        callback: function () {
+                            showStyleDlg();
+                            loadStyleDlg();
+                        }
+                    },
+                    {
+                        src: 'images/info.png',
+                        id: 'btnInfo',
+                        title: 'Show help',
+                        callback: function () { window.open('http://wiki.thinkgeo.com', '_blank'); }
+                    }
+                ]
+            }).addTo(map);
+
+            var loadStyleDlg = function () {
+                var pageUrl = 'labelingStyleEdit.html';
+                switch (selectedLayer) {
+                    case 'LabelingPoints':
+                        pageUrl = 'LabelingPointsEdit.html';
+                        break;
+                    case 'LabelingLines':
+                        pageUrl = 'LabelingLinesEdit.html';
+                        break;
+                    case 'LabelingPolygons':
+                        pageUrl = 'LabelingPolygonsEdit.html';
+                        break;
+                    case 'CustomLabeling':
+                        pageUrl = 'CustomLabelingEdit.html';
+                        break;
+                    case 'LabelStyling':
+                    default:
+                        break;
+                }
+
+                // Load style editing page dynamically from the web API controller of this Project.
+                $('#labelingStyleEdit').load('EditPages/' + pageUrl, function () {
+                    var url = L.Util.getRootPath() + '/label/GetStyle/' + selectedLayer + '/' + accessId;
+                    $.get(url, function (data) {
+                        switch (selectedLayer) {
+                            case 'LabelStyling':
+                                $('#applyHalo').prop('checked', data.haloPen);
+                                $('#applyMask').prop('checked', data.mask);
+                                $('#isOverlap').prop('checked', data.overlapping);
+                                $('#gridSize').val(data.gridSize);
+                                $('#duplicateRule').val(data.duplicate);
+                                $('#drawingMargin').val(data.drawingMargin);
+                                break;
+                            case 'LabelingPoints':
+                                $('#applyPlace').val(data.placement),
+                                $('#xOffset').val(data.xoffset),
+                                $('#yOffset').val(data.yoffset)
+                                break;
+                            case 'LabelingLines':
+                                $('#applySpline').val(data.spline),
+                                $('#applyLineSegmentRatio').val(data.lineSegmentRatio)
+                                break;
+                            case 'LabelingPolygons':
+                                $('#applyFittingPolygon').prop('checked', data.fittingPolygon),
+                                $('#applyLabelAllPolygonParts').prop('checked', data.labelAllPolygonParts)
+                                break;
+                            case 'CustomLabeling':
+                                $('#applyMinFontSize').val(data.minSize),
+                                $('#applyMaxFontSize').val(data.maxSize)
+                                break;
+                            default:
+                                break;
+                        }
+                    });
+                });
+            };
+
+            // Save the style modified.
+            $('#btnSave').click(function (e) {
+                var changes = null;
+                switch (selectedLayer) {
+                    case 'LabelStyling':
+                        changes = {
+                            haloPen: $('#applyHalo').is(':checked'),
+                            mask: $('#applyMask').is(':checked'),
+                            overlapping: $('#isOverlap').is(':checked'),
+                            gridSize: $('#gridSize option:selected').text(),
+                            duplicate: $('#duplicateRule option:selected').text(),
+                            drawingMargin: $('#drawingMargin').val()
+                        };
+                        break;
+                    case 'LabelingPoints':
+                        changes = {
+                            placement: $('#applyPlace option:selected').text(),
+                            xoffset: $('#xOffset').val(),
+                            yoffset: $('#yOffset').val()
+                        };
+                        break;
+                    case 'LabelingLines':
+                        changes = {
+                            placement: $('#applyPlace option:selected').text(),
+                            spline: $('#applySpline option:selected').text(),
+                            lineSegmentRatio: $('#applyLineSegmentRatio').val()
+                        };
+                        break;
+                    case 'LabelingPolygons':
+                        changes = {
+                            placement: $('#applyPlace option:selected').text(),
+                            fittingPolygon: $('#applyFittingPolygon').is(':checked'),
+                            labelAllPolygonParts: $('#applyLabelAllPolygonParts').is(':checked')
+                        };
+                        break;
+                    case 'CustomLabeling':
+                        changes = {
+                            minSize: $('#applyMinFontSize').val(),
+                            maxSize: $('#applyMaxFontSize').val()
+                        };
+                        break;
+                    default: break;
+                }
+
+                // Here we post back to the web API controller of this Project.
+                $.post(L.Util.getRootPath() + '/label/update/' + selectedLayer + '/' + accessId, { '': JSON.stringify(changes) }, function (e) {
+                    tileLayer.redraw();
+                    hideStyleDlg();
+                });
+            });
+
+            $('#btnCancel').click(function (e) {
+                hideStyleDlg();
+            });
+
+            // Select a style from options.
+            $("#layer-options div").bind("click", function () {
+                var layers = $("#layer-options div");
+                for (var i = 0; i < layers.length; i++) {
+                    $(layers[i]).attr("class", "unselected");
+                }
+                $(this).attr("class", "selected");
+
+                // Redraw the map.
+                selectedLayer = $(this).attr("title");
+                tileLayer.setUrl(L.Util.getRootPath() + '/label/' + selectedLayer + '/{z}/{x}/{y}/' + accessId);
+                tileLayer.redraw();
+
+                if (selectedLayer === 'LabelingPolygons') {
+                    streetLayer.setOpacity(0);
+                    map.setView([33.1010, -96.8134], 16);
+                } else if (selectedLayer === 'LabelingLines') {
+                    streetLayer.setOpacity(1);
+                } else {
+                    streetLayer.setOpacity(1);
+                    map.setView([33.1010, -96.8134], 17);
+                }
+            });
+
+            // Show model-dialog.
+            function showStyleDlg() {
+                this.bgmask = L.DomUtil.create('div', 'bg-mask');
+                $('body').append(this.bgmask);
+
+                $('#edit-panel').slideToggle("fast");
+            }
+
+            function hideStyleDlg() {
+                $('.bg-mask').remove();
+                $('#edit-panel').slideToggle("fast");
+            }
+
+            // Do the layers panel animation.
+            $("html").click(function () {
+                $('#left-panel').animate({
+                    'left': -$('#left-panel').width() + 'px'
+                });
+            });
+        });
+
+        // Add a utility methods to get guid. 
+        function guid() {
+            function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+            }
+            return (s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4()).toLowerCase();
+        };
+    </script>
+</body>
+</html>

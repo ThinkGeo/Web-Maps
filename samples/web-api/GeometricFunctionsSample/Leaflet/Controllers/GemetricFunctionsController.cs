@@ -1,49 +1,49 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Web;
-using System.Web.Http;
 using System.Xml.Linq;
-using ThinkGeo.MapSuite;
-using ThinkGeo.MapSuite.Drawing;
-using ThinkGeo.MapSuite.Layers;
-using ThinkGeo.MapSuite.Shapes;
-using ThinkGeo.MapSuite.Styles;
-using ThinkGeo.MapSuite.WebApi;
+using ThinkGeo.Core;
+using ThinkGeo.UI.WebApi;
 
 namespace GeometricFunctions.Controllers
 {
-    [RoutePrefix("tile")]
-    public class GeometricFunctionsController : ApiController
+    [Route("tile")]
+    public class GeometricFunctionsController : ControllerBase
     {
         // Load the input features which will be used for geo-processing.
-        private static GeoCollection<Feature> inputFeatures = LoadInputFeatures();
+        private static readonly string baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+        private static GeoCollection<Feature> inputFeatures = null;
+
+        static GeometricFunctionsController()
+        {
+            inputFeatures = LoadInputFeatures();
+        }
 
         [Route("Input/{z}/{x}/{y}/{featureIds}")]
-        public HttpResponseMessage GetInputTile(int z, int x, int y, string featureIds)
+        public IActionResult GetInputTile(int z, int x, int y, string featureIds)
         {
             // Get the sample input features by ids passed from client side.
             Feature[] tempFeatures = featureIds.Split(',').Select(id => inputFeatures[id]).ToArray();
 
-            // Draw the map and return the image back to client in an HttpResponseMessage.
+            // Draw the map and return the image back to client in an IActionResult.
             return DrawTile(z, x, y, tempFeatures, new Feature[] { });
         }
 
         [Route("Output/{z}/{x}/{y}/{accessId}")]
-        public HttpResponseMessage GetOutputTile(int z, int x, int y, string accessId)
+        public IActionResult GetOutputTile(int z, int x, int y, string accessId)
         {
             // Get the result of the geoprocessing made by the speicific access id.
             Collection<Feature> outputFeatures = GetGeoprocessingResultFeatures(accessId);
 
-            // Draw the map and return the image back to client in an HttpResponseMessage.
+            // Draw the map and return the image back to client in an IActionResult.
             return DrawTile(z, x, y, new Feature[] { }, outputFeatures);
         }
 
@@ -116,13 +116,11 @@ namespace GeometricFunctions.Controllers
             Feature inputFeature = inputFeatures[parameters["id"]];
 
             BaseShape shape = inputFeature.GetShape();
-            if (shape.CanRotate)
-            {
-                // Rotate the input feature.
-                Feature rotatedFeature = new Feature(BaseShape.Rotate(shape, shape.GetCenterPoint(), (float)degreeAngle));
 
-                SaveFeatures(accessId, new Feature[] { inputFeature, rotatedFeature });
-            }
+            // Rotate the input feature.
+            Feature rotatedFeature = new Feature(BaseShape.Rotate(shape, shape.GetCenterPoint(), (float)degreeAngle));
+
+            SaveFeatures(accessId, new Feature[] { inputFeature, rotatedFeature });
         }
 
         [Route("Execute/CenterPoint/{accessId}")]
@@ -379,7 +377,7 @@ namespace GeometricFunctions.Controllers
             SaveFeatures(accessId, new Feature[] { envelope });
         }
 
-        private HttpResponseMessage DrawTile(int z, int x, int y, IEnumerable<Feature> inputFeature, IEnumerable<Feature> outputFeature)
+        private IActionResult DrawTile(int z, int x, int y, IEnumerable<Feature> inputFeature, IEnumerable<Feature> outputFeature)
         {
             LayerOverlay layerOverlay = new LayerOverlay();
 
@@ -397,23 +395,18 @@ namespace GeometricFunctions.Controllers
             layerOverlay.Layers.Add(inputFeatureLayer);
             layerOverlay.Layers.Add(outputFeatureLayer);
 
-            // Draw the map and return the image back to client in an HttpResponseMessage.
-            using (Bitmap bitmap = new Bitmap(256, 256))
+            // Draw the map and return the image back to client in an IActionResult.
+            using (GeoImage image = new GeoImage(256, 256))
             {
-                PlatformGeoCanvas geoCanvas = new PlatformGeoCanvas();
+                GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
                 RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
-                geoCanvas.BeginDrawing(bitmap, boundingBox, GeographyUnit.Meter);
+                geoCanvas.BeginDrawing(image, boundingBox, GeographyUnit.Meter);
                 layerOverlay.Draw(geoCanvas);
                 geoCanvas.EndDrawing();
 
-                MemoryStream ms = new MemoryStream();
-                bitmap.Save(ms, ImageFormat.Png);
+                byte[] imageBytes = image.GetImageBytes(GeoImageFormat.Png);
 
-                HttpResponseMessage httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK);
-                httpResponseMessage.Content = new ByteArrayContent(ms.ToArray());
-                httpResponseMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-
-                return httpResponseMessage;
+                return File(imageBytes, "image/png");
             }
         }
 
@@ -429,23 +422,23 @@ namespace GeometricFunctions.Controllers
             ValueItem defaultValueItem = new ValueItem();
             defaultValueItem.Value = "";
             defaultValueItem.CustomStyles.Add(new LineStyle(new GeoPen(GeoColor.FromArgb(180, 255, 155, 13), 5)));
-            defaultValueItem.CustomStyles.Add(new PointStyle(PointSymbolType.Circle, new GeoSolidBrush(GeoColor.FromArgb(255, 255, 248, 172)), 8));
-            defaultValueItem.CustomStyles.Add(new AreaStyle(new GeoPen(GeoColor.StandardColors.Black, 3), new GeoSolidBrush(GeoColor.FromArgb(100, 0, 147, 221))));
+            defaultValueItem.CustomStyles.Add(new PointStyle(PointSymbolType.Circle, 8, new GeoSolidBrush(GeoColor.FromArgb(255, 255, 248, 172))));
+            defaultValueItem.CustomStyles.Add(new AreaStyle(new GeoPen(GeoColors.Black, 3), new GeoSolidBrush(GeoColor.FromArgb(100, 0, 147, 221))));
 
             // Give different style for different geoprocessing.
             valueStyle.ValueItems.Add(defaultValueItem);
-            valueStyle.ValueItems.Add(new ValueItem("GetLineOnLineResult", LineStyles.CreateSimpleLineStyle(GeoColor.FromArgb(200, 146, 203, 252), 5f, GeoColor.StandardColors.Black, 6f, true)));
+            valueStyle.ValueItems.Add(new ValueItem("GetLineOnLineResult", LineStyle.CreateSimpleLineStyle(GeoColor.FromArgb(200, 146, 203, 252), 5f, GeoColors.Black, 6f, true)));
             valueStyle.ValueItems.Add(new ValueItem("Buffering", new AreaStyle(new GeoSolidBrush(GeoColor.FromArgb(140, 255, 155, 13)))));
-            valueStyle.ValueItems.Add(new ValueItem("ClippingResult", new AreaStyle(new GeoPen(GeoColor.StandardColors.Black, 1), new GeoSolidBrush(new GeoColor(160, 255, 248, 172)))));
-            valueStyle.ValueItems.Add(new ValueItem("SnappingBuffer", AreaStyles.CreateSimpleAreaStyle(GeoColor.SimpleColors.Transparent, GeoColor.StandardColors.Black)));
+            valueStyle.ValueItems.Add(new ValueItem("ClippingResult", new AreaStyle(new GeoPen(GeoColors.Black, 1), new GeoSolidBrush(new GeoColor(160, 255, 248, 172)))));
+            valueStyle.ValueItems.Add(new ValueItem("SnappingBuffer", AreaStyle.CreateSimpleAreaStyle(GeoColors.Transparent, GeoColors.Black)));
             valueStyle.ValueItems.Add(new ValueItem("EnvelopeResult", new AreaStyle(new GeoPen(GeoColor.FromArgb(255, 255, 155, 13), 3), new GeoSolidBrush(new GeoColor(160, 255, 248, 172)))));
             valueStyle.ValueItems.Add(new ValueItem("SimplifiedPolygon", new AreaStyle(new GeoPen(GeoColor.FromArgb(255, 255, 155, 13), 2), new GeoSolidBrush(GeoColor.FromArgb(140, 255, 155, 13)))));
-            valueStyle.ValueItems.Add(new ValueItem("Subcommunity1", new AreaStyle(new GeoPen(GeoColor.StandardColors.Gray, 3), new GeoSolidBrush(GeoColor.FromArgb(140, 255, 155, 13)))));
-            valueStyle.ValueItems.Add(new ValueItem("Subcommunity2", new AreaStyle(new GeoPen(GeoColor.StandardColors.Gray, 3), new GeoSolidBrush(GeoColor.FromArgb(150, 255, 204, 1)))));
-            valueStyle.ValueItems.Add(new ValueItem("Length", new TextStyle("Display", new GeoFont("Arial", 10), new GeoSolidBrush(GeoColor.StandardColors.Black)) { ForceHorizontalLabelForLine = true, TextLineSegmentRatio = 5, YOffsetInPixel = 230 }));
+            valueStyle.ValueItems.Add(new ValueItem("Subcommunity1", new AreaStyle(new GeoPen(GeoColors.Gray, 3), new GeoSolidBrush(GeoColor.FromArgb(140, 255, 155, 13)))));
+            valueStyle.ValueItems.Add(new ValueItem("Subcommunity2", new AreaStyle(new GeoPen(GeoColors.Gray, 3), new GeoSolidBrush(GeoColor.FromArgb(150, 255, 204, 1)))));
+            valueStyle.ValueItems.Add(new ValueItem("Length", new TextStyle("Display", new GeoFont("Arial", 10), new GeoSolidBrush(GeoColors.Black)) { ForceHorizontalLabelForLine = true, TextLineSegmentRatio = 5, YOffsetInPixel = 230 }));
 
             outputLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(valueStyle);
-            outputLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(new TextStyle("Display", new GeoFont("Arial", 10), new GeoSolidBrush(GeoColor.StandardColors.Black)));
+            outputLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(new TextStyle("Display", new GeoFont("Arial", 10), new GeoSolidBrush(GeoColors.Black)));
 
             outputLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
             return outputLayer;
@@ -463,18 +456,18 @@ namespace GeometricFunctions.Controllers
 
             ValueItem defaultValueItem = new ValueItem();
             defaultValueItem.Value = "";
-            defaultValueItem.CustomStyles.Add(new AreaStyle(new GeoPen(GeoColor.StandardColors.Black, 3), new GeoSolidBrush(GeoColor.FromArgb(100, 0, 147, 221))));
-            defaultValueItem.CustomStyles.Add(PointStyles.CreateSimplePointStyle(PointSymbolType.Circle, GeoColor.StandardColors.Transparent, GeoColor.StandardColors.Black, 12));
+            defaultValueItem.CustomStyles.Add(new AreaStyle(new GeoPen(GeoColors.Black, 3), new GeoSolidBrush(GeoColor.FromArgb(100, 0, 147, 221))));
+            defaultValueItem.CustomStyles.Add(PointStyle.CreateSimplePointStyle(PointSymbolType.Circle, GeoColors.Transparent, GeoColors.Black, 12));
             defaultValueItem.CustomStyles.Add(new LineStyle(new GeoPen(GeoColor.FromArgb(180, 255, 155, 13), 5)));
 
             valueStyle.ValueItems.Add(defaultValueItem);
-            valueStyle.ValueItems.Add(new ValueItem("Community", new AreaStyle(new GeoPen(GeoColor.StandardColors.Black, 3), new GeoSolidBrush(GeoColor.FromArgb(100, 0, 147, 221)))));
-            valueStyle.ValueItems.Add(new ValueItem("SnappingBuffer", AreaStyles.CreateSimpleAreaStyle(GeoColor.SimpleColors.Transparent, GeoColor.StandardColors.Black)));
-            valueStyle.ValueItems.Add(new ValueItem("ClippingSource", new AreaStyle(new GeoPen(GeoColor.StandardColors.Black, 1), new GeoSolidBrush(new GeoColor(160, 255, 248, 172)))));
+            valueStyle.ValueItems.Add(new ValueItem("Community", new AreaStyle(new GeoPen(GeoColors.Black, 3), new GeoSolidBrush(GeoColor.FromArgb(100, 0, 147, 221)))));
+            valueStyle.ValueItems.Add(new ValueItem("SnappingBuffer", AreaStyle.CreateSimpleAreaStyle(GeoColors.Transparent, GeoColors.Black)));
+            valueStyle.ValueItems.Add(new ValueItem("ClippingSource", new AreaStyle(new GeoPen(GeoColors.Black, 1), new GeoSolidBrush(new GeoColor(160, 255, 248, 172)))));
 
             PointStyle firePointStyle = new PointStyle();
-            firePointStyle.PointType = PointType.Bitmap;
-            firePointStyle.Image = new GeoImage(HttpContext.Current.Server.MapPath(@"~/Images/fire.png"));
+            firePointStyle.PointType = PointType.Image;
+            firePointStyle.Image = new GeoImage(Path.Combine(baseDirectory, "Images", "fire.png"));
             valueStyle.ValueItems.Add(new ValueItem("FirePoint", firePointStyle));
 
             ValueStyle valueStyle1 = new ValueStyle();
@@ -484,7 +477,7 @@ namespace GeometricFunctions.Controllers
 
             inputLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(valueStyle);
             inputLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(valueStyle1);
-            inputLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(new TextStyle("Display", new GeoFont("Arial", 10), new GeoSolidBrush(GeoColor.StandardColors.Black)));
+            inputLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(new TextStyle("Display", new GeoFont("Arial", 10), new GeoSolidBrush(GeoColors.Black)));
 
             inputLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
 
@@ -494,7 +487,7 @@ namespace GeometricFunctions.Controllers
         private static GeoCollection<Feature> LoadInputFeatures()
         {
             GeoCollection<Feature> features = new GeoCollection<Feature>();
-            XElement xElement = XElement.Load(HttpContext.Current.Server.MapPath(@"~/App_Data/inputFeatures.xml"));
+            XElement xElement = XElement.Load(Path.Combine(baseDirectory, "App_Data", "inputFeatures.xml"));
             var featureXElements = xElement.Descendants("Feature").ToArray();
             foreach (var featureXElement in featureXElements)
             {
@@ -716,9 +709,8 @@ namespace GeometricFunctions.Controllers
 
         private static void SaveFeatures(string accessId, IEnumerable<Feature> features)
         {
-            string jsonFile = string.Format("{0}.json", accessId);
-            string jsonFilePath = Path.Combine(HttpContext.Current.Server.MapPath(@"~/App_Data/Temp"), jsonFile);
-		
+            string jsonFilePath = Path.Combine(baseDirectory, "App_Data", "Temp", string.Format("{0}.json", accessId));
+
             using (StreamWriter sw = new StreamWriter(jsonFilePath, false))
             {
                 foreach (Feature feature in features)
@@ -730,13 +722,12 @@ namespace GeometricFunctions.Controllers
 
         private static Collection<Feature> GetGeoprocessingResultFeatures(string accessId)
         {
-            string jsonFile = string.Format("{0}.json", accessId);
-            string jsonFilePath = Path.Combine(HttpContext.Current.Server.MapPath(@"~/App_Data/Temp"), jsonFile);
+            string jsonFilePath = Path.Combine(baseDirectory, "App_Data", "Temp", string.Format("{0}.json", accessId));
 
-            if (File.Exists(jsonFilePath))
+            if (System.IO.File.Exists(jsonFilePath))
             {
                 Collection<Feature> features = new Collection<Feature>();
-                string[] geoJsons = File.ReadAllLines(jsonFilePath);
+                string[] geoJsons = System.IO.File.ReadAllLines(jsonFilePath);
                 foreach (string geojson in geoJsons)
                 {
                     features.Add(Feature.CreateFeatureFromGeoJson(geojson));

@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using ThinkGeo.MapSuite.Drawing;
-using ThinkGeo.MapSuite.Shapes;
-using ThinkGeo.MapSuite.Styles;
+using ThinkGeo.Core;
 
 namespace Visualization
 {
@@ -22,18 +20,18 @@ namespace Visualization
         private GeoPen innerlinePen;
 
         public WindPointStyle()
-            : this(string.Empty, string.Empty, string.Empty, GeoColor.StandardColors.Orange)
+            : this(string.Empty, string.Empty, string.Empty, GeoColors.Orange)
         { }
 
         public WindPointStyle(string textColumn, string levelColumn, string angleColumn, GeoColor fillColor)
         {
             this.directionLineLength1 = 40;
             this.directionLineLength2 = 10;
-            this.blackBrush = new GeoSolidBrush(GeoColor.SimpleColors.Black);
+            this.blackBrush = new GeoSolidBrush(GeoColors.Black);
             this.font = new GeoFont("Verdana", 10);
-            this.textBrush = new GeoSolidBrush(GeoColor.StandardColors.Black);
+            this.textBrush = new GeoSolidBrush(GeoColors.Black);
             this.fillBrush = new GeoSolidBrush(fillColor);
-            this.outlinePen = new GeoPen(GeoColor.StandardColors.Black, 4);
+            this.outlinePen = new GeoPen(GeoColors.Black, 4);
             this.innerlinePen = new GeoPen(fillBrush, 2);
             this.textColumn = textColumn;
             this.windLevelColumn = levelColumn;
@@ -120,7 +118,7 @@ namespace Visualization
                     }
 
                     // draw back
-                    canvas.DrawEllipse(feature, 26, 26, blackBrush, ThinkGeo.MapSuite.Drawing.DrawingLevel.LevelOne);
+                    canvas.DrawEllipse(feature, 26, 26, blackBrush, DrawingLevel.LevelOne);
                     if (directionLine != null)
                     {
                         canvas.DrawLine(directionLine, outlinePen, DrawingLevel.LevelOne, 0, 0);
@@ -137,7 +135,7 @@ namespace Visualization
                     }
 
                     //draw fore
-                    canvas.DrawEllipse(feature, 24, 24, fillBrush, ThinkGeo.MapSuite.Drawing.DrawingLevel.LevelTwo);
+                    canvas.DrawEllipse(feature, 24, 24, fillBrush, DrawingLevel.LevelTwo);
                     if (directionLine != null)
                     {
                         canvas.DrawLine(directionLine, innerlinePen, DrawingLevel.LevelTwo, 0, 0);

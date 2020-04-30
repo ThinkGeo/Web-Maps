@@ -8,7 +8,7 @@
 
 `/samples`: A collection of feature by feature samples.  We suggest you start with the [How Do I Sample](samples/web-api) as it shows dozens of features in one easy to navigate app.
 
-`/.assets`: Any assets needed for the readme.md.
+`/assets`: Any assets needed for the readme.md.
 
 `README.md`: A quick start guide to show you how to quickly get up and running.
 
@@ -16,7 +16,7 @@
 
 We will begin by creating an **ASP.NET Core Web - API** project as the service and a **Blazor App** as the client to consuming the service in your favorite editor.  Next, we will walk you through adding the required packages and getting a map on the default form.  Then, we will add some code to show a nice looking background map, and finally, add some custom data to the map and style it.  After reading this, you will be in a good position to look over the [How Do I Sample](samples) and explore our other features.
 
-![alt text](.assets/quickstart_webmaps_shapefile_pointstyle_screenshot.png "Simple Map")
+![alt text](assets/quickstart_webmaps_shapefile_pointstyle_screenshot.png "Simple Map")
 
 ### Step 1: Setup a New Project
 

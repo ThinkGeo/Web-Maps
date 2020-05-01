@@ -2,7 +2,7 @@
 
 ## Quick Start: Display a Simple Map
 
-We will begin by creating an **ASP.NET Core Web - API** project as the service and a simple HTML-based sample with [Leaflets](https://leafletjs.com/) to consume the service in your favorite editor. Next, we will walk you through adding the required packages and getting a Restful map service.  Then, we will add some code to show a nice looking background map, and finally, add some custom data to the map and style it.  After reading this, you will be in a good position to look over the [How Do I Sample](samples) and explore our other features.
+We will begin by creating an **ASP.NET Core Web - API** project as the service and a simple HTML-based sample with [Leaflets](https://leafletjs.com/) to consume the service in your favorite editor. Next, we will walk you through adding the required packages and getting a Restful map service.  Then, we will add some code to show a nice looking background map, and finally, add some custom data to the map and style it.  After reading this, you will be in a good position to look over the [How Do I Sample](samples/web-api) and explore our other features.
 
 ![alt text](assets/quickstart_webmaps_webapi_screenshot.png "Simple Map")
 

@@ -2,11 +2,11 @@
 
 ## Repository Layout
 
-`/api-docs`: An offline version the API documentation HTML pages.
+`/docs`: An offline version the documentation HTML pages.
 
 `/samples`: A collection of feature by feature samples.  We suggest you start with the [How Do I Sample](samples/web-api) as it shows dozens of features in one easy to navigate app.
 
-`/assets`: Any assets needed for the readme.md.
+`/assets`: Any assets needed for the README.
 
 `README.md`: A quick start guide to show you how to quickly get up and running.
 
@@ -21,6 +21,8 @@ We have a number of samples for both WebAPI and Blazor that show off ThinkGeo We
 
 - [WebAPI Quickstart](#quick-start-display-a-simple-map-on-webapi)
 - [Blazor Quickstart](#quick-start-display-a-simple-map-on-blazor)
+
+---
 
 ## Quick Start: Display a Simple Map on WebAPI
 
@@ -44,7 +46,7 @@ Install-Package ThinkGeo.UI.WebApi
 
 ### Step 3: Prepare spatial data required
 
-Download the required spatial data from [GitLab](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/master/assets/capital.zip?inline=false) and extract its contents into "Data" directory located at the root project.
+Download the required spatial data from [GitLab](assets/capital.zip) and extract its contents into "Data" directory located at the root project.
 
 ### Step 4: Create the Map API Controller
 
@@ -185,6 +187,8 @@ You should now see your map with our Cloud Maps layer!
 
 You are now in a great position to look over the [other samples available](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/samples/web-api) and explore our other features.
 
+---
+
 ## Quick Start: Display a Simple Map on Blazor
 
 We will begin by creating a **Blazor App** as the client to consuming the service in your favorite editor.  Next, we will walk you through adding the required packages and getting a map on the default form.  Then, we will add some code to show a nice looking background map, and finally, add some custom data to the map and style it.  After reading this, you will be in a good position to look over the [How Do I Sample](samples/blazor) and explore our other features.
@@ -255,7 +259,7 @@ You should now see your map with our Cloud Maps layer!
 
 ### Step 4: Prepare spatial data required
 
-Download the required spatial data from [GitLab](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/master/assets/capital.zip?inline=false) and put it into "Data" directory locating at the root project.
+Download the required spatial data from [GitLab](assets/capital.zip) and extract its contents into the "Data" directory located at the root project.
 
 ### Step 5: Add a Point Data Layer
 
@@ -303,7 +307,9 @@ Create the `FeatureLayer` with the data "capital.shp" saved in "Data" directory:
 
 After build and run the `blazor app` in browser, you should now see your map with our Cloud Maps layer and capital labels.
 
-## Need Help
+---
+
+## Need Help?
 
 If you run into any issues with running the samples, please let us know in the [Community Forums](https://community.thinkgeo.com).
 

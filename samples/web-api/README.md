@@ -42,7 +42,7 @@ Add an action method "GetTile" with code below to serve map tiles drawn with map
 
      // Create the point layer for capitals.
      ShapeFileFeatureLayer capitalFeatureLayer = new ShapeFileFeatureLayer(Path.Combine(AppContext.BaseDirectory, "../../../Data/capital.shp"));
-     // Create the "Mercator projection" and apply it to the layer to match the background street map.
+     // Create the "Mercator projection" and apply it to the layer to match the background map.
      capitalFeatureLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(Projection.GetWgs84ProjString(), Projection.GetSphericalMercatorProjString());
 
      // Create the point style for positions.
@@ -122,7 +122,7 @@ Now you’re ready to initialize the map and consume the map tile services with 
      var map = L.map('mapDiv').setView([33.1010, -96.8134], 4);
 
      // Add ThinkGeoCloudMaps as the base map.
-     var thinkgeoCloudMapsLayer = L.tileLayer('https://{s}.thinkgeo.com/api/v1/maps/raster/aerial/x1/3857/512/{z}/{x}/{y}.jpeg?apikey=f0wKmeZbBogWJ0PuG6wzLovWGvXaQm4-Ke90LclWFDI~', {
+     var thinkgeoCloudMapsLayer = L.tileLayer('https://{s}.thinkgeo.com/api/v1/maps/raster/aerial/x1/3857/512/{z}/{x}/{y}.jpeg?apikey=YOUR CLOUD API KEY', {
          subdomains: ['cloud1', 'cloud2', 'cloud3', 'cloud4', 'cloud5', 'cloud6'],
          layers: 'ThinkGeoCloudMaps',
          format: 'image/png',

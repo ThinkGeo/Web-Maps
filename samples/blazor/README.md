@@ -77,7 +77,7 @@ You should now see your map with our Cloud Maps layer!
 
 Download the required spatial data from [GitLab](/samples/data) and put it into "Data" directory locating at the root project.
 
-### Step 6: Add a Point Data Layer
+### Step 5: Add a Point Data Layer
 
 Add point capital `FeatureLayer` to the map by adding one more `LayerOverlay` in MapView's  `OverlaysSetting`:
 
@@ -119,6 +119,6 @@ Create the `FeatureLayer` with the data "capital.shp" saved in "Data" directory:
 }
 ```
 
-### Step 7: Build and launch the blazor app
+### Step 6: Build and launch the blazor app
 
 After build and run the `blazor app` in browser, you should now see your map with our Cloud Maps layer and capital labels. 

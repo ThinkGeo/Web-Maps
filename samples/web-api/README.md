@@ -132,6 +132,7 @@ var thinkgeoCloudMapsLayer = L.tileLayer('https://{s}.thinkgeo.com/api/v1/maps/r
 
 // Add base street layer without any label from the web API controller of this Project.
 var capitalLayer = L.tileLayer(L.Util.getRootPath() + '/{z}/{x}/{y}').addTo(map);
+```
 
 Make sure all the code is called after the div and leaflet.js inclusion. That’s it! You have a working Leaflet map now.
 

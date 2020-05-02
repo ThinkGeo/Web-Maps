@@ -57,7 +57,11 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="12.2.*" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="12.2.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\App_Data\Temp\" />
   </ItemGroup>
 
 </Project>

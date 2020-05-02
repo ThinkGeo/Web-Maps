@@ -191,35 +191,44 @@ namespace QueryTools.Controllers
         public string SQLQueryDataRequests(string sqlString = "Select CNTRY_NAME,POP_CNTRY from Countries Where LANDLOCKED='Y'")
         {
             sourceLayer.Open();
-            // Get SQL query result and format it to HTML centent.
-            DataTable dataTable = sourceLayer.QueryTools.ExecuteQuery(sqlString);
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append("<tr>");
-            foreach (var column in dataTable.Columns)
-            {
-                stringBuilder.Append("<th>" + column + "</th>");
-            }
-            stringBuilder.Append("</tr>");
 
-
-            foreach (DataRow row in dataTable.Rows)
+            // Get SQL query result and format it to HTML centent.
+            if (sourceLayer.QueryTools.CanExecuteSqlQuery)
             {
+                DataTable dataTable = sourceLayer.QueryTools.ExecuteQuery(sqlString);
                 stringBuilder.Append("<tr>");
-
                 foreach (var column in dataTable.Columns)
                 {
-                    stringBuilder.Append("<td>" + row[column.ToString()]);
+                    stringBuilder.Append("<th>" + column + "</th>");
                 }
                 stringBuilder.Append("</tr>");
+
+
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    stringBuilder.Append("<tr>");
+
+                    foreach (var column in dataTable.Columns)
+                    {
+                        stringBuilder.Append("<td>" + row[column.ToString()]);
+                    }
+                    stringBuilder.Append("</tr>");
+                }
+
+                // Update sql query result layer.
+                sqlQueryResultLayer.InternalFeatures.Clear();
+                var features = sourceLayer.FeatureSource.GetFeaturesByColumnValue("LANDLOCKED", "Y");
+                foreach (Feature feature in features)
+                {
+                    sqlQueryResultLayer.InternalFeatures.Add(feature.Id, feature);
+                }
+            }
+            else
+            {
+                stringBuilder.Append("The source layer does not support SQL queries");
             }
 
-            // Update sql query result layer.
-            sqlQueryResultLayer.InternalFeatures.Clear();
-            var features = sourceLayer.FeatureSource.GetFeaturesByColumnValue("LANDLOCKED", "Y");
-            foreach (Feature feature in features)
-            {
-                sqlQueryResultLayer.InternalFeatures.Add(feature.Id, feature);
-            }
             return stringBuilder.ToString();
         }
 

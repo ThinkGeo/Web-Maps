@@ -65,7 +65,7 @@ namespace Labeling.Controllers
 
         [Route("Update/{overlayId}/{accessId}")]
         [HttpPost]
-        public void UpdateTextStyle(string overlayId, string accessId, [FromBody] string postData)
+        public void UpdateTextStyle(string overlayId, string accessId, [FromForm] string postData)
         {
             // Deserialize the style in JSON format passed from client side.
             Dictionary<string, string> styles = JsonConvert.DeserializeObject<Dictionary<string, string>>(postData);

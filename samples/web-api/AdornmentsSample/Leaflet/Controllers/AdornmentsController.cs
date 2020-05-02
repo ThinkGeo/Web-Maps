@@ -177,13 +177,8 @@ namespace Adornments
 
         private MagneticDeclinationAdornmentLayer BuildMagneticDeclinationAdornmentLayer()
         {
-            //Proj4Projection wgs84ToGoogleProjection = new Proj4Projection();
-            //wgs84ToGoogleProjection.InternalProjectionParametersString = Proj4Projection.GetGoogleMapParametersString(); //900913
-            //wgs84ToGoogleProjection.ExternalProjectionParametersString = Proj4Projection.GetWgs84ParametersString(); //4326
-            //wgs84ToGoogleProjection.Open();
-             
             MagneticDeclinationAdornmentLayer magneticDeclinationAdornmentLayer = new MagneticDeclinationAdornmentLayer();
-            //magneticDeclinationAdornmentLayer.ProjectionToDecimalDegrees = wgs84ToGoogleProjection;
+            magneticDeclinationAdornmentLayer.Projection = new Projection(Projection.GetGoogleMapProjString());
             magneticDeclinationAdornmentLayer.Location = AdornmentLocation.UpperRight;
             magneticDeclinationAdornmentLayer.TrueNorthPointStyle.SymbolSize = 25;
             magneticDeclinationAdornmentLayer.TrueNorthPointStyle.SymbolType = PointSymbolType.Triangle;

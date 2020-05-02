@@ -182,12 +182,17 @@
                 },
                 {
                     src: 'Images/go.png', id: 'btnGo', title: 'Run', callback: function () {
-                        var paramters = geometricData[actionType].param;
+                        var parameters = geometricData[actionType].param;
                         var url = L.Util.getRootPath() + '/tile/Execute/' + actionType + '/' + accessId;
-                        $.post(url, { '': paramters }, function (data) {
-                            if (tileLayer) {
-                                tileLayer.setUrl(L.Util.getRootPath() + '/tile/output/{z}/{x}/{y}/' + accessId);
-                                tileLayer.redraw();
+                        $.ajax({
+                            url: url,
+                            data: { '': parameters },
+                            type: "POST",
+                            success: function (data) {
+                                if (tileLayer) {
+                                    tileLayer.setUrl(L.Util.getRootPath() + '/tile/output/{z}/{x}/{y}/' + accessId);
+                                    tileLayer.redraw();
+                                }
                             }
                         });
                     }

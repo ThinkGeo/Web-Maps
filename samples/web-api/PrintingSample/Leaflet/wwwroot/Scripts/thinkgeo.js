@@ -35,7 +35,7 @@ $("#exportPanel input").click(function () {
     var url = L.Util.getRootPath() + 'Printing/Export/' + accessId + '/' + exportType;
     if (exportType == "To Printer") {
         // Print page.
-        var content = "<html><head><script>function printmap(){window.print();window.close()}</script></head><body onload='printmap()'><img src='" + url + "' /></body></html>";
+        var content = "<html><head><script>function printmap(){window.print();}</script></head><body onload='printmap()'><img src='" + url + "' /></body></html>";
         var pwa = window.open("about:blank", "_new");
         pwa.document.open();
         pwa.document.write(content);

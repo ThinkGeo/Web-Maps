@@ -49,7 +49,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/Union/{accessId}")]
         [HttpPost]
-        public void Union(string accessId, [FromBody]string[] ids)
+        public void Union(string accessId, [FromForm]string[] ids)
         {
             // Get the sample input features by ids passed from client side.
             Feature tempFeatures = Feature.Union(ids.Select(id => inputFeatures[id]));
@@ -58,7 +58,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/Difference/{accessId}")]
         [HttpPost]
-        public void Difference(string accessId, [FromBody]Dictionary<string, string> parameters)
+        public void Difference(string accessId, [FromForm]Dictionary<string, string> parameters)
         {
             // Get the feature as an element for doing geoprocessing.
             Feature sourceFeature = inputFeatures[parameters["source"]];
@@ -73,7 +73,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/Buffer/{accessId}")]
         [HttpPost]
-        public void Buffer(string accessId, [FromBody]Dictionary<string, string> parameters)
+        public void Buffer(string accessId, [FromForm]Dictionary<string, string> parameters)
         {
             // Get the buffer distance passed from client side.
             double distance = Convert.ToDouble(parameters["distance"], CultureInfo.InvariantCulture);
@@ -92,7 +92,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/Scale/{accessId}")]
         [HttpPost]
-        public void Scale(string accessId, [FromBody]Dictionary<string, string> parameters)
+        public void Scale(string accessId, [FromForm]Dictionary<string, string> parameters)
         {
             double percentage = Convert.ToDouble(parameters["percentage"], CultureInfo.InvariantCulture);
             // Get the feature for Scaling.
@@ -108,7 +108,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/Rotate/{accessId}")]
         [HttpPost]
-        public void Rotate(string accessId, [FromBody]Dictionary<string, string> parameters)
+        public void Rotate(string accessId, [FromForm]Dictionary<string, string> parameters)
         {
             // Get the rotation angle passed from client side.
             double degreeAngle = Convert.ToDouble(parameters["angle"], CultureInfo.InvariantCulture);
@@ -125,7 +125,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/CenterPoint/{accessId}")]
         [HttpPost]
-        public void CenterPoint(string accessId, [FromBody]string id)
+        public void CenterPoint(string accessId, [FromForm]string id)
         {
             // Get the feature for calculating the center point.
             Feature inputFeature = inputFeatures[id];
@@ -145,7 +145,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/CalculateArea/{accessId}")]
         [HttpPost]
-        public void CalculateArea(string accessId, [FromBody]string id)
+        public void CalculateArea(string accessId, [FromForm]string id)
         {
             // Calculate the area of the geometry.
             AreaBaseShape areaBaseShape = inputFeatures[id].GetShape() as AreaBaseShape;
@@ -161,7 +161,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/Simplify/{accessId}")]
         [HttpPost]
-        public void Simplify(string accessId, [FromBody]Dictionary<string, string> parameters)
+        public void Simplify(string accessId, [FromForm]Dictionary<string, string> parameters)
         {
             // Get the feature id used for geoprocessing.
             string featureId = parameters["id"];
@@ -183,7 +183,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/Split/{accessId}")]
         [HttpPost]
-        public void Split(string accessId, [FromBody]Dictionary<string, string> parameters)
+        public void Split(string accessId, [FromForm]Dictionary<string, string> parameters)
         {
             // Get the id of polygon shape used for split.
             string polygonId = parameters["polygonId"];
@@ -210,7 +210,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/CalculateShortestLine/{accessId}")]
         [HttpPost]
-        public void CalculateShortestLine(string accessId, [FromBody]Dictionary<string, string> parameters)
+        public void CalculateShortestLine(string accessId, [FromForm]Dictionary<string, string> parameters)
         {
             // Get the 2 shapes passed from client side for calculating the shortest distance.
             BaseShape shape1 = inputFeatures[parameters["id1"]].GetShape();
@@ -228,7 +228,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/CalculateLength/{accessId}")]
         [HttpPost]
-        public void CalculateLength(string accessId, [FromBody]string id)
+        public void CalculateLength(string accessId, [FromForm]string id)
         {
             // Get the line shape used for calculating the length.
             LineShape lineShape = inputFeatures[id].GetShape() as LineShape;
@@ -244,7 +244,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/LineOnLine/{accessId}")]
         [HttpPost]
-        public void LineOnLine(string accessId, [FromBody]Dictionary<string, string> parameters)
+        public void LineOnLine(string accessId, [FromForm]Dictionary<string, string> parameters)
         {
             // Get the feature id passed from client side.
             string id = parameters["id"];
@@ -267,7 +267,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/Clip/{accessId}")]
         [HttpPost]
-        public void Clip(string accessId, [FromBody]Dictionary<string, string> parameters)
+        public void Clip(string accessId, [FromForm]Dictionary<string, string> parameters)
         {
             Collection<Feature> resultFeatures = new Collection<Feature>();
             // Get the feature for clipping other features.
@@ -291,7 +291,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/ConvexHull/{accessId}")]
         [HttpPost]
-        public void ConvexHull(string accessId, [FromBody]Dictionary<string, string> parameters)
+        public void ConvexHull(string accessId, [FromForm]Dictionary<string, string> parameters)
         {
             // Create a MultiPointShape for calculating the convex hull of it.
             MultipointShape multipointShape = new MultipointShape();
@@ -315,7 +315,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/Snapping/{accessId}")]
         [HttpPost]
-        public void Snapping(string accessId, [FromBody]Dictionary<string, string> parameters)
+        public void Snapping(string accessId, [FromForm]Dictionary<string, string> parameters)
         {
             Collection<Feature> resultFeatures = new Collection<Feature>();
             // Get a MultiLineShape for snapping.
@@ -369,7 +369,7 @@ namespace GeometricFunctions.Controllers
 
         [Route("Execute/EnvelopBoundingbox/{accessId}")]
         [HttpPost]
-        public void CalculateEnvelope(string accessId, [FromBody]string id)
+        public void CalculateEnvelope(string accessId, [FromForm]string id)
         {
             Feature envelope = new Feature(inputFeatures[id].GetBoundingBox());
             envelope.ColumnValues["Name"] = "EnvelopeResult";

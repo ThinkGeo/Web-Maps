@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="12.2.5" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="12.2.6" />
   </ItemGroup>
 
   <ItemGroup>

@@ -143,16 +143,6 @@ Add another pure HTML page "default.html" with following steps to consume the ma
 Now you’re ready to initialize the map and consume the map tile services with following code:
 
 ```javascript
-// Add the utility methods to L.Util
-L.Util.getRootPath = function() {
-    var pathArray = location.pathname.split('/');
-    var appPath = "/";
-    for (var i = 1; i < pathArray.length - 1; i++) {
-        appPath += pathArray[i] + "/";
-    }
-
-    return appPath === "/" ? "" : appPath;
-};
 
 // Create the map.
 var map = L.map('map').setView([33.1010, -96.8134], 4);

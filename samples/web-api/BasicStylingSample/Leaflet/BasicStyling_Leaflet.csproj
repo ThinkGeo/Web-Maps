@@ -1,345 +1,112 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{1E000686-7B26-481E-BD0A-4EA74541E83D}</ProjectGuid>
-    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BasicStyling</RootNamespace>
-    <AssemblyName>BasicStyling</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
-    <IISExpressSSLPort />
-    <IISExpressAnonymousAuthentication />
-    <IISExpressWindowsAuthentication />
-    <IISExpressUseClassicPipelineMode />
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
-    <MvcProjectUpgradeChecked>true</MvcProjectUpgradeChecked>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <OldToolsVersion>4.0</OldToolsVersion>
-    <UseGlobalApplicationHostFile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <Use64BitIISExpress />
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="GeoAPI, Version=1.7.4.0, Culture=neutral, PublicKeyToken=a1a0da7def465678">
-      <HintPath>..\packages\MapSuiteDependency-GeoAPI.10.6.0\lib\net45\GeoAPI.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
-      <HintPath>..\packages\MapSuiteDependency-MicrosoftSqlServerTypes.10.6.0\lib\net45\Microsoft.SqlServer.Types.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Web.Infrastructure">
-      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
-    </Reference>
-    <Reference Include="NetTopologySuite, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1">
-      <HintPath>..\packages\MapSuiteDependency-NetTopologySuite.10.6.0\lib\net45\NetTopologySuite.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="PowerCollections, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2573bf8a1bdddcd5">
-      <HintPath>..\packages\MapSuiteDependency-NetTopologySuite.10.6.0\lib\net45\PowerCollections.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SkiaSharp, Version=1.68.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">
-      <HintPath>..\packages\MapSuiteDependency-SkiaSharp.10.6.0\lib\net45\SkiaSharp.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Web.DynamicData" />
-    <Reference Include="System.Web.Entity" />
-    <Reference Include="System.Web.ApplicationServices" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Web.Abstractions" />
-    <Reference Include="System.Web.Routing" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Web.Services" />
-    <Reference Include="System.EnterpriseServices" />
-    <Reference Include="System.Net.Http">
-    </Reference>
-    <Reference Include="System.Net.Http.WebRequest">
-    </Reference>
-    <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f">
-      <HintPath>..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Http.WebHost, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.3\lib\net45\System.Web.Http.WebHost.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
-    </Reference>
-    <Reference Include="ThinkGeo.MapSuite, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
-      <HintPath>..\packages\ThinkGeo.MapSuite.10.6.7\lib\net45\ThinkGeo.MapSuite.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ThinkGeo.MapSuite.Layers.Background, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
-      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Background.10.6.0\lib\net45\ThinkGeo.MapSuite.Layers.Background.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ThinkGeo.MapSuite.Layers.ShapeFile, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
-      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.ShapeFile.10.6.0\lib\net45\ThinkGeo.MapSuite.Layers.ShapeFile.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ThinkGeo.MapSuite.ProductCenter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
-      <HintPath>..\packages\ThinkGeo.MapSuite.ProductCenter.10.6.0\lib\net45\ThinkGeo.MapSuite.ProductCenter.exe</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ThinkGeo.MapSuite.Styles.WorldMapKit, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
-      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.WorldMapKit.10.6.0\lib\net45\ThinkGeo.MapSuite.Styles.WorldMapKit.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ThinkGeo.MapSuite.Styles.WorldStreets, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
-      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.WorldStreets.10.6.0\lib\net45\ThinkGeo.MapSuite.Styles.WorldStreets.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ThinkGeo.MapSuite.WebApi, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
-      <HintPath>..\packages\MapSuiteWebForWebApi-BareBone.10.6.1\lib\net45\ThinkGeo.MapSuite.WebApi.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="WebGrease, Version=1.6.5135.21930, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
-      <HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="12.2.6" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Controllers\BasicStylingController.cs" />
-    <Compile Include="Controllers\LayerBuilder.cs" />
-    <Compile Include="Global.asax.cs">
-      <DependentUpon>Global.asax</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="wwwroot\App_Data\Countries.dbf" />
+    <None Include="wwwroot\App_Data\Countries.ids" />
+    <None Include="wwwroot\App_Data\Countries.idx" />
+    <None Include="wwwroot\App_Data\Countries.prj" />
+    <None Include="wwwroot\App_Data\Countries.shp" />
+    <None Include="wwwroot\App_Data\Countries.shx" />
+    <None Include="wwwroot\App_Data\HighSchoolInFrisco.dbf" />
+    <None Include="wwwroot\App_Data\HighSchoolInFrisco.ids" />
+    <None Include="wwwroot\App_Data\HighSchoolInFrisco.idx" />
+    <None Include="wwwroot\App_Data\HighSchoolInFrisco.shp" />
+    <None Include="wwwroot\App_Data\HighSchoolInFrisco.shx" />
+    <None Include="wwwroot\App_Data\HospitalInFrisco.dbf" />
+    <None Include="wwwroot\App_Data\HospitalInFrisco.ids" />
+    <None Include="wwwroot\App_Data\HospitalInFrisco.idx" />
+    <None Include="wwwroot\App_Data\HospitalInFrisco.shp" />
+    <None Include="wwwroot\App_Data\HospitalInFrisco.shx" />
+    <None Include="wwwroot\App_Data\lake.dbf" />
+    <None Include="wwwroot\App_Data\lake.ids" />
+    <None Include="wwwroot\App_Data\lake.idx" />
+    <None Include="wwwroot\App_Data\lake.shp" />
+    <None Include="wwwroot\App_Data\lake.shx" />
+    <None Include="wwwroot\App_Data\MajorRoadsInFrisco.dbf" />
+    <None Include="wwwroot\App_Data\MajorRoadsInFrisco.ids" />
+    <None Include="wwwroot\App_Data\MajorRoadsInFrisco.idx" />
+    <None Include="wwwroot\App_Data\MajorRoadsInFrisco.shp" />
+    <None Include="wwwroot\App_Data\MajorRoadsInFrisco.shx" />
+    <None Include="wwwroot\App_Data\school.png" />
+    <None Include="wwwroot\App_Data\ThinkGeoArea.dbf" />
+    <None Include="wwwroot\App_Data\ThinkGeoArea.ids" />
+    <None Include="wwwroot\App_Data\ThinkGeoArea.idx" />
+    <None Include="wwwroot\App_Data\ThinkGeoArea.shp" />
+    <None Include="wwwroot\App_Data\ThinkGeoArea.shx" />
+    <None Include="wwwroot\App_Data\ThinkGeoLine.dbf" />
+    <None Include="wwwroot\App_Data\ThinkGeoLine.ids" />
+    <None Include="wwwroot\App_Data\ThinkGeoLine.idx" />
+    <None Include="wwwroot\App_Data\ThinkGeoLine.shp" />
+    <None Include="wwwroot\App_Data\ThinkGeoLine.shx" />
+    <None Include="wwwroot\App_Data\ThinkGeoLocation.dbf" />
+    <None Include="wwwroot\App_Data\ThinkGeoLocation.ids" />
+    <None Include="wwwroot\App_Data\ThinkGeoLocation.idx" />
+    <None Include="wwwroot\App_Data\ThinkGeoLocation.shp" />
+    <None Include="wwwroot\App_Data\ThinkGeoLocation.shx" />
+    <None Include="wwwroot\App_Data\ThinkGeoLogo.png" />
+    <None Include="wwwroot\App_Data\USHighwayNetwork.dbf" />
+    <None Include="wwwroot\App_Data\USHighwayNetwork.ids" />
+    <None Include="wwwroot\App_Data\USHighwayNetwork.idx" />
+    <None Include="wwwroot\App_Data\USHighwayNetwork.shp" />
+    <None Include="wwwroot\App_Data\USHighwayNetwork.shx" />
+    <None Include="wwwroot\App_Data\USMajorCities.dbf" />
+    <None Include="wwwroot\App_Data\USMajorCities.ids" />
+    <None Include="wwwroot\App_Data\USMajorCities.idx" />
+    <None Include="wwwroot\App_Data\USMajorCities.shp" />
+    <None Include="wwwroot\App_Data\USMajorCities.shx" />
+    <None Include="wwwroot\App_Data\USStates.dbf" />
+    <None Include="wwwroot\App_Data\USStates.ids" />
+    <None Include="wwwroot\App_Data\USStates.idx" />
+    <None Include="wwwroot\App_Data\USStates.shp" />
+    <None Include="wwwroot\App_Data\USStates.shx" />
+    <None Include="wwwroot\Content\Colorpicker\colorpicker.css" />
+    <None Include="wwwroot\Content\leaflet.css" />
+    <None Include="wwwroot\Content\site.css" />
+    <None Include="wwwroot\images\areaStyle.png" />
+    <None Include="wwwroot\images\characterPointStyle.png" />
+    <None Include="wwwroot\images\Colorpicker\blank.gif" />
+    <None Include="wwwroot\images\Colorpicker\colorpicker_indic.gif" />
+    <None Include="wwwroot\images\Colorpicker\colorpicker_overlay.png" />
+    <None Include="wwwroot\images\Colorpicker\colorpicker_select.gif" />
+    <None Include="wwwroot\images\Colorpicker\custom_background.png" />
+    <None Include="wwwroot\images\Colorpicker\custom_hex.png" />
+    <None Include="wwwroot\images\Colorpicker\custom_hsb_b.png" />
+    <None Include="wwwroot\images\Colorpicker\custom_hsb_h.png" />
+    <None Include="wwwroot\images\Colorpicker\custom_hsb_s.png" />
+    <None Include="wwwroot\images\Colorpicker\custom_indic.gif" />
+    <None Include="wwwroot\images\Colorpicker\custom_rgb_b.png" />
+    <None Include="wwwroot\images\Colorpicker\custom_rgb_g.png" />
+    <None Include="wwwroot\images\Colorpicker\custom_rgb_r.png" />
+    <None Include="wwwroot\images\Colorpicker\custom_submit.png" />
+    <None Include="wwwroot\images\Colorpicker\select.png" />
+    <None Include="wwwroot\images\Colorpicker\slider.png" />
+    <None Include="wwwroot\images\compoundStyle.png" />
+    <None Include="wwwroot\images\desktop.png" />
+    <None Include="wwwroot\images\favicon.ico" />
+    <None Include="wwwroot\images\gear.png" />
+    <None Include="wwwroot\images\imagePointStyle.png" />
+    <None Include="wwwroot\images\info.png" />
+    <None Include="wwwroot\images\layers.png" />
+    <None Include="wwwroot\images\lineStyle.png" />
+    <None Include="wwwroot\images\predefinedStyles.png" />
+    <None Include="wwwroot\images\stylesByZoomLevels.png" />
+    <None Include="wwwroot\images\symbolPointStyle.png" />
+    <None Include="wwwroot\index.html" />
+    <None Include="wwwroot\Scripts\Colorpicker\colorpicker.js" />
+    <None Include="wwwroot\Scripts\jquery-1.11.1.min.js" />
+    <None Include="wwwroot\Scripts\leaflet.js" />
+    <None Include="wwwroot\Scripts\modernizr-2.8.3.js" />
+    <None Include="wwwroot\Scripts\thinkgeo.js" />
+    <None Include="wwwroot\Scripts\thinkgeo.leaflet.js" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="App_Start\WebApiConfig.cs" />
-    <Content Include="App_Data\school.png" />
-    <Content Include="App_Data\ThinkGeoLogo.png" />
-    <Content Include="Content\Colorpicker\colorpicker.css" />
-    <Content Include="Content\leaflet.css" />
-    <Content Include="Content\site.css" />
-    <Content Include="default.htm" />
-    <Content Include="Global.asax" />
-    <Content Include="Scripts\Colorpicker\colorpicker.js" />
-    <Content Include="Scripts\jquery-1.11.1.min.js" />
-    <Content Include="Scripts\leaflet.js" />
-    <Content Include="Scripts\modernizr-2.8.3.js" />
-    <Content Include="Scripts\thinkgeo.js" />
-    <Content Include="Scripts\thinkgeo.leaflet.js" />
-    <Content Include="Web.config" />
-    <Content Include="Web.Debug.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </Content>
-    <Content Include="Web.Release.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </Content>
-    <Content Include="images\areaStyle.png" />
-    <Content Include="images\Colorpicker\blank.gif" />
-    <Content Include="images\characterPointStyle.png" />
-    <Content Include="images\Colorpicker\colorpicker_indic.gif" />
-    <Content Include="images\Colorpicker\colorpicker_overlay.png" />
-    <Content Include="images\Colorpicker\colorpicker_select.gif" />
-    <Content Include="images\compoundStyle.png" />
-    <Content Include="images\Colorpicker\custom_background.png" />
-    <Content Include="images\Colorpicker\custom_hex.png" />
-    <Content Include="images\Colorpicker\custom_hsb_b.png" />
-    <Content Include="images\Colorpicker\custom_hsb_h.png" />
-    <Content Include="images\Colorpicker\custom_hsb_s.png" />
-    <Content Include="images\Colorpicker\custom_indic.gif" />
-    <Content Include="images\Colorpicker\custom_rgb_b.png" />
-    <Content Include="images\Colorpicker\custom_rgb_g.png" />
-    <Content Include="images\Colorpicker\custom_rgb_r.png" />
-    <Content Include="images\Colorpicker\custom_submit.png" />
-    <Content Include="images\desktop.png" />
-    <Content Include="images\favicon.ico" />
-    <Content Include="images\gear.png" />
-    <Content Include="images\imagePointStyle.png" />
-    <Content Include="images\info.png" />
-    <Content Include="images\layers.png" />
-    <Content Include="images\lineStyle.png" />
-    <Content Include="images\Colorpicker\select.png" />
-    <Content Include="images\Colorpicker\slider.png" />
-    <Content Include="images\predefinedStyles.png" />
-    <Content Include="images\stylesByZoomLevels.png" />
-    <Content Include="images\symbolPointStyle.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="packages.config">
-      <SubType>Designer</SubType>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="App_Data\HospitalInFrisco.dbf" />
-    <Content Include="App_Data\HospitalInFrisco.ids" />
-    <Content Include="App_Data\HospitalInFrisco.idx" />
-    <Content Include="App_Data\HospitalInFrisco.shp" />
-    <Content Include="App_Data\HospitalInFrisco.shx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="App_Data\ThinkGeoArea.dbf" />
-    <Content Include="App_Data\ThinkGeoArea.ids" />
-    <Content Include="App_Data\ThinkGeoArea.idx" />
-    <Content Include="App_Data\ThinkGeoArea.shp" />
-    <Content Include="App_Data\ThinkGeoArea.shx" />
-    <Content Include="App_Data\ThinkGeoLine.dbf" />
-    <Content Include="App_Data\ThinkGeoLine.ids" />
-    <Content Include="App_Data\ThinkGeoLine.idx" />
-    <Content Include="App_Data\ThinkGeoLine.shp" />
-    <Content Include="App_Data\ThinkGeoLine.shx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="App_Data\USHighwayNetwork.dbf" />
-    <Content Include="App_Data\USHighwayNetwork.ids" />
-    <Content Include="App_Data\USHighwayNetwork.idx" />
-    <Content Include="App_Data\USHighwayNetwork.shp" />
-    <Content Include="App_Data\USHighwayNetwork.shx" />
-    <Content Include="App_Data\USStates.dbf" />
-    <Content Include="App_Data\USStates.ids" />
-    <Content Include="App_Data\USStates.idx" />
-    <Content Include="App_Data\USStates.shp" />
-    <Content Include="App_Data\USStates.shx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="App_Data\MajorRoadsInFrisco.dbf" />
-    <Content Include="App_Data\MajorRoadsInFrisco.ids" />
-    <Content Include="App_Data\MajorRoadsInFrisco.idx" />
-    <Content Include="App_Data\MajorRoadsInFrisco.shp" />
-    <Content Include="App_Data\MajorRoadsInFrisco.shx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="App_Data\USMajorCities.dbf" />
-    <Content Include="App_Data\USMajorCities.ids" />
-    <Content Include="App_Data\USMajorCities.idx" />
-    <Content Include="App_Data\USMajorCities.shp" />
-    <Content Include="App_Data\USMajorCities.shx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="App_Data\ThinkGeoLocation.dbf" />
-    <Content Include="App_Data\ThinkGeoLocation.ids" />
-    <Content Include="App_Data\ThinkGeoLocation.idx" />
-    <Content Include="App_Data\ThinkGeoLocation.shp" />
-    <Content Include="App_Data\ThinkGeoLocation.shx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="App_Data\HighSchoolInFrisco.dbf" />
-    <Content Include="App_Data\HighSchoolInFrisco.ids" />
-    <Content Include="App_Data\HighSchoolInFrisco.idx" />
-    <Content Include="App_Data\HighSchoolInFrisco.shp" />
-    <Content Include="App_Data\HighSchoolInFrisco.shx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="App_Data\Countries.dbf" />
-    <Content Include="App_Data\Countries.ids" />
-    <Content Include="App_Data\Countries.idx" />
-    <Content Include="App_Data\Countries.prj" />
-    <Content Include="App_Data\Countries.shp" />
-    <Content Include="App_Data\Countries.shx" />
-    <Content Include="App_Data\lake.dbf" />
-    <Content Include="App_Data\lake.ids" />
-    <Content Include="App_Data\lake.idx" />
-    <Content Include="App_Data\lake.shp" />
-    <Content Include="App_Data\lake.shx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="App_Data\Temp\" />
-  </ItemGroup>
-  <PropertyGroup>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-  </PropertyGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
-  <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
-    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)" />
-  </Target>
-  <ProjectExtensions>
-    <VisualStudio>
-      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
-        <WebProjectProperties>
-          <UseIIS>False</UseIIS>
-          <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>65296</DevelopmentServerPort>
-          <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:54667/</IISUrl>
-          <NTLMAuthentication>False</NTLMAuthentication>
-          <UseCustomServer>False</UseCustomServer>
-          <CustomServerUrl>
-          </CustomServerUrl>
-          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
-        </WebProjectProperties>
-      </FlavorProperties>
-    </VisualStudio>
-    <MonoDevelop>
-      <Properties>
-        <XspParameters Port="8080" Address="127.0.0.1" SslMode="None" SslProtocol="Default" KeyType="None" CertFile="" KeyFile="" PasswordOptions="None" Password="" Verbose="True" />
-      </Properties>
-    </MonoDevelop>
-  </ProjectExtensions>
-  <Import Project="..\packages\MapSuiteDependency-SkiaSharp.10.6.0\build\net45\MapSuiteDependency-SkiaSharp.targets" Condition="Exists('..\packages\MapSuiteDependency-SkiaSharp.10.6.0\build\net45\MapSuiteDependency-SkiaSharp.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\MapSuiteDependency-SkiaSharp.10.6.0\build\net45\MapSuiteDependency-SkiaSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MapSuiteDependency-SkiaSharp.10.6.0\build\net45\MapSuiteDependency-SkiaSharp.targets'))" />
-    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.10.6.7\build\net45\ThinkGeo.MapSuite.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.10.6.7\build\net45\ThinkGeo.MapSuite.targets'))" />
-  </Target>
-  <Import Project="..\packages\ThinkGeo.MapSuite.10.6.7\build\net45\ThinkGeo.MapSuite.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.10.6.7\build\net45\ThinkGeo.MapSuite.targets')" />
+
 </Project>

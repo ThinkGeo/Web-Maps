@@ -1,0 +1,263 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Geometric Functions</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="author" content="ThinkGeo" />
+    <link rel="apple-touch-icon" href="desktop.png">
+    <meta name="apple-mobile-web-app-title" content="Geometric Functions" />
+    <link href="favicon.ico" rel="shortcut icon" type="Images/x-icon" />
+    <link href="Content/leaflet.css" rel="stylesheet" />
+    <link href="Content/Site.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="map">
+    </div>
+    <div id="loadingImage">
+        <img src="Images/ajax-loader.gif" />
+    </div>
+    <div id="styles-panel">
+        <div id="styles-header" title="Close">
+            <span class="title">Geometric Function List</span>
+        </div>
+        <div class="panel-content">
+            <ul id="style-options">
+                <li>
+                    <div id="Union" title="Union" class="selected">
+                        <span>Union</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Difference" title="Difference" class="unselected">
+                        <span class="styleName">Difference</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Buffer" title="Buffer" class="unselected">
+                        <span>Buffer</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Scale" title="Scale" class="unselected">
+                        <span>Scale</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Rotate" title="Rotate" class="unselected">
+                        <span>Rotate</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="CenterPoint" title="Center Point" class="unselected">
+                        <span>Center point</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="CalculateArea" title="Area Calculation" class="unselected">
+                        <span>Area Calculation</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Simplify" title="Simplify" class="unselected">
+                        <span>Simplify</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Split" title="Split" class="unselected">
+                        <span>Split</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="CalculateShortestLine" title="Get shortest line" class="unselected">
+                        <span>Get shortest line</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="CalculateLength" title="Length Calculation" class="unselected">
+                        <span>Length Calculation</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="LineOnLine" title="Get line on a line" class="unselected">
+                        <span>Get line on a line</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Clip" title="Clip" class="unselected">
+                        <span>Clip</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="ConvexHull" title="Convexhull" class="unselected">
+                        <span>Convexhull</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Snapping" title="Snapping" class="unselected">
+                        <span>Snapping</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="EnvelopBoundingbox" title="Envelope Boundingbox" class="unselected">
+                        <span>Envelope Boundingbox</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script src="Scripts/jquery-1.11.1.min.js"></script>
+    <script src="Scripts/leaflet.js"></script>
+    <script src="Scripts/thinkgeo.leaflet.js"></script>
+    <script>
+        var accessId = guid();
+        var actionType = 'Union';
+
+        // Create the map.
+        var map = L.map('map').setView([33.1472, -96.7861], 17);
+
+        // Added ThinkGeoCloudMaps as the background map.
+        var thinkgeoCloudMapsLayer = L.tileLayer('https://{s}.thinkgeo.com/api/v1/maps/raster/light/x1/3857/256/{z}/{x}/{y}.png?apikey=PIbGd76RyHKod99KptWTeb-Jg9JUPEPUBFD3SZJYLDE~', {
+            subdomains: ['cloud1', 'cloud2', 'cloud3', 'cloud4', 'cloud5', 'cloud6'],
+            layers: 'ThinkGeoCloudMaps',
+            format: 'image/png',
+            styles: 'Light',
+            version: '10.5.0'
+        });
+
+        // --------------------------------------------------------------------------------------
+        // Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require
+        // an API Key. The following function is just for reminding you to input the key.
+        // Feel free to remove this function after the key was input.
+        // --------------------------------------------------------------------------------------
+        thinkgeoCloudMapsLayer.on('tileloadstart', function (e) {
+            //e.tile.src = drawException();
+            fetch(e.tile.src).then((response) => {
+                if (response.status === 401) {
+                    var canvas = document.createElement("canvas");
+                    canvas.width = 256;
+                    canvas.height = 256;
+                    var context = canvas.getContext("2d");
+                    context.font = "14px Arial";
+                    context.strokeText("Backgrounds for this sample are", 10, 20);
+                    context.strokeText("powered by ThinkGeo Cloud Maps and", 10, 40);
+                    context.strokeText("require an API Key. This was sent", 10, 60);
+                    context.strokeText("to you via email when you signed up", 10, 80);
+                    context.strokeText("with ThinkGeo, or you can register", 10, 100);
+                    context.strokeText("now at https://cloud.thinkgeo.com", 10, 120);
+                    e.tile.src = canvas.toDataURL("image/png", 1);
+                }
+                else {
+                    response.blob().then((blob) => {
+                        if (blob) {
+                            e.tile.src = URL.createObjectURL(blob);
+                        }
+                        else {
+                            e.tile.src = "";
+                        }
+                    });
+                }
+            });
+        });
+        thinkgeoCloudMapsLayer.addTo(map);
+
+        var tileLayer = L.dynamicLayer(L.Util.getRootPath() + 'tile/input/{z}/{x}/{y}/1,2,3,4', { unloadInvisibleTiles: true, reuseTiles: true }).addTo(map);
+        tileLayer.on('loading', function () {
+            $('#loadingImage').show();
+        });
+        tileLayer.on('load', function () {
+            $('#loadingImage').hide();
+        });
+
+        // Add image buttons for layers, execute etc.
+        L.imageButtons({
+            imgs: [
+                {
+                    src: 'Images/layers.png', id: 'lyrOptions', title: 'Show layers', callback: function () {
+                        $('#styles-panel').animate({
+                            'left': '0px'
+                        });
+                    }
+                },
+                {
+                    src: 'Images/go.png', id: 'btnGo', title: 'Run', callback: function () {
+                        var parameters = geometricData[actionType].param;
+                        var url = L.Util.getRootPath() + '/tile/Execute/' + actionType + '/' + accessId;
+                        $.ajax({
+                            url: url,
+                            data: { '': parameters },
+                            type: "POST",
+                            success: function (data) {
+                                if (tileLayer) {
+                                    tileLayer.setUrl(L.Util.getRootPath() + '/tile/output/{z}/{x}/{y}/' + accessId);
+                                    tileLayer.redraw();
+                                }
+                            }
+                        });
+                    }
+                },
+                {
+                    src: 'Images/info.png', id: 'btnInfo', title: 'Show help', callback: function () {
+                        window.open('http://wiki.thinkgeo.com/wiki/Map_Suite_Geometric_Functions', '_blank');
+                    }
+                }
+            ]
+        }).addTo(map);
+
+        // Apply 'select' style after clicking on a style item on left-panel.
+        $('#style-options div').click(function () {
+            var actionContainers = $("#style-options div");
+            for (var i = 0; i < actionContainers.length; i++) {
+                $(actionContainers[i]).attr("class", "unselected");
+            }
+            $(this).attr("class", "selected");
+
+            actionType = $(this).attr('id');
+
+            var featureIds = geometricData[actionType].init;
+            tileLayer.setUrl(L.Util.getRootPath() + '/tile/input/{z}/{x}/{y}/' + featureIds.toString());
+            tileLayer.redraw();
+
+            var centerInfo = geometricData[actionType].center;
+            map.setView([centerInfo.y, centerInfo.x], centerInfo.z);
+        });
+
+        // Do the layers panel animation
+        $("html").click(function () {
+            $('#styles-panel').animate({
+                'left': -$('#styles-panel').width() + 'px'
+            });
+        });
+
+        // Add a utility methods to get guid.
+        function guid() {
+            function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+            }
+            return (s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4()).toLowerCase();
+        };
+
+        // Sample data.
+        var geometricData = {
+            Union: { param: ['1', '2', '3', '4'], init: ['1', '2', '3', '4'], center: { x: -96.7861120308635, y: 33.1472685431747, z: 17 } },
+            Difference: { param: [{ 'Key': 'source', 'Value': '5' }, { 'Key': 'target', 'Value': '6' }], init: ['5', '6'], center: { x: -96.7861120308635, y: 33.1462727687461, z: 17 } },
+            Buffer: { param: [{ 'Key': 'id', 'Value': '7' }, { 'Key': 'distance', 'Value': '15' }, { 'Key': 'unit', 'Value': 'Meter' }], init: ['7'], center: { x: -96.7355329966487, y: 33.1833649004228, z: 17 } },
+            Scale: { param: [{ 'Key': 'id', 'Value': '8' }, { 'Key': 'percentage', 'Value': '20' }], init: ['8'], center: { x: -96.7870806586458, y: 33.1460327413192, z: 17 } },
+            Rotate: { param: [{ 'Key': 'id', 'Value': '9' }, { 'Key': 'angle', 'Value': '22.5' }], init: ['9'], center: { x: -96.7857794367446, y: 33.1472946523085, z: 17 } },
+            CenterPoint: { param: '10', init: ['10'], center: { x: -96.7862554711922, y: 33.1496806178557, z: 17 } },
+            CalculateArea: { param: '11', init: ['11'], center: { x: -96.7870806586458, y: 33.1460327413192, z: 17 } },
+            Simplify: { param: [{ 'Key': 'id', 'Value': '12' }, { 'Key': 'distance', 'Value': '30' }, { 'Key': 'unit', 'Value': 'Meter' }], init: ['12'], center: { x: -96.8219987975971, y: 33.1320279418704, z: 17 } },
+            Split: { param: [{ 'Key': 'polygonId', 'Value': '13' }, { 'Key': 'lineId', 'Value': '14' }], init: ['13', '14'], center: { x: -96.8113917603578, y: 33.1255858564896, z: 17 } },
+            CalculateShortestLine: { param: [{ 'Key': 'id1', 'Value': '15' }, { 'Key': 'id2', 'Value': '16' }], init: ['15', '16'], center: { x: -96.796118336201, y: 33.1554078616389, z: 17 } },
+            CalculateLength: { param: '17', init: ['17'], center: { x: -96.8134319520846, y: 33.1559860794668, z: 17 } },
+            LineOnLine: { param: [{ 'Key': 'id', 'Value': '18' }, { 'Key': 'startDistance', 'Value': '80' }, { 'Key': 'distance', 'Value': '450' }, { 'Key': 'unit', 'Value': 'Meter' }], init: ['18', '29', '30', '31', '32', '33', '34'], center: { x: -96.8282498246283, y: 33.1397778134769, z: 17 } },
+            Clip: { param: [{ 'Key': 'id', 'Value': '19' }, { 'Key': 'clippingSourceIds', 'Value': '37,38,39,40,41,42,43,44' }], init: ['19', '37', '38', '39', '40', '41', '42', '43', '44'], center: { x: -96.8132293915322, y: 33.1382982431531, z: 17 } },
+            ConvexHull: { param: [{ 'Key': 'polygonId', 'Value': '20' }, { 'Key': 'pointIds', 'Value': '21,22,23,24,25' }], init: ['20', '21', '22', '23', '24', '25'], center: { x: -96.8149300680701, y: 33.1574603876092, z: 17 } },
+            Snapping: { param: [{ 'Key': 'sourceId', 'Value': '26' }, { 'Key': 'targetId', 'Value': '27' }], init: ['26', '27', '35', '36'], center: { x: -96.8137451552825, y: 33.1383491522859, z: 17 } },
+            EnvelopBoundingbox: { param: '28', init: ['28'], center: { x: -96.7862554711922, y: 33.1496806178557, z: 17 } },
+        };
+
+    </script>
+</body>
+</html>

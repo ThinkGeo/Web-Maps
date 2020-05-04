@@ -1,26 +1,20 @@
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.ObjectModel;
 using System.Data;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Web.Http;
-using ThinkGeo.MapSuite;
-using ThinkGeo.MapSuite.Drawing;
-using ThinkGeo.MapSuite.Layers;
-using ThinkGeo.MapSuite.Shapes;
-using ThinkGeo.MapSuite.Styles;
-using ThinkGeo.MapSuite.WebApi;
+using ThinkGeo.Core;
+using ThinkGeo.UI.WebApi;
 
 namespace QueryTools.Controllers
 {
-    [RoutePrefix("QueryTools")]
-    public class QueryToolsController : ApiController
+    [Route("QueryTools")]
+    public class QueryToolsController : ControllerBase
     {
         private readonly FeatureLayer sourceLayer;
         private static readonly string baseDirectory;
@@ -29,18 +23,19 @@ namespace QueryTools.Controllers
 
         static QueryToolsController()
         {
-            baseDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Data");
+            baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot","App_Data");
+
 
             // Create query result layer.
             sqlQueryResultLayer = new InMemoryFeatureLayer();
-            sqlQueryResultLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoSolidBrush(new GeoColor(200, GeoColor.SimpleColors.PastelBlue)));
-            sqlQueryResultLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColor.SimpleColors.Blue;
+            sqlQueryResultLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoSolidBrush(new GeoColor(200, GeoColors.PastelBlue)));
+            sqlQueryResultLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColors.Blue;
             sqlQueryResultLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
 
             // Create spatial query layer.
             spatialQueryTargetLayer = new InMemoryFeatureLayer();
-            spatialQueryTargetLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoSolidBrush(new GeoColor(50, GeoColor.SimpleColors.LightBlue)));
-            spatialQueryTargetLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColor.StandardColors.DarkBlue;
+            spatialQueryTargetLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoSolidBrush(new GeoColor(50, GeoColors.LightBlue)));
+            spatialQueryTargetLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColors.DarkBlue;
             spatialQueryTargetLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
         }
 
@@ -56,7 +51,7 @@ namespace QueryTools.Controllers
         /// </summary>
         [Route("InitializeSourceLayer/{z}/{x}/{y}")]
         [HttpGet]
-        public HttpResponseMessage InitializeSourceLayer(int z, int x, int y)
+        public IActionResult InitializeSourceLayer(int z, int x, int y)
         {
             LayerOverlay layerOverlay = new LayerOverlay();
             layerOverlay.Layers.Add(sourceLayer);
@@ -65,15 +60,15 @@ namespace QueryTools.Controllers
 
         [Route("SpatialQuery/{z}/{x}/{y}")]
         [HttpGet]
-        public HttpResponseMessage SpatialQuery(int z, int x, int y, string queryType = "Within")
+        public IActionResult SpatialQuery(int z, int x, int y, string queryType = "Within")
         {
             // Get the spatial query result features by query type.
             Collection<Feature> spatialQueryResults = GetSpatialQueryResultsByQueryType(queryType, sourceLayer);
 
             // Create the spatial query result layer.
             InMemoryFeatureLayer spatialQueryResultLayer = new InMemoryFeatureLayer();
-            spatialQueryResultLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillSolidBrush = new GeoSolidBrush(new GeoColor(40, GeoColor.SimpleColors.Orange));
-            spatialQueryResultLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen = new GeoPen(GeoColor.SimpleColors.Orange);
+            spatialQueryResultLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillBrush = new GeoSolidBrush(new GeoColor(40, GeoColors.Orange));
+            spatialQueryResultLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen = new GeoPen(GeoColors.Orange);
             spatialQueryResultLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
             foreach (Feature feature in spatialQueryResults)
             {
@@ -88,7 +83,7 @@ namespace QueryTools.Controllers
 
         [Route("QueryFeaturesWithinDistance/{z}/{x}/{y}")]
         [HttpGet]
-        public HttpResponseMessage QueryFeaturesWithinDistance(int z, int x, int y, double distance = 1000, double lng = 1115369.11, double lat = 1937220.04)
+        public IActionResult QueryFeaturesWithinDistance(int z, int x, int y, double distance = 1000, double lng = 1115369.11, double lat = 1937220.04)
         {
             Feature targetPointFeature = new Feature(lng, lat);
 
@@ -97,8 +92,8 @@ namespace QueryTools.Controllers
 
             // Create the spatial query result layer.
             InMemoryFeatureLayer queryResultLayer = new InMemoryFeatureLayer();
-            queryResultLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoSolidBrush(new GeoColor(200, GeoColor.SimpleColors.PastelBlue)));
-            queryResultLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColor.SimpleColors.Blue;
+            queryResultLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoSolidBrush(new GeoColor(200, GeoColors.PastelBlue)));
+            queryResultLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColors.Blue;
             PointStyle pinImageStyle = new PointStyle(new GeoImage(Path.Combine(baseDirectory, "pin.png")));
             pinImageStyle.YOffsetInPixel = -(pinImageStyle.Image.Width / 2);
             queryResultLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = pinImageStyle;
@@ -160,7 +155,7 @@ namespace QueryTools.Controllers
 
         [Route("QueryAllFeatures/{z}/{x}/{y}")]
         [HttpGet]
-        public HttpResponseMessage QueryAllFeatures(int z, int x, int y, string featureId)
+        public IActionResult QueryAllFeatures(int z, int x, int y, string featureId)
         {
             return DrawTileImage(GetHighlightOverlayByFeatureId(featureId), z, x, y);
         }
@@ -186,7 +181,7 @@ namespace QueryTools.Controllers
 
         [Route("QueryColumnData/{z}/{x}/{y}")]
         [HttpGet]
-        public HttpResponseMessage QueryColumnData(int z, int x, int y, double lng = 1115369.11, double lat = 1937220.04)
+        public IActionResult QueryColumnData(int z, int x, int y, double lng = 1115369.11, double lat = 1937220.04)
         {
             return DrawTileImage(GetHighlightOverlayByLatLng(lng, lat), z, x, y);
         }
@@ -196,41 +191,50 @@ namespace QueryTools.Controllers
         public string SQLQueryDataRequests(string sqlString = "Select CNTRY_NAME,POP_CNTRY from Countries Where LANDLOCKED='Y'")
         {
             sourceLayer.Open();
-            // Get SQL query result and format it to HTML centent.
-            DataTable dataTable = sourceLayer.QueryTools.ExecuteQuery(sqlString);
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append("<tr>");
-            foreach (var column in dataTable.Columns)
-            {
-                stringBuilder.Append("<th>" + column + "</th>");
-            }
-            stringBuilder.Append("</tr>");
 
-
-            foreach (DataRow row in dataTable.Rows)
+            // Get SQL query result and format it to HTML centent.
+            if (sourceLayer.QueryTools.CanExecuteSqlQuery)
             {
+                DataTable dataTable = sourceLayer.QueryTools.ExecuteQuery(sqlString);
                 stringBuilder.Append("<tr>");
-
                 foreach (var column in dataTable.Columns)
                 {
-                    stringBuilder.Append("<td>" + row[column.ToString()]);
+                    stringBuilder.Append("<th>" + column + "</th>");
                 }
                 stringBuilder.Append("</tr>");
+
+
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    stringBuilder.Append("<tr>");
+
+                    foreach (var column in dataTable.Columns)
+                    {
+                        stringBuilder.Append("<td>" + row[column.ToString()]);
+                    }
+                    stringBuilder.Append("</tr>");
+                }
+
+                // Update sql query result layer.
+                sqlQueryResultLayer.InternalFeatures.Clear();
+                var features = sourceLayer.FeatureSource.GetFeaturesByColumnValue("LANDLOCKED", "Y");
+                foreach (Feature feature in features)
+                {
+                    sqlQueryResultLayer.InternalFeatures.Add(feature.Id, feature);
+                }
+            }
+            else
+            {
+                stringBuilder.Append("The source layer does not support SQL queries");
             }
 
-            // Update sql query result layer.
-            sqlQueryResultLayer.InternalFeatures.Clear();
-            var features = sourceLayer.FeatureSource.GetFeaturesByColumnValue("LANDLOCKED", "Y");
-            foreach (Feature feature in features)
-            {
-                sqlQueryResultLayer.InternalFeatures.Add(feature.Id, feature);
-            }
             return stringBuilder.ToString();
         }
 
         [Route("SQLQuery/{z}/{x}/{y}")]
         [HttpGet]
-        public HttpResponseMessage SQLQuery(int z, int x, int y)
+        public IActionResult SQLQuery(int z, int x, int y)
         {
             LayerOverlay layerOverlay = new LayerOverlay();
             layerOverlay.Layers.Add(sqlQueryResultLayer);
@@ -243,7 +247,7 @@ namespace QueryTools.Controllers
         private static ShapeFileFeatureLayer GetSourceLayer()
         {
             ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Path.Combine(baseDirectory, "Countries.shp"));
-            worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.SimpleColors.Transparent, GeoColor.FromArgb(100, GeoColor.SimpleColors.Green));
+            worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyle.CreateSimpleAreaStyle(GeoColors.Transparent, GeoColor.FromArgb(100, GeoColors.Green));
             worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
             return worldLayer;
         }
@@ -258,8 +262,8 @@ namespace QueryTools.Controllers
 
             Collection<Feature> queryResults = sourceLayer.QueryTools.GetFeaturesContaining(targetPointShape, ReturningColumnsType.NoColumns);
             InMemoryFeatureLayer featureLayer = new InMemoryFeatureLayer();
-            featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoSolidBrush(new GeoColor(200, GeoColor.SimpleColors.PastelBlue)));
-            featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColor.SimpleColors.Blue;
+            featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoSolidBrush(new GeoColor(200, GeoColors.PastelBlue)));
+            featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColors.Blue;
             featureLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
             foreach (Feature feature in queryResults)
             {
@@ -279,8 +283,8 @@ namespace QueryTools.Controllers
             Feature feature = sourceLayer.QueryTools.GetFeatureById(featureId, ReturningColumnsType.NoColumns);
 
             InMemoryFeatureLayer featureLayer = new InMemoryFeatureLayer();
-            featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoSolidBrush(new GeoColor(200, GeoColor.SimpleColors.PastelBlue)));
-            featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColor.SimpleColors.Blue;
+            featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoSolidBrush(new GeoColor(200, GeoColors.PastelBlue)));
+            featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColors.Blue;
             featureLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
             featureLayer.InternalFeatures.Add(feature);
 
@@ -335,26 +339,21 @@ namespace QueryTools.Controllers
         }
 
         /// <summary>
-        /// Draw the map and return the image back to client in an HttpResponseMessage. 
+        /// Draw the map and return the image back to client in an IActionResult. 
         /// </summary>
-        private HttpResponseMessage DrawTileImage(LayerOverlay layerOverlay, int z, int x, int y)
+        private IActionResult DrawTileImage(LayerOverlay layerOverlay, int z, int x, int y)
         {
-            using (Bitmap bitmap = new Bitmap(256, 256))
+            using (GeoImage image = new GeoImage(256, 256))
             {
-                PlatformGeoCanvas geoCanvas = new PlatformGeoCanvas();
+                GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
                 RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
-                geoCanvas.BeginDrawing(bitmap, boundingBox, GeographyUnit.Meter);
+                geoCanvas.BeginDrawing(image, boundingBox, GeographyUnit.Meter);
                 layerOverlay.Draw(geoCanvas);
                 geoCanvas.EndDrawing();
 
-                MemoryStream ms = new MemoryStream();
-                bitmap.Save(ms, ImageFormat.Png);
+                byte[] imageBytes = image.GetImageBytes(GeoImageFormat.Png);
 
-                HttpResponseMessage msg = new HttpResponseMessage(HttpStatusCode.OK);
-                msg.Content = new ByteArrayContent(ms.ToArray());
-                msg.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-
-                return msg;
+                return File(imageBytes, "image/png");
             }
         }
     }

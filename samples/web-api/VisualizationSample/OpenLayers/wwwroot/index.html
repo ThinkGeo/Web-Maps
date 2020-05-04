@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="author" content="ThinkGeo" />
+    <link rel="apple-touch-icon" href="desktop.png">
+    <meta name="apple-mobile-web-app-title" content="Visualization" />
+    <link href="favicon.ico" rel="shortcut icon" type="Images/x-icon" />
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/ol.css" rel="stylesheet" />
+    <link href="Content/thinkgeo.openlayers.css" rel="stylesheet" />
+    <link href="Content/Site.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="map">
+    </div>
+    <div id="loadingImage">
+        <img src="Images/ajax-loader.gif" />
+    </div>
+    <div id="bg-mask" class="bg-mask"></div>
+    <div id="styles-panel">
+        <div id="styles-header" title="Close">
+            <span class="title">Style list</span>
+        </div>
+        <div class="panel-content">
+            <ul id="style-options">
+                <li>
+                    <div id="FilterStyle" title="FilterStyle" class="selected">
+                        <span>Filter Style – US Population</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="ClusterStyle" title="ClusterStyle" class="unselected">
+                        <span>Cluster Style - US Earthquake</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="CustomStyle" title="CustomStyle" class="unselected">
+                        <span>Custom Style - Weather</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="ClassBreakStyle" title="ClassBreakStyle" class="unselected">
+                        <span>Class Break Style - US Population</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="DotDensityStyle" title="DotDensityStyle" class="unselected">
+                        <span>Dot Density – US Population</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="IsolineStyle" title="IsolineStyle" class="unselected">
+                        <span>Isoline Style - US Earthquake</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="IconStyle" title="IconStyle" class="unselected">
+                        <span>Icon Style – Vehicles</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="HeatStyle" title="HeatStyle" class="unselected">
+                        <span>Heat Style - US Earthquake</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="centroid">
+        <div id="edit-panel">
+            <div class="edit-panel-header">
+                <span id="settingTitle">LabelStyling Settings</span>
+            </div>
+            <div id="labelingStyleEdit" class="edit-content">
+                <ul>
+                    <li>
+                        <span class="edit-title">Column</span>
+                        <input type="text" readonly="true" value="Population" class="edit-item" />
+                    </li>
+                    <li>
+                        <span class="edit-item-title">Condition</span>
+                        <select id="filterCondition" class="edit-item">
+                            <option>GreaterThanOrEqualTo</option>
+                            <option>GreaterThan</option>
+                            <option>LessThanOrEqualTo</option>
+                            <option>LessThan</option>
+                            <option>Equal</option>
+                            <option>DoesNotEqual</option>
+                        </select>
+                    </li>
+                    <li>
+                        <span class="edit-title">Value</span>
+                        <input id="filterMatchValue" type="text" class="edit-item" value="3000000" />
+                    </li>
+                </ul>
+                <div class="edit-foot">
+                    <a id="btnCancel" href="#" class="btn btn-default" role="button">Cancel</a>
+                    <a id="btnSave" href="#" class="btn btn-primary" role="button">Save</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="Scripts/jquery-1.11.1.min.js"></script>
+    <script src="https://cdn.thinkgeo.com/vectormap-js/3.0.0/vectormap.js"></script>
+    <script src="Scripts/thinkgeo.openlayers.js"></script>
+    <script src="Scripts/thinkgeo.js"></script>
+
+</body>
+</html>

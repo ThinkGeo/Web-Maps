@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Geometric Functions</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="author" content="ThinkGeo" />
+    <link rel="apple-touch-icon" href="desktop.png">
+    <meta name="apple-mobile-web-app-title" content="Geometric Functions" />
+    <link href="favicon.ico" rel="shortcut icon" type="Images/x-icon" />
+    <link href="Content/ol.css" rel="stylesheet" />
+    <link href="Content/thinkgeo.openlayers.css" rel="stylesheet" />
+    <link href="Content/Site.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="map">
+    </div>
+    <div id="loadingImage">
+        <img src="Images/ajax-loader.gif" />
+    </div>
+    <div id="styles-panel">
+        <div id="styles-header" title="Close">
+            <span class="title">Geometric Function List</span>
+        </div>
+        <div class="panel-content">
+            <ul id="style-options">
+                <li>
+                    <div id="Union" title="Union" class="selected">
+                        <span>Union</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Difference" title="Difference" class="unselected">
+                        <span class="styleName">Difference</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Buffer" title="Buffer" class="unselected">
+                        <span>Buffer</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Scale" title="Scale" class="unselected">
+                        <span>Scale</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Rotate" title="Rotate" class="unselected">
+                        <span>Rotate</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="CenterPoint" title="Center Point" class="unselected">
+                        <span>Center point</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="CalculateArea" title="Area Calculation" class="unselected">
+                        <span>Area Calculation</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Simplify" title="Simplify" class="unselected">
+                        <span>Simplify</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Split" title="Split" class="unselected">
+                        <span>Split</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="CalculateShortestLine" title="Get shortest line" class="unselected">
+                        <span>Get shortest line</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="CalculateLength" title="Length Calculation" class="unselected">
+                        <span>Length Calculation</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="LineOnLine" title="Get line on a line" class="unselected">
+                        <span>Get line on a line</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Clip" title="Clip" class="unselected">
+                        <span>Clip</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="ConvexHull" title="Convexhull" class="unselected">
+                        <span>Convexhull</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="Snapping" title="Snapping" class="unselected">
+                        <span>Snapping</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="EnvelopBoundingbox" title="Envelope Boundingbox" class="unselected">
+                        <span>Envelope Boundingbox</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script src="Scripts/jquery-1.11.1.min.js"></script>
+    <script src="https://cdn.thinkgeo.com/vectormap-js/3.0.0/vectormap.js"></script>
+    <script src="Scripts/thinkgeo.openlayers.js"></script>
+    <script src="Scripts/thinkgeo.js"></script>
+</body>
+</html>

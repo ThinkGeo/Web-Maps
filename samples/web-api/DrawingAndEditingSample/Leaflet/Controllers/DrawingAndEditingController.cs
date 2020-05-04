@@ -1,34 +1,33 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.ObjectModel;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
-using System.Web.Http;
 using System.Xml.Linq;
-using ThinkGeo.MapSuite;
-using ThinkGeo.MapSuite.Drawing;
-using ThinkGeo.MapSuite.Layers;
-using ThinkGeo.MapSuite.Shapes;
-using ThinkGeo.MapSuite.Styles;
-using ThinkGeo.MapSuite.WebApi;
+using ThinkGeo.Core;
+using ThinkGeo.UI.WebApi;
 
 namespace DrawingAndEditing.Controllers
 {
-    [RoutePrefix("edit")]
-    public class DrawingAndEditingController : ApiController
+    [Route("edit")]
+    public class DrawingAndEditingController : ControllerBase
     {
+        private static readonly string baseDirectory = null;
         private static string jsonArrayTemplate = "[{0}]";
 
+        static DrawingAndEditingController()
+        {
+            baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+        }
+
         [Route("{z}/{x}/{y}/{accessId}")]
-        public HttpResponseMessage GetTile(int z, int x, int y, string accessId)
+        public IActionResult GetTile(int z, int x, int y, string accessId)
         {
             // Create the layerOverlay for displaying the map.
             LayerOverlay layerOverlay = new LayerOverlay();
@@ -39,23 +38,18 @@ namespace DrawingAndEditing.Controllers
                 layerOverlay.Layers.Add(drawnShapesFeatureLayer);
             }
 
-            // Draw the map and return the image back to client in an HttpResponseMessage.
-            using (Bitmap bitmap = new Bitmap(256, 256))
+            // Draw the map and return the image back to client in an IActionResult.
+            using (GeoImage image = new GeoImage(256, 256))
             {
-                PlatformGeoCanvas geoCanvas = new PlatformGeoCanvas();
+                GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
                 RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
-                geoCanvas.BeginDrawing(bitmap, boundingBox, GeographyUnit.Meter);
+                geoCanvas.BeginDrawing(image, boundingBox, GeographyUnit.Meter);
                 layerOverlay.Draw(geoCanvas);
                 geoCanvas.EndDrawing();
 
-                MemoryStream memoryStream = new MemoryStream();
-                bitmap.Save(memoryStream, ImageFormat.Png);
+                byte[] imageBytes = image.GetImageBytes(GeoImageFormat.Png);
 
-                HttpResponseMessage responseMessage = new HttpResponseMessage(HttpStatusCode.OK);
-                responseMessage.Content = new ByteArrayContent(memoryStream.ToArray());
-                responseMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-
-                return responseMessage;
+                return File(imageBytes, "image/png");
             }
         }
 
@@ -165,22 +159,22 @@ namespace DrawingAndEditing.Controllers
         private static InMemoryFeatureLayer GetDrawnShapesFeatureLayer(string accessId)
         {
             InMemoryFeatureLayer shapesFeatureLayer = new InMemoryFeatureLayer(new Collection<FeatureSourceColumn>() { new FeatureSourceColumn("Name") }, new Collection<BaseShape>());
-            shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(100, GeoColor.FromHtml("#676e51")), GeoColor.SimpleColors.Black);
-            shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = PointStyles.CreateSimpleCircleStyle(GeoColor.FromHtml("#2b7a05"), 14, GeoColor.SimpleColors.Black);
-            shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = LineStyles.CreateSimpleLineStyle(GeoColor.FromHtml("#676e51"), 2, true);
-            shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = TextStyles.CreateSimpleTextStyle("Name", "Arial", 12, DrawingFontStyles.Bold, GeoColor.StandardColors.Gray, GeoColor.StandardColors.White, 2);
+            shapesFeatureLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(4326, 3857);
+
+            shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyle.CreateSimpleAreaStyle(GeoColor.FromArgb(100, GeoColor.FromHtml("#676e51")), GeoColors.Black);
+            shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = PointStyle.CreateSimpleCircleStyle(GeoColor.FromHtml("#2b7a05"), 14, GeoColors.Black);
+            shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = LineStyle.CreateSimpleLineStyle(GeoColor.FromHtml("#676e51"), 2, true);
+            shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = TextStyle.CreateSimpleTextStyle("Name", "Arial", 12, DrawingFontStyles.Bold, GeoColors.Gray, GeoColors.White, 2);
             shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
 
-            Proj4Projection proj4 = new Proj4Projection();
-            proj4.InternalProjectionParametersString = Proj4Projection.GetWgs84ParametersString();
-            proj4.ExternalProjectionParametersString = Proj4Projection.GetSphericalMercatorParametersString();
-            shapesFeatureLayer.FeatureSource.Projection = proj4;
+
+
 
             // Restore the features if have, or we will use the default features loaded from the xml file.
             Collection<Feature> savedFeatures = GetFeatures(accessId);
             if (!savedFeatures.Any())
             {
-                string dataFilePath = GetFullPath("App_Data\\Data.xml");
+                string dataFilePath = Path.Combine(baseDirectory, "App_Data\\Data.xml");
                 XElement xElement = XElement.Load(dataFilePath);
                 foreach (var geometryXElement in xElement.Descendants("Geometry"))
                 {
@@ -203,7 +197,7 @@ namespace DrawingAndEditing.Controllers
 
         private static void SaveFeatures(string accessId, Collection<Feature> features)
         {
-            string jsonFilePath = GetFullPath(Path.Combine("App_Data/Temp", string.Format("{0}.json", accessId)));
+            string jsonFilePath = Path.Combine(baseDirectory, "App_Data/Temp", string.Format("{0}.json", accessId));
             using (StreamWriter streamWriter = new StreamWriter(jsonFilePath, false))
             {
                 foreach (Feature feature in features)
@@ -217,10 +211,10 @@ namespace DrawingAndEditing.Controllers
         private static Collection<Feature> GetFeatures(string accessId)
         {
             Collection<Feature> features = new Collection<Feature>();
-            string jsonFilePath = GetFullPath(Path.Combine("App_Data/Temp", string.Format("{0}.json", accessId)));
-            if (File.Exists(jsonFilePath))
+            string jsonFilePath = Path.Combine(baseDirectory, "App_Data/Temp", string.Format("{0}.json", accessId));
+            if (System.IO.File.Exists(jsonFilePath))
             {
-                string[] geojsons = File.ReadAllLines(jsonFilePath);
+                string[] geojsons = System.IO.File.ReadAllLines(jsonFilePath);
                 foreach (string geojson in geojsons)
                 {
                     features.Add(Feature.CreateFeatureFromGeoJson(geojson));
@@ -230,11 +224,5 @@ namespace DrawingAndEditing.Controllers
             return features;
         }
 
-        private static string GetFullPath(string fileName)
-        {
-            Uri uri = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
-            string rootDirectory = Path.GetDirectoryName(Path.GetDirectoryName(uri.LocalPath));
-            return Path.Combine(rootDirectory, fileName);
-        }
     }
 }

@@ -2,54 +2,30 @@
 
 ### Description
 
-Learn about Map Projection and how to apply it to your data.
+Learn about map projection and how to apply it to your data.
 
-Please refer to [Wiki](http://wiki.thinkgeo.com/wiki/map_suite_web_for_webapi) for the details.
-
-![Screenshot](https://github.com/ThinkGeo/ProjectionSample-ForWebApi/blob/master/ScreenShot.png)
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/master/samples/web-api/ProjectionSample/ScreenShot.png)
 
 ### Requirements
-This sample makes use of the following NuGet Packages
+This sample makes use of the following NuGet packages:
 
-[MapSuite 10.0.0](https://www.nuget.org/packages?q=ThinkGeo)
+[ThinkGeo Core](https://www.nuget.org/packages/ThinkGeo.Core)
 
-### About the Code
-```csharp
-string countriesFilePath = string.Format(@"{0}/Countries02.shp", baseDirectory);
-ShapeFileFeatureLayer countriesLayer = new ShapeFileFeatureLayer(countriesFilePath);
-countriesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen = new GeoPen(GeoColor.SimpleColors.Green, 2);
-countriesLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
-LayerOverlay layerOverlay = new LayerOverlay();
-layerOverlay.Layers.Add(countriesLayer);
+[ThinkGeo UI for WebApi](https://www.nuget.org/packages/ThinkGeo.UI.WebApi)
 
-Proj4Projection decimalDegreeToMeter = new Proj4Projection();
-decimalDegreeToMeter.InternalProjectionParametersString = Proj4Projection.GetWgs84ParametersString();
-decimalDegreeToMeter.ExternalProjectionParametersString = Proj4Projection.GetSphericalMercatorParametersString();
-decimalDegreeToMeter.Open();
-```
-### Getting Help
+### ThinkGeo WebApi Resources
 
-[Map Suite WebAPI Wiki Resources](http://wiki.thinkgeo.com/wiki/map_suite_web_for_webapi)
+[ThinkGeo WebApi - Quickstart and API Docs](https://docs.thinkgeo.com/products/web-maps/v12.0/quickstart/#quick-start-display-a-simple-map-on-webapi)
 
-[Map Suite WebAPI Product Description](https://thinkgeo.com/ui-controls#web-platforms)
+[ThinkGeo WebApi - Additional Wiki Resources](https://wiki.thinkgeo.com/wiki/thinkgeo_web_for_api)
 
-[ThinkGeo Community Site](http://community.thinkgeo.com/)
+[ThinkGeo WebApi - Product Page](https://www.thinkgeo.com/web-maps)
 
-[ThinkGeo Web Site](http://www.thinkgeo.com)
+### Additional Resources
 
-### Key APIs
-This example makes use of the following APIs:
+[ThinkGeo Community Forums](http://community.thinkgeo.com/)
 
-- [ThinkGeo.MapSuite.Drawing.GeoCanvas](http://wiki.thinkgeo.com/wiki/api/thinkgeo.mapsuite.drawing.geocanvas)
-- [ThinkGeo.MapSuite.Layers.ShapeFileFeatureLayer](http://wiki.thinkgeo.com/wiki/api/thinkgeo.mapsuite.layers.shapefilefeaturelayer)
-- [ThinkGeo.MapSuite.WebApi.LayerOverlay](http://wiki.thinkgeo.com/wiki/api/thinkgeo.mapsuite.webapi.layeroverlay)
-
-### FAQ
-- __Q: How do I make background map work?__  
-A: Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require an API Key. These were sent to you via email when you signed up with ThinkGeo, or you can register now at https://cloud.thinkgeo.com. Once you get them, please update the code in the ThinkGeo Cloud URL in "thinkgeo.js" or "index.htm". 
-
-### About Map Suite
-Map Suite is a set of powerful development components and services for the .Net Framework.
+[ThinkGeo Website](https://www.thinkgeo.com/)
 
 ### About ThinkGeo
 ThinkGeo is a GIS (Geographic Information Systems) company founded in 2004 and located in Frisco, TX. Our clients are in more than 40 industries including agriculture, energy, transportation, government, engineering, software development, and defense.

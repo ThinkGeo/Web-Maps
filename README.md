@@ -4,7 +4,7 @@
 
 `/docs`: An offline version the documentation HTML pages.
 
-`/samples`: A collection of feature by feature samples.  We suggest you start with the [How Do I Sample](samples/web-api) as it shows dozens of features in one easy to navigate app.
+`/samples`: A collection of feature by feature samples.  We suggest you start with the [How Do I Sample](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/samples/web-api) as it shows dozens of features in one easy to navigate app.
 
 `/assets`: Any assets needed for the README.
 
@@ -14,8 +14,8 @@
 
 We have a number of samples for both WebAPI and Blazor that show off ThinkGeo Web Maps' full capabilities. You can use these samples as a starting point for your own application, or simply reference them for how to use our controls using best practices.
 
-- [WebAPI samples](samples/wep-api)
-- [Blazor samples](samples/blazor)
+- [WebAPI samples](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/samples/web-api)
+- [Blazor samples](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/samples/blazor/HowDoISample)
 
 ## Quickstart Guides
 
@@ -26,9 +26,9 @@ We have a number of samples for both WebAPI and Blazor that show off ThinkGeo We
 
 ## Quick Start: Display a Simple Map on WebAPI
 
-We will begin by creating an **ASP.NET Core Web - API** project as the service and a simple HTML-based sample with [Leaflet](https://leafletjs.com/) to consume the service. Next, we will walk you through adding the required packages and getting a Restful map service.  Then, we will add some code to show a nice looking background map, and finally, add some custom data to the map and style it. After reading this, you will be in a good position to look over the [How Do I Sample](samples/web-api) and explore our other features.
+We will begin by creating an **ASP.NET Core Web - API** project as the service and a simple HTML-based sample with [Leaflet](https://leafletjs.com/) to consume the service. Next, we will walk you through adding the required packages and getting a Restful map service.  Then, we will add some code to show a nice looking background map, and finally, add some custom data to the map and style it. After reading this, you will be in a good position to look over the [How Do I Sample](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/samples/web-api) and explore our other features.
 
-![alt text](assets/quickstart_webmaps_webapi_screenshot.png "Simple Map")
+![alt text](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/assets/quickstart_webmaps_webapi_screenshot.png "Simple Map")
 
 ### Step 1: Setup a New Project
 
@@ -38,7 +38,7 @@ In your editor of choice you need to create a **ASP.NET Core Web - API** project
 
 ### Step 2: Add NuGet Packages
 
-You will need to install the **ThinkGeo.UI.WebApi** NuGet package in your **ASP.NET Core Web - API** project.  We highly suggest you use your editors [built in NuGet package manager](https://docs.microsoft.com/en-us/nuget/quickstart/) if possible.  If you're not using an IDE you can [install it via the the dotnet CLI](https://docs.microsoft.com/en-us/nuget/consume-packages/install-use-packages-dotnet-cli) from inside your project folder where where your project file exists.
+You will need to install the **ThinkGeo.UI.WebApi** NuGet package in your **ASP.NET Core Web - API** project.  We highly suggest you use your editors [built in NuGet package manager](https://docs.microsoft.com/en-us/nuget/quickstart/install-and-use-a-package-in-visual-studio) if possible.  If you're not using an IDE you can [install it via the the dotnet CLI](https://docs.microsoft.com/en-us/nuget/consume-packages/install-use-packages-dotnet-cli) from inside your project folder where where your project file exists.
 
 ```shell
 Install-Package ThinkGeo.UI.WebApi
@@ -46,7 +46,7 @@ Install-Package ThinkGeo.UI.WebApi
 
 ### Step 3: Prepare spatial data required
 
-Download the required spatial data from [GitLab](assets/capital.zip) and extract its contents into "Data" directory located at the root project.
+Download the required spatial data from [GitLab](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/assets/capital.zip) and extract its contents into "Data" directory located at the root project.
 
 ### Step 4: Create the Map API Controller
 
@@ -181,9 +181,9 @@ You are now in a great position to look over the [other samples available](https
 
 ## Quick Start: Display a Simple Map on Blazor
 
-We will begin by creating a **Blazor App** as the client to consuming the service in your favorite editor.  Next, we will walk you through adding the required packages and getting a map on the default form.  Then, we will add some code to show a nice looking background map, and finally, add some custom data to the map and style it.  After reading this, you will be in a good position to look over the [How Do I Sample](samples/blazor) and explore our other features.
+We will begin by creating a **Blazor App** as the client to consuming the service in your favorite editor.  Next, we will walk you through adding the required packages and getting a map on the default form.  Then, we will add some code to show a nice looking background map, and finally, add some custom data to the map and style it.  After reading this, you will be in a good position to look over the [How Do I Sample](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/samples/blazor/HowDoISample) and explore our other features.
 
-![alt text](assets/quickstart_webmaps_blazor_screenshot.png "Simple Map")
+![alt text](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/assets/quickstart_webmaps_blazor_screenshot.png "Simple Map")
 
 ### Step 1: Setup a New Project
 
@@ -193,7 +193,7 @@ In your editor of choice you need to create a **Blazor App** project.  Please se
 
 ### Step 2: Add NuGet Packages
 
-You will need to install **ThinkGeo.UI.Blazor** in **Blazor App** project.  We highly suggest you use your editors [built in NuGet package manager](https://docs.microsoft.com/en-us/nuget/quickstart/) if possible.  If you're not using an IDE you can [install it via the the dotnet CLI](https://docs.microsoft.com/en-us/nuget/consume-packages/install-use-packages-dotnet-cli) from inside your project folder where where your project file exists.
+You will need to install **ThinkGeo.UI.Blazor** in **Blazor App** project.  We highly suggest you use your editors [built in NuGet package manager](https://docs.microsoft.com/en-us/nuget/quickstart/install-and-use-a-package-in-visual-studio) if possible.  If you're not using an IDE you can [install it via the the dotnet CLI](https://docs.microsoft.com/en-us/nuget/consume-packages/install-use-packages-dotnet-cli) from inside your project folder where where your project file exists.
 
 ```shell
 Install-Package ThinkGeo.UI.Blazor
@@ -249,7 +249,7 @@ You should now see your map with our Cloud Maps layer!
 
 ### Step 4: Prepare spatial data required
 
-Download the required spatial data from [GitLab](assets/capital.zip) and extract its contents into the "Data" directory located at the root project.
+Download the required spatial data from [GitLab](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/assets/capital.zip) and extract its contents into the "Data" directory located at the root project.
 
 ### Step 5: Add a Point Data Layer
 

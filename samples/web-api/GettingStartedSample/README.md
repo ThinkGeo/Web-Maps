@@ -2,71 +2,30 @@
 
 ### Description
 
-This sample shows you how to get started building your first application with the Map Suite WebAPI Edition.
+This sample shows you how to get started building your first application with ThinkGeo UI for WebApi.
 
-Please refer to [Wiki](http://wiki.thinkgeo.com/wiki/map_suite_web_for_webapi) for the details.
-
-![Screenshot](https://github.com/ThinkGeo/GettingStartedSample-ForWebApi/blob/master/ScreenShot.png)
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/master/samples/web-api/GettingStartedSample/ScreenShot.png)
 
 ### Requirements
-This sample makes use of the following NuGet Packages
+This sample makes use of the following NuGet packages:
 
-[MapSuite 10.0.0](https://www.nuget.org/packages?q=ThinkGeo)
+[ThinkGeo Core](https://www.nuget.org/packages/ThinkGeo.Core)
 
-### About the Code
+[ThinkGeo UI for WebApi](https://www.nuget.org/packages/ThinkGeo.UI.WebApi)
 
-```javascript
-var map = L.map('map', {
-                center: [39.6948, -96.8150],
-                zoom: 4,
-                contextmenu: true,
-                contextmenuItems: [{
-                    text: 'Center map here',
-                    callback: function (e) {
-                        map.panTo(e.latlng);
-                    }
-                }, '-', {
-                    text: 'Zoom to zoomlevel 5 (Country Level)',
-                    callback: function (e) {
-                        map.setView(e.latlng, 5);
-                    }
-                }, {
-                    text: 'Zoom to zoomlevel 8 (State Level)',
-                    callback: function (e) {
-                        map.setView(e.latlng, 8);
-                    }
-                }, {
-                    text: 'Zoom to zoomlevel 12 (City Level)',
-                    callback: function (e) {
-                        map.setView(e.latlng, 12);
-                    }
-                }, {
-                    text: 'Zoom to zoomlevel 17 (Street Level)',
-                    callback: function (e) {
-                        map.setView(e.latlng, 17);
-                    }
-                }]
-            });
-```
-### Getting Help
+### ThinkGeo WebApi Resources
 
-[Map Suite WebAPI Wiki Resources](http://wiki.thinkgeo.com/wiki/map_suite_web_for_webapi)
+[ThinkGeo WebApi - Quickstart and API Docs](https://docs.thinkgeo.com/products/web-maps/v12.0/quickstart/#quick-start-display-a-simple-map-on-webapi)
 
-[Map Suite WebAPI Product Description](https://thinkgeo.com/ui-controls#web-platforms)
+[ThinkGeo WebApi - Additional Wiki Resources](https://wiki.thinkgeo.com/wiki/thinkgeo_web_for_api)
 
-[ThinkGeo Community Site](http://community.thinkgeo.com/)
+[ThinkGeo WebApi - Product Page](https://www.thinkgeo.com/web-maps)
 
-[ThinkGeo Web Site](http://www.thinkgeo.com)
+### Additional Resources
 
-### Key APIs
-This example makes use of the following APIs:
+[ThinkGeo Community Forums](http://community.thinkgeo.com/)
 
-- [ThinkGeo.MapSuite.Drawing.GeoCanvas](http://wiki.thinkgeo.com/wiki/api/thinkgeo.mapsuite.drawing.geocanvas)
-- [ThinkGeo.MapSuite.Layers.PrinterLayer](http://wiki.thinkgeo.com/wiki/api/thinkgeo.mapsuite.layers.printerlayer)
-- [ThinkGeo.MapSuite.WebApi.LayerOverlay](http://wiki.thinkgeo.com/wiki/api/thinkgeo.mapsuite.webapi.layeroverlay)
-
-### About Map Suite
-Map Suite is a set of powerful development components and services for the .Net Framework.
+[ThinkGeo Website](https://www.thinkgeo.com/)
 
 ### About ThinkGeo
 ThinkGeo is a GIS (Geographic Information Systems) company founded in 2004 and located in Frisco, TX. Our clients are in more than 40 industries including agriculture, energy, transportation, government, engineering, software development, and defense.

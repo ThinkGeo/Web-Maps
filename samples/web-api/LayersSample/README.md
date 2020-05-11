@@ -4,38 +4,28 @@
 
 This sample shows the different types of layers and data formats you can use to build up your map.
 
-![Screenshot](https://github.com/ThinkGeo/LayersSample-ForWebApi/blob/master/ScreenShot.png)
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/master/samples/web-api/LayersSample/ScreenShot.png)
 
 ### Requirements
-This sample makes use of the following NuGet Packages
+This sample makes use of the following NuGet packages:
 
-[MapSuite 10.0.0.0](https://www.nuget.org/packages?q=thinkgeo)
+[ThinkGeo Core](https://www.nuget.org/packages/ThinkGeo.Core)
 
-### About the Code
+[ThinkGeo UI for WebApi](https://www.nuget.org/packages/ThinkGeo.UI.WebApi)
 
-Working...
+### ThinkGeo WebApi Resources
 
-### Getting Help
+[ThinkGeo WebApi - Quickstart and API Docs](https://docs.thinkgeo.com/products/web-maps/v12.0/quickstart/#quick-start-display-a-simple-map-on-webapi)
 
-[Map Suite WebAPI Wiki Resources](http://wiki.thinkgeo.com/wiki/map_suite_webapi_edition)
+[ThinkGeo WebApi - Additional Wiki Resources](https://wiki.thinkgeo.com/wiki/thinkgeo_web_for_api)
 
-[Map Suite WebAPI Product Description](http://thinkgeo.com/map-suite-developer-gis/webapi-edition/)
+[ThinkGeo WebApi - Product Page](https://www.thinkgeo.com/web-maps)
 
-[ThinkGeo Community Site](http://community.thinkgeo.com/c/map-suite-webapi-edition-support)
+### Additional Resources
 
-[ThinkGeo Web Site](http://www.thinkgeo.com)
+[ThinkGeo Community Forums](http://community.thinkgeo.com/)
 
-### Key APIs
-This example makes use of the following APIs:
-
-Working...
-
-### FAQ
-- __Q: How do I make background map work?__  
-A: Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require an API Key. These were sent to you via email when you signed up with ThinkGeo, or you can register now at https://cloud.thinkgeo.com. Once you get them, please update the code in the ThinkGeo Cloud URL in "thinkgeo.js" or "index.htm". 
-
-### About Map Suite
-Map Suite is a set of powerful development components and services for the .Net Framework.
+[ThinkGeo Website](https://www.thinkgeo.com/)
 
 ### About ThinkGeo
 ThinkGeo is a GIS (Geographic Information Systems) company founded in 2004 and located in Frisco, TX. Our clients are in more than 40 industries including agriculture, energy, transportation, government, engineering, software development, and defense.

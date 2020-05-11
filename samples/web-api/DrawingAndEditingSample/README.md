@@ -4,53 +4,28 @@
 
 This sample demonstrates how to implement drawing and editing shapes into your web application.
 
-Please refer to [Wiki](http://wiki.thinkgeo.com/wiki/map_suite_web_for_webapi) for the details.
-
-![Screenshot](https://github.com/ThinkGeo/DrawingAndEditingSample-ForWebApi/blob/master/ScreenShot.png)
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/master/samples/web-api/DrawingAndEditingSample/ScreenShot.png)
 
 ### Requirements
-This sample makes use of the following NuGet Packages
+This sample makes use of the following NuGet packages:
 
-[MapSuite 10.0.0](https://www.nuget.org/packages?q=ThinkGeo)
+[ThinkGeo Core](https://www.nuget.org/packages/ThinkGeo.Core)
 
-### About the Code
-```csharp
-PlatformGeoCanvas geoCanvas = new PlatformGeoCanvas();
-RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
-geoCanvas.BeginDrawing(bitmap, boundingBox, GeographyUnit.Meter);
-layerOverlay.Draw(geoCanvas);
-geoCanvas.EndDrawing();
+[ThinkGeo UI for WebApi](https://www.nuget.org/packages/ThinkGeo.UI.WebApi)
 
-MemoryStream memoryStream = new MemoryStream();
-bitmap.Save(memoryStream, ImageFormat.Png);
+### ThinkGeo WebApi Resources
 
-HttpResponseMessage responseMessage = new HttpResponseMessage(HttpStatusCode.OK);
-responseMessage.Content = new ByteArrayContent(memoryStream.ToArray());
-responseMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-```
-### Getting Help
+[ThinkGeo WebApi - Quickstart and API Docs](https://docs.thinkgeo.com/products/web-maps/v12.0/quickstart/#quick-start-display-a-simple-map-on-webapi)
 
-[Map Suite WebAPI Wiki Resources](http://wiki.thinkgeo.com/wiki/map_suite_web_for_webapi)
+[ThinkGeo WebApi - Additional Wiki Resources](https://wiki.thinkgeo.com/wiki/thinkgeo_web_for_api)
 
-[Map Suite WebAPI Product Description](https://thinkgeo.com/ui-controls#web-platforms)
+[ThinkGeo WebApi - Product Page](https://www.thinkgeo.com/web-maps)
 
-[ThinkGeo Community Site](http://community.thinkgeo.com/)
+### Additional Resources
 
-[ThinkGeo Web Site](http://www.thinkgeo.com)
+[ThinkGeo Community Forums](http://community.thinkgeo.com/)
 
-### Key APIs
-This example makes use of the following APIs:
-
-- [ThinkGeo.MapSuite.Drawing.GeoCanvas](http://wiki.thinkgeo.com/wiki/api/thinkgeo.mapsuite.drawing.geocanvas)
-- [ThinkGeo.MapSuite.Layers.PrinterLayer](http://wiki.thinkgeo.com/wiki/api/thinkgeo.mapsuite.layers.printerlayer)
-- [ThinkGeo.MapSuite.WebApi.LayerOverlay](http://wiki.thinkgeo.com/wiki/api/thinkgeo.mapsuite.webapi.layeroverlay)
-
-### FAQ
-- __Q: How do I make background map work?__  
-A: Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require an API Key. These were sent to you via email when you signed up with ThinkGeo, or you can register now at https://cloud.thinkgeo.com. Once you get them, please update the code in the ThinkGeo Cloud URL in "thinkgeo.js" or "index.htm". 
-
-### About Map Suite
-Map Suite is a set of powerful development components and services for the .Net Framework.
+[ThinkGeo Website](https://www.thinkgeo.com/)
 
 ### About ThinkGeo
 ThinkGeo is a GIS (Geographic Information Systems) company founded in 2004 and located in Frisco, TX. Our clients are in more than 40 industries including agriculture, energy, transportation, government, engineering, software development, and defense.

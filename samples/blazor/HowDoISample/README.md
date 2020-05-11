@@ -4,41 +4,28 @@
 
 The “How Do I?” samples collection is a comprehensive set containing dozens of interactive samples. Available in C# (Blazor), these samples are designed to hit all the highlights of ThinkGeo Blazor UIs, from simply adding a layer to a map to performing vehicle tracking and applying a thematic style. Consider this collection your “encyclopedia” of all the ThinkGeo basics and a great starting place for new users.
 
-Please refer to [ThinkGeo Web UI for Blazor](https://thinkgeo.com/gis-ui-web) for the details.
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/master/samples/blazor/HowDoISample/Screenshot.gif)
 
-![Screenshot](https://github.com/ThinkGeo/HowDoISample-ForBlazor/blob/master/Screenshot.gif)
+### Requirements
+This sample makes use of the following NuGet packages:
 
-### About the Code
-Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require an API Key. The following function is just for reminding you to input the key.
-```csharp
-    <MapView Id="map" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter" ProgressiveZooming="true"
-         Center="@(new PointShape(-11037792.463030849, 4953010.053845501))"
-         Zoom="5">
-        <OverlaysSetting>
-            <ThinkGeoCloudVectorMapsOverlay Id="VectorOverlay"
-                                            ApiKey=""
-                                            MapType="mapType" />
-        </OverlaysSetting>
-    </MapView>
+[ThinkGeo Core](https://www.nuget.org/packages/ThinkGeo.Core)
 
-@code{
-    Map map;
-    protected override void OnInitialized()
-    {
-        // Initialize here ...
-    }
-}
-```
+[ThinkGeo UI for Blazor](https://www.nuget.org/packages/ThinkGeo.UI.Blazor)
 
-### Getting Help
+### ThinkGeo Blazor Resources
 
-[ThinkGeo Community Site](https://community.thinkgeo.com)
+[ThinkGeo Blazor - Quickstart and API Docs](https://docs.thinkgeo.com/products/web-maps/v12.0/quickstart/#quick-start-display-a-simple-map-on-blazor)
 
-[ThinkGeo Web Site](https://www.thinkgeo.com)
+[ThinkGeo Blazor - Additional Wiki Resources](https://wiki.thinkgeo.com/wiki/thinkgeo_web_for_blazor)
 
-### FAQ
-- __Q: How do I make background map work?__  
-A: Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require a Client ID and Secret. These were sent to you via email when you signed up with ThinkGeo, or you can register now at https://cloud.thinkgeo.com. Once you get them, please update the code in property ApiKey="" in RazorControl partial classes.  
+[ThinkGeo Blazor - Product Page](https://www.thinkgeo.com/web-maps)
+
+### Additional Resources
+
+[ThinkGeo Community Forums](http://community.thinkgeo.com/)
+
+[ThinkGeo Website](https://www.thinkgeo.com/)
 
 ### About ThinkGeo
-ThinkGeo is a GIS (Geographic Information Systems) company founded in 2004 and located in Frisco, TX. Our clients are in more than 40 industries including agriculture, energy, transportation, government, engineering, software development, and defense. 
+ThinkGeo is a GIS (Geographic Information Systems) company founded in 2004 and located in Frisco, TX. Our clients are in more than 40 industries including agriculture, energy, transportation, government, engineering, software development, and defense.

@@ -2,47 +2,30 @@
 
 ### Description
 
-This sample shows you how to examine different labeling techniques to make your maps informative.
+This sample shows you how to utilize different labeling techniques to make your maps informative.
 
-Please refer to [Wiki](http://wiki.thinkgeo.com/wiki/map_suite_web_for_webapi) for the details.
-
-![Screenshot](https://github.com/ThinkGeo/LabelingSample-ForWebApi/blob/master/ScreenShot.png)
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/master/samples/web-api/LabelingSample/ScreenShot.png)
 
 ### Requirements
-This sample makes use of the following NuGet Packages
+This sample makes use of the following NuGet packages:
 
-[MapSuite 10.0.0](https://www.nuget.org/packages?q=ThinkGeo)
+[ThinkGeo Core](https://www.nuget.org/packages/ThinkGeo.Core)
 
-### About the Code
-```csharp
-PlatformGeoCanvas geoCanvas = new PlatformGeoCanvas();
-RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
-geoCanvas.BeginDrawing(bitmap, boundingBox, GeographyUnit.Meter);
+[ThinkGeo UI for WebApi](https://www.nuget.org/packages/ThinkGeo.UI.WebApi)
 
-if (layerOverlay != null)
-{
-    layerOverlay.Draw(geoCanvas);
-}
-geoCanvas.EndDrawing();
-```
-### Getting Help
+### ThinkGeo WebApi Resources
 
-[Map Suite WebAPI Wiki Resources](http://wiki.thinkgeo.com/wiki/map_suite_web_for_webapi)
+[ThinkGeo WebApi - Quickstart and API Docs](https://docs.thinkgeo.com/products/web-maps/v12.0/quickstart/#quick-start-display-a-simple-map-on-webapi)
 
-[Map Suite WebAPI Product Description](https://thinkgeo.com/ui-controls#web-platforms)
+[ThinkGeo WebApi - Additional Wiki Resources](https://wiki.thinkgeo.com/wiki/thinkgeo_web_for_api)
 
-[ThinkGeo Community Site](http://community.thinkgeo.com/)
+[ThinkGeo WebApi - Product Page](https://www.thinkgeo.com/web-maps)
 
-[ThinkGeo Web Site](http://www.thinkgeo.com)
+### Additional Resources
 
-### Key APIs
-This example makes use of the following APIs:
-- [ThinkGeo.MapSuite.Drawing.GeoCanvas](http://wiki.thinkgeo.com/wiki/api/thinkgeo.mapsuite.drawing.geocanvas)
-- [ThinkGeo.MapSuite.Layers.PrinterLayer](http://wiki.thinkgeo.com/wiki/api/thinkgeo.mapsuite.layers.printerlayer)
-- [ThinkGeo.MapSuite.WebApi.LayerOverlay](http://wiki.thinkgeo.com/wiki/api/thinkgeo.mapsuite.webapi.layeroverlay)
+[ThinkGeo Community Forums](http://community.thinkgeo.com/)
 
-### About Map Suite
-Map Suite is a set of powerful development components and services for the .Net Framework.
+[ThinkGeo Website](https://www.thinkgeo.com/)
 
 ### About ThinkGeo
 ThinkGeo is a GIS (Geographic Information Systems) company founded in 2004 and located in Frisco, TX. Our clients are in more than 40 industries including agriculture, energy, transportation, government, engineering, software development, and defense.

@@ -6,6 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ThinkGeo.UI.Blazor.HowDoI\**" />
+    <Content Remove="ThinkGeo.UI.Blazor.HowDoI\**" />
+    <EmbeddedResource Remove="ThinkGeo.UI.Blazor.HowDoI\**" />
+    <None Remove="ThinkGeo.UI.Blazor.HowDoI\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="ThinkGeo.Ecw" Version="12.2.7" />
     <PackageReference Include="ThinkGeo.UI.Blazor" Version="12.2.7" />

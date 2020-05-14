@@ -1,0 +1,72 @@
+<SampleList>
+  <Category Id="Samples" Name="Samples" Path="Samples">
+      <Sample Id="SimpleRouting" Name="Simple Routing" >
+        <Description>Simple Routing</Description>
+        <ContentPage>SimpleRouting.aspx</ContentPage>
+      </Sample>
+    <Sample Id="GetShortestPathByCoordinates" Name="Get Shortest Path By Coordinates" >
+      <Description>Get Shortest Path By Coordinates</Description>
+      <ContentPage>GetShortestPathByCoordinates.aspx</ContentPage>
+    </Sample>
+    <Sample Id="GetRoadInformationByRoadId" Name="Get Road Information By RoadId" >
+      <Description>Get Road Information By RoadId</Description>
+      <ContentPage>GetRoadInformationByRoadId.aspx</ContentPage>
+    </Sample>
+    <Sample Id="RouteAvoidingCertainArea" Name="Route Avoiding Certain Area" >
+      <Description>Route Avoiding Certain Area</Description>
+      <ContentPage>RouteAvoidingCertainArea.aspx</ContentPage>
+    </Sample>
+    <Sample Id="RouteOnlyInASpecificArea" Name="Route Only In A Specific Area" >
+      <Description>Route Only In A Specific Area</Description>
+      <ContentPage>RouteOnlyInASpecificArea.aspx</ContentPage>
+    </Sample>
+    <Sample Id="UseDifferentAlgorithms" Name="Use Different Algorithms" >
+      <Description>Use Different Algorithms</Description>
+      <ContentPage>UseDifferentAlgorithms.aspx</ContentPage>
+    </Sample>
+    <Sample Id="RoutingDirections" Name="Routing Directions" >
+      <Description>Routing Directions</Description>
+      <ContentPage>RoutingDirections.aspx</ContentPage>
+    </Sample>
+    <Sample Id="ExtendingRoutingSource" Name="Extending RoutingSource" >
+      <Description>Extending RoutingSource</Description>
+      <ContentPage>ExtendingRoutingSource.aspx</ContentPage>
+    </Sample>
+    <Sample Id="IntermediatePointsSupport" Name="Intermediate Points" >
+      <Description>Intermediate Points</Description>
+      <ContentPage>IntermediatePointsSupport.aspx</ContentPage>
+    </Sample>
+    <Sample Id="ServiceAreaDefinition" Name="Service Area Definition" >
+      <Description>Service Area Definition</Description>
+      <ContentPage>ServiceAreaDefinition.aspx</ContentPage>
+    </Sample>
+    <Sample Id="OptimizeRoadType" Name="Optimize RoadType" >
+      <Description>Optimize RoadType</Description>
+      <ContentPage>OptimizeRoadType.aspx</ContentPage>
+    </Sample>
+    <Sample Id="OneWayRouting" Name="One-Way Routing" >
+      <Description>One-Way Routing</Description>
+      <ContentPage>OneWayRouting.aspx</ContentPage>
+    </Sample>
+    <Sample Id="RoutingAroundRoadblocks" Name="Routing Around Roadblocks" >
+      <Description>Routing Around Roadblocks</Description>
+      <ContentPage>RoutingAroundRoadblocks.aspx</ContentPage>
+    </Sample>
+    <Sample Id="TravelingSalesman" Name="Traveling Salesman Problem" >
+      <Description>Traveling Salesman Problem</Description>
+      <ContentPage>TravelingSalesman.aspx</ContentPage>
+    </Sample>
+    <Sample Id="DifferentProjectionsWithRouting" Name="Different Projections With Routing" >
+      <Description>Different Projections With Routing</Description>
+      <ContentPage>DifferentProjectionsWithRouting.aspx</ContentPage>
+    </Sample>
+    <Sample Id="TSPAnalysisWithFixedEnds" Name="TSP Analysis With Fixed Ends" >
+      <Description>TSP Analysis With Fixed Ends</Description>
+      <ContentPage>TSPAnalysisWithFixedEnds.aspx</ContentPage>
+    </Sample>
+    <Sample Id="POIonRoute" Name="POI(Points of interest) on Route" >
+      <Description>POI(Points of interest) on Route</Description>
+      <ContentPage>POIonRoute.aspx</ContentPage>
+    </Sample>
+  </Category>
+</SampleList>

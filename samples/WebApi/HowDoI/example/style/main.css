@@ -1,0 +1,413 @@
+﻿/*
+ * Base structure
+ */
+
+html {
+    font-size: 10px;
+    height: 100%;
+}
+
+body div {
+    font-size: 1.3rem;
+}
+
+body {
+    padding-top: 72px;
+    height: 100%;
+}
+
+/* nav */
+
+.navbar {
+    padding: 0px;
+    height: 72px;
+    justify-content: start;
+}
+
+.bg-dark {
+    background: #26282c !important;
+}
+
+.navbar-brand {
+    background-image: url(../image/logo.png);
+    height: 72px;
+    width: 72px;
+    padding: 0;
+}
+
+.navbar-text {
+    line-height: 72px
+}
+
+.navbar-text h4 {
+    font-size: 1.8rem;
+    color: #ffffff;
+}
+
+.beta, .preview {
+    background: #ff7a14;
+    margin-left: 1rem;
+    padding: 0 0.7rem;
+    font-size: 0.9em;
+    border-radius: 0 10px 0 0;
+}
+
+.navbar-text h6 {
+    color: rgb(157, 157, 157);
+    font-size: 1.2rem;
+}
+
+.navbar-toggler {
+    border: 1px solid #ffffff3d;
+    color: #ffffffe3;
+    display: none;
+}
+
+.navbar-toggler:focus {
+    outline: none;
+}
+
+.navbar-toggler span {
+    font-size: 2rem;
+}
+
+.navbar-nav {
+    flex-direction: row;
+    margin-right: 0.6rem;
+    color: #ffffff;
+    font-size: 1.5rem;
+    line-height: 35px;
+}
+
+.navbar-nav li {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.navbar-nav li a {
+    font-size: 1.5rem;
+    color: #ffffff;
+}
+
+/* left content */
+
+.sidebar {
+    position: fixed;
+    width: 320px;
+    top: 72px;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    display: block;
+    padding-top: 20px;
+    padding-left: 0;
+    padding-right: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* Scrollable contents if viewport is shorter than content. */
+    background-color: #2D3035;
+}
+
+.sidebar.collapse {
+    display: block;
+}
+
+.sidebar .style-name {
+    padding-left: 5%;
+}
+
+/*Sidebar search*/
+
+.container-fluid .form-inline {
+    position: absolute;
+    bottom: 15px;
+    width: 100%;
+    padding: 0 0.75rem;
+}
+
+#sidebar-search {
+    border-radius: 0;
+    font-size: 1.5rem;
+    height: 30px;
+    width: 100%;
+    margin: 0 !important;
+}
+
+.sidebar hr {
+    height: 0.2px;
+    background-color: #e4e2e2;
+    margin-bottom: 0;
+    margin-top: 10px;
+    width: 100%
+}
+
+.container-fluid form i {
+    position: absolute;
+    right: 6%;
+    top: 9px;
+    color: rgb(73, 80, 87);
+    font-size: 1.2rem
+}
+
+/* Sidebar navigation */
+
+.nav-sidebar {
+    margin-top: 10px;
+    position: absolute;
+    top: 0;
+    overflow: auto;
+    width: 100%;
+    max-height: calc(100% - 60px);
+    scrollbar-color: #666666 #1d1d1d;
+}
+
+    .nav-sidebar::-webkit-scrollbar {
+        width: 12px;
+    }
+
+    .nav-sidebar::-webkit-scrollbar-track {
+      background: #3a3a3abf;
+    }
+
+    .nav-sidebar::-webkit-scrollbar-thumb {
+      background: #8f8f8f;
+    }
+
+.nav-sidebar a:hover {
+    text-decoration: underline
+}
+
+.nav-sidebar a {
+    color: #60B9E2;
+    display: inline-block;
+    width: 100%;
+    height: 3.75rem;
+    line-height: 3.75rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+}
+
+#menu-bar>li>a {
+    font-size: 1.5rem;
+}
+
+#menu-bar>ul {
+    width: 100%;
+}
+
+.nav-sidebar li {
+    border-bottom: 1px solid #3B3B3C;
+    width: 100%;
+    padding: 0rem;
+    margin-bottom: 0;
+}
+
+.nav-sidebar>li>a i {
+    width: 20px;
+}
+
+.nav-sidebar>li>a {
+    font-weight: 600;
+    font-size: large;
+}
+
+.sub-menu .active, .sub-menu .active:hover, .sub-menu .active:focus {
+    background-color: #505050;
+}
+
+.sidebar>.nav>li:hover {
+    background-color: #505050;
+}
+
+.sidebar>.nav>li:hover a {
+    text-decoration: none
+}
+
+.arrow:before {
+    font-family: FontAwesome;
+    content: "\f078";
+    display: inline-block;
+    padding-left: 10px;
+    padding-right: 10px;
+    vertical-align: middle;
+    float: right;
+}
+
+.sub-arrow {
+    font-size: 1.5rem
+}
+
+.sub-arrow:before {
+    font-family: FontAwesome;
+    content: "\f105";
+    display: inline-block;
+    padding-left: 10px;
+    padding-right: 10px;
+    vertical-align: middle;
+    float: left;
+}
+
+/*
+ * Main content
+ */
+
+.container-fluid {
+    height: 100%;
+    background: #3D3D3E
+}
+
+.tab-content {
+    height: calc(100% - 76px);
+}
+
+.container-fluid .row {
+    height: 100%;
+}
+
+.main {
+    padding-top: 20px;
+    padding-left: 340px;
+    height: 100%;
+    width: 100%;
+    max-height: calc(100vh - 5px - 72px);
+    overflow: hidden;
+}
+
+#child-page-component .active {
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+pre {
+    background-color: #f5f5f5;
+}
+
+#loadingImage {
+    position: absolute;
+    left: 50%;
+    bottom: 50%;
+    z-index: 9000;
+    display: none;
+}
+
+/*
+ * Override bootstrap and awesome
+ */
+
+.fa {
+    cursor: pointer;
+}
+
+/*
+child pages
+*/
+
+#codepen a {
+    opacity: 0.6;
+}
+
+#codepen .nav-link:hover {
+    border-width: 0px;
+    opacity: 1;
+}
+
+#child-page-title {
+    position: relative;
+    width: 100%;
+    height: auto;
+    color: #ffffff
+}
+
+#child-page-title h1 {
+    margin-bottom: 1.5rem;
+    color: #ffffff
+}
+
+.download-sample {
+    position: absolute;
+    right: 10px;
+    bottom: 0;
+    color: #ffffff;
+    background-color: #666666;
+    padding: 5px 10px 5px 10px;
+    border-radius: 2px;
+    appearance: none;
+    -webkit-appearance: none!important;
+}
+
+.download-sample:hover {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.download-sample:active {
+    -webkit-transform: translateY(1px);
+    transform: translateY(1px);
+}
+
+.download-sample:focus {
+    outline: none;
+}
+
+.nav-tabs .nav-link {
+    font-size: 1.6rem !important;
+    color: #2d3e50
+}
+
+.nav-link img {
+    width: 1.6rem;
+    height: 1.6rem;
+}
+
+#child-page-title h4 {
+    font-size: 2rem;
+    margin-top: 0;
+}
+
+#child-page-js, #child-page-html {
+    padding: 0;
+    background-color: #ffffff;
+    height: 100%;
+    z-index: 1;
+}
+
+#child-page-html pre, #child-page-js pre {
+    border-radius: 0;
+    height: 100%;
+    margin-bottom: 0;
+}
+
+pre {
+    position: relative;
+    padding: 10px 50px;
+}
+
+.pre-numbering {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 26px;
+    height: 100%;
+    margin: 0;
+    padding: 9px 4px;
+    background-color: #EEE;
+    text-align: right;
+    font-family: consolas, monospace;
+    font-size: 16px;
+    line-height: 133%;
+    color: #AAA;
+    list-style: none;
+}
+
+.has-numbering {
+    font-size: 14px
+}
+
+.pre-numbering li {
+    margin: 0;
+}
+
+/* Info Button */
+.info{
+    display: none;
+}

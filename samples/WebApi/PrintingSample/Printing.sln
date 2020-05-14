@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Printing_Leaflet", "Leaflet\Printing_Leaflet.csproj", "{2358D03E-EE1D-4760-8AC8-B05E23F1C13E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Printing_Openlayers", "Openlayers\Printing_Openlayers.csproj", "{FA624B35-476B-42AA-877F-20C7F12DF808}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2358D03E-EE1D-4760-8AC8-B05E23F1C13E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2358D03E-EE1D-4760-8AC8-B05E23F1C13E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2358D03E-EE1D-4760-8AC8-B05E23F1C13E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2358D03E-EE1D-4760-8AC8-B05E23F1C13E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA624B35-476B-42AA-877F-20C7F12DF808}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA624B35-476B-42AA-877F-20C7F12DF808}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA624B35-476B-42AA-877F-20C7F12DF808}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA624B35-476B-42AA-877F-20C7F12DF808}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Preview</title>
+    <script src="JavaScript/OpenLayers.js" type="text/javascript"></script>
+    <style type="text/css">
+        html, body {
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map" style="width: 100%; height: 100%;">
+    </div>
+    <script type="text/javascript">
+        window.onload = function () {
+            var requestUrl = window.location.href;
+            var parameters = requestUrl.split('?')[1].split('&');
+
+            var serverUrl = parameters[0].split('=')[1];
+            var layers = parameters[1].split('=')[1];
+            var styles = parameters[2].split('=')[1];
+            var projection = parameters[3].split('=')[1];
+            var units = parameters[4].split('=')[1];
+            var bbox = parameters[5].split('=')[1].split(',');
+            var rebuild = parameters[6].split('=')[1];
+            var alternateServers = parameters[7].split('=')[1];
+            var extent = new OpenLayers.Bounds(bbox[0], bbox[1], bbox[2], bbox[3]);
+            var options = {
+                units: units,
+                projection: projection,
+                theme: 'JavaScript/style.css'
+            };
+
+            document.title = projection + ' ' + styles;
+            if (units === 'm') {
+                options.resolutions = [];
+                options.resolutions.push(156542.64237009812);
+                options.resolutions.push(78271.32119827822);
+                options.resolutions.push(39135.66058590995);
+                options.resolutions.push(19567.830298246637);
+                options.resolutions.push(9783.915149123318);
+                options.resolutions.push(4891.957573238744);
+                options.resolutions.push(2445.9787871485382);
+                options.resolutions.push(1222.9893937065608);
+                options.resolutions.push(611.4946968532804);
+                options.resolutions.push(305.74734829434857);
+                options.resolutions.push(152.87367420009093);
+                options.resolutions.push(76.43683711327463);
+                options.resolutions.push(38.21841855663732);
+                options.resolutions.push(19.109209275672825);
+                options.resolutions.push(9.554604636513495);
+                options.resolutions.push(4.777302318256748);
+                options.resolutions.push(2.3886511593929573);
+                options.resolutions.push(1.194325579564187);
+                options.resolutions.push(0.5971627897820935);
+                options.resolutions.push(0.29858139489104673);
+                options.maxExtent = new OpenLayers.Bounds(-1000000000, -1000000000, 1003745822.3373, 1003745822.3373);
+            }
+
+            var panZoomBarControl = new OpenLayers.Control.PanZoomBar();
+            panZoomBarControl.zoomWorldIcon = true;
+            options.controls = [panZoomBarControl, new OpenLayers.Control.Navigation()];
+            options.numZoomLevels = 20;
+            if (alternateServers === 'True') {
+                serverUrl = [
+                    'http://wmk1.thinkgeo.com/CachedWmsServer/WmsServer.axd',
+                    'http://wmk2.thinkgeo.com/CachedWmsServer/WmsServer.axd',
+                    'http://wmk3.thinkgeo.com/CachedWmsServer/WmsServer.axd',
+                    'http://wmk4.thinkgeo.com/CachedWmsServer/WmsServer.axd',
+                    'http://wmk5.thinkgeo.com/CachedWmsServer/WmsServer.axd',
+                    'http://wmk6.thinkgeo.com/CachedWmsServer/WmsServer.axd'
+                ];
+            }
+
+            var map = new OpenLayers.Map('map', options);
+            var wms = new OpenLayers.Layer.WMS(
+                'ThinkGeo Wms Server',
+                serverUrl,
+                {
+                    LAYERS: layers,
+                    STYLES: styles,
+                    FORMAT: 'image/png8',
+                    DEBUG: 'false',
+                    REBUILDTILES: rebuild
+                }
+            );
+            map.addLayer(wms);
+            map.zoomToExtent(extent);
+        }
+    </script>
+</body>
+</html>

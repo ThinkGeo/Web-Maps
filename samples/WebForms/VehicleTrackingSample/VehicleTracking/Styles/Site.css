@@ -1,0 +1,234 @@
+/* DEFAULTS
+----------------------------------------------------------*/
+html, body, form {
+    font-family: "Segoe UI", "Helvetica Neue", "Lucida Grande", Arial, Helvetica, Verdana, sans-serif !important;
+    font-size: 14px;
+    color: #000000;
+    margin: auto;
+    height: 100%;
+    overflow-y: hidden;
+}
+
+a:link, a:visited {
+    font-size: 14px;
+    color: #000000;
+    text-decoration: underline;
+}
+
+h4 {
+    font-size: 15px;
+    line-height: 20px;
+    margin-bottom: 5px;
+    font-weight: normal;
+    margin-top: 10px;
+}
+
+input[type="radio"], label {
+    line-height: 20px;
+    vertical-align: top;
+    font-family: "Segoe UI", "Helvetica Neue", "Lucida Grande", Arial, Helvetica, Verdana, sans-serif !important;
+    font-weight: Normal;
+    color: black;
+}
+
+div.hrLine {
+    border: 1px solid gray;
+    height: 0.1px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    overflow: scroll;
+}
+
+table, tr, td {
+    line-height: 17px;
+    vertical-align: middle;
+    padding: 0px;
+}
+
+/****************************** Framework *************************/
+#container {
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+}
+
+#header {
+    height: 50px;
+    background-image: url("../Images/headerBg.png");
+    background-repeat: repeat-x;
+    z-index: 9999;
+}
+
+#left-header {
+    float: left;
+    margin-left: 30px;
+    height: 50px;
+    line-height: 50px;
+}
+
+#left-header, #header-mapsuite {
+    font-size: 16px;
+    font-weight: 300;
+}
+
+#left-header, #header-title {
+    font-size: 22px;
+    font-weight: 400;
+}
+
+#leftContainer {
+    float: left;
+    width: 20%;
+    height: 100%;
+}
+
+#content-container {
+    float: left;
+    width: 100%;
+    height: 91.1%;
+}
+
+#toggle {
+    float: right;
+    vertical-align: middle;
+    background-image: url("/Images/toggleBg.png");
+    background-repeat: repeat-y;
+    cursor: pointer;
+    position: absolute;
+    top: 50px;
+    left: 20%;
+    z-index: 1999;
+    padding-right: 5px;
+}
+
+#map-content {
+    float: right;
+    width: 80%;
+    height: 100%;
+}
+
+#footer {
+    clear: both;
+    background: #e2e2e2;
+    width: 100%;
+    height: 25px;
+    border-top: 1px solid #a0a0a0;
+    font-size: .8em;
+    font-weight: 400;
+    line-height: 25px;
+    z-index: 99999;
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+}
+
+    #footer #spanMouseCoordinate {
+        float: right;
+        margin-right: 1%;
+        color: #666666;
+    }
+
+/*********************************** Left Side Bar *********************************/
+div#leftContent {
+    margin: 0 5px 0 5px;
+}
+
+div.divBorder {
+    padding: 5px;
+    border: 1px solid #D3D3D3;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+div.divSubBorder {
+    padding: 5px;
+}
+
+#divTrackMode input, #divTrackType input, #divMeasure input {
+    margin-right: 3px;
+    border-radius: 5px;
+    -webkit-border-radius: 5px; /* user-agent specific */
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -moz-border-radius: 5px; /* etc... */
+}
+
+#divTrackMode .active, #divTrackType .active, #divMeasure .active {
+    border: 1px solid #D3D3D3;
+    background-color: #eeeeee;
+}
+
+#divMeasure select {
+    vertical-align: top;
+    margin-top: 3px;
+}
+
+#divVehicleList {
+    height: 300px;
+    overflow-y: auto;
+}
+
+div.blueBanner {
+    background-color: #0092da;
+    font-weight: Bold;
+    color: White;
+    padding: 5px 0 5px 5px;
+    margin: 10px 0 10px 0;
+}
+
+.divSettingItem {
+    margin-top: 5px;
+}
+
+span.title {
+    line-height: 25px;
+    height: 25px;
+    vertical-align: top;
+}
+
+span.redTxt {
+    color: Red;
+}
+
+span.greenTxt {
+    margin-left: 3px;
+    color: #bab300;
+}
+
+img.imgButton {
+    cursor: pointer;
+    margin-right: 3px;
+}
+
+td.vehicleImg {
+    vertical-align: top;
+}
+
+td.vehicleName {
+    font-weight: bolder;
+    font-size: 16px;
+}
+
+tr.vehicleTxt {
+    font-size: 13px;
+    line-height: 15px;
+}
+
+/*********************************** Dialog *********************************/
+.ui-dialog {
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: .2em;
+    outline: 0;
+}
+
+.ui-front {
+    z-index: 1799 !important;
+}

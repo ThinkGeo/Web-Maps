@@ -1,0 +1,428 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{6DCA364F-B9D9-45A5-896A-CA60573AA0CD}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ThinkGeo.MapSuite.HowDoI</RootNamespace>
+    <AssemblyName>ThinkGeo.MapSuite.HowDoI</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UseIISExpress>false</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <TargetFrameworkProfile />
+    <Use64BitIISExpress />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>
+    </DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\CSharpWebHowDoISamples.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="GeoAPI, Version=1.7.4.0, Culture=neutral, PublicKeyToken=a1a0da7def465678">
+      <HintPath>..\packages\MapSuiteDependency-GeoAPI.10.6.0\lib\net45\GeoAPI.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <HintPath>..\packages\MapSuiteDependency-MicrosoftSqlServerTypes.10.6.0\lib\net45\Microsoft.SqlServer.Types.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NetTopologySuite, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1">
+      <HintPath>..\packages\MapSuiteDependency-NetTopologySuite.10.6.0\lib\net45\NetTopologySuite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\packages\MapSuiteDependency-NewtonsoftJson.10.6.0\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PowerCollections, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2573bf8a1bdddcd5">
+      <HintPath>..\packages\MapSuiteDependency-NetTopologySuite.10.6.0\lib\net45\PowerCollections.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SkiaSharp, Version=1.68.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">
+      <HintPath>..\packages\MapSuiteDependency-SkiaSharp.10.6.0\lib\net45\SkiaSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Web.Mobile" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="ThinkGeo.MapSuite, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
+      <HintPath>..\packages\ThinkGeo.MapSuite.10.6.7\lib\net45\ThinkGeo.MapSuite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Geocoding, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Geocoding.10.6.0\lib\net45\ThinkGeo.MapSuite.Geocoding.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.ProductCenter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
+      <HintPath>..\packages\ThinkGeo.MapSuite.ProductCenter.10.6.0\lib\net45\ThinkGeo.MapSuite.ProductCenter.exe</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.WebForms, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
+      <HintPath>..\packages\MapSuiteWebForWebForms-BareBone.10.6.4\lib\net45\ThinkGeo.MapSuite.WebForms.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="WindowsBase">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App_Data\AccessMatchingPlugin\County.mdb" />
+    <Content Include="App_Data\ChicagoData\BatchGeocoderData.txt" />
+    <Content Include="App_Data\ChicagoData\numberlist.txt" />
+    <Content Include="App_Data\ChicagoData\streetdirection.txt" />
+    <Content Include="App_Data\ChicagoData\streettypeabbr.txt" />
+    <Content Include="App_Data\ChicagoData\streettypefull.txt" />
+    <Content Include="App_Data\ChicagoData\zipbbx.txt" />
+    <Content Include="App_Data\CitystateGeocoding\admin1CodesASCII.txt" />
+    <Content Include="App_Data\CitystateGeocoding\admin2Codes.txt" />
+    <Content Include="App_Data\CitystateGeocoding\BatchGeocoderData.txt" />
+    <Content Include="App_Data\CitystateGeocoding\featureCodes.txt" />
+    <Content Include="App_Data\CitystateGeocoding\iso3166_en_code_lists.txt" />
+    <Content Include="App_Data\CitystateGeocoding\numberlist.txt" />
+    <Content Include="App_Data\CitystateGeocoding\streetdirection.txt" />
+    <Content Include="App_Data\CitystateGeocoding\streetnameabbr.txt" />
+    <Content Include="App_Data\CitystateGeocoding\streettypeabbr.txt" />
+    <Content Include="App_Data\CitystateGeocoding\streettypefull.txt" />
+    <Content Include="App_Data\CitystateGeocoding\zipBBX.txt" />
+    <Content Include="App_Data\CreateIndexFileData\citystate.txt" />
+    <Content Include="App_Data\PostCode\iso3166_en_code_lists.txt" />
+    <Content Include="App_Data\TextMatchingPlugin\county.txt" />
+    <Content Include="BatchGeocodingInTexas.aspx" />
+    <Content Include="BuildIndexFile.aspx" />
+    <Content Include="CensusBlockGroupSearching.aspx" />
+    <Content Include="CensusBlockSearching.aspx" />
+    <Content Include="CensusTractSearching.aspx" />
+    <Content Include="CreateDatabaseMatchingPlugIn.aspx" />
+    <Content Include="CreateTextFileMatchingPlugIn.aspx" />
+    <Content Include="Default.aspx" />
+    <Content Include="FuzzyLogicSearching.aspx" />
+    <Content Include="GeocodingInTexas.aspx" />
+    <Content Include="GetClosestStreetNumberInTexas.aspx" />
+    <Content Include="IpAddressMatchingPlugin.aspx" />
+    <Content Include="PostCodeSearching.aspx" />
+    <Content Include="ReverseGeoCodingInTexas.aspx" />
+    <Content Include="SampleFramework\Banner.aspx" />
+    <Content Include="SampleFramework\Content.aspx" />
+    <Content Include="SampleFramework\Header.htm" />
+    <Content Include="SampleFramework\Helper\DescriptionPanel.htm" />
+    <Content Include="SampleFramework\Helper\DescriptionPanel.js" />
+    <Content Include="SampleFramework\Images\map_suite_geocoder_web_samples_header.png" />
+    <Content Include="SampleFramework\Images\marker_blue.gif" />
+    <Content Include="SampleFramework\KeepSessionAlive.aspx" />
+    <Content Include="SampleFramework\Navigation.aspx" />
+    <Content Include="SampleFramework\SampleList.xml" />
+    <Content Include="SampleFramework\SyntaxHighlighter\csCode.aspx" />
+    <Content Include="SampleFramework\SyntaxHighlighter\shBrushCSharp.js" />
+    <Content Include="SampleFramework\SyntaxHighlighter\shBrushXml.js" />
+    <Content Include="SampleFramework\SyntaxHighlighter\shCore.js" />
+    <Content Include="SampleFramework\SyntaxHighlighter\SyntaxHighlighter.css" />
+    <Content Include="SampleFramework\theme\default\samplepic\Banner.bmp" />
+    <Content Include="SampleFramework\theme\default\samplepic\bannerad_offline.png" />
+    <Content Include="SampleFramework\theme\default\samplepic\bg.png" />
+    <Content Include="SampleFramework\theme\default\samplepic\collapse.gif" />
+    <Content Include="SampleFramework\theme\default\samplepic\expand.gif" />
+    <Content Include="SampleFramework\theme\default\samplepic\frame\bg.png" />
+    <Content Include="SampleFramework\theme\default\samplepic\frame\dbottom.png" />
+    <Content Include="SampleFramework\theme\default\samplepic\frame\dcontent.png" />
+    <Content Include="SampleFramework\theme\default\samplepic\frame\dhide.png" />
+    <Content Include="SampleFramework\theme\default\samplepic\frame\dhidebg.png" />
+    <Content Include="SampleFramework\theme\default\samplepic\frame\dshow.png" />
+    <Content Include="SampleFramework\theme\default\samplepic\frame\dtop.png" />
+    <Content Include="SampleFramework\theme\default\samplepic\frame\Stage_BG_top.png" />
+    <Content Include="SampleFramework\theme\default\samplepic\loading.gif" />
+    <Content Include="SampleFramework\theme\default\samplepic\map_suite_web_samples_header.png" />
+    <Content Include="SampleFramework\theme\default\samplepic\map_suite_web_samples_header_bkg.jpg" />
+    <Content Include="SampleFramework\theme\default\samplepic\roadblock.png" />
+    <Content Include="SampleFramework\theme\default\samplepic\style.css" />
+    <Content Include="SampleFramework\theme\default\tabs\Tab-Background.gif" />
+    <Content Include="SampleFramework\theme\default\tabs\Tab-Body-BGActive.gif" />
+    <Content Include="SampleFramework\theme\default\tabs\Tab-Body-BGInactive.gif" />
+    <Content Include="SampleFramework\theme\default\tabs\Tab-Body-EndLeftActive.gif" />
+    <Content Include="SampleFramework\theme\default\tabs\Tab-Body-EndLeftInactive.gif" />
+    <Content Include="SampleFramework\theme\default\tabs\Tab-Body-EndRightActive.gif" />
+    <Content Include="SampleFramework\theme\default\tabs\Tab-Body-EndRightInactive.gif" />
+    <Content Include="SampleFramework\theme\default\tabs\Tab-Body-LeftisActive.gif" />
+    <Content Include="SampleFramework\theme\default\tabs\Tab-Body-NoneActive.gif" />
+    <Content Include="SampleFramework\theme\default\tabs\Tab-Body-RightisActive.gif" />
+    <Content Include="SampleFramework\Toggle.htm" />
+    <Content Include="Web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BatchGeocodingInTexas.aspx.cs">
+      <DependentUpon>BatchGeocodingInTexas.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BatchGeocodingInTexas.aspx.designer.cs">
+      <DependentUpon>BatchGeocodingInTexas.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BuildIndexFile.aspx.cs">
+      <DependentUpon>BuildIndexFile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BuildIndexFile.aspx.designer.cs">
+      <DependentUpon>BuildIndexFile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CensusBlockGroupSearching.aspx.cs">
+      <DependentUpon>CensusBlockGroupSearching.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CensusBlockGroupSearching.aspx.designer.cs">
+      <DependentUpon>CensusBlockGroupSearching.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CensusBlockSearching.aspx.cs">
+      <DependentUpon>CensusBlockSearching.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CensusBlockSearching.aspx.designer.cs">
+      <DependentUpon>CensusBlockSearching.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CensusTractSearching.aspx.cs">
+      <DependentUpon>CensusTractSearching.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CensusTractSearching.aspx.designer.cs">
+      <DependentUpon>CensusTractSearching.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CreateDatabaseMatchingPlugIn.aspx.cs">
+      <DependentUpon>CreateDatabaseMatchingPlugIn.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CreateDatabaseMatchingPlugIn.aspx.designer.cs">
+      <DependentUpon>CreateDatabaseMatchingPlugIn.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="CreateTextFileMatchingPlugIn.aspx.cs">
+      <DependentUpon>CreateTextFileMatchingPlugIn.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="CreateTextFileMatchingPlugIn.aspx.designer.cs">
+      <DependentUpon>CreateTextFileMatchingPlugIn.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Default.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="FuzzyLogicSearching.aspx.cs">
+      <DependentUpon>FuzzyLogicSearching.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="FuzzyLogicSearching.aspx.designer.cs">
+      <DependentUpon>FuzzyLogicSearching.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="GeocodingInTexas.aspx.cs">
+      <DependentUpon>GeocodingInTexas.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="GeocodingInTexas.aspx.designer.cs">
+      <DependentUpon>GeocodingInTexas.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="GetClosestStreetNumberInTexas.aspx.cs">
+      <DependentUpon>GetClosestStreetNumberInTexas.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="GetClosestStreetNumberInTexas.aspx.designer.cs">
+      <DependentUpon>GetClosestStreetNumberInTexas.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="IpAddressMatchingPlugin.aspx.cs">
+      <DependentUpon>IpAddressMatchingPlugin.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="IpAddressMatchingPlugin.aspx.designer.cs">
+      <DependentUpon>IpAddressMatchingPlugin.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="MarkerLayer.cs" />
+    <Compile Include="PostCodeSearching.aspx.cs">
+      <DependentUpon>PostCodeSearching.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="PostCodeSearching.aspx.designer.cs">
+      <DependentUpon>PostCodeSearching.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReverseGeoCodingInTexas.aspx.cs">
+      <DependentUpon>ReverseGeoCodingInTexas.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ReverseGeoCodingInTexas.aspx.designer.cs">
+      <DependentUpon>ReverseGeoCodingInTexas.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SampleFramework\Banner.aspx.cs">
+      <DependentUpon>Banner.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SampleFramework\Banner.aspx.designer.cs">
+      <DependentUpon>Banner.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SampleFramework\Content.aspx.cs">
+      <DependentUpon>Content.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SampleFramework\Content.aspx.designer.cs">
+      <DependentUpon>Content.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SampleFramework\Helper\DescriptionPanel.cs" />
+    <Compile Include="SampleFramework\KeepSessionAlive.aspx.cs">
+      <DependentUpon>KeepSessionAlive.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SampleFramework\KeepSessionAlive.aspx.designer.cs">
+      <DependentUpon>KeepSessionAlive.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SampleFramework\Navigation.aspx.cs">
+      <DependentUpon>Navigation.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SampleFramework\Navigation.aspx.designer.cs">
+      <DependentUpon>Navigation.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SampleFramework\SampleHelper.cs" />
+    <Compile Include="SampleFramework\SyntaxHighlighter\csCode.aspx.cs">
+      <DependentUpon>csCode.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SampleFramework\SyntaxHighlighter\csCode.aspx.designer.cs">
+      <DependentUpon>csCode.aspx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SampleFramework\KeepSessionAlive.aspx.resx">
+      <DependentUpon>KeepSessionAlive.aspx.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App_Data\AccessMatchingPlugin\.DS_Store" />
+    <Content Include="App_Data\ChicagoData\censusblock.dbf" />
+    <Content Include="App_Data\ChicagoData\censusblockgroup.dbf" />
+    <Content Include="App_Data\ChicagoData\censustract.dbf" />
+    <Content Include="App_Data\ChicagoData\CityState+.dbf" />
+    <Content Include="App_Data\ChicagoData\citystate.dbf" />
+    <Content Include="App_Data\ChicagoData\county+.dbf" />
+    <Content Include="App_Data\ChicagoData\county.dbf" />
+    <Content Include="App_Data\ChicagoData\rt2.dbf" />
+    <Content Include="App_Data\ChicagoData\rt2.ids" />
+    <Content Include="App_Data\ChicagoData\rt2.idx" />
+    <Content Include="App_Data\ChicagoData\SoundExCityState.dbf" />
+    <Content Include="App_Data\ChicagoData\state.dbf" />
+    <Content Include="App_Data\ChicagoData\streetname.ids" />
+    <Content Include="App_Data\ChicagoData\streetname.idx" />
+    <Content Include="App_Data\ChicagoData\streets.dbf" />
+    <Content Include="App_Data\ChicagoData\StreetSoundEx.dbf" />
+    <Content Include="App_Data\ChicagoData\tlid.dbf" />
+    <Content Include="App_Data\ChicagoData\zip.dbf" />
+    <Content Include="App_Data\CitystateGeocoding\censusblock.dbf" />
+    <Content Include="App_Data\CitystateGeocoding\censusblockgroup.dbf" />
+    <Content Include="App_Data\CitystateGeocoding\censustract.dbf" />
+    <Content Include="App_Data\CitystateGeocoding\citystate.dbf" />
+    <Content Include="App_Data\CitystateGeocoding\county.dbf" />
+    <Content Include="App_Data\CitystateGeocoding\PostCode.dbf" />
+    <Content Include="App_Data\CitystateGeocoding\rt2.dbf" />
+    <Content Include="App_Data\CitystateGeocoding\rt2.ids" />
+    <Content Include="App_Data\CitystateGeocoding\rt2.idx" />
+    <Content Include="App_Data\CitystateGeocoding\SoundExCityState.dbf" />
+    <Content Include="App_Data\CitystateGeocoding\State.dbf" />
+    <Content Include="App_Data\CitystateGeocoding\streetname.ids" />
+    <Content Include="App_Data\CitystateGeocoding\streetname.idx" />
+    <Content Include="App_Data\CitystateGeocoding\streets.dbf" />
+    <Content Include="App_Data\CitystateGeocoding\StreetSoundEx.dbf" />
+    <Content Include="App_Data\CitystateGeocoding\tlid.dbf" />
+    <Content Include="App_Data\CitystateGeocoding\zip.dbf" />
+    <Content Include="App_Data\CreateIndexFileData\citystate.dbf" />
+    <Content Include="App_Data\IpAddress\ip.dbf" />
+    <Content Include="App_Data\IpAddress\IPCities.dbf" />
+    <Content Include="App_Data\IpAddress\IPCountries.dbf" />
+    <Content Include="App_Data\PostCode\PostCode.dbf" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>1742</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>
+          </IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Import Project="..\packages\MapSuiteDependency-SkiaSharp.10.6.0\build\net45\MapSuiteDependency-SkiaSharp.targets" Condition="Exists('..\packages\MapSuiteDependency-SkiaSharp.10.6.0\build\net45\MapSuiteDependency-SkiaSharp.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\MapSuiteDependency-SkiaSharp.10.6.0\build\net45\MapSuiteDependency-SkiaSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MapSuiteDependency-SkiaSharp.10.6.0\build\net45\MapSuiteDependency-SkiaSharp.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.10.6.7\build\net45\ThinkGeo.MapSuite.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.10.6.7\build\net45\ThinkGeo.MapSuite.targets'))" />
+  </Target>
+  <Import Project="..\packages\ThinkGeo.MapSuite.10.6.7\build\net45\ThinkGeo.MapSuite.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.10.6.7\build\net45\ThinkGeo.MapSuite.targets')" />
+</Project>

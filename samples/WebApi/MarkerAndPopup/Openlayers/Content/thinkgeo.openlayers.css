@@ -1,0 +1,108 @@
+﻿
+.img-control {
+    position: absolute;
+    top: 65px;
+    left: .5em;
+    background: rgba(255,255,255,0.4);
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.ol-touch .img-control {
+    top: 80px;
+}
+
+.ol-touch button {
+    font-size: 1.3em;
+}
+
+.ol-control button {
+    font-size: 1.3em;
+    font-weight: bolder;
+    margin-top: 2px;
+    cursor: pointer;
+}
+
+.img-control img {
+    display: block;
+    color: white;
+    font-size: 16px;
+    font-family: 'Lucida Grande',Verdana,Geneva,Lucida,Arial,Helvetica,sans-serif;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 2px;
+    cursor: pointer;
+    margin: 2px 1px 1px 1px;
+    background-color: rgba(0,60,136,.5);
+}
+
+.ol-touch .img-control img {
+    font-size: 20px;
+    height: 1.375em;
+    width: 1.375em;
+    line-height: 26px;
+}
+
+.img-control img:hover {
+    background: rgba(0,60,136,0.7);
+}
+
+.ol-attribution ul {
+    margin: 0;
+    padding: 0 .5em;
+    font-size: .7rem;
+    line-height: 1.375em;
+    color: #000;
+    text-shadow: 0 0 2px #fff;
+    max-width: calc(100%);
+}
+
+
+.ol-popup {
+    position: absolute;
+    display: none;
+    background-color: white;
+    filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #cccccc;
+    bottom: 10px;
+    left: -80px;
+    min-width: 160px;
+}
+
+    .ol-popup:after, .ol-popup:before {
+        top: 100%;
+        border: solid transparent;
+        content: " ";
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none;
+    }
+
+    .ol-popup:after {
+        border-top-color: white;
+        border-width: 10px;
+        left: 79px;
+        margin-left: -10px;
+    }
+
+    .ol-popup:before {
+        border-top-color: #cccccc;
+        border-width: 11px;
+        left: 79px;
+        margin-left: -11px;
+    }
+
+.ol-popup-closer {
+    text-decoration: none;
+    position: absolute;
+    top: 2px;
+    right: 8px;
+}
+
+    .ol-popup-closer:after {
+        content: "✖";
+    }

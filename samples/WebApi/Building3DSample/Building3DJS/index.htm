@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html style="height:100%">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Building 3D Example</title>
+    <link rel="stylesheet" href="http://dev.openlayers.org/theme/default/style.css" type="text/css">
+    <link rel="stylesheet" href="http://dev.openlayers.org/examples/style.css" type="text/css">
+</head>
+
+<body style="height:100%">
+    <h1 id="title">Building 3D Example</h1>
+    <div id="map" class="smallmap" style="width:100%; height:100%;"></div>
+    <script src="http://www.openlayers.org/api/OpenLayers.js"></script>
+    <script src="https://cdn.osmbuildings.org/OSMBuildings-OpenLayers.js"></script>
+    <script>
+        var map = new OpenLayers.Map({
+            div: "map",
+            projection: "EPSG:900913",
+            center: [-10047547.366026, 4669691.6437984],
+            zoom: 17
+        });
+
+        OpenLayers.Tile.prototype.eventListeners = {
+            'loaderror': function (evt) {
+                var canvas = document.createElement("canvas");
+                canvas.width = 256;
+                canvas.height = 256;
+                var context = canvas.getContext("2d");
+                context.font = "14px Arial";
+                context.strokeText("Backgrounds for this sample are", 10, 20);
+                context.strokeText("powered by ThinkGeo Cloud Maps and", 10, 40);
+                context.strokeText("require an API Key. This was sent", 10, 60);
+                context.strokeText("to you via email when you signed up", 10, 80);
+                context.strokeText("with ThinkGeo, or you can register", 10, 100);
+                context.strokeText("now at https://cloud.thinkgeo.com", 10, 120);
+                this.url = canvas.toDataURL("image/png", 1);
+                this.initImage();
+            }
+        };
+
+        // --------------------------------------------------------------------------------------
+        // Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require
+        // an API Key. The following function is just for reminding you to input the key.
+        // Feel free to remove this function after the key was input.
+        // --------------------------------------------------------------------------------------
+        var ol_tgmap = new OpenLayers.Layer.XYZ("ThinkGeoCloudMap",
+            [
+                "https://cloud1.thinkgeo.com/api/v1/maps/raster/light/x1/3857/256/${z}/${x}/${y}.png?apikey=ThinkGeo Cloud API Key",
+                "https://cloud2.thinkgeo.com/api/v1/maps/raster/light/x1/3857/256/${z}/${x}/${y}.png?apikey=ThinkGeo Cloud API Key",
+                "https://cloud3.thinkgeo.com/api/v1/maps/raster/light/x1/3857/256/${z}/${x}/${y}.png?apikey=ThinkGeo Cloud API Key",
+                "https://cloud4.thinkgeo.com/api/v1/maps/raster/light/x1/3857/256/${z}/${x}/${y}.png?apikey=ThinkGeo Cloud API Key",
+                "https://cloud5.thinkgeo.com/api/v1/maps/raster/light/x1/3857/256/${z}/${x}/${y}.png?apikey=ThinkGeo Cloud API Key",
+                "https://cloud6.thinkgeo.com/api/v1/maps/raster/light/x1/3857/256/${z}/${x}/${y}.png?apikey=ThinkGeo Cloud API Key"
+            ],
+            {
+                transitionEffect: "resize",
+                sphericalMercator: true,
+                wrapDateLine: true,
+                numZoomLevels: 19
+            });
+        map.addLayers([ol_tgmap]);
+
+        var osmb = new OSMBuildings(map).load();
+        delete (osmb.maxExtent);
+        osmb.addOptions({ maxExtent: new OpenLayers.Bounds(-20037507.80, -20037508.64, 20037508.84, 20037508.08) });
+    </script>
+</body>
+</html>

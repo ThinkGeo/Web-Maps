@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2046
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkGeoCloudMaps", "ThinkGeoCloudMaps\ThinkGeoCloudMaps.csproj", "{FBBD0576-A6DF-4B04-8E97-F25C299690EF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FBBD0576-A6DF-4B04-8E97-F25C299690EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBBD0576-A6DF-4B04-8E97-F25C299690EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBBD0576-A6DF-4B04-8E97-F25C299690EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBBD0576-A6DF-4B04-8E97-F25C299690EF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9408BB83-B36C-43FA-A0A9-ACF8789F1910}
+	EndGlobalSection
+EndGlobal

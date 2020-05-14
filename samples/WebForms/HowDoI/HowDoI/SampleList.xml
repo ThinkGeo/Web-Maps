@@ -1,0 +1,502 @@
+<SampleList>
+  <Category Id="Samples" Name="Samples" Path="Samples">
+    <Category Id="GettingStarted" Name="Getting Started" Path="Samples/GettingStarted">
+      <Sample Id="DisplayASimpleMap" Name="Display a Simple Map" >
+        <Description>Display a Simple Map </Description>
+        <ContentPage>DisplayASimpleMap.aspx</ContentPage>
+      </Sample>
+      <Sample Id="SetBackgroundColor" Name="Set the Background Color" >
+        <Description>Set the Background Color </Description>
+        <ContentPage>SetBackgroundColor.aspx</ContentPage>
+      </Sample>
+      <Sample Id="AddAContextMenu" Name="Add a Context Menu" >
+        <Description>Add a Context Menu</Description>
+        <ContentPage>AddAContextMenu.aspx</ContentPage>
+      </Sample>
+      <Sample Id="AddAMarker" Name="Add a Marker" >
+        <Description>Add a Marker</Description>
+        <ContentPage>AddAMarker.aspx</ContentPage>
+      </Sample>
+      <Sample Id="AddAPopup" Name="Add a Popup" >
+        <Description>Add a Popup</Description>
+        <ContentPage>AddAPopup.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ChangeCursorStyle" Name="Change the Cursor Style" >
+        <Description>Change the Cursor Style</Description>
+        <ContentPage>ChangeTheCursorStyle.aspx</ContentPage>
+      </Sample>
+      <Sample Id="AddAClickEvent" Name="Add a Click Event" >
+        <Description>Add a Click Event</Description>
+        <ContentPage>AddAClickEvent.aspx</ContentPage>
+      </Sample>
+      <Sample Id="FindFeatureClicked" Name="Find the Feature the User Clicked" >
+        <Description>Find the Feature the User Clicked</Description>
+        <ContentPage>FindTheFeatureTheUserClicked.aspx</ContentPage>
+      </Sample>
+      <Sample Id="PlotAPointUsingLatLong" Name="Plot a Point Using Lat and Long" >
+        <Description>Plot a Point Using Lat and Long</Description>
+        <ContentPage>PlotAPointUsingLatAndLong.aspx</ContentPage>
+      </Sample>
+      <Sample Id="AddVariousMapTools" Name="Add Various Map Tools" >
+        <Description>Add Various Map Tools</Description>
+        <ContentPage>AddVariousMapTools.aspx</ContentPage>
+      </Sample>
+      <Sample Id="UsingMasterPage" Name="Master Pages" >
+        <Description>Master Pages</Description>
+        <ContentPage>UsingMasterPage.aspx</ContentPage>
+      </Sample>
+      <Sample Id="SetImageFormatAndQuality" Name="Set Image Format And Quality" >
+        <Description>Set Image Format And Quality</Description>
+        <ContentPage>SetImageFormatAndQuality.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ChangeLoadingImage" Name="Change Loading Image" >
+        <Description>Change Loading Image</Description>
+        <ContentPage>ChangeLoadingImage.aspx</ContentPage>
+      </Sample>
+    </Category>
+    <Category Id="MovingAroundMap" Name="Moving Around the map" Path="Samples/NavigateTheMap">
+      <Sample Id="ZoomInAndOut" Name="Zoom In and Out" >
+        <Description>Zoom In and Out</Description>
+        <ContentPage>ZoomInAndOut.aspx</ContentPage>
+      </Sample>
+      <Sample Id="NavigateHistory" Name="Navigate History" >
+        <Description>Navigate History</Description>
+        <ContentPage>NavigationHistory.aspx</ContentPage>
+      </Sample>
+      <Sample Id="TrackZoomIn" Name="Track zoom in a map" >
+        <Description>Track zoom in a map</Description>
+        <ContentPage>TrackZoomIn.aspx</ContentPage>
+      </Sample>
+      <Sample Id="PanTheMap" Name="Pan the map" >
+        <Description>Pan the map</Description>
+        <ContentPage>PanTheMap.aspx</ContentPage>
+      </Sample>
+      <Sample Id="KeyboardMapTool" Name="Use Keyboard" >
+        <Description>Use Keyboard</Description>
+        <ContentPage>KeyboardMapTool.aspx</ContentPage>
+      </Sample>
+      <Sample Id="MiniMap" Name="Using a mini map" >
+        <Description>Using a mini map</Description>
+        <ContentPage>MiniMap.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ZoomToAScale" Name="Zoom to a scale" >
+        <Description>Zoom to a scale</Description>
+        <ContentPage>../FeatureLayers/DisplayLayersAtDifferentScales.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ZoomInToAFeatureClicked" Name="Zoom in to a feature you clicked" >
+        <Description>Zoom in to a feature you clicked</Description>
+        <ContentPage>ZoomToAClickedFeature.aspx</ContentPage>
+      </Sample>
+      <Sample Id="RestrictedExtent" Name="Restricted extent" >
+        <Description>Restricted extent</Description>
+        <ContentPage>RestrictedExtent.aspx</ContentPage>
+      </Sample>
+      <Sample Id="CreateAScaleLineAdornmentLayer" Name="Create a ScaleLineAdornmentLayer" >
+        <Description>Create a ScaleLineAdornmentLayer</Description>
+        <ContentPage>CreateAScaleLineAdornmentLayer.aspx</ContentPage>
+      </Sample>
+      <Sample Id="CreateARestrictionLayer" Name="Create a RestrictionLayer" >
+        <Description>Create a RestrictionLayer</Description>
+        <ContentPage>CreateARestrictionLayer.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ZoomLevelsLessThan20" Name="Set ZoomLevels less than 20" >
+        <Description>Set ZoomLevels less than 20</Description>
+        <ContentPage>ZoomLevelsLessThan20.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ExtentChangedEvent" Name="ExtentChanged Event" >
+        <Description>ExtentChangedEvent sample page</Description>
+        <ContentPage>ExtentChangedEvent.aspx</ContentPage>
+      </Sample>
+      <Sample Id="AnimationPanMapTool" Name="AnimationPanMapTool">
+        <Description>AnimationPanMapTool</Description>
+        <ContentPage>AnimationPanMapTool.aspx</ContentPage>
+      </Sample>
+      <Sample Id="MeasureMapTool" Name="Measure Map Tool">
+        <Description>MeasureMapTool</Description>
+        <ContentPage>MeasureMapTool.aspx</ContentPage>
+      </Sample>
+      <Sample Id="AutoRefreshOverlay" Name="AutoRefreshOverlay">
+        <Description>AutoRefreshOverlay</Description>
+        <ContentPage>AutoRefreshOverlay.aspx</ContentPage>
+      </Sample>
+      <Sample Id="CreateAGraticuleAdornmentLayer" Name="Create A GraticuleAdornmentLayer">
+        <Description>Create A GraticuleAdornmentLayer</Description>
+        <ContentPage>CreateAGraticuleAdornmentLayer.aspx</ContentPage>
+      </Sample>
+      <Sample Id="WrapDateLine" Name="WrapDateLine">
+        <Description>WrapDateLine</Description>
+        <ContentPage>WrapDateLine.aspx</ContentPage>
+      </Sample>
+    </Category>
+    <Category Id="Projection" Name="Projection" Path="Samples/Projection">
+      <Sample Id="UseADifferentProjectionForAFeatureLayer" Name="Use a different projection for a feature layer" >
+        <Description>Use a different projection for a feature layer</Description>
+        <ContentPage>UseADifferentProjectionForAFeatureLayer.aspx</ContentPage>
+      </Sample>
+      <Sample Id="UseRotationProjectionForAFeatureLayer" Name="Use RotationProjection for a feature layer" >
+        <Description>Use RotationProjection for a feature layer</Description>
+        <ContentPage>UseRotationProjectionForAFeatureLayer.aspx</ContentPage>
+      </Sample>
+    </Category>
+    <Category Id="Shapes" Name="Shapes" Path="Samples/MapShapes">
+      <Sample Id="DrawEditShapes" Name="Draw and Edit Shapes" >
+        <Description>Draw and Edit Shapes</Description>
+        <ContentPage>DrawEditShapes.aspx</ContentPage>
+      </Sample>
+      <Sample Id="TrackShapeFinishedEvent" Name="Track Shape Finished Event" >
+        <Description>Track Shape Event Finished</Description>
+        <ContentPage>TrackShapeFinishedEvent.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ChangeEditSettings" Name="Change Edit Settings" >
+        <Description>Change Edit Settings</Description>
+        <ContentPage>ChangeEditSettings.aspx</ContentPage>
+      </Sample>
+    </Category>
+    <Category Id="Markers" Name="Markers" Path="Samples/Markers">
+      <Sample Id="AddAMarker" Name="Add a Marker" >
+        <Description>Add a Marker</Description>
+        <ContentPage>../GettingStarted/AddAMarker.aspx</ContentPage>
+      </Sample>
+      <Sample Id="LabelRotateAMarker" Name="Label and Rotate a Marker" >
+        <Description>Label and Rotate a Marker</Description>
+        <ContentPage>LabelAndRotateAMarker.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ClickEventOnMarker" Name="Click Event on a Marker" >
+        <Description>Click Event on a Marker</Description>
+        <ContentPage>ClickEventOnAMarker.aspx</ContentPage>
+      </Sample>
+      <Sample Id="HoverPopupOfMarker" Name="Set the Hover Popup of a Marker" >
+        <Description>Set the Hover Popup of a Marker</Description>
+        <ContentPage>SetTheHoverPopupOfAMarker.aspx</ContentPage>
+      </Sample>
+      <Sample Id="MarkerWithContextMenu" Name="Marker with ContextMenu" >
+        <Description>Marker with ContextMenu</Description>
+        <ContentPage>MarkerWithContextMenu.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ZoomLevelsOnMarker" Name="Set the Zoom Levels on a Marker" >
+        <Description>Set the Zoom Levels on a Marker</Description>
+        <ContentPage>SetTheZoomLevelsOnAMarker.aspx</ContentPage>
+      </Sample>
+      <Sample Id="AddProjectedMarkers" Name="Add Projected Markers" >
+        <Description>Add Projected Markers</Description>
+        <ContentPage>AddProjectedMarkers.aspx</ContentPage>
+      </Sample>
+      <Sample Id="UseDraggableMarkers" Name="Use Draggable Markers" >
+        <Description>Use Draggable Markers</Description>
+        <ContentPage>UseDraggableMarkers.aspx</ContentPage>
+      </Sample>
+    </Category>
+    <Category Id="Overlays" Name="Overlays" Path="Samples/Overlays">
+      <Sample Id="UseBingMaps" Name="Use BingMaps" >
+        <Description>Use BingMaps</Description>
+        <ContentPage>UseBingMaps.aspx</ContentPage>
+      </Sample>
+      <Sample Id="LoadAnArcGISServerRestOverlay" Name="Load An ArcGISServerRestOverlay">
+        <Description>Load An ArcGISServerRestOverlay</Description>
+        <ContentPage>LoadAnArcGISServerRestOverlay.aspx</ContentPage>
+      </Sample>
+      <Sample Id="UseOpenStreetMap" Name="Use OpenStreetMap">
+        <Description>Use OpenStreetMap</Description>
+        <ContentPage>UseOpenStreetMap.aspx</ContentPage>
+      </Sample>
+      <Sample Id="LoadAWmsOverlay" Name="Load a WmsOverlay">
+        <Description>Load a WmsOverlay</Description>
+        <ContentPage>LoadAWmsOverlay.aspx</ContentPage>
+      </Sample>
+      <Sample Id="HighlightAFeatureWhileHovering" Name="Highlight a Feature While Hovering">
+        <Description>Highlight a Feature While Hovering</Description>
+        <ContentPage>HighlightFeaturesWhileHovering.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ClickEventToHighlightOverlay" Name="Add a click event to an HighlightOverlay">
+        <Description>Add a click event to HighlightOverlay</Description>
+        <ContentPage>AddClickEventToHighlightOverlay.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ContextMenuToHighlightOverlay" Name="Add a context menu to an HighlightOverlay">
+        <Description>Add a contextMenu to HighlightOverlay</Description>
+        <ContentPage>AddContextMenuToHighlightOverlay.aspx</ContentPage>
+      </Sample>
+      <Sample Id="MarkerOverlay" Name="Use a Marker Overlay">
+        <Description>Use a Marker Overlay</Description>
+        <ContentPage>../GettingStarted/AddAMarker.aspx</ContentPage>
+      </Sample>
+      <Sample Id="EditLayer" Name="Draw and Edit Shapes">
+        <Description>Draw and Edit Shapes</Description>
+        <ContentPage>../MapShapes/DrawEditShapes.aspx</ContentPage>
+      </Sample>
+      <Sample Id="BaseOverlayChangedEvent" Name="BaseOverlayChangedEvent">
+        <Description>Add BaseOverlayChangedEvent to map</Description>
+        <ContentPage>BaseOverlayChangedEvent.aspx</ContentPage>
+      </Sample>
+    </Category>
+    <Category Id="ExtendingMapSuite" Name="Extending MapSuite" Path="Samples/Extending MapSuite">
+      <Sample Id="AddAdditionalCustomPropertiesAndMethods" Name="Add Additional Custom Properties And Methods" >
+        <Description>Add Additional Custom Properties And Methods</Description>
+        <ContentPage>AddAdditionalCustomPropertiesAndMethods.aspx</ContentPage>
+      </Sample>
+      <Sample Id="DrawUsingFleeBooleanStyle" Name="Draw using FleeBooleanStyle" >
+        <Description>Draw using FleeBooleanStyle</Description>
+        <ContentPage>DrawUsingFleeBooleanStyle.aspx</ContentPage>
+      </Sample>
+      <Sample Id="LoadTabFileFeatureLayer" Name="Load TabFileFeatureLayer" >
+        <Description>Load TabFileFeatureLayer</Description>
+        <ContentPage>LoadTabFileFeatureLayer.aspx</ContentPage>
+      </Sample>
+    </Category>
+    <Category Id="Coordinates" Name="Screen and World Coordinates" Path="Samples/ScreenWorldcoordinates">
+      <Sample Id="FindWorldCoordinatesWhereClicked" Name="Find World Coordinates Where a User Clicked">
+        <Description>Find World Coordinates Where a User Clicked</Description>
+        <ContentPage>FindWorldCoordinatesAUserClicked.aspx</ContentPage>
+      </Sample>
+      <Sample Id="WorldCoordinatesToScreenCoordinates" Name="Convert World Coordinates to Screen">
+        <Description>Convert World Coordinates to Screen</Description>
+        <ContentPage>ConvertWorldCoordinatesToScreen.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ScreenCoordinatesToWorldCoordinates" Name="Convert Screen Coordinates to World">
+        <Description>Convert Screen Coordinates to World</Description>
+        <ContentPage>ConvertScreenCoordinatesToWorld.aspx</ContentPage>
+      </Sample>
+      <Sample Id="GetDistanceBetweenTwoPoints" Name="Get Distance Between Two Points">
+        <Description>Get Distance Between Two Points</Description>
+        <ContentPage>GetTheDistanceBetweenTwoPointsClicked.aspx</ContentPage>
+      </Sample>
+    </Category>
+    <Category Id="Styles" Name="Styles" Path="Samples/Styles">
+      <Sample Id="PredefinedStyles" Name="Using Predefined Styles">
+        <Description>Using Predefined Styles</Description>
+        <ContentPage>UsingPredefinedStyle.aspx</ContentPage>
+      </Sample>
+      <Sample Id="DrawPointUsingBitmap" Name="Draw a Point Using a Bitmap">
+        <Description>Draw a Point Using a Bitmap</Description>
+        <ContentPage>DrawAPointUsingABitmap.aspx</ContentPage>
+      </Sample>
+      <Sample Id="DrawPointUsingSymbol" Name="Draw a Point Using a Symbol">
+        <Description>Draw a Point Using a Symbol</Description>
+        <ContentPage>DrawAPointUsingASymbol.aspx</ContentPage>
+      </Sample>
+      <Sample Id="DrawFeaturesBasedOnValue" Name="Draw Features Based on a Value">
+        <Description>Draw Features Based on a Value</Description>
+        <ContentPage>DrawAFeatureBasedOnAValue.aspx</ContentPage>
+      </Sample>
+      <Sample Id="DrawFeaturesBasedOnValues" Name="Draw Features Based on Values">
+        <Description>Draw Features Based on Values</Description>
+        <ContentPage>DrawFeaturesBasedOnValues.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ChangeFillOutlineColor" Name="Change the Fill and Outline Color">
+        <Description>Change the Fill and Outline Color</Description>
+        <ContentPage>ChangeTheFillAndOutlineColor.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ChangeLineWidthAndColor" Name="Change the Width and Color of a Line">
+        <Description>Change the Width and Color of a Line</Description>
+        <ContentPage>ChangeTheWidthAndColorOfALine.aspx</ContentPage>
+      </Sample>
+      <Sample Id="GeoColorConvertion" Name="Convert GeoColor to/from OLE, Win32, HTML, Argb Colors">
+        <Description>Convert GeoColor to and from OLE, Win32, HTML, Argb Colors</Description>
+        <ContentPage>ConvertAGeoColorToAndFromOleWin32HtmlArgbColors.aspx</ContentPage>
+      </Sample>
+      <Sample Id="GetAGroupOfColor" Name="Get a group of color in the same quality family">
+        <Description>Get a group of color in the same quality family</Description>
+        <ContentPage>GetAGroupOfColorsInHueFamily.aspx</ContentPage>
+      </Sample>
+      <Sample Id="DrawUsingZedGraphStyle" Name="Draw using ZedGraphStyle">
+        <Description>Draw using ZedGraphStyle</Description>
+        <ContentPage>DrawUsingZedGraphStyle.aspx</ContentPage>
+      </Sample>
+      <Sample Id="DotDensity" Name="Dot Density Drawing Using Numerical Data">
+        <Description>Dot Density Drawing Using Numerical Data</Description>
+        <ContentPage>DotDensityDrawingUsingNumericalData.aspx</ContentPage>
+      </Sample>
+      <Sample Id="RegularExpression" Name="Draw Features Based on Regular Expression">
+        <Description>Draw Features Based on Regular Expression</Description>
+        <ContentPage>DrawFeaturesBasedOnRegularExpression.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ThematicFeatures" Name="Draw Thematic Features">
+        <Description>Draw Thematic Features</Description>
+        <ContentPage>DrawThematicFeatures.aspx</ContentPage>
+      </Sample>
+      <Sample Id="GeographicSimpleStandardColors" Name="Using Geographic, Simple and Standard Colors">
+        <Description>Using Geographic, Simple and Standard Colors</Description>
+        <ContentPage>UseGeographicAndStandardColors.aspx</ContentPage>
+      </Sample>
+    </Category>
+    <Category Id="DataProviders" Name="DataProviders" Path="Samples/DataProviders">
+      <Sample Id="CreateAnInMemoryFeatureLayer" Name="Create an InMemoryFeatureLayer">
+        <Description>Create an InMemoryFeatureLayer</Description>
+        <ContentPage>CreateAnInMemoryFeatureLayer.aspx</ContentPage>
+      </Sample>
+      <Sample Id="CreateASpatialIndexForAShapeFileFeatureLayer" Name="Create a spatial index for a ShapeFileFeatureLayer">
+        <Description>Create a spatial index for a ShapeFileFeatureLayer</Description>
+        <ContentPage>CreateASpatialIndexForAShapeFileFeatureLayer.aspx</ContentPage>
+      </Sample>
+      <Sample Id="LoadAGridFileFeatureLayer" Name="Load a GridFileFeatureLayer">
+        <Description>Load a GridFileFeatureLayer</Description>
+        <ContentPage>LoadAGridFileFeatureLayer.aspx</ContentPage>
+      </Sample>
+      <Sample Id="LoadAMapFromStreams" Name="Load a map from Streams">
+        <Description>Load a map from Streams</Description>
+        <ContentPage>LoadAMapFromStreams.aspx</ContentPage>
+      </Sample>
+      <Sample Id="LoadAShapeFileFeatureLayer" Name="Load a ShapeFileFeatureLayer">
+        <Description>Load a ShapeFileFeatureLayer</Description>
+        <ContentPage>LoadAShapeFileFeatureLayer.aspx</ContentPage>
+      </Sample>
+      <Sample Id="DrawUsingFleeBooleanStyle" Name="Draw using FleeBooleanStyle" >
+        <Description>Draw using FleeBooleanStyle</Description>
+        <ContentPage>../Extending MapSuite/DrawUsingFleeBooleanStyle.aspx</ContentPage>
+      </Sample>
+      <Sample Id="LoadTabFileFeatureLayer" Name="Load TabFileFeatureLayer" >
+        <Description>Load TabFileFeatureLayer</Description>
+        <ContentPage>../Extending MapSuite/LoadTabFileFeatureLayer.aspx</ContentPage>
+      </Sample>
+      <Sample Id="UsePdfExtension" Name="Use PdfExtension" >
+        <Description>Print map into Pdf document</Description>
+        <ContentPage>../Extending MapSuite/UsePdfExtension.aspx</ContentPage>
+      </Sample>
+      <Sample Id="LoadAHeatLayer" Name="Load A HeatLayer">
+        <Description>Load A HeatLayer</Description>
+        <ContentPage>LoadAHeatLayer.aspx</ContentPage>
+      </Sample>
+    </Category>
+    <Category Id="SatelliteImage" Name="SatelliteImage" Path="Samples/SatelliteImage">
+      <Sample Id="LoadAStandardImageWithWorldFile" Name="Load a standard image with world file">
+        <Description>Load a standard image with world file</Description>
+        <ContentPage>LoadAStandardImageWithWorldFile.aspx</ContentPage>
+      </Sample>
+    </Category>
+    <Category Id="FeatureLayers" Name="Feature Layers" Path="Samples/FeatureLayers">
+      <Sample Id="UsingCustomData" Name="Using Custom Data">
+        <Description>Using Custom Data</Description>
+        <ContentPage>AddMyOwnCustomDataToAFeatureLayer.aspx</ContentPage>
+      </Sample>
+      <Sample Id="UsingPredefinedStyles" Name="Using Predefined Styles">
+        <Description>Using Predefined Styles</Description>
+        <ContentPage>UsingPredefinedStyles.aspx</ContentPage>
+      </Sample>
+      <Sample Id="DisplayLayersAtDifferentScales" Name="Display Layers at Different Scales">
+        <Description>Display Layers at Different Scales</Description>
+        <ContentPage>DisplayLayersAtDifferentScales.aspx</ContentPage>
+      </Sample>
+      <Sample Id="StopCertainFeaturesFromDrawing" Name="Stop certain features from drawing">
+        <Description>Stop certain features from drawing</Description>
+        <ContentPage>StopCertainFeaturesFromDrawing.aspx</ContentPage>
+      </Sample>
+    </Category>
+    <Category Id="QueryingFeatureLayers" Name="Querying Feature Layers" Path="Samples/QueryingFeatureLayers">
+      <Sample Id="ExecuteSpatialQuery" Name="Execute a Spatial Query">
+        <Description>Execute a Spatial Query</Description>
+        <ContentPage>SpatialQueryAFeatureLayer.aspx</ContentPage>
+      </Sample>
+      <Sample Id="FindFeaturesWithinDistance" Name="Find Features Within a Distance">
+        <Description>Find Features Within a Distance</Description>
+        <ContentPage>FindFeaturesWithinDistance.aspx</ContentPage>
+      </Sample>
+      <Sample Id="GetFeaturesCount" Name="Get the Features Count">
+        <Description>Get the Features Count</Description>
+        <ContentPage>GetTheFeaturesCount.aspx</ContentPage>
+      </Sample>
+      <Sample Id="GetAllFeatures" Name="Get All the Features">
+        <Description>Get All the Features</Description>
+        <ContentPage>GetAllTheFeatures.aspx</ContentPage>
+      </Sample>
+      <Sample Id="GetColumnData" Name="Get Column Data">
+        <Description>Get Column Data</Description>
+        <ContentPage>GetColumnData.aspx</ContentPage>
+      </Sample>
+      <Sample Id="GetDataWhenUserClicks" Name="Get Data When User Clicks">
+        <Description>Get Data When User Clicks</Description>
+        <ContentPage>GetDataWhenUserClicks.aspx</ContentPage>
+      </Sample>
+      <Sample Id="AddCustomDataToFeatureLayer" Name="Add custom data to a feature layer">
+        <Description>Add custom data to a feature layer</Description>
+        <ContentPage>../featurelayers/AddMyOwnCustomDataToAFeatureLayer.aspx</ContentPage>
+      </Sample>
+      <Sample Id="FindOutWhatColumnDataInAFeatureLayer" Name="Find out what column data is in a feature layer">
+        <Description>Find out what column data is in a feature layer</Description>
+        <ContentPage>../GettingStarted/FindTheFeatureTheUserClicked.aspx</ContentPage>
+      </Sample>
+    </Category>
+    <Category Id="Labeling" Name="Labeling" Path="Samples/Labeling">
+      <Sample Id="LabelNiceLookingRoads" Name="Label Nice Looking Roads">
+        <Description>Label Nice Looking Roads</Description>
+        <ContentPage>LabelNiceLookingRoads.aspx</ContentPage>
+      </Sample>
+      <Sample Id="LabelPointsOfInterest" Name="Label Points of Interest">
+        <Description>Label Points of Interest</Description>
+        <ContentPage>LabelPointsOfInterest.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ChangePointLabelPlacement" Name="Change Point Label Placement">
+        <Description>Change Point Label Placement</Description>
+        <ContentPage>ChangePointLabelPlacement.aspx</ContentPage>
+      </Sample>
+      <Sample Id="LabelWaterFeatures" Name="Label Water Features">
+        <Description>Label Water Features</Description>
+        <ContentPage>LabelWaterFeature.aspx</ContentPage>
+      </Sample>
+      <Sample Id="DrawCurvedLabels" Name="Draw Curved Labels">
+        <Description>Draw Curved Labels</Description>
+        <ContentPage>DrawCurvedLabels.aspx</ContentPage>
+      </Sample>
+    </Category>
+    <Category Id="Features" Name="Features" Path="Samples/Features">
+      <Sample Id="ZoomInToFeatures" Name="Zoom Into Features">
+        <Description>Zoom Into Features</Description>
+        <ContentPage>../NavigateTheMap/ZoomToSetOfFeatures.aspx</ContentPage>
+      </Sample>
+      <Sample Id="MoveAFeature" Name="Move a Feature">
+        <Description>Move a Feature</Description>
+        <ContentPage>MoveAFeature.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ScaleFeatures" Name="Scale Feature Up and Down">
+        <Description>Scale Feature Up and Down</Description>
+        <ContentPage>ScaleFeatureUpAndDown.aspx</ContentPage>
+      </Sample>
+      <Sample Id="DistanceBetweenTwoPoints" Name="Distance Between Two Points">
+        <Description>Distance Between Two Points</Description>
+        <ContentPage>DistanceBetweenTwoPoints.aspx</ContentPage>
+      </Sample>
+      <Sample Id="UnionTwoFeatures" Name="Union Two Features">
+        <Description>Union Two Features</Description>
+        <ContentPage>UnionTwoFeatures.aspx</ContentPage>
+      </Sample>
+      <Sample Id="FindDifferenceOfTwoFeatures" Name="Find the difference of two features">
+        <Description>Find the difference of two features</Description>
+        <ContentPage>FindDifferenceOfTwoFeatures.aspx</ContentPage>
+      </Sample>
+      <Sample Id="ShortestLineBetweenFeatures" Name="Shortest Line Between Features">
+        <Description>Shortest Line Between Features</Description>
+        <ContentPage>ShortestLineBetweenFeatures.aspx</ContentPage>
+      </Sample>
+      <Sample Id="BufferAFeature" Name="Buffer a Feature">
+        <Description>Buffer a Feature</Description>
+        <ContentPage>BufferAFeature.aspx</ContentPage>
+      </Sample>
+      <Sample Id="AreaOfAFeature" Name="Area of a Feature">
+        <Description>Area of a Feature</Description>
+        <ContentPage>AreaOfAFeature.aspx</ContentPage>
+      </Sample>
+      <Sample Id="LengthOfAFeature" Name="Length of a Feature">
+        <Description>Length of a Feature</Description>
+        <ContentPage>LengthOfAFeature.aspx</ContentPage>
+      </Sample>
+      <Sample Id="EnvelopeOfAFeature" Name="Envelope of a Feature">
+        <Description>Envelope of a Feature</Description>
+        <ContentPage>EnvelopeOfAFeature.aspx</ContentPage>
+      </Sample>
+      <Sample Id="WKBConvertion" Name="Convert To/From Well Known Binary">
+        <Description>Convert To/From Well Known Binary</Description>
+        <ContentPage>ConvertToFromWKB.aspx</ContentPage>
+      </Sample>
+      <Sample Id="WKTConvertion" Name="Convert To/From Well Known Text">
+        <Description>Convert To/From Well Known Text</Description>
+        <ContentPage>ConvertToFromWKT.aspx</ContentPage>
+      </Sample>
+      <Sample Id="FindFeatureById" Name="Find By Id">
+        <Description>Find By Id</Description>
+        <ContentPage>FindFeatureById.aspx</ContentPage>
+      </Sample>
+      <Sample Id="UseMapSimplification" Name="Draw the map in different simplificaion type">
+        <Description>Draw the map in different simplificaion type</Description>
+        <ContentPage>UseMapSimplification.aspx</ContentPage>
+      </Sample>
+    </Category>
+  </Category>
+</SampleList>

@@ -1,0 +1,303 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="author" content="ThinkGeo" />
+    <link rel="apple-touch-icon" href="desktop.png">
+    <meta name="apple-mobile-web-app-title" content="Visualization" />
+    <link href="favicon.ico" rel="shortcut icon" type="Images/x-icon" />
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/leaflet.css" rel="stylesheet" />
+    <link href="Content/Site.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="map">
+    </div>
+    <div id="loadingImage">
+        <img src="Images/ajax-loader.gif" />
+    </div>
+    <div id="zedgraph-legend">
+        <img src="Images/zedgraph_lengend.png" />
+    </div>
+    <div id="styles-panel">
+        <div id="styles-header" title="Close">
+            <span class="title">Style list</span>
+        </div>
+        <div class="panel-content">
+            <ul id="style-options">
+                <li>
+                    <div id="FilterStyle" title="FilterStyle" class="selected">
+                        <span>Filter Style – US Population</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="ClusterStyle" title="ClusterStyle" class="unselected">
+                        <span>Cluster Style - US Earthquake</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="CustomStyle" title="CustomStyle" class="unselected">
+                        <span>Custom Style - Weather</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="ZedGraphStyle" title="ZedGraphStyle" class="unselected">
+                        <span>ZedGraph – US Demographic</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="ClassBreakStyle" title="ClassBreakStyle" class="unselected">
+                        <span>Class Break Style - US Population</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="DotDensityStyle" title="DotDensityStyle" class="unselected">
+                        <span>Dot Density – US Population</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="IsolineStyle" title="IsolineStyle" class="unselected">
+                        <span>Isoline Style - US Earthquake</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="IconStyle" title="IconStyle" class="unselected">
+                        <span>Icon Style – Vehicles</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="HeatStyle" title="HeatStyle" class="unselected">
+                        <span>Heat Style - US Earthquake</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="centroid">
+        <div id="edit-panel">
+            <div class="edit-panel-header">
+                <span id="settingTitle">LabelStyling Settings</span>
+            </div>
+            <div id="labelingStyleEdit" class="edit-content">
+                <ul>
+                    <li>
+                        <span class="edit-title">Column</span>
+                        <input type="text" readonly="true" value="Population" class="edit-item" />
+                    </li>
+                    <li>
+                        <span class="edit-item-title">Condition</span>
+                        <select id="filterExpressions" class="edit-item">
+                            <option>GreaterThanOrEqualTo</option>
+                            <option>GreaterThan</option>
+                            <option>LessThanOrEqualTo</option>
+                            <option>LessThan</option>
+                            <option>Equal</option>
+                            <option>DoesNotEqual</option>
+                        </select>
+                    </li>
+                    <li>
+                        <span class="edit-title">Value</span>
+                        <input id="filterValue" type="text" class="edit-item" value="3000000" />
+                    </li>
+                </ul>
+                <div class="edit-foot">
+                    <a id="btnCancel" href="#" class="btn btn-default" role="button">Cancel</a>
+                    <a id="btnSave" href="#" class="btn btn-primary" role="button">Save</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="Scripts/jquery-1.11.1.min.js"></script>
+    <script src="Scripts/leaflet.js"></script>
+    <script src="thinkgeo.leaflet.js"></script>
+    <script>
+        var accessId = guid();
+        // Initialize the map.
+        var map = L.map('map', { zoomAnimation: false }).setView([39.6948, -96.8150], 4);
+
+        // Add WorldMapKit Online as the background map.
+        var thinkgeoCloudMapsLayer = L.tileLayer('https://{s}.thinkgeo.com/api/v1/maps/raster/light/x1/3857/256/{z}/{x}/{y}.png?apikey=ThinkGeo Cloud API Key', {
+            subdomains: ['cloud1', 'cloud2', 'cloud3', 'cloud4', 'cloud5', 'cloud6'],
+            layers: 'ThinkGeoCloudMaps',
+            format: 'image/png',
+            styles: 'Light',
+            version: '1.1.1'
+        })
+            // --------------------------------------------------------------------------------------
+            // Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require
+            // an API Key. The following function is just for reminding you to input the key.
+            // Feel free to remove this function after the key was input.
+            // --------------------------------------------------------------------------------------
+            .on('tileloadstart', function (e) {
+                //e.tile.src = drawException();
+                fetch(e.tile.src).then((response) => {
+                    if (response.status === 401) {
+                        var canvas = document.createElement("canvas");
+                        canvas.width = 256;
+                        canvas.height = 256;
+                        var context = canvas.getContext("2d");
+                        context.font = "14px Arial";
+                        context.strokeText("Backgrounds for this sample are", 10, 20);
+                        context.strokeText("powered by ThinkGeo Cloud Maps and", 10, 40);
+                        context.strokeText("require an API Key. This was sent", 10, 60);
+                        context.strokeText("to you via email when you signed up", 10, 80);
+                        context.strokeText("with ThinkGeo, or you can register", 10, 100);
+                        context.strokeText("now at https://cloud.thinkgeo.com", 10, 120);
+                        e.tile.src = canvas.toDataURL("image/png", 1);
+                    }
+                    else {
+                        response.blob().then((blob) => {
+                            if (blob) {
+                                e.tile.src = URL.createObjectURL(blob);
+                            }
+                            else {
+                                e.tile.src = "";
+                            }
+                        });
+                    }
+                });
+            })
+            .addTo(map);
+
+        // Add dynamic tile layer to the map, it can be refreshed dynamically
+        var shapeLayer = L.dynamicLayer(L.Util.getRootPath() + '/tile/FilterStyle/{z}/{x}/{y}/' + accessId, { unloadInvisibleTiles: true, reuseTiles: true }).addTo(map);
+        shapeLayer.on('loading', function () {
+            $('#loadingImage').show();
+        })
+        shapeLayer.on('load', function () {
+            $('#loadingImage').hide();
+        })
+
+        // Add image buttons for layers, edit, help etc.
+        L.imageButtons({
+            imgs: [
+                {
+                    src: 'Images/layers.png',
+                    id: 'lyrOptions',
+                    title: 'Show layers',
+                    callback: function () {
+                        $('#styles-panel').animate({
+                            'left': '0px'
+                        });
+                    }
+                },
+                {
+                    src: 'Images/gear.png',
+                    id: 'btnConfig',
+                    title: 'Show style settings',
+                    css: 'active',
+                    callback: function () {
+                        showDlg();
+                    }
+                },
+                {
+                    src: 'Images/info.png',
+                    id: 'btnInfo',
+                    title: 'Show help',
+                    callback: function () { window.open('http://wiki.thinkgeo.com', '_blank'); }
+                }
+            ]
+        }).addTo(map);
+
+        // Apply 'select' style after clicking on a style item on left-panel
+        $('#style-options div').click(function () {
+            var layers = $("#style-options div");
+            for (var i = 0; i < layers.length; i++) {
+                $(layers[i]).attr("class", "unselected");
+            }
+            $(this).attr("class", "selected");
+
+            // Disable edit toolbar button
+            var selectedLayer = $(this).attr('id');
+            $('#btnConfig').removeClass('active');
+            $('#btnConfig').removeClass('deactive');
+            if (selectedLayer == 'FilterStyle') {
+                $('#btnConfig').addClass('active');
+            } else {
+                $('#btnConfig').addClass('deactive');
+            }
+
+            if (selectedLayer == 'ZedGraphStyle') {
+                $('#zedgraph-legend').show();
+            }
+            else {
+                $('#zedgraph-legend').hide();
+            }
+
+            // Redraw the map
+            redrawLayer(selectedLayer);
+        });
+
+        function redrawLayer(layerId) {
+            switch (layerId) {
+                case 'IconStyle':
+                    map.setView([33.16342102407101, -96.75676345825195], 13);
+                    break;
+                case 'ZedGraphStyle':
+                default:
+                    map.setView([39.6948, -96.8150], 4);
+                    break;
+            }
+
+            shapeLayer.setUrl(L.Util.getRootPath() + '/tile/' + layerId + '/{z}/{x}/{y}/' + accessId);
+            shapeLayer.redraw();
+        }
+
+        // Hook up click event on "save" button in edit dialog
+        $('#btnSave').click(function () {
+            var paras = {
+                filterExpression: $('#filterExpressions option:selected').text(),
+                filterValue: $('#filterValue').val()
+            }
+            var url = L.Util.getRootPath() + '/tile/UpdateFilterStyle/' + accessId;
+            $.post(url, { '': JSON.stringify(paras) }, function (data) {
+                if (data) {
+                    hideDlg();
+                    shapeLayer.redraw();
+                }
+                else {
+                    alert('Update failed.');
+                }
+            });
+        });
+
+        $('#btnCancel').click(function (e) {
+            hideDlg();
+        });
+
+        // Show/hide "edit" dialog in model mode
+        function showDlg() {
+            if ($('#btnConfig').hasClass('active')) {
+                this.bgmask = L.DomUtil.create('div', 'bg-mask');
+                $('body').append(this.bgmask);
+
+                $('#edit-panel').slideToggle("fast");
+            }
+        }
+
+        function hideDlg() {
+            $('.bg-mask').remove();
+            $('#edit-panel').slideToggle("fast");
+        }
+
+        // Do the layers panel animation
+        $("html").click(function () {
+            $('#styles-panel').animate({
+                'left': -$('#styles-panel').width() + 'px'
+            });
+        });
+
+        // Add a utility methods to get guid.
+        function guid() {
+            function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+            }
+            return (s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4()).toLowerCase();
+        };
+    </script>
+</body>
+</html>

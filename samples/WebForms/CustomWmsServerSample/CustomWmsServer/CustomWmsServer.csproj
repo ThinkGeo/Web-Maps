@@ -1,0 +1,202 @@
+﻿<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{ED15B778-F743-46C3-949B-4089F51BCCCA}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ThinkGeo.MapSuite.CustomWmsServer</RootNamespace>
+    <AssemblyName>ThinkGeo.MapSuite.CustomWmsServer</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <Use64BitIISExpress />
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AWSSDK.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-AWSSDK.10.5.0\lib\net45\AWSSDK.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="AWSSDK.DynamoDBv2, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-AWSSDK.10.5.0\lib\net45\AWSSDK.DynamoDBv2.dll</HintPath>
+    </Reference>
+    <Reference Include="AWSSDK.S3, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-AWSSDK.10.5.0\lib\net45\AWSSDK.S3.dll</HintPath>
+    </Reference>
+    <Reference Include="GeoAPI, Version=1.7.4.0, Culture=neutral, PublicKeyToken=a1a0da7def465678, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-GeoAPI.10.5.0\lib\net45\GeoAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-MicrosoftSqlServerTypes.10.5.0\lib\net45\Microsoft.SqlServer.Types.dll</HintPath>
+    </Reference>
+    <Reference Include="NetTopologySuite, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-NetTopologySuite.10.5.0\lib\net45\NetTopologySuite.dll</HintPath>
+    </Reference>
+    <Reference Include="PowerCollections, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2573bf8a1bdddcd5, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-NetTopologySuite.10.5.0\lib\net45\PowerCollections.dll</HintPath>
+    </Reference>
+    <Reference Include="SkiaSharp, Version=1.68.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-SkiaSharp.10.5.0\lib\net45\SkiaSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="ThinkGeo.MapSuite, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.10.5.0\lib\net45\ThinkGeo.MapSuite.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.ShapeFile, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.ShapeFile.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.ShapeFile.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.ProductCenter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.ProductCenter.10.5.0\lib\net45\ThinkGeo.MapSuite.ProductCenter.exe</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.WmsServer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.WmsServer.10.5.0\lib\net45\ThinkGeo.MapSuite.WmsServer.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="CapabilitiesXml\WmsHandlerCapabilities.xml" />
+    <Content Include="Default.aspx" />
+    <Content Include="FeatureInfoXml\GetFeatureInfoStyleSheet.xsl" />
+    <Content Include="FeatureInfoXml\GetFeatureInfoTemplate.xml" />
+    <Content Include="Images\header_bkg.jpg" />
+    <Content Include="Images\watermark.png" />
+    <Content Include="JavaScript\img\blank.gif" />
+    <Content Include="JavaScript\img\cloud-popup-relative.png" />
+    <Content Include="JavaScript\img\drag-rectangle-off.png" />
+    <Content Include="JavaScript\img\drag-rectangle-on.png" />
+    <Content Include="JavaScript\img\east-mini.png" />
+    <Content Include="JavaScript\img\layer-switcher-maximize.png" />
+    <Content Include="JavaScript\img\layer-switcher-minimize.png" />
+    <Content Include="JavaScript\img\marker-blue.png" />
+    <Content Include="JavaScript\img\marker-gold.png" />
+    <Content Include="JavaScript\img\marker-green.png" />
+    <Content Include="JavaScript\img\marker.png" />
+    <Content Include="JavaScript\img\measuring-stick-off.png" />
+    <Content Include="JavaScript\img\measuring-stick-on.png" />
+    <Content Include="JavaScript\img\north-mini.png" />
+    <Content Include="JavaScript\img\panning-hand-off.png" />
+    <Content Include="JavaScript\img\panning-hand-on.png" />
+    <Content Include="JavaScript\img\slider.png" />
+    <Content Include="JavaScript\img\south-mini.png" />
+    <Content Include="JavaScript\img\west-mini.png" />
+    <Content Include="JavaScript\img\zoom-minus-mini.png" />
+    <Content Include="JavaScript\img\zoom-plus-mini.png" />
+    <Content Include="JavaScript\img\zoom-world-mini.png" />
+    <Content Include="JavaScript\img\zoombar.png" />
+    <Content Include="JavaScript\OpenLayers.js" />
+    <Content Include="JavaScript\style.css" />
+    <Content Include="MapView.htm" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CustomWmsHandler.cs" />
+    <Compile Include="Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="AppData\Countries02.dbf" />
+    <Content Include="AppData\Countries02.ids" />
+    <Content Include="AppData\Countries02.idx" />
+    <Content Include="AppData\Countries02.shp" />
+    <Content Include="AppData\Countries02.shx" />
+    <None Include="packages.config" />
+    <None Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+    <None Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Plugins\" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>62687</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:62580/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+  </Target>
+  <Import Project="..\packages\MapSuiteDependency-SkiaSharp.10.5.0\build\net45\MapSuiteDependency-SkiaSharp.targets" Condition="Exists('..\packages\MapSuiteDependency-SkiaSharp.10.5.0\build\net45\MapSuiteDependency-SkiaSharp.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.10.5.0\build\net45\ThinkGeo.MapSuite.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.10.5.0\build\net45\ThinkGeo.MapSuite.targets')" />
+</Project>

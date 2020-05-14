@@ -1,0 +1,478 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Site Selection</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="author" content="ThinkGeo" />
+    <link rel="apple-touch-icon" href="desktop.png" />
+    <meta name="apple-mobile-web-app-title" content="Site Selection" />
+    <link href="favicon.ico" rel="shortcut icon" type="Images/x-icon" />
+    <link href="Content/ol.css" rel="stylesheet" />
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/thinkgeo.openlayers.css" rel="stylesheet" />
+    <link href="Content/Site.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="map">
+    </div>
+    <div id="message"></div>
+    <div id="loadingImage">
+        <img src="Images/ajax-loader.gif" />
+    </div>
+    <div id="legend">
+        <img src="Images/legend.png" />
+    </div>
+    <div id="left-panel">
+        <div class="panel-header">
+            <span class="title">Result List</span>
+        </div>
+        <div class="panel-content">
+            <div id="div-resultlist">
+                <table id="result-table" class="table table-triped table-bordered">
+                    <tr>
+                        <td></td>
+                        <td>
+                            Name
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="centroid">
+        <div id="edit-panel">
+            <div class="edit-panel-header">
+                <span id="settingTitle">Settings of site selection</span>
+            </div>
+            <div id="div-setting" class="edit-content">
+                Highlight points of this type
+                <select id="sltCategory"></select>
+                <select id="sltCategorySubtype"></select>
+                Area Type
+                <select id="sltSearchMode">
+                    <option value="serviceArea">Service Area</option>
+                    <option value="bufferedArea">Buffered Area</option>
+                </select>
+                <div id="divService">
+                    <span class="valueLabel">Service Area in</span>
+                    <input type="text" id="tbxServiceArea" class="valueTxt" value="5" /><span class="valueLabel"> Minutes Driving</span>
+                </div>
+                <div id="divBuffer" style="display: none;">
+                    <span class="valueLabel">Buffer Distance:</span>
+                    <input type="text" id="tbxDistance" class="valueTxt" value="2" />
+                    <select id="sltDistanceUnit" style="width: 200px;">
+                        <option value="Mile">Mile</option>
+                        <option value="Kilometer">Kilometer</option>
+                    </select>
+                </div>
+            </div>
+            <div class="edit-foot">
+                <a id="btnSettingCancel" href="#" class="btn btn-default" role="button">Cancel</a>
+                <a id="btnSettingSave" href="#" class="btn btn-primary" role="button">Save</a>
+            </div>
+        </div>
+    </div>
+    <script src="Scripts/jquery-1.11.1.min.js"></script>
+    <script src="Scripts/ol.js"></script>
+    <script src="thinkgeo.openlayers.js"></script>
+    <script>
+        var trackMode = 'plot';
+        var map, searchPoint, searchPointLayer, searchAreaLayer, searchResultLayer;
+
+        var searchPointStyle = new ol.style.Style({
+            image: new ol.style.Icon(({
+                anchor: [16, 32],
+                anchorXUnits: 'pixels',
+                anchorYUnits: 'pixels',
+                opacity: 0.75,
+                src: 'Images/drawPoint.png'
+            }))
+        });
+
+        var searchAreaStyle = new ol.style.Style({
+            fill: new ol.style.Fill({
+                color: 'rgba(51,168,225,0.4)',
+                opacity: 0.6
+            }),
+            stroke: new ol.style.Stroke({
+                color: '#428ce3',
+                width: 2
+            })
+        });
+
+        var searchResultStyle = new ol.style.Style({
+            image: new ol.style.Icon(({
+                anchor: [16, 16],
+                anchorXUnits: 'pixels',
+                anchorYUnits: 'pixels',
+                opacity: 0.75,
+                src: 'Images/selectedHalo.png'
+            }))
+        });
+
+        var defaultSetting = {
+            lng: -96.809983627817,
+            lat: 33.128303417665,
+            category: 'Restaurants',
+            subCategory: 'All',
+            searchMode: 'serviceArea',
+            driveTime: 5
+        };
+
+        $(function () {
+            // Initialize the POI categories and its sub-type categories
+            $.get(getRootPath() + "/SiteSelection/GetCategories/", function (response) {
+                var categoies = JSON.parse(response);
+                $.each(categoies, function (key) {
+                    $('#sltCategory').append($("<option/>", {
+                        value: key,
+                        text: key
+                    }));
+                });
+                $("#sltCategory").change(function () {
+                    var selectValue = $("#sltCategory").val();
+                    var selectedCategories;
+                    if (categoies.hasOwnProperty(selectValue)) {
+                        selectedCategories = categoies[selectValue];
+                    }
+                    $('#sltCategorySubtype').empty();
+                    for (var i = 0; i < selectedCategories.length; i++) {
+                        $('#sltCategorySubtype').append($("<option/>", {
+                            value: selectedCategories[i],
+                            text: selectedCategories[i]
+                        }));
+                    }
+                });
+                var setting = defaultSetting;
+                var x = parseFloat(setting.lng);
+                var y = parseFloat(setting.lat);
+                searchPoint = ol.proj.transform([x, y], 'EPSG:4326', 'EPSG:3857');
+                $("#sltCategory").val(setting.category).trigger('change');
+                $("#sltCategorySubtype").val(setting.subCategory);
+                $("#sltSearchMode").val(setting.searchMode).trigger('change');
+                if (setting.driveTime) {
+                    $("#tbxServiceArea").val(setting.driveTime);
+                }
+                if (setting.bufferDistance) {
+                    $("#tbxServiceArea").val(setting.bufferDistance);
+                }
+                if (setting.sltDistanceUnit) {
+                    $("#tbxServiceArea").val(setting.distanceUnit);
+                }
+                applySearch();
+            });
+
+            // Create the openlayers-map
+            map = new ol.Map({
+                target: 'map',
+                controls: ol.control.defaults({ attribution: false }).extend(
+                    [new ol.control.Attribution({
+                        collapsible: false
+                    })]),
+                view: new ol.View({
+                    center: [-10775821.740841813, 3912298.129520194],
+                    zoom: 14
+                })
+            });
+
+            // Add thinkgeo map
+            var thinkGeoCloudMapLayer = new ol.layer.Tile({
+                source: new ol.source.XYZ({
+                    url: 'https://cloud{1-6}.thinkgeo.com/api/v1/maps/raster/light/x1/3857/512/{z}/{x}/{y}.png?apikey=ThinkGeo Cloud API Key',
+                    maxZoom: 19,
+                    tileSize: 512,
+                    params:
+                    {
+                        'LAYERS': 'ThinkGeoCloudMaps',
+                        'VERSION': '10.4.0',
+                        'STYLE': 'Light'
+                    },
+
+                    // --------------------------------------------------------------------------------------
+                    // Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require
+                    // an API Key. The following function is just for reminding you to input the key.
+                    // Feel free to remove this function after the key was input.
+                    // --------------------------------------------------------------------------------------
+                    tileLoadFunction: function (imageTile, src) {
+                        fetch(src).then((response) => {
+                            if (response.status === 401) {
+                                var canvas = document.createElement("canvas");
+                                canvas.width = 512;
+                                canvas.height = 512;
+                                var context = canvas.getContext("2d");
+                                context.font = "14px Arial";
+                                context.strokeText("Backgrounds for this sample are", 256, 100);
+                                context.strokeText("powered by ThinkGeo Cloud Maps and", 256, 120);
+                                context.strokeText("require an API Key. This was sent", 256, 140);
+                                context.strokeText("to you via email when you signed up", 256, 160);
+                                context.strokeText("with ThinkGeo, or you can register", 256, 180);
+                                context.strokeText("now at https://cloud.thinkgeo.com", 256, 200);
+                                var url = canvas.toDataURL("image/png", 1);
+                                imageTile.getImage().src = url;
+                            }
+                            else {
+                                response.blob().then((blob) => {
+                                    if (blob) {
+                                        imageTile.getImage().src = URL.createObjectURL(blob);
+                                    }
+                                    else {
+                                        imageTile.getImage().src = "";
+                                    }
+                                });
+                            }
+                        });
+                    }
+                })
+            });
+            map.addLayer(thinkGeoCloudMapLayer);
+
+            // Add POI layer.
+            map.addLayer(new ol.layer.Tile({
+                source: new ol.source.XYZ({
+                    url: getRootPath() + "/SiteSelection/baselayer/{z}/{x}/{y}",
+                    maxZoom: 19
+                })
+            }));
+
+            searchAreaLayer = new ol.layer.Vector({
+                source: new ol.source.Vector({
+                    features: []
+                }),
+                style: searchAreaStyle
+            });
+            searchResultLayer = new ol.layer.Vector({
+                source: new ol.source.Vector({
+                    features: []
+                }),
+                style: searchResultStyle
+            });
+            searchPointLayer = new ol.layer.Vector({
+                source: new ol.source.Vector({
+                    features: []
+                }),
+                style: searchPointStyle
+            });
+
+            var searchPointFeature = new ol.Feature({
+                geometry: new ol.geom.Point(ol.proj.transform([defaultSetting.lng, defaultSetting.lat], 'EPSG:4326', 'EPSG:3857'))
+            });
+            searchPointLayer.getSource().addFeature(searchPointFeature);
+
+            map.addLayer(searchAreaLayer);
+            map.addLayer(searchPointLayer);
+            map.addLayer(searchResultLayer);
+
+            // Add image controls for pan, plot, settings etc.
+            var imgControls = new app.ImagesControl({
+                imgs: [
+                    {
+                        src: 'Images/pan.png',
+                        id: 'btnPan',
+                        title: 'Pan the map',
+                        callback: function (e) {
+                            trackMode = 'pan';
+
+                            $(map.getViewport()).css("cursor", "pointer");
+                            $('#btnPlot').removeClass('active');
+                            $(e.target).addClass('active');
+                        }
+                    },
+                    {
+                        src: 'Images/plot.png',
+                        id: 'btnPlot',
+                        title: 'Plot a point',
+                        css: 'active',
+                        callback: function (e) {
+                            trackMode = 'plot';
+
+                            $(map.getViewport()).css("cursor", "crosshair");
+                            $('#btnPan').removeClass('active');
+                            $(e.target).addClass('active');
+                        }
+                    },
+                    {
+                        src: 'Images/clear.png',
+                        id: 'btnClear',
+                        title: 'clear',
+                        callback: function () {
+                            searchPoint = null;
+                            searchPointLayer.getSource().clear();
+                            searchAreaLayer.getSource().clear();
+                            searchResultLayer.getSource().clear();
+                            // Remove all the lines except the header
+                            $("#result-table tr:gt(0)").remove();
+                        }
+                    },
+                    {
+                        src: 'Images/gear.png',
+                        id: 'btnSetting',
+                        title: 'setting',
+                        callback: function () {
+                            showSettingDlg();
+                        }
+                    },
+                    {
+                        src: 'Images/more.png',
+                        id: 'btnMore',
+                        title: 'Show Details',
+                        callback: function () {
+                            showResultDlg();
+                        }
+                    }
+                ]
+            });
+            map.addControl(imgControls);
+
+            // Function for plotting a point on the map and do a query based on the clicked point.
+            $(map.getViewport()).css("cursor", "crosshair");
+            map.on("click", function (e) {
+                if (trackMode == 'plot') {
+                    if (listViewHidden()) {
+                        searchPoint = e.coordinate;
+
+                        var markerFeature = new ol.Feature({
+                            geometry: new ol.geom.Point(searchPoint)
+                        });
+                        searchPointLayer.getSource().clear();
+                        searchPointLayer.getSource().addFeature(markerFeature);
+
+                        applySearch();
+                    }
+                }
+                $('#left-panel').animate({
+                    'left': -$('#left-panel').width() + 'px'
+                });
+            });
+
+            var listViewHidden = function () {
+                return ($("#left-panel").css("left") != "0px");
+            }
+
+            $("#sltSearchMode").change(function (e) {
+                if ($("#sltSearchMode").val() == 'bufferedArea') {
+                    $("#divBuffer").show();
+                    $("#divService").hide();
+                }
+                else {
+                    $("#divBuffer").hide();
+                    $("#divService").show();
+                }
+            });
+
+            $("#btnSettingCancel").click(function () {
+                hideSettingDlg();
+            });
+
+            $("#btnSettingSave").click(function () {
+                applySearch();
+            });
+
+            var applySearch = function () {
+                var category = $("#sltCategory").val();
+                var subCategory = $('#sltCategorySubtype').val().replace(">=", ">~");
+                var searchMode = $("#sltSearchMode").val();
+
+                var searchLatlng = ol.proj.transform(searchPoint, 'EPSG:3857', 'EPSG:4326');
+                var args = { "category": category, "subCategory": subCategory, "searchMode": searchMode, "searchPoint": searchLatlng[0] + "," + searchLatlng[1] };
+                if (searchMode == "serviceArea") {
+                    args["driveTime"] = $("#tbxServiceArea").val();
+                } else {
+                    args["distanceBuffer"] = $("#tbxDistance").val();
+                    args["distanceUnit"] = $("#sltDistanceUnit").val();
+                }
+
+                $.post(getRootPath() + "SiteSelection/Search/", { '': JSON.stringify(args) }, function (res) {
+                    $("#result-table tr:gt(0)").remove();
+
+                    var data = JSON.parse(res);
+                    if (data.status == 2) {
+                        $("#message").html("Please note that this sample map is only able to analyze service areas within the Frisco, TX city limits, <br\>which are indicated by a dashed red line. Click inside that boundary for best results. ");
+                        $("#message").show().delay(5000).fadeOut();
+                    }
+                    if (data.status == 1) {
+                        $("#message").text("No results found.");
+                        $("#message").show().delay(5000).fadeOut();
+                    }
+                    if (data.status == 0) {
+                        var jsonSource = new ol.source.Vector({
+                            features: (new ol.format.GeoJSON({
+                                defaultProjection: 'EPSG:4326',
+                                featureProjection: 'EPSG:3857'
+                            })).readFeatures(JSON.parse(data.area))
+                        });
+                        searchAreaLayer.getSource().clear();
+                        jsonSource.forEachFeature(function (e) {
+                            searchAreaLayer.getSource().addFeature(e);
+                        });
+
+                        bindSearchResult(data.features);
+                        bindSearchMarkerResult(data.features);
+                    }
+                });
+
+                hideSettingDlg();
+            }
+        });
+
+        /* functions for result panel*/
+        function bindSearchResult(queryItems) {
+            // remove all the lines except the header
+            $("#result-table tr:gt(0)").remove();
+            // Display data in the Grid table
+            for (var i = 0; i < queryItems.length; i++) {
+                var name = queryItems[i].name;
+                var position = queryItems[i].point;
+                var newRow = $("<tr>");
+                newRow.append('<td><a style="width:14px;height:14px;display:block;"><img alt="Search" title="Zoom to sepcified POI" src="Images/find.png" onclick="zoomToPoi(' + position.split(',')[0] + ',' + position.split(',')[1] + ')" /></a></td>');
+                newRow.append("<td>" + name + "</td>");
+                $("#result-table > tbody:last").append(newRow);
+            }
+        }
+
+        function bindSearchMarkerResult(queryItems) {
+            searchResultLayer.getSource().clear();
+            for (var i = 0; i < queryItems.length; i++) {
+                var name = queryItems[i].name;
+                var position = queryItems[i].point;
+
+                var y = parseFloat(position.split(',')[0]);
+                var x = parseFloat(position.split(',')[1]);
+                var feature = new ol.Feature({
+                    geometry: new ol.geom.Point(ol.proj.transform([x, y], 'EPSG:4326', 'EPSG:3857'))
+                });
+                searchResultLayer.getSource().addFeature(feature);
+            }
+        }
+
+        function zoomToPoi(lat, lng) {
+            var projectedCenter = ol.proj.transform([lng, lat], 'EPSG:4326', 'EPSG:3857');
+            map.setView(new ol.View({
+                center: projectedCenter,
+                zoom: 16
+            }));
+        }
+
+        /* setting dialog events*/
+        function showSettingDlg() {
+            this.bgmask = document.createElement('div');
+            this.bgmask.id = 'bg-mask';
+            $('body').append(this.bgmask);
+            $('#edit-panel').slideToggle("fast");
+        }
+
+        function hideSettingDlg() {
+            if ($('#edit-panel').is(':visible')) {
+                $('.bg-mask').remove();
+                $('#edit-panel').slideToggle("fast");
+            }
+        }
+
+        function showResultDlg() {
+            $('#left-panel').animate({
+                'left': '0px'
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site1.Master.cs" Inherits="HowDoI.Samples.Site1" %>
+
+<%@ Register Assembly="ThinkGeo.MapSuite.WebForms" Namespace="ThinkGeo.MapSuite.WebForms" TagPrefix="cc1" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <link href="~/theme/default/samplepic/style.css" rel="stylesheet" type="text/css" />
+    <title>Master Pages</title>
+</head>
+<body>
+    <form id="form1" runat="server">
+    <asp:ScriptManager ID="ScriptManager1" runat="server">
+    </asp:ScriptManager>
+    <table width="100%" height="100%">
+        <tr width="100%" height="100%">
+            <td width="50%" height="100%">
+                <cc1:Map ID="Map1" runat="server" Height="100%" Width="100%">
+                </cc1:Map>
+            </td>
+            <td width="50%" height="100%">
+                <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+                </asp:ContentPlaceHolder>
+            </td>
+        </tr>
+    </table>
+    <Description:DescriptionPanel ID="DescPanel" runat="server">
+        The map to the left is in a master page and the map 
+        to the right is in a content page that embeded in the master page.
+    </Description:DescriptionPanel>
+    </form>
+</body>
+</html>

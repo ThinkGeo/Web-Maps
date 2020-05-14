@@ -1,0 +1,71 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc
+<script language="javascript" type="text/javascript">
+    function changeCursor(optionObj) {
+        var cursor = optionObj.value;
+
+        if ("Custom" == cursor) {
+            Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'GetCustomCursor', null, mapCallback);
+        }
+        else {
+            Map1.setCursor(cursor);
+        }
+    }
+
+    function mapCallback(result) {
+        var address = "http://" + window.location.host + result.get_responseData();
+        Map1.setCursor("url('" + address + "')");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                Select one of the styles from the list below and then move your mouse over the map
+                to see the new cursor style.
+            </p>
+            <b>Try the cursor styles below.</b>
+            <select id="cursorType" name="cursorType" size="18" style="width: 200px;" onchange="changeCursor(this);">
+                <option value="default">default</option>
+                <option value="Crosshair">Crosshair</option>
+                <option value="Help">Help</option>
+                <option value="Move">Move</option>
+                <option value="e-resize">e-resize</option>
+                <option value="n-resize">n-resize</option>
+                <option value="ne-resize">ne-resize</option>
+                <option value="nw-resize">nw-resize</option>
+                <option value="Pointer">Pointer</option>
+                <option value="Progress">Progress</option>
+                <option value="Text">Text</option>
+                <option value="s-resize">s-resize</option>
+                <option value="se-resize">se-resize</option>
+                <option value="sw-resize">sw-resize</option>
+                <option value="w-resize">w-resize</option>
+                <option value="Wait">Wait</option>
+                <option value="Custom">Custom</option>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+              .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+              .MapUnit(GeographyUnit.Meter)
+              .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+              .CurrentExtent(-13086298.60, 7339062.72, -8111177.75, 2853137.62)
+              .CustomOverlays(overlay =>
+              {
+                  // Please input your ThinkGeo Cloud API Key to enable the background map.
+                  overlay.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloud", "ThinkGeo Cloud API Key");
+              })
+              .Render();
+        }
+    </div>
+</div>

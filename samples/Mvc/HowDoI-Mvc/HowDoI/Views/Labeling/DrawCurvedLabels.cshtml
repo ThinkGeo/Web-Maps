@@ -1,0 +1,41 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc;
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            The sample shows how to render labels along the street.
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div id="map">
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromArgb(255, 233, 232, 214)))
+                .CurrentExtent(-97.6881803712033, 30.3177912428115, -97.6723016938352, 30.3064615919325)
+                .MapUnit(GeographyUnit.DecimalDegree)
+                .StaticOverlay(overlay =>
+                {
+                    ShapeFileFeatureLayer austinStreetsShapeLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/austinstreets.shp"));
+                    austinStreetsShapeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                    austinStreetsShapeLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(LineStyles.CreateSimpleLineStyle(GeoColor.StandardColors.White, 9.2F, GeoColor.StandardColors.DarkGray, 12.2F, true));
+
+                    ShapeFileFeatureLayer austinStreetsLabelLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/austinstreets.shp"));
+                    austinStreetsLabelLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                    TextStyle textStyle = TextStyles.CreateSimpleTextStyle("FENAME", "Arial", 9, DrawingFontStyles.Regular, GeoColor.StandardColors.Black, 0, 0);
+                    textStyle.SplineType = SplineType.StandardSplining;
+                    austinStreetsLabelLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(textStyle);
+
+                    overlay.Layer("AustinStreetsShapeLayer", austinStreetsShapeLayer);
+                    overlay.Layer("AustinStreetsLabelLayer", austinStreetsLabelLayer);
+                })
+                .Render();
+        }
+    </div>
+</div>

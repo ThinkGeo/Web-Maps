@@ -1,0 +1,53 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<script language="javascript" type="text/javascript">
+    function btnSpatial_Click() {
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'Spatial', null, mapCallback);
+    }
+
+    function mapCallback(result) {
+        if (result.get_responseData()) {
+            document.getElementById("Label1").innerHTML = result.get_responseData();
+        }
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Click the button below to generate spatial index file.
+            <br />
+            <br />
+            <input id="btnSpatial" type="button" value="Build Spatial Index" onclick="btnSpatial_Click();" />
+            <br />
+            <br />
+            <div id="Label1" class="warning">
+            </div>
+            <br />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+          .MapBackground(new GeoSolidBrush(GeoColor.GeographicColors.ShallowOcean))
+          .MapUnit(GeographyUnit.Meter)
+          .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+          .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+          .CustomOverlays(overlays =>
+          {
+              // Please input your ThinkGeo Cloud API Key to enable the background map.
+              overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+              ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02_3857.shp"));
+              worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.SimpleColors.Transparent, GeoColor.FromArgb(100, GeoColor.SimpleColors.Green));
+              worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+              overlays.LayerOverlay().IsBaseOverlay(false).Layer(worldLayer);
+          }).Render();}
+    </div>
+</div>

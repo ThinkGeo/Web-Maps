@@ -1,0 +1,67 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc;
+<style type="text/css">
+    html
+    {
+        height: 100%;
+    }
+    .descContent
+    {
+        font-family: :Verdana;
+        font-size: 11px;
+    }
+    input
+    {
+        margin: 3px;
+    }
+</style>
+<script language="javascript" type="text/javascript">
+    function btnRotateCounterclockwise_Click() {
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'RotateCounterclockwise', null, mapCallback);
+    }
+
+    function btnRotateClockwise_Click() {
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'RotateClockwise', null, mapCallback);
+    }
+
+    function mapCallback(result) {
+        Map1.redrawLayer("StaticOverlay");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            This sample applies rotation projection to a feature layer.
+            <br />
+            <input type="button" id="btnRotateCounterclockwise" style="width: 160px;" value="Rotate Counterclockwise"
+                onclick="btnRotateCounterclockwise_Click();" />
+            <input type="button" id="btnRotateClockwise" style="width: 160px;" value="Rotate Clockwise"
+                onclick="btnRotateClockwise_Click();" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div id="map">
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#94aac6")))
+                .CurrentExtent(-131.22, 55.05, -54.03, 16.91)
+                .MapUnit(GeographyUnit.DecimalDegree)
+                .StaticOverlay(staticOverlay =>
+                    {
+                        RotationProjection rotateProjection = new RotationProjection();
+                        ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02.shp"));
+                        worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 243, 239, 228), GeoColor.FromArgb(255, 218, 193, 163), 1);
+                        worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                        worldLayer.FeatureSource.Projection = rotateProjection;
+                        staticOverlay.Layer(worldLayer);
+                    })
+                .Render();
+        }
+    </div>
+</div>

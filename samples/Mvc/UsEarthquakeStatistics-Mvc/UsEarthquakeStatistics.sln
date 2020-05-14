@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsEarthquakeStatistics", "UsEarthquakeStatistics\UsEarthquakeStatistics.csproj", "{A25D7400-9F13-45A9-A8D0-94A0B136D378}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Evaluation|Any CPU = Evaluation|Any CPU
+		Full|Any CPU = Full|Any CPU
+		PRODUCTION|Any CPU = PRODUCTION|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A25D7400-9F13-45A9-A8D0-94A0B136D378}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A25D7400-9F13-45A9-A8D0-94A0B136D378}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A25D7400-9F13-45A9-A8D0-94A0B136D378}.Evaluation|Any CPU.ActiveCfg = Release|Any CPU
+		{A25D7400-9F13-45A9-A8D0-94A0B136D378}.Evaluation|Any CPU.Build.0 = Release|Any CPU
+		{A25D7400-9F13-45A9-A8D0-94A0B136D378}.Full|Any CPU.ActiveCfg = Release|Any CPU
+		{A25D7400-9F13-45A9-A8D0-94A0B136D378}.Full|Any CPU.Build.0 = Release|Any CPU
+		{A25D7400-9F13-45A9-A8D0-94A0B136D378}.PRODUCTION|Any CPU.ActiveCfg = Release|Any CPU
+		{A25D7400-9F13-45A9-A8D0-94A0B136D378}.PRODUCTION|Any CPU.Build.0 = Release|Any CPU
+		{A25D7400-9F13-45A9-A8D0-94A0B136D378}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A25D7400-9F13-45A9-A8D0-94A0B136D378}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

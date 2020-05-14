@@ -1,0 +1,82 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc;
+@model System.Collections.ObjectModel.Collection<CSharp_HowDoISamples.Country>
+<style type="text/css">
+    html
+    {
+        height: 100%;
+    }
+    .descContent
+    {
+        font-family: :Verdana;
+        font-size: 11px;
+    }
+    input
+    {
+        margin: 3px;
+    }
+</style>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            @using (Html.BeginForm("ExecuteSqlQuery", "SpatialFunctions", new { firstLoad = "n" }, FormMethod.Post))
+            {
+                <textarea id="SQLTextBox" name="SQLTextBox" rows="3" readonly="readonly">Select CNTRY_NAME,POP_CNTRY from CNTRY02 Where POP_CNTRY &gt;
+    100000000 Order by POP_CNTRY</textarea>
+                <br />
+                <input type="submit" id="btnExecute" value="Execute SQL" />
+                <table style="width: 90%; background-color: White; border-color: #CCCCCC;
+                    border-style: none; border-width: 1px; padding: 3px;">
+                    <tr style="background-color: #006699; font-weight: bold; color: White;">
+                        <td>
+                            Country Name
+                        </td>
+                        <td>
+                            Population
+                        </td>
+                    </tr>
+                    @foreach (var country in Model)
+                    {
+                        <tr style="background-color: White;">
+                            <td>@country.CountryName
+                            </td>
+                            <td>
+                                @country.Population
+                            </td>
+                        </tr>
+                    }
+                </table>
+            }
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div id="map">
+        @{
+                Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                    .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                    .MapUnit(GeographyUnit.Meter)
+                    .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+                    .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+                    .CustomOverlays(overlays =>
+                    {
+                // Please input your ThinkGeo Cloud API Key to enable the background map.
+                overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+            })
+                .CustomOverlays(overlays =>
+                {
+                ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02_3857.shp"));
+                worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.SimpleColors.Transparent, GeoColor.FromArgb(100, GeoColor.SimpleColors.Green));
+                worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                overlays.LayerOverlay("StaticOverlay").IsBaseOverlay(false).Layer("WorldLayer", worldLayer);
+            })
+                .Render();
+        }
+    </div>
+</div>

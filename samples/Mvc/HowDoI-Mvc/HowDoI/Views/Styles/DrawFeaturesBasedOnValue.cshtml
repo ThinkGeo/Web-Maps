@@ -1,0 +1,43 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            This sample renders cities in different styles based on their "POP_RANK" value.
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    @{
+        Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+            .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+            .MapUnit(GeographyUnit.Meter)
+            .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+            .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+            .CustomOverlays(overlays =>
+            {
+                // Please input your ThinkGeo Cloud API Key to enable the background map.
+                overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+                ShapeFileFeatureLayer citiesLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/capital.shp"));
+                citiesLayer.FeatureSource.Projection = new Proj4Projection(4326, 3857);
+                citiesLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                // Draw features based on values
+                ValueStyle valueStyle = new ValueStyle();
+                valueStyle.ColumnName = "POP_RANK";
+                valueStyle.ValueItems.Add(new ValueItem("1", PointStyles.CreateCompoundPointStyle(PointSymbolType.Square, GeoColor.StandardColors.White, GeoColor.StandardColors.Black, 1F, 10F, PointSymbolType.Square, GeoColor.StandardColors.Navy, GeoColor.StandardColors.Transparent, 0F, 6F)));
+                valueStyle.ValueItems.Add(new ValueItem("2", PointStyles.CreateCompoundPointStyle(PointSymbolType.Square, GeoColor.StandardColors.White, GeoColor.StandardColors.Black, 1F, 6F, PointSymbolType.Square, GeoColor.StandardColors.Maroon, GeoColor.StandardColors.Transparent, 0F, 2F)));
+                valueStyle.ValueItems.Add(new ValueItem("3", PointStyles.CreateSimpleCircleStyle(GeoColor.StandardColors.White, 3.2F, GeoColor.StandardColors.Black, 1F)));
+                citiesLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(valueStyle);
+                overlays.LayerOverlay().Layer("CitiesLayer", citiesLayer).IsBaseOverlay(false);
+
+            })
+            .Render();
+    }
+</div>

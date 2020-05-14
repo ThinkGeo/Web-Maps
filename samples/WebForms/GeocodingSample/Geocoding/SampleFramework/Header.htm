@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Header Page</title>
+    <style type="text/css">
+        BODY
+        {
+            margin: 0;
+        }
+        .masthead
+        {
+            background-image: url(theme/default/samplepic/map_suite_web_samples_header_bkg.jpg);
+            height: 80px;
+            border-bottom: solid 3px #aaaaaa;
+        }
+        .title
+        {
+            border-bottom: solid 1px #000000;
+        }
+        .logo
+        {
+            padding-left: 12px;
+        }
+        .logo .note
+        {
+            position: absolute;
+            left: 20px;
+            top: 33px;
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10px;
+            color: #fff;
+        }
+        .toggle
+        {
+            width: 250px;
+            padding-bottom: 3px;
+            padding-right: 12px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 13px;
+            color: #fff;
+        }
+    </style>
+    <script language="javascript" type="text/javascript">
+        function load()
+        {
+            var canConnectTointernet = new Image();
+            canConnectTointernet.onerror = function(){
+                var element = document.getElementById("Ads");
+                element.innerHTML = "<img alt='Advertisement' src='theme/default/samplepic/bannerad_offline.png' />";          
+            };
+            canConnectTointernet.src = "http://www.google.com/intl/en_ALL/images/logo.gif"
+        }
+    </script>
+</head>
+<body onload="load();">
+    <table width="100%" class="masthead" cellspacing="0" cellpadding="0">
+        <tr>
+            <td align="left" valign="middle" class="logo title">
+                <img alt="Map Suite Web Edition Sample Applications from ThinkGeo" src="Images/map_suite_geocoder_web_samples_header.png"
+                    width="468" height="39" />
+                <p class="note" style="top:50px">
+                    (Note: Source Code and Data are Included with Evaluation Download)</p>
+            </td>
+            <td id="Ads" class="toggle title" style="background-position: center; background-repeat: no-repeat; width:50%; text-align:left; vertical-align:middle;">
+                <iframe name="Frame" src="http://gis.thinkgeo.com/Default.aspx?tabid=640" scrolling="no" width="468px" allowtransparency="yes"
+                    frameborder="0" height="60px" style="overflow: hidden; background-color: Transparent;
+                    padding: 0px; margin-top: 0px;"></iframe>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

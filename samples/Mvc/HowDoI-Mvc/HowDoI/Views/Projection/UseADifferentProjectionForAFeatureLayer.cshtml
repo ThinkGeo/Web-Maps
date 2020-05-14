@@ -1,0 +1,41 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc;
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            This sample converts a layer's projection from EPSG:4326 to EPSG:2163.
+            <br />
+            <input type="button" id="btnZoomIn" value="Zoom In" onclick="Map1.zoomIn();return false;" />
+            <input type="button" id="btnZoomOut" value="Zoom Out" onclick="Map1.zoomOut();return false;" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div id="map">
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .CurrentExtent(-19268509.29874, 13535292.38285, 20656089.34576, -14435365.7673)
+                .MapUnit(GeographyUnit.Meter)
+                .StaticOverlay(staticOverlay =>
+                {
+                    Proj4Projection proj4Projection = new Proj4Projection();
+                    proj4Projection.InternalProjectionParametersString = Proj4Projection.GetEpsgParametersString(4326);
+                    proj4Projection.ExternalProjectionParametersString = Proj4Projection.GetEpsgParametersString(2163);
+
+                    ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02.shp"));
+                    worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 243, 239, 228), GeoColor.FromArgb(255, 218, 193, 163), 1);
+                    worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                    worldLayer.FeatureSource.Projection = proj4Projection;
+
+                    staticOverlay.TileType(TileType.SingleTile).Layer("WorldLayer", worldLayer);
+                })
+                .Render();
+        }
+    </div>
+</div>

@@ -1,0 +1,39 @@
+﻿<!--The content of the edit panels-->
+<ul>
+    <li>
+        <span class="edit-title">Apply Outline Color</span>
+        <input id="applyHalo" type="checkbox" checked="checked" class="edit-item" />
+    </li>
+    <li>
+        <span class="edit-item-title">Apply Background Mask</span>
+        <input id="applyMask" type="checkbox" checked="checked" class="edit-item" />
+    </li>
+    <li>
+        <span class="edit-title">Labels Overlapping Each Other</span>
+        <input id="isOverlap" type="checkbox" class="edit-item" />
+    </li>
+    <li>
+        <span class="edit-title">Grid Size</span>
+        <select id="gridSize" class="edit-item">
+            <option value="Small">Small</option>
+            <option value="Medium">Medium</option>
+            <option value="Large" selected="selected">Large</option>
+        </select>
+    </li>
+    <li>
+        <span class="edit-title">Duplicate Rule</span>
+        <select id="duplicateRule" class="edit-item">
+            <option>UnlimitedDuplicateLabels</option>
+            <option selected="selected">NoDuplicateLabels</option>
+            <option>OneDuplicateLabelPerQuadrant</option>
+        </select>
+    </li>
+    <li>
+        <span class="edit-title">Drawing Margin Percentage</span>
+        <input id="drawingMargin" type="text" class="form-control edit-item" value="50" />
+    </li>
+</ul>
+
+<script>
+    $('#settingTitle').text('Label Styling Settings');
+</script>

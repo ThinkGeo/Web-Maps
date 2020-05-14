@@ -1,0 +1,55 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<script language="javascript" type="text/javascript">
+    function updateBackground(color) {
+        Map1.ajaxCallAction("InteractiveOverlays", "UpdateBackgound", { color: color }, function () {
+            Map1.redrawBackgound();
+        });
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Click on one of the squares below to change the background color.
+            <br />
+            <br />
+            <div>
+                <input type="button" onclick="updateBackground('#336600');" value="" style="width: 20px;
+                    height: 20px; background-color: #336600;" />
+                <input type="button" onclick="updateBackground('#99cc66');" value="" style="width: 20px;
+                    height: 20px; background-color: #99cc66;" />
+                <input type="button" onclick="updateBackground('#3399ff');" value="" style="width: 20px;
+                    height: 20px; background-color: #3399ff;" />
+                <input type="button" onclick="updateBackground('#ffcc99');" value="" style="width: 20px;
+                    height: 20px; background-color: #ffcc99;" />
+                <input type="button" onclick="updateBackground('#ffcc00');" value="" style="width: 20px;
+                    height: 20px; background-color: #ffcc00;" />
+            </div>
+            <br />
+            <br />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+              .MapUnit(GeographyUnit.DecimalDegree)
+              .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#0065ce")))
+              .CurrentExtent(-140, 60, 140, -60)
+              .StaticOverlay(layerSetting =>
+                  {
+                      ShapeFileFeatureLayer layer = new ShapeFileFeatureLayer(HttpContext.Current.Request.MapPath("~/App_Data/Countries02.shp"));
+                      layer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                      layer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 243, 239, 228), GeoColor.FromArgb(255, 218, 193, 163), 1);
+
+                      layerSetting.Layer(layer);
+                  })
+              .Render(); 
+        }
+    </div>
+</div>

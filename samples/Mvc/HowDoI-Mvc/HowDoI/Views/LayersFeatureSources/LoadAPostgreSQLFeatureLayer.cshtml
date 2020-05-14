@@ -1,0 +1,40 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@model ThinkGeo.MapSuite.Mvc.Map 
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            This sample specifies how to work with PostgreSQLFeatureLayer.
+            <br />
+            <span class="warning">(To load a PostgreSQLFeatureLayer, you have to reference "[Install-Path]\Developer
+                Reference\Spatial Extension\Postgre Extension\PostgreExtension.DLL" and Uncomment
+                lines(22 ~ 25) Please modify the visible property of the map in .cshtml file if you
+                load the map from PostgreSql using following code. ) </span>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="../../Scripts/MicrosoftAjax.js"></script>
+<div class="sixteen columns" id="main">
+    <div id="map">
+        <img alt="map" width="99%"
+height="98%" src="@Url.Content("~/Content/images/MapView.jpg")" />
+        @*  @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 510)
+           .MapBackground(new GeoSolidBrush(GeoColor.GeographicColors.ShallowOcean))
+          .MapUnit(GeographyUnit.DecimalDegree)
+          .CurrentExtent(-140, 60, 140, -60)
+          .StaticOverlay(overlay =>
+          {
+            string connectString = "Server=192.168.0.235;User Id=userId;Password=password;DataBase=postgis;";
+            PostgreSqlFeatureLayer postgreLayer = new PostgreSqlFeatureLayer(connectString, "new_states", "recid");
+            postgreLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 233, 232, 214), GeoColor.FromArgb(255, 118, 138, 69));
+            postgreLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+              overlay.Layer(postgreLayer);
+          }).Render();}*@
+    </div>
+</div>

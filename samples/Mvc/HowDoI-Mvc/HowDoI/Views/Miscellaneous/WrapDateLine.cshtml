@@ -1,0 +1,36 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            The sample shows wrapping at the date line. Wrapping the date line is an option
+            on the WmsOverlay, LayerOverlay and WorldMapKitWmsWebOverlay.
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+            .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+            .MapUnit(GeographyUnit.Meter)
+            .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+            .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+            .CustomOverlays(overlay =>
+            {
+                // Please input your ThinkGeo Cloud API Key to enable the background map.
+                overlay.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key").WrapDateline(WrapDatelineMode.WrapDateline);
+
+                ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02_3857.shp"));
+                worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.SimpleColors.Transparent, GeoColor.FromArgb(100, GeoColor.SimpleColors.Green));
+
+                overlay.LayerOverlay().WrapDateline(WrapDatelineMode.WrapDateline).IsBaseOverlay(false).Layer(worldLayer);
+            })
+            .Render();}
+    </div>
+</div>

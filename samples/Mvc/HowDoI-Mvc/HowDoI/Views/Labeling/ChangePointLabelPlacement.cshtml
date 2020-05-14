@@ -1,0 +1,71 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc;
+<script language="javascript" type="text/javascript">
+    function changePointPlacement(optionObj) {
+        var placement = optionObj.value;
+
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'SetPointPlacement', { 'placement': placement }, mapCallback);
+    }
+
+    function mapCallback(result) {
+        Map1.redrawLayer("DynamicOverlay");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Switch item in the combo and see the position of labels.
+            <br />
+            <br />
+            <select id="PointPlacementDropDownList" name="PointPlacementDropDownList" size="18"
+                style="width: 200px;" onchange="changePointPlacement(this);">
+                <option value="UpperLeft">UpperLeft</option>
+                <option value="UpperCenter">UpperCenter</option>
+                <option value="UpperRight">UpperRight</option>
+                <option value="CenterRight" selected="selected">CenterRight</option>
+                <option value="Center">Center</option>
+                <option value="CenterLeft">CenterLeft</option>
+                <option value="LowerLeft">LowerLeft</option>
+                <option value="LowerCenter">LowerCenter</option>
+                <option value="LowerRight">LowerRight</option>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div id="map">
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .CurrentExtent(-131.22, 55.05, -54.03, 16.9)
+                .MapUnit(GeographyUnit.DecimalDegree)
+                .StaticOverlay(overlay =>
+                {
+                    ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02.shp"));
+                    worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 243, 239, 228), GeoColor.FromArgb(255, 218, 193, 163), 1);
+                    worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                    ShapeFileFeatureLayer majorCitiesShapeLayer = new ShapeFileFeatureLayer(Server.MapPath(@"~\App_Data\cities_a.shp"));
+                    majorCitiesShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = PointStyles.CreateCompoundCircleStyle(GeoColor.StandardColors.White, 6F, GeoColor.StandardColors.Black, 1F, GeoColor.StandardColors.Black, 3F);
+                    majorCitiesShapeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                    overlay.Layer(worldLayer);
+                    overlay.Layer(majorCitiesShapeLayer);
+                })
+                .DynamicOverlay(overlay =>
+                {
+                    ShapeFileFeatureLayer majorCitiesLabelLayer = new ShapeFileFeatureLayer(Server.MapPath(@"~\App_Data\cities_a.shp"));
+                    majorCitiesLabelLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = TextStyles.CreateSimpleTextStyle("AREANAME", "Verdana", 8, DrawingFontStyles.Regular, GeoColor.StandardColors.Black);
+                    majorCitiesLabelLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                    overlay.Layer("MajorCitiesLabels", majorCitiesLabelLayer);
+                })
+                .Render();
+        }
+    </div>
+</div>

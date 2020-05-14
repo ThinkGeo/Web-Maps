@@ -1,0 +1,61 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+
+<script language="javascript" type="text/javascript">
+    function callback(result) {
+        Map1.redrawLayer("StaticOverlay");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                Click the buttons below to change the fill or outline color.</p>
+            <table cellpadding="0" cellspacing="2">
+                <tr>
+                    <td>
+                        <input type="button" style="width:115px;" id="btnFillColorYellow" name="btnFillColorYellow" value="Fill yellow color"
+                            onclick="Map1.ajaxCallAction('Styles', 'ChangeTheColor', {color: 'yellow'}, callback)" />
+                    </td>
+                    <td>
+                        <input type="button" style="width:115px;" id="btnOutLineColorGray" name="btnOutLineColorGray" value="Outline gray color"
+                            onclick="Map1.ajaxCallAction('Styles', 'ChangeTheColor', {color: 'gray'}, callback)" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="button" style="width:115px;" id="btnFillColorGreen" name="btnFillColorGreen" value="Fill green color" onclick="Map1.ajaxCallAction('Styles', 'ChangeTheColor', {color: 'green'}, callback)" />
+                    </td>
+                    <td>
+                        <input type="button" style="width:115px;" id="btnOutlineColorBlack" name="btnOutlineColorBlack" value="Outline black color"
+                            onclick="Map1.ajaxCallAction('Styles', 'ChangeTheColor', {color: 'black'}, callback)" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .CurrentExtent(-131.22, 55.05, -54.03, 16.91)
+                .MapUnit(GeographyUnit.DecimalDegree)
+                .StaticOverlay(staticOverlay =>
+                {
+                    ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02.shp"));
+                    worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 243, 239, 228), GeoColor.FromArgb(255, 218, 193, 163), 1);
+                    worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                    staticOverlay.Layer("WorldLayer", worldLayer).IsBaseOverlay(false);
+                })
+                .Render();
+        }
+    </div>
+</div>

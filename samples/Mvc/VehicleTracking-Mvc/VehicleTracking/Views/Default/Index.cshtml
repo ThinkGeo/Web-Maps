@@ -1,0 +1,96 @@
+﻿@using ThinkGeo.MapSuite.Mvc
+
+@model Map
+@{
+    ViewBag.Title = "Vehicle Tracking";
+}
+
+<input type="hidden" value="false" id="iptIsMeasuring" />
+<div id="container">
+    <div id="header">
+        <div id="left-header">
+            <span id="header-mapsuite">Map Suite</span> <span id="header-title">Vehicle Tracking Sample</span>
+        </div>
+    </div>
+    <div id="content-container">
+        <div id="leftContainer">
+            <div id="leftContent">
+                <h4>Click to refresh vehicles:</h4>
+                <div id="divRefresh" class="divBorder">
+                    <div class="divSettingItem">
+                        <img id="btnAutoRefresh" alt="Auto Refresh" src="Images/AutoRefresh.png" class="imgButton" />
+                        <span class="title">Auto Refresh:</span> <span id="autoRefreshStatus" class="title redTxt">On</span>
+                    </div>
+                    <div class="divSettingItem">
+                        <img id="btnRefresh" alt="Refresh Manually" src="Images/RefreshManually.png" class="imgButton" />
+                        <span class="title">Refresh Manually</span>
+                    </div>
+                </div>
+                <h4>
+                    Interact with the map using these tools:
+                </h4>
+                <div id="divTrackMode" class="divBorder">
+                    <img id="btnPan" command="Pan" src="Images/pan.png" class="active imgButton" />
+                    <img id="btnDraw" command="Draw" src="Images/draw.png" class="imgButton" />
+                    <img id="btnMeasure" command="Measure" src="Images/measure.png" class="imgButton" />
+                </div>
+                <div id="divEditPanel" class="divSubBorder">
+                    <img id="btnDrawPolygon" command="Polygon" class="active imgButton" src="~/Images/draw_polygon.png" />
+                    <img id="btnEditPolygon" command="Edit" class="imgButton" src="~/Images/edit_polygon.png" />
+                    <img id="btnRemovePolygon" command="RemovePolygon" class="imgButton" src="~/Images/Remove_Polygon.png" />
+                    <img id="btnSave" command="Save" class="imgButton" src="~/Images/save.png" />
+                    <img id="btnClearShapes" command="Clear" class="imgButton" src="~/Images/clear.png" />
+                </div>
+                <div id="divMeasure" class="divSubBorder">
+                    <img id="btnMeasureLength" command="Distance" class="active imgButton" src="~/Images/line.png" />
+                    <img id="btnMeasureArea" command="Area" class="imgButton" src="~/Images/Polygon.png" />
+                    <img id="btnClearMeasure" command="Cancel" class="imgButton" src="~/Images/clear.png" />
+
+                    <span class="title">Measure Unit:</span>
+                    <select id="dropDownList">
+                        <option>Metric</option>
+                        <option>Imperial</option>
+                    </select>
+                </div>
+                <div class="blueBanner">
+                    Tracked Vehicles
+                </div>
+                <div class="divBorder" id="divVehicleList">
+                </div>
+            </div>
+        </div>
+        <div id="toggle">
+            <img id="collapse" src="Images/collapse.gif" />
+        </div>
+        <div id="map-content">
+            @{
+
+                ActionRequest editFenceActionRequest = new ActionRequest("EditFences")
+                {
+                    OnClientActionRequesting = "onEditFencesRequesting",
+                    OnClientActionRequested = "onEditFencesRequested"
+                };
+                ActionRequest saveFenceActionRequest = new ActionRequest("SaveFences")
+                {
+                    ClientGetArgumentsFunction = "getSaveFencesParameters",
+                    OnClientActionRequested = "onSaveFencesRequested"
+                };
+
+                LayerOverlay spatialFenceOverlay = Model.CustomOverlays["SpatialFenceOverlay"] as LayerOverlay;
+                spatialFenceOverlay.ActionTriggers.Add(new ActionTrigger("btnEditPolygon", "onclick", editFenceActionRequest));
+                spatialFenceOverlay.ActionTriggers.Add(new ActionTrigger("btnSave", "onclick", saveFenceActionRequest));
+
+                Html.ThinkGeo().Map(Model).Render();
+            }
+        </div>
+    </div>
+    <div id="footer">
+        <span id="coordinate"><span id="spanMouseCoordinate"></span></span>
+    </div>
+</div>
+<div id="divRemoveDialog">
+    Are you sure you want to delete the spatial fence you have selected?
+</div>
+<div id="divMessage">
+    Please choose a fence at first.
+</div>

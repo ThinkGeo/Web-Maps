@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomWmsLayerPlugin", "CustomWmsLayerPlugin\CustomWmsLayerPlugin.csproj", "{969C6CC8-2715-4EA6-93EE-4C352D48BC89}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomWmsServer", "CustomWmsServer\CustomWmsServer.csproj", "{ED15B778-F743-46C3-949B-4089F51BCCCA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{969C6CC8-2715-4EA6-93EE-4C352D48BC89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{969C6CC8-2715-4EA6-93EE-4C352D48BC89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{969C6CC8-2715-4EA6-93EE-4C352D48BC89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{969C6CC8-2715-4EA6-93EE-4C352D48BC89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED15B778-F743-46C3-949B-4089F51BCCCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED15B778-F743-46C3-949B-4089F51BCCCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED15B778-F743-46C3-949B-4089F51BCCCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED15B778-F743-46C3-949B-4089F51BCCCA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {098671F9-8BA3-4AEA-AEA6-8E2FA482492F}
+	EndGlobalSection
+EndGlobal

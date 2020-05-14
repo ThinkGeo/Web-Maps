@@ -1,0 +1,1577 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{AC6DBDFC-0441-4425-9DDA-C6D474C1D29E}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>HowDoI</RootNamespace>
+    <AssemblyName>HowDoI</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <TargetFrameworkProfile />
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort>56990</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
+    <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
+    <IISExpressUseClassicPipelineMode>false</IISExpressUseClassicPipelineMode>
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRules>
+    </CodeAnalysisRules>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisRules>
+    </CodeAnalysisRules>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <CodeAnalysisRules>
+    </CodeAnalysisRules>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Full|AnyCPU' ">
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Full|x86' ">
+    <OutputPath>bin\x86\Full\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Full|x64' ">
+    <OutputPath>bin\x64\Full\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Evaluation|AnyCPU' ">
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Evaluation|x86' ">
+    <OutputPath>bin\x86\Evaluation\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Evaluation|x64' ">
+    <OutputPath>bin\x64\Evaluation\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Ciloci.Flee, Version=0.9.26.0, Culture=neutral, PublicKeyToken=c8526a021ef298ed, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-CilociFlee.10.5.0\lib\net45\Ciloci.Flee.dll</HintPath>
+    </Reference>
+    <Reference Include="GeoAPI, Version=1.7.4.0, Culture=neutral, PublicKeyToken=a1a0da7def465678, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-GeoAPI.10.5.0\lib\net45\GeoAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-MicrosoftSqlServerTypes.10.5.0\lib\net45\Microsoft.SqlServer.Types.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Security, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-Npgsql.10.1.0\lib\Net40\Mono.Security.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NetTopologySuite, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-NetTopologySuite.10.5.0\lib\net45\NetTopologySuite.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-NewtonsoftJson.10.5.0\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Npgsql, Version=3.0.0.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-Npgsql.10.5.0\lib\net45\Npgsql.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp, Version=1.32.3057.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-PDFsharp.10.5.0\lib\net20\PdfSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp.Charting, Version=1.32.3057.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-PDFsharp.10.5.0\lib\net20\PdfSharp.Charting.dll</HintPath>
+    </Reference>
+    <Reference Include="PowerCollections, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2573bf8a1bdddcd5, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-NetTopologySuite.10.5.0\lib\net45\PowerCollections.dll</HintPath>
+    </Reference>
+    <Reference Include="SkiaSharp, Version=1.68.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-SkiaSharp.10.5.0\lib\net45\SkiaSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Web.Mobile" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="ThinkGeo.MapSuite, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.10.5.1\lib\net45\ThinkGeo.MapSuite.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Drawing.PdfGeoCanvas, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Drawing.PdfGeoCanvas.10.5.0\lib\net45\ThinkGeo.MapSuite.Drawing.PdfGeoCanvas.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Adornments, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Adornments.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Adornments.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Ecw, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Ecw.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Ecw.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.FdoVector, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.FdoVector.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.FdoVector.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.GoogleMaps, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.GoogleMaps.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.GoogleMaps.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Graticule, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Graticule.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Graticule.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Grids, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Grids.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Grids.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Heat, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Heat.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Heat.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.MrSid, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.MrSid.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.MrSid.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.MsSql, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.MsSql.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.MsSql.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.NativeImage, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.NativeImage.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.NativeImage.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Oracle, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Oracle.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Oracle.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.PersonalGeoDatabase, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.PostgreSql, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.PostgreSql.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.PostgreSql.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Restriction, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Restriction.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Restriction.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Sdf, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Sdf.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Sdf.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.ShapeFile, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.ShapeFile.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.ShapeFile.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Tab, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Tab.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Tab.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Wfs, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Wfs.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Wfs.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.ProductCenter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.ProductCenter.10.5.2\lib\net45\ThinkGeo.MapSuite.ProductCenter.exe</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Styles.ClassBreak, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.ClassBreak.10.5.0\lib\net45\ThinkGeo.MapSuite.Styles.ClassBreak.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Styles.DotDensity, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.DotDensity.10.5.0\lib\net45\ThinkGeo.MapSuite.Styles.DotDensity.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Styles.FleeBoolean, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.FleeBoolean.10.5.0\lib\net45\ThinkGeo.MapSuite.Styles.FleeBoolean.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Styles.Regex, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.Regex.10.5.0\lib\net45\ThinkGeo.MapSuite.Styles.Regex.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Styles.Value, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.Value.10.5.0\lib\net45\ThinkGeo.MapSuite.Styles.Value.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Styles.WorldStreets, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.WorldStreets.10.5.0\lib\net45\ThinkGeo.MapSuite.Styles.WorldStreets.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Styles.ZedGraph, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.ZedGraph.10.5.0\lib\net45\ThinkGeo.MapSuite.Styles.ZedGraph.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.WebForms, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteWebForWebForms-BareBone.10.5.0\lib\net45\ThinkGeo.MapSuite.WebForms.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="ZedGraph, Version=5.1.7.430, Culture=neutral, PublicKeyToken=02a83cbd123fcd60, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-ZedGraph.10.5.0\lib\net35-Client\ZedGraph.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Default.aspx" />
+    <Content Include="favicon.ico" />
+    <Content Include="License-LGPL.txt" />
+    <Content Include="SampleData\World\BingMapsResult.png" />
+    <Content Include="SampleList.xml" />
+    <Content Include="Samples\DataProviders\LoadAHeatLayer.aspx" />
+    <Content Include="Samples\NavigateTheMap\AnimationPanMapTool.aspx" />
+    <Content Include="Samples\NavigateTheMap\AutoRefreshOverlay.aspx" />
+    <Content Include="Samples\NavigateTheMap\CreateAGraticuleAdornmentLayer.aspx" />
+    <Content Include="Samples\NavigateTheMap\MeasureMapTool.aspx" />
+    <Content Include="Samples\NavigateTheMap\WrapDateLine.aspx" />
+    <Content Include="Samples\Overlays\LoadAnArcGISServerRestOverlay.aspx" />
+    <Content Include="Samples\Overlays\UseBingMaps.aspx" />
+    <Content Include="Samples\Overlays\UseGoogleBingWms.aspx" />
+    <Content Include="Samples\Overlays\UseOpenStreetMap.aspx" />
+    <Content Include="theme\default\samplepic\btn_edit.png" />
+    <Content Include="theme\default\samplepic\expand.gif" />
+    <Content Include="theme\default\samplepic\circle28.png" />
+    <Content Include="theme\default\samplepic\Cursor.png" />
+    <Content Include="theme\default\samplepic\ellipse28.png" />
+    <Content Include="theme\default\samplepic\freehand28.gif" />
+    <Content Include="theme\default\samplepic\line28.png" />
+    <Content Include="theme\default\samplepic\point28.png" />
+    <Content Include="theme\default\samplepic\polygon28.png" />
+    <Content Include="theme\default\samplepic\btn_edit.gif" />
+    <Content Include="theme\default\samplepic\e.png" />
+    <Content Include="theme\default\samplepic\info.png" />
+    <Content Include="theme\default\samplepic\line.png" />
+    <Content Include="theme\default\samplepic\n.png" />
+    <Content Include="theme\default\samplepic\ne.png" />
+    <Content Include="theme\default\samplepic\nw.png" />
+    <Content Include="theme\default\samplepic\point.png" />
+    <Content Include="theme\default\samplepic\rectangle28.png" />
+    <Content Include="theme\default\samplepic\s.png" />
+    <Content Include="theme\default\samplepic\se.png" />
+    <Content Include="theme\default\samplepic\square28.png" />
+    <Content Include="theme\default\samplepic\style.css" />
+    <Content Include="theme\default\samplepic\sw.png" />
+    <Content Include="theme\default\samplepic\toggleextent.png" />
+    <Content Include="theme\default\samplepic\tool_save.gif" />
+    <Content Include="theme\default\samplepic\ToPrevious.png" />
+    <Content Include="theme\default\samplepic\Vehicle.png" />
+    <Content Include="theme\default\samplepic\w.png" />
+    <Content Include="theme\default\tabs\Tab-Background.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-BGActive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-BGInactive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-EndLeftActive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-EndLeftInactive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-EndRightActive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-EndRightInactive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-LeftisActive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-NoneActive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-RightisActive.gif" />
+    <Content Include="Web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Banner.aspx.cs">
+      <DependentUpon>Banner.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Banner.aspx.designer.cs">
+      <DependentUpon>Banner.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Content.aspx.cs">
+      <DependentUpon>Content.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Content.aspx.designer.cs">
+      <DependentUpon>Content.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Helper\DescriptionPanel.cs" />
+    <Compile Include="Navigation.aspx.cs">
+      <DependentUpon>Navigation.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Navigation.aspx.designer.cs">
+      <DependentUpon>Navigation.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Samples\DataProviders\CreateAnInMemoryFeatureLayer.aspx.cs">
+      <DependentUpon>CreateAnInMemoryFeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\DataProviders\CreateAnInMemoryFeatureLayer.aspx.designer.cs">
+      <DependentUpon>CreateAnInMemoryFeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\DataProviders\CreateASpatialIndexForAShapeFileFeatureLayer.aspx.cs">
+      <DependentUpon>CreateASpatialIndexForAShapeFileFeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\DataProviders\CreateASpatialIndexForAShapeFileFeatureLayer.aspx.designer.cs">
+      <DependentUpon>CreateASpatialIndexForAShapeFileFeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadAGridFileFeatureLayer.aspx.cs">
+      <DependentUpon>LoadAGridFileFeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadAGridFileFeatureLayer.aspx.designer.cs">
+      <DependentUpon>LoadAGridFileFeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadAHeatLayer.aspx.cs">
+      <DependentUpon>LoadAHeatLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadAHeatLayer.aspx.designer.cs">
+      <DependentUpon>LoadAHeatLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadAMapFromStreams.aspx.cs">
+      <DependentUpon>LoadAMapFromStreams.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadAMapFromStreams.aspx.designer.cs">
+      <DependentUpon>LoadAMapFromStreams.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadAMSSQL2008FeatureLayer.aspx.cs">
+      <DependentUpon>LoadAMSSQL2008FeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadAMSSQL2008FeatureLayer.aspx.designer.cs">
+      <DependentUpon>LoadAMSSQL2008FeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadAnOracleFeatureLayer.aspx.cs">
+      <DependentUpon>LoadAnOracleFeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadAnOracleFeatureLayer.aspx.designer.cs">
+      <DependentUpon>LoadAnOracleFeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadAPostgreSQLFeatureLayer.aspx.cs">
+      <DependentUpon>LoadAPostgreSQLFeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadAPostgreSQLFeatureLayer.aspx.designer.cs">
+      <DependentUpon>LoadAPostgreSQLFeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadAShapeFileFeatureLayer.aspx.cs">
+      <DependentUpon>LoadAShapeFileFeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadAShapeFileFeatureLayer.aspx.designer.cs">
+      <DependentUpon>LoadAShapeFileFeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadWfsFeatureLayer.aspx.cs">
+      <DependentUpon>LoadWfsFeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\DataProviders\LoadWfsFeatureLayer.aspx.designer.cs">
+      <DependentUpon>LoadWfsFeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Extending MapSuite\AddAdditionalCustomPropertiesAndMethods.aspx.cs">
+      <DependentUpon>AddAdditionalCustomPropertiesAndMethods.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Extending MapSuite\AddAdditionalCustomPropertiesAndMethods.aspx.designer.cs">
+      <DependentUpon>AddAdditionalCustomPropertiesAndMethods.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Extending MapSuite\DrawUsingFleeBooleanStyle.aspx.cs">
+      <DependentUpon>DrawUsingFleeBooleanStyle.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Extending MapSuite\DrawUsingFleeBooleanStyle.aspx.designer.cs">
+      <DependentUpon>DrawUsingFleeBooleanStyle.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Extending MapSuite\LoadGeoDatabaseFeatureLayer.aspx.cs">
+      <DependentUpon>LoadGeoDatabaseFeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Extending MapSuite\LoadGeoDatabaseFeatureLayer.aspx.designer.cs">
+      <DependentUpon>LoadGeoDatabaseFeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Extending MapSuite\LoadSdfFeatureLayer.aspx.cs">
+      <DependentUpon>LoadSdfFeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Extending MapSuite\LoadSdfFeatureLayer.aspx.designer.cs">
+      <DependentUpon>LoadSdfFeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Extending MapSuite\LoadTabFileFeatureLayer.aspx.cs">
+      <DependentUpon>LoadTabFileFeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Extending MapSuite\LoadTabFileFeatureLayer.aspx.designer.cs">
+      <DependentUpon>LoadTabFileFeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Extending MapSuite\UseMicrosoftMapsLayer.aspx.cs">
+      <DependentUpon>UseMicrosoftMapsLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Extending MapSuite\UseMicrosoftMapsLayer.aspx.designer.cs">
+      <DependentUpon>UseMicrosoftMapsLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Extending MapSuite\UsePdfExtension.aspx.cs">
+      <DependentUpon>UsePdfExtension.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Extending MapSuite\UsePdfExtension.aspx.designer.cs">
+      <DependentUpon>UsePdfExtension.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\FeatureLayers\AddMyOwnCustomDataToAFeatureLayer.aspx.cs">
+      <DependentUpon>AddMyOwnCustomDataToAFeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\FeatureLayers\AddMyOwnCustomDataToAFeatureLayer.aspx.designer.cs">
+      <DependentUpon>AddMyOwnCustomDataToAFeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\FeatureLayers\DisplayLayersAtDifferentScales.aspx.cs">
+      <DependentUpon>DisplayLayersAtDifferentScales.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\FeatureLayers\DisplayLayersAtDifferentScales.aspx.designer.cs">
+      <DependentUpon>DisplayLayersAtDifferentScales.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\FeatureLayers\StopCertainFeaturesFromDrawing.aspx.cs">
+      <DependentUpon>StopCertainFeaturesFromDrawing.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\FeatureLayers\StopCertainFeaturesFromDrawing.aspx.designer.cs">
+      <DependentUpon>StopCertainFeaturesFromDrawing.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\FeatureLayers\UsingPredefinedStyles.aspx.cs">
+      <DependentUpon>UsingPredefinedStyles.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\FeatureLayers\UsingPredefinedStyles.aspx.designer.cs">
+      <DependentUpon>UsingPredefinedStyles.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Features\AreaOfAFeature.aspx.cs">
+      <DependentUpon>AreaOfAFeature.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Features\AreaOfAFeature.aspx.designer.cs">
+      <DependentUpon>AreaOfAFeature.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Features\BufferAFeature.aspx.cs">
+      <DependentUpon>BufferAFeature.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Features\BufferAFeature.aspx.designer.cs">
+      <DependentUpon>BufferAFeature.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Features\ConvertToFromWKB.aspx.cs">
+      <DependentUpon>ConvertToFromWKB.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Features\ConvertToFromWKB.aspx.designer.cs">
+      <DependentUpon>ConvertToFromWKB.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Features\ConvertToFromWKT.aspx.cs">
+      <DependentUpon>ConvertToFromWKT.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Features\ConvertToFromWKT.aspx.designer.cs">
+      <DependentUpon>ConvertToFromWKT.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Features\DistanceBetweenTwoPoints.aspx.cs">
+      <DependentUpon>DistanceBetweenTwoPoints.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Features\DistanceBetweenTwoPoints.aspx.designer.cs">
+      <DependentUpon>DistanceBetweenTwoPoints.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Features\EnvelopeOfAFeature.aspx.cs">
+      <DependentUpon>EnvelopeOfAFeature.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Features\EnvelopeOfAFeature.aspx.designer.cs">
+      <DependentUpon>EnvelopeOfAFeature.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Features\FindDifferenceOfTwoFeatures.aspx.cs">
+      <DependentUpon>FindDifferenceOfTwoFeatures.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Features\FindDifferenceOfTwoFeatures.aspx.designer.cs">
+      <DependentUpon>FindDifferenceOfTwoFeatures.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Features\FindFeatureById.aspx.cs">
+      <DependentUpon>FindFeatureById.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Features\FindFeatureById.aspx.designer.cs">
+      <DependentUpon>FindFeatureById.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Features\LengthOfAFeature.aspx.cs">
+      <DependentUpon>LengthOfAFeature.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Features\LengthOfAFeature.aspx.designer.cs">
+      <DependentUpon>LengthOfAFeature.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Features\MoveAFeature.aspx.cs">
+      <DependentUpon>MoveAFeature.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Features\MoveAFeature.aspx.designer.cs">
+      <DependentUpon>MoveAFeature.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Features\ScaleFeatureUpAndDown.aspx.cs">
+      <DependentUpon>ScaleFeatureUpAndDown.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Features\ScaleFeatureUpAndDown.aspx.designer.cs">
+      <DependentUpon>ScaleFeatureUpAndDown.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Features\ShortestLineBetweenFeatures.aspx.cs">
+      <DependentUpon>ShortestLineBetweenFeatures.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Features\ShortestLineBetweenFeatures.aspx.designer.cs">
+      <DependentUpon>ShortestLineBetweenFeatures.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Features\UnionTwoFeatures.aspx.cs">
+      <DependentUpon>UnionTwoFeatures.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Features\UnionTwoFeatures.aspx.designer.cs">
+      <DependentUpon>UnionTwoFeatures.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Features\UseMapSimplification.aspx.cs">
+      <DependentUpon>UseMapSimplification.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Features\UseMapSimplification.aspx.designer.cs">
+      <DependentUpon>UseMapSimplification.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\AddAClickEvent.aspx.cs">
+      <DependentUpon>AddAClickEvent.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\AddAClickEvent.aspx.designer.cs">
+      <DependentUpon>AddAClickEvent.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\AddAContextMenu.aspx.cs">
+      <DependentUpon>AddAContextMenu.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\AddAContextMenu.aspx.designer.cs">
+      <DependentUpon>AddAContextMenu.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\AddAMarker.aspx.cs">
+      <DependentUpon>AddAMarker.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\AddAMarker.aspx.designer.cs">
+      <DependentUpon>AddAMarker.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\AddAPopup.aspx.cs">
+      <DependentUpon>AddAPopup.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\AddAPopup.aspx.designer.cs">
+      <DependentUpon>AddAPopup.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\AddVariousMapTools.aspx.cs">
+      <DependentUpon>AddVariousMapTools.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\AddVariousMapTools.aspx.designer.cs">
+      <DependentUpon>AddVariousMapTools.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\ChangeLoadingImage.aspx.cs">
+      <DependentUpon>ChangeLoadingImage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\ChangeLoadingImage.aspx.designer.cs">
+      <DependentUpon>ChangeLoadingImage.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\ChangeTheCursorStyle.aspx.cs">
+      <DependentUpon>ChangeTheCursorStyle.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\ChangeTheCursorStyle.aspx.designer.cs">
+      <DependentUpon>ChangeTheCursorStyle.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\FindTheFeatureTheUserClicked.aspx.cs">
+      <DependentUpon>FindTheFeatureTheUserClicked.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\FindTheFeatureTheUserClicked.aspx.designer.cs">
+      <DependentUpon>FindTheFeatureTheUserClicked.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\DisplayASimpleMap.aspx.cs">
+      <DependentUpon>DisplayASimpleMap.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\DisplayASimpleMap.aspx.designer.cs">
+      <DependentUpon>DisplayASimpleMap.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\PlotAPointUsingLatAndLong.aspx.cs">
+      <DependentUpon>PlotAPointUsingLatAndLong.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\PlotAPointUsingLatAndLong.aspx.designer.cs">
+      <DependentUpon>PlotAPointUsingLatAndLong.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\PrintAMap.aspx.cs">
+      <DependentUpon>PrintAMap.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\PrintAMap.aspx.designer.cs">
+      <DependentUpon>PrintAMap.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\SetImageFormatAndQuality.aspx.cs">
+      <DependentUpon>SetImageFormatAndQuality.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\SetImageFormatAndQuality.aspx.designer.cs">
+      <DependentUpon>SetImageFormatAndQuality.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\Site1.Master.cs">
+      <DependentUpon>Site1.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\Site1.Master.designer.cs">
+      <DependentUpon>Site1.Master</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\UsingMasterPage.aspx.cs">
+      <DependentUpon>UsingMasterPage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\UsingMasterPage.aspx.designer.cs">
+      <DependentUpon>UsingMasterPage.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Labeling\ChangePointLabelPlacement.aspx.cs">
+      <DependentUpon>ChangePointLabelPlacement.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Labeling\ChangePointLabelPlacement.aspx.designer.cs">
+      <DependentUpon>ChangePointLabelPlacement.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Labeling\DrawCurvedLabels.aspx.cs">
+      <DependentUpon>DrawCurvedLabels.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Labeling\DrawCurvedLabels.aspx.designer.cs">
+      <DependentUpon>DrawCurvedLabels.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Labeling\LabelNiceLookingRoads.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+      <DependentUpon>LabelNiceLookingRoads.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Labeling\LabelNiceLookingRoads.aspx.designer.cs">
+      <DependentUpon>LabelNiceLookingRoads.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Labeling\LabelPointsOfInterest.aspx.cs">
+      <DependentUpon>LabelPointsOfInterest.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Labeling\LabelPointsOfInterest.aspx.designer.cs">
+      <DependentUpon>LabelPointsOfInterest.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Labeling\LabelWaterFeature.aspx.cs">
+      <DependentUpon>LabelWaterFeature.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Labeling\LabelWaterFeature.aspx.designer.cs">
+      <DependentUpon>LabelWaterFeature.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\MapShapes\ChangeEditSettings.aspx.cs">
+      <DependentUpon>ChangeEditSettings.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\MapShapes\ChangeEditSettings.aspx.designer.cs">
+      <DependentUpon>ChangeEditSettings.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\MapShapes\DrawEditShapes.aspx.cs">
+      <DependentUpon>DrawEditShapes.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\MapShapes\DrawEditShapes.aspx.designer.cs">
+      <DependentUpon>DrawEditShapes.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\MapShapes\TrackShapeFinishedEvent.aspx.cs">
+      <DependentUpon>TrackShapeFinishedEvent.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\MapShapes\TrackShapeFinishedEvent.aspx.designer.cs">
+      <DependentUpon>TrackShapeFinishedEvent.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Markers\AddProjectedMarkers.aspx.cs">
+      <DependentUpon>AddProjectedMarkers.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Markers\AddProjectedMarkers.aspx.designer.cs">
+      <DependentUpon>AddProjectedMarkers.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Markers\ClickEventOnAMarker.aspx.cs">
+      <DependentUpon>ClickEventOnAMarker.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Markers\ClickEventOnAMarker.aspx.designer.cs">
+      <DependentUpon>ClickEventOnAMarker.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Markers\LabelAndRotateAMarker.aspx.cs">
+      <DependentUpon>LabelAndRotateAMarker.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Markers\LabelAndRotateAMarker.aspx.designer.cs">
+      <DependentUpon>LabelAndRotateAMarker.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Markers\MarkerWithContextMenu.aspx.cs">
+      <DependentUpon>MarkerWithContextMenu.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Markers\MarkerWithContextMenu.aspx.designer.cs">
+      <DependentUpon>MarkerWithContextMenu.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Markers\SetTheHoverPopupOfAMarker.aspx.cs">
+      <DependentUpon>SetTheHoverPopupOfAMarker.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Markers\SetTheHoverPopupOfAMarker.aspx.designer.cs">
+      <DependentUpon>SetTheHoverPopupOfAMarker.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Markers\SetTheZoomLevelsOnAMarker.aspx.cs">
+      <DependentUpon>SetTheZoomLevelsOnAMarker.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Markers\SetTheZoomLevelsOnAMarker.aspx.designer.cs">
+      <DependentUpon>SetTheZoomLevelsOnAMarker.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\SetBackgroundColor.aspx.cs">
+      <DependentUpon>SetBackgroundColor.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GettingStarted\SetBackgroundColor.aspx.designer.cs">
+      <DependentUpon>SetBackgroundColor.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Markers\UseDraggableMarkers.aspx.cs">
+      <DependentUpon>UseDraggableMarkers.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Markers\UseDraggableMarkers.aspx.designer.cs">
+      <DependentUpon>UseDraggableMarkers.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\AnimationPanMapTool.aspx.cs">
+      <DependentUpon>AnimationPanMapTool.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\AnimationPanMapTool.aspx.designer.cs">
+      <DependentUpon>AnimationPanMapTool.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\AutoRefreshOverlay.aspx.cs">
+      <DependentUpon>AutoRefreshOverlay.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\AutoRefreshOverlay.aspx.designer.cs">
+      <DependentUpon>AutoRefreshOverlay.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\CreateAGraticuleAdornmentLayer.aspx.cs">
+      <DependentUpon>CreateAGraticuleAdornmentLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\CreateAGraticuleAdornmentLayer.aspx.designer.cs">
+      <DependentUpon>CreateAGraticuleAdornmentLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\CreateARestrictionLayer.aspx.cs">
+      <DependentUpon>CreateARestrictionLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\CreateARestrictionLayer.aspx.designer.cs">
+      <DependentUpon>CreateARestrictionLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\CreateAScaleLineAdornmentLayer.aspx.cs">
+      <DependentUpon>CreateAScaleLineAdornmentLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\CreateAScaleLineAdornmentLayer.aspx.designer.cs">
+      <DependentUpon>CreateAScaleLineAdornmentLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\ExtentChangedEvent.aspx.cs">
+      <DependentUpon>ExtentChangedEvent.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\ExtentChangedEvent.aspx.designer.cs">
+      <DependentUpon>ExtentChangedEvent.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\KeyboardMapTool.aspx.cs">
+      <DependentUpon>KeyboardMapTool.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\KeyboardMapTool.aspx.designer.cs">
+      <DependentUpon>KeyboardMapTool.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\MeasureMapTool.aspx.cs">
+      <DependentUpon>MeasureMapTool.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\MeasureMapTool.aspx.designer.cs">
+      <DependentUpon>MeasureMapTool.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\MiniMap.aspx.cs">
+      <DependentUpon>MiniMap.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\MiniMap.aspx.designer.cs">
+      <DependentUpon>MiniMap.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\NavigationHistory.aspx.cs">
+      <DependentUpon>NavigationHistory.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\NavigationHistory.aspx.designer.cs">
+      <DependentUpon>NavigationHistory.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\PanTheMap.aspx.cs">
+      <DependentUpon>PanTheMap.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\PanTheMap.aspx.designer.cs">
+      <DependentUpon>PanTheMap.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\RestrictedExtent.aspx.cs">
+      <DependentUpon>RestrictedExtent.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\RestrictedExtent.aspx.designer.cs">
+      <DependentUpon>RestrictedExtent.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\TrackZoomIn.aspx.cs">
+      <DependentUpon>TrackZoomIn.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\TrackZoomIn.aspx.designer.cs">
+      <DependentUpon>TrackZoomIn.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\WrapDateLine.aspx.cs">
+      <DependentUpon>WrapDateLine.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\WrapDateLine.aspx.designer.cs">
+      <DependentUpon>WrapDateLine.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\ZoomInAndOut.aspx.cs">
+      <DependentUpon>ZoomInAndOut.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\ZoomInAndOut.aspx.designer.cs">
+      <DependentUpon>ZoomInAndOut.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\ZoomLevelsLessThan20.aspx.cs">
+      <DependentUpon>ZoomLevelsLessThan20.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\ZoomLevelsLessThan20.aspx.designer.cs">
+      <DependentUpon>ZoomLevelsLessThan20.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\ZoomToAClickedFeature.aspx.cs">
+      <DependentUpon>ZoomToAClickedFeature.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\ZoomToAClickedFeature.aspx.designer.cs">
+      <DependentUpon>ZoomToAClickedFeature.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\ZoomToSetOfFeatures.aspx.cs">
+      <DependentUpon>ZoomToSetOfFeatures.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\NavigateTheMap\ZoomToSetOfFeatures.aspx.designer.cs">
+      <DependentUpon>ZoomToSetOfFeatures.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Overlays\AddClickEventToHighlightOverlay.aspx.cs">
+      <DependentUpon>AddClickEventToHighlightOverlay.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Overlays\AddClickEventToHighlightOverlay.aspx.designer.cs">
+      <DependentUpon>AddClickEventToHighlightOverlay.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Overlays\AddContextMenuToHighlightOverlay.aspx.cs">
+      <DependentUpon>AddContextMenuToHighlightOverlay.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Overlays\AddContextMenuToHighlightOverlay.aspx.designer.cs">
+      <DependentUpon>AddContextMenuToHighlightOverlay.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Overlays\BaseOverlayChangedEvent.aspx.cs">
+      <DependentUpon>BaseOverlayChangedEvent.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Overlays\BaseOverlayChangedEvent.aspx.designer.cs">
+      <DependentUpon>BaseOverlayChangedEvent.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Overlays\HighlightFeaturesWhileHovering.aspx.cs">
+      <DependentUpon>HighlightFeaturesWhileHovering.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Overlays\HighlightFeaturesWhileHovering.aspx.designer.cs">
+      <DependentUpon>HighlightFeaturesWhileHovering.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Overlays\LoadAnArcGISServerRestOverlay.aspx.cs">
+      <DependentUpon>LoadAnArcGISServerRestOverlay.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Overlays\LoadAnArcGISServerRestOverlay.aspx.designer.cs">
+      <DependentUpon>LoadAnArcGISServerRestOverlay.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Overlays\LoadAWmsOverlay.aspx.cs">
+      <DependentUpon>LoadAWmsOverlay.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Overlays\LoadAWmsOverlay.aspx.designer.cs">
+      <DependentUpon>LoadAWmsOverlay.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Overlays\OnOverlaysDrawingClientEvent.aspx.cs">
+      <DependentUpon>OnOverlaysDrawingClientEvent.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Overlays\OnOverlaysDrawingClientEvent.aspx.designer.cs">
+      <DependentUpon>OnOverlaysDrawingClientEvent.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Overlays\ShapeFilesOverGoogleMap.aspx.cs">
+      <DependentUpon>ShapeFilesOverGoogleMap.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Overlays\ShapeFilesOverGoogleMap.aspx.designer.cs">
+      <DependentUpon>ShapeFilesOverGoogleMap.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Overlays\UseBingMaps.aspx.cs">
+      <DependentUpon>UseBingMaps.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Overlays\UseBingMaps.aspx.designer.cs">
+      <DependentUpon>UseBingMaps.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Overlays\UseGoogleBingWms.aspx.cs">
+      <DependentUpon>UseGoogleBingWms.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Overlays\UseGoogleBingWms.aspx.designer.cs">
+      <DependentUpon>UseGoogleBingWms.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Overlays\UseGoogleMap.aspx.cs">
+      <DependentUpon>UseGoogleMap.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Overlays\UseGoogleMap.aspx.designer.cs">
+      <DependentUpon>UseGoogleMap.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Overlays\UseOpenStreetMap.aspx.cs">
+      <DependentUpon>UseOpenStreetMap.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Overlays\UseOpenStreetMap.aspx.designer.cs">
+      <DependentUpon>UseOpenStreetMap.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Projection\UseADifferentProjectionForAFeatureLayer.aspx.cs">
+      <DependentUpon>UseADifferentProjectionForAFeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Projection\UseADifferentProjectionForAFeatureLayer.aspx.designer.cs">
+      <DependentUpon>UseADifferentProjectionForAFeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Projection\UseRotationProjectionForAFeatureLayer.aspx.cs">
+      <DependentUpon>UseRotationProjectionForAFeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Projection\UseRotationProjectionForAFeatureLayer.aspx.designer.cs">
+      <DependentUpon>UseRotationProjectionForAFeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\QueryingFeatureLayers\ExecuteASqlQuery.aspx.cs">
+      <DependentUpon>ExecuteASqlQuery.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\QueryingFeatureLayers\ExecuteASqlQuery.aspx.designer.cs">
+      <DependentUpon>ExecuteASqlQuery.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\QueryingFeatureLayers\FindFeaturesWithinDistance.aspx.cs">
+      <DependentUpon>FindFeaturesWithinDistance.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\QueryingFeatureLayers\FindFeaturesWithinDistance.aspx.designer.cs">
+      <DependentUpon>FindFeaturesWithinDistance.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\QueryingFeatureLayers\GetAllTheFeatures.aspx.cs">
+      <DependentUpon>GetAllTheFeatures.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\QueryingFeatureLayers\GetAllTheFeatures.aspx.designer.cs">
+      <DependentUpon>GetAllTheFeatures.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\QueryingFeatureLayers\GetColumnData.aspx.cs">
+      <DependentUpon>GetColumnData.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\QueryingFeatureLayers\GetColumnData.aspx.designer.cs">
+      <DependentUpon>GetColumnData.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\QueryingFeatureLayers\GetDataWhenUserClicks.aspx.cs">
+      <DependentUpon>GetDataWhenUserClicks.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\QueryingFeatureLayers\GetDataWhenUserClicks.aspx.designer.cs">
+      <DependentUpon>GetDataWhenUserClicks.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\QueryingFeatureLayers\GetTheFeaturesCount.aspx.cs">
+      <DependentUpon>GetTheFeaturesCount.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\QueryingFeatureLayers\GetTheFeaturesCount.aspx.designer.cs">
+      <DependentUpon>GetTheFeaturesCount.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\QueryingFeatureLayers\SpatialQueryAFeatureLayer.aspx.cs">
+      <DependentUpon>SpatialQueryAFeatureLayer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\QueryingFeatureLayers\SpatialQueryAFeatureLayer.aspx.designer.cs">
+      <DependentUpon>SpatialQueryAFeatureLayer.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\SatelliteImage\DisplayASatelliteImage.aspx.cs">
+      <DependentUpon>DisplayASatelliteImage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\SatelliteImage\DisplayASatelliteImage.aspx.designer.cs">
+      <DependentUpon>DisplayASatelliteImage.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\SatelliteImage\LoadAMrSidImage.aspx.cs">
+      <DependentUpon>LoadAMrSidImage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\SatelliteImage\LoadAMrSidImage.aspx.designer.cs">
+      <DependentUpon>LoadAMrSidImage.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\SatelliteImage\LoadAStandardImageWithWorldFile.aspx.cs">
+      <DependentUpon>LoadAStandardImageWithWorldFile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\SatelliteImage\LoadAStandardImageWithWorldFile.aspx.designer.cs">
+      <DependentUpon>LoadAStandardImageWithWorldFile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\ScreenWorldCoordinates\ConvertScreenCoordinatesToWorld.aspx.cs">
+      <DependentUpon>ConvertScreenCoordinatesToWorld.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\ScreenWorldCoordinates\ConvertScreenCoordinatesToWorld.aspx.designer.cs">
+      <DependentUpon>ConvertScreenCoordinatesToWorld.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\ScreenWorldCoordinates\ConvertWorldCoordinatesToScreen.aspx.cs">
+      <DependentUpon>ConvertWorldCoordinatesToScreen.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\ScreenWorldCoordinates\ConvertWorldCoordinatesToScreen.aspx.designer.cs">
+      <DependentUpon>ConvertWorldCoordinatesToScreen.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\ScreenWorldCoordinates\FindWorldCoordinatesAUserClicked.aspx.cs">
+      <DependentUpon>FindWorldCoordinatesAUserClicked.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\ScreenWorldCoordinates\FindWorldCoordinatesAUserClicked.aspx.designer.cs">
+      <DependentUpon>FindWorldCoordinatesAUserClicked.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\ScreenWorldCoordinates\GetTheDistanceBetweenTwoPointsClicked.aspx.cs">
+      <DependentUpon>GetTheDistanceBetweenTwoPointsClicked.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\ScreenWorldCoordinates\GetTheDistanceBetweenTwoPointsClicked.aspx.designer.cs">
+      <DependentUpon>GetTheDistanceBetweenTwoPointsClicked.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Styles\ChangeTheFillAndOutlineColor.aspx.cs">
+      <DependentUpon>ChangeTheFillAndOutlineColor.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Styles\ChangeTheFillAndOutlineColor.aspx.designer.cs">
+      <DependentUpon>ChangeTheFillAndOutlineColor.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Styles\ChangeTheWidthAndColorOfALine.aspx.cs">
+      <DependentUpon>ChangeTheWidthAndColorOfALine.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Styles\ChangeTheWidthAndColorOfALine.aspx.designer.cs">
+      <DependentUpon>ChangeTheWidthAndColorOfALine.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Styles\ConvertAGeoColorToAndFromOleWin32HtmlArgbColors.aspx.cs">
+      <DependentUpon>ConvertAGeoColorToAndFromOleWin32HtmlArgbColors.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Styles\ConvertAGeoColorToAndFromOleWin32HtmlArgbColors.aspx.designer.cs">
+      <DependentUpon>ConvertAGeoColorToAndFromOleWin32HtmlArgbColors.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Styles\DotDensityDrawingUsingNumericalData.aspx.cs">
+      <DependentUpon>DotDensityDrawingUsingNumericalData.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Styles\DotDensityDrawingUsingNumericalData.aspx.designer.cs">
+      <DependentUpon>DotDensityDrawingUsingNumericalData.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Styles\DrawAFeatureBasedOnAValue.aspx.cs">
+      <DependentUpon>DrawAFeatureBasedOnAValue.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Styles\DrawAFeatureBasedOnAValue.aspx.designer.cs">
+      <DependentUpon>DrawAFeatureBasedOnAValue.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Styles\DrawAPointUsingABitmap.aspx.cs">
+      <DependentUpon>DrawAPointUsingABitmap.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Styles\DrawAPointUsingABitmap.aspx.designer.cs">
+      <DependentUpon>DrawAPointUsingABitmap.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Styles\DrawAPointUsingASymbol.aspx.cs">
+      <DependentUpon>DrawAPointUsingASymbol.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Styles\DrawAPointUsingASymbol.aspx.designer.cs">
+      <DependentUpon>DrawAPointUsingASymbol.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Styles\DrawFeaturesBasedOnRegularExpression.aspx.cs">
+      <DependentUpon>DrawFeaturesBasedOnRegularExpression.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Styles\DrawFeaturesBasedOnRegularExpression.aspx.designer.cs">
+      <DependentUpon>DrawFeaturesBasedOnRegularExpression.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Styles\DrawFeaturesBasedOnValues.aspx.cs">
+      <DependentUpon>DrawFeaturesBasedOnValues.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Styles\DrawFeaturesBasedOnValues.aspx.designer.cs">
+      <DependentUpon>DrawFeaturesBasedOnValues.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Styles\DrawThematicFeatures.aspx.cs">
+      <DependentUpon>DrawThematicFeatures.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Styles\DrawThematicFeatures.aspx.designer.cs">
+      <DependentUpon>DrawThematicFeatures.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Styles\DrawUsingZedGraphStyle.aspx.cs">
+      <DependentUpon>DrawUsingZedGraphStyle.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Styles\DrawUsingZedGraphStyle.aspx.designer.cs">
+      <DependentUpon>DrawUsingZedGraphStyle.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Styles\GetAGroupOfColorsInHueFamily.aspx.cs">
+      <DependentUpon>GetAGroupOfColorsInHueFamily.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Styles\GetAGroupOfColorsInHueFamily.aspx.designer.cs">
+      <DependentUpon>GetAGroupOfColorsInHueFamily.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Styles\UseGeographicAndStandardColors.aspx.cs">
+      <DependentUpon>UseGeographicAndStandardColors.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Styles\UseGeographicAndStandardColors.aspx.designer.cs">
+      <DependentUpon>UseGeographicAndStandardColors.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\Styles\UsingPredefinedStyle.aspx.cs">
+      <DependentUpon>UsingPredefinedStyle.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\Styles\UsingPredefinedStyle.aspx.designer.cs">
+      <DependentUpon>UsingPredefinedStyle.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SyntaxHighlighter\csCode.aspx.cs">
+      <DependentUpon>csCode.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SyntaxHighlighter\csCode.aspx.designer.cs">
+      <DependentUpon>csCode.aspx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Helper\DescriptionPanel.htm" />
+    <Content Include="Source Code Not Available in Beta.html" />
+    <Content Include="SampleData\USA\Austin\austinstreets.dbf" />
+    <Content Include="SampleData\USA\Austin\austinstreets.ids" />
+    <Content Include="SampleData\USA\Austin\austinstreets.idx" />
+    <Content Include="SampleData\USA\Austin\austinstreets.shp" />
+    <Content Include="SampleData\USA\Austin\austinstreets.shx" />
+    <Content Include="SampleData\USA\cities_a.dbf" />
+    <Content Include="SampleData\USA\cities_a.ids" />
+    <Content Include="SampleData\USA\cities_a.idx" />
+    <Content Include="SampleData\USA\cities_a.shp" />
+    <Content Include="SampleData\USA\cities_a.shx" />
+    <Content Include="SampleData\USA\STATES.DBF" />
+    <Content Include="SampleData\USA\STATES.ids" />
+    <Content Include="SampleData\USA\STATES.idx" />
+    <Content Include="SampleData\USA\STATES.SHP" />
+    <Content Include="SampleData\USA\STATES.SHX" />
+    <Content Include="SampleData\World\cntry02.dbf" />
+    <Content Include="SampleData\World\cntry02.ids" />
+    <Content Include="SampleData\World\cntry02.shp" />
+    <Content Include="SampleData\World\cntry02.shx" />
+    <Content Include="Samples\Features\MoveAFeature.aspx" />
+    <Content Include="Samples\GettingStarted\DisplayASimpleMap.aspx" />
+    <Content Include="Samples\MapShapes\DrawEditShapes.aspx" />
+    <Content Include="Samples\GettingStarted\SetBackgroundColor.aspx" />
+    <Content Include="Samples\ScreenWorldCoordinates\GetTheDistanceBetweenTwoPointsClicked.aspx" />
+    <Content Include="Samples\Styles\ConvertAGeoColorToAndFromOleWin32HtmlArgbColors.aspx" />
+    <Content Include="Samples\Styles\DrawAFeatureBasedOnAValue.aspx" />
+    <Content Include="Samples\Styles\DrawAPointUsingABitmap.aspx" />
+    <Content Include="Samples\Styles\DrawAPointUsingASymbol.aspx" />
+    <Content Include="Samples\Styles\DrawFeaturesBasedOnValues.aspx" />
+    <Content Include="Samples\Styles\DrawThematicFeatures.aspx" />
+    <Content Include="Samples\Styles\UseGeographicAndStandardColors.aspx" />
+    <Content Include="SyntaxHighlighter\csCode.aspx" />
+    <Content Include="SyntaxHighlighter\shBrushCSharp.js" />
+    <Content Include="SyntaxHighlighter\shBrushXml.js" />
+    <Content Include="SyntaxHighlighter\shCore.js" />
+    <Content Include="SyntaxHighlighter\SyntaxHighlighter.css" />
+    <Content Include="theme\default\samplepic\frame\bg.png" />
+    <Content Include="theme\default\samplepic\frame\dbottom.png" />
+    <Content Include="theme\default\samplepic\frame\dcontent.png" />
+    <Content Include="theme\default\samplepic\frame\dhide.png" />
+    <Content Include="theme\default\samplepic\frame\dhidebg.png" />
+    <Content Include="theme\default\samplepic\frame\dshow.png" />
+    <Content Include="theme\default\samplepic\frame\dtop.png" />
+    <Content Include="theme\default\samplepic\frame\Stage_BG_top.png" />
+    <Content Include="theme\default\samplepic\Industrial.png" />
+    <Content Include="theme\default\samplepic\Print Map.png" />
+    <Content Include="Toggle.htm" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Banner.aspx" />
+    <Content Include="Header.htm" />
+    <Content Include="SampleData\USA\UtahWater.dbf" />
+    <Content Include="SampleData\USA\UtahWater.ids" />
+    <Content Include="SampleData\USA\UtahWater.idx" />
+    <Content Include="SampleData\USA\UtahWater.shp" />
+    <Content Include="SampleData\USA\UtahWater.shx" />
+    <Content Include="SampleData\World\capital.idx" />
+    <Content Include="SampleData\World\cntry02.idx" />
+    <Content Include="Content.aspx" />
+    <Content Include="Helper\DescriptionPanel.js" />
+    <Content Include="Navigation.aspx" />
+    <Content Include="SampleData\World\capital.dbf" />
+    <Content Include="SampleData\World\capital.ids" />
+    <Content Include="SampleData\World\capital.shp" />
+    <Content Include="SampleData\World\capital.shx" />
+    <Content Include="Samples\DataProviders\LoadAMapFromStreams.aspx" />
+    <Content Include="Samples\Extending MapSuite\AddAdditionalCustomPropertiesAndMethods.aspx" />
+    <Content Include="Samples\Features\AreaOfAFeature.aspx" />
+    <Content Include="Samples\Features\BufferAFeature.aspx" />
+    <Content Include="Samples\Features\ConvertToFromWKB.aspx" />
+    <Content Include="Samples\Features\ConvertToFromWKT.aspx" />
+    <Content Include="Samples\Features\DistanceBetweenTwoPoints.aspx" />
+    <Content Include="Samples\Features\EnvelopeOfAFeature.aspx" />
+    <Content Include="Samples\Features\FindDifferenceOfTwoFeatures.aspx" />
+    <Content Include="Samples\Features\FindFeatureById.aspx" />
+    <Content Include="Samples\Features\LengthOfAFeature.aspx" />
+    <Content Include="Samples\Features\ScaleFeatureUpAndDown.aspx" />
+    <Content Include="Samples\Features\ShortestLineBetweenFeatures.aspx" />
+    <Content Include="Samples\Features\UnionTwoFeatures.aspx" />
+    <Content Include="Samples\GettingStarted\AddAClickEvent.aspx" />
+    <Content Include="Samples\GettingStarted\AddAContextMenu.aspx" />
+    <Content Include="Samples\GettingStarted\AddAMarker.aspx" />
+    <Content Include="Samples\GettingStarted\AddAPopup.aspx" />
+    <Content Include="Samples\GettingStarted\ChangeTheCursorStyle.aspx" />
+    <Content Include="Samples\GettingStarted\FindTheFeatureTheUserClicked.aspx" />
+    <Content Include="Samples\GettingStarted\PlotAPointUsingLatAndLong.aspx" />
+    <Content Include="Samples\GettingStarted\PrintAMap.aspx" />
+    <Content Include="Samples\Labeling\ChangePointLabelPlacement.aspx" />
+    <Content Include="Samples\Labeling\LabelNiceLookingRoads.aspx" />
+    <Content Include="Samples\Labeling\LabelPointsOfInterest.aspx" />
+    <Content Include="Samples\Labeling\LabelWaterFeature.aspx" />
+    <Content Include="Samples\Markers\ClickEventOnAMarker.aspx" />
+    <Content Include="Samples\Markers\LabelAndRotateAMarker.aspx" />
+    <Content Include="Samples\Markers\SetTheHoverPopupOfAMarker.aspx" />
+    <Content Include="Samples\Markers\SetTheZoomLevelsOnAMarker.aspx" />
+    <Content Include="Samples\NavigateTheMap\MiniMap.aspx" />
+    <Content Include="Samples\NavigateTheMap\PanTheMap.aspx" />
+    <Content Include="Samples\NavigateTheMap\TrackZoomIn.aspx" />
+    <Content Include="Samples\NavigateTheMap\ZoomInAndOut.aspx" />
+    <Content Include="Samples\NavigateTheMap\ZoomToAClickedFeature.aspx" />
+    <Content Include="Samples\NavigateTheMap\ZoomToSetOfFeatures.aspx" />
+    <Content Include="Samples\SatelliteImage\DisplayASatelliteImage.aspx" />
+    <Content Include="Samples\SatelliteImage\LoadAMrSidImage.aspx" />
+    <Content Include="Samples\SatelliteImage\LoadAStandardImageWithWorldFile.aspx" />
+    <Content Include="Samples\ScreenWorldCoordinates\ConvertScreenCoordinatesToWorld.aspx" />
+    <Content Include="Samples\ScreenWorldCoordinates\ConvertWorldCoordinatesToScreen.aspx" />
+    <Content Include="Samples\ScreenWorldCoordinates\FindWorldCoordinatesAUserClicked.aspx" />
+    <Content Include="Samples\Styles\ChangeTheFillAndOutlineColor.aspx" />
+    <Content Include="Samples\Styles\ChangeTheWidthAndColorOfALine.aspx" />
+    <Content Include="Samples\Styles\DotDensityDrawingUsingNumericalData.aspx" />
+    <Content Include="Samples\Styles\DrawFeaturesBasedOnRegularExpression.aspx" />
+    <Content Include="Samples\Styles\DrawUsingZedGraphStyle.aspx" />
+    <Content Include="Samples\Styles\GetAGroupOfColorsInHueFamily.aspx" />
+    <Content Include="Samples\Styles\UsingPredefinedStyle.aspx" />
+    <Content Include="theme\default\samplepic\bannerad_offline.png" />
+    <Content Include="theme\default\samplepic\city.png" />
+    <Content Include="theme\default\samplepic\collapse.gif" />
+    <Content Include="theme\default\samplepic\lawrencecity.jpg" />
+    <Content Include="theme\default\samplepic\map_suite_web_samples_header.png" />
+    <Content Include="theme\default\samplepic\map_suite_web_samples_header_bkg.jpg" />
+    <Content Include="theme\default\samplepic\yellowcircle.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SampleData\World\PhValues.grd" />
+    <Content Include="SampleData\World\sampleph.dbf" />
+    <Content Include="SampleData\World\sampleph.ids" />
+    <Content Include="SampleData\World\sampleph.idx" />
+    <Content Include="SampleData\World\sampleph.shp" />
+    <Content Include="SampleData\World\sampleph.shx" />
+    <Content Include="SampleData\World\World.tif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SampleData\World\World.ecw" />
+    <Content Include="SampleData\World\World.eww" />
+    <Content Include="SampleData\World\World.sdw" />
+    <Content Include="SampleData\World\World.sid" />
+    <Content Include="SampleData\World\World.tfw" />
+    <Content Include="Samples\GettingStarted\UsingMasterPage.aspx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SampleData\World\JORWD6gdb.mdb">
+    </Content>
+    <Content Include="Samples\DataProviders\CreateAnInMemoryFeatureLayer.aspx" />
+    <Content Include="Samples\DataProviders\CreateASpatialIndexForAShapeFileFeatureLayer.aspx" />
+    <Content Include="Samples\DataProviders\LoadAGridFileFeatureLayer.aspx" />
+    <Content Include="Samples\DataProviders\LoadAMSSQL2008FeatureLayer.aspx" />
+    <Content Include="Samples\DataProviders\LoadAnOracleFeatureLayer.aspx" />
+    <Content Include="Samples\DataProviders\LoadAPostgreSQLFeatureLayer.aspx" />
+    <Content Include="Samples\DataProviders\LoadAShapeFileFeatureLayer.aspx" />
+    <Content Include="Samples\DataProviders\LoadWfsFeatureLayer.aspx" />
+    <Content Include="Samples\Extending MapSuite\DrawUsingFleeBooleanStyle.aspx" />
+    <Content Include="Samples\Extending MapSuite\LoadGeoDatabaseFeatureLayer.aspx" />
+    <Content Include="Samples\Extending MapSuite\LoadSdfFeatureLayer.aspx" />
+    <Content Include="Samples\Extending MapSuite\LoadTabFileFeatureLayer.aspx" />
+    <Content Include="Samples\Extending MapSuite\UseMicrosoftMapsLayer.aspx" />
+    <Content Include="Samples\Extending MapSuite\UsePdfExtension.aspx" />
+    <Content Include="Samples\FeatureLayers\AddMyOwnCustomDataToAFeatureLayer.aspx" />
+    <Content Include="Samples\FeatureLayers\DisplayLayersAtDifferentScales.aspx" />
+    <Content Include="Samples\FeatureLayers\StopCertainFeaturesFromDrawing.aspx" />
+    <Content Include="Samples\FeatureLayers\UsingPredefinedStyles.aspx" />
+    <Content Include="Samples\Features\UseMapSimplification.aspx" />
+    <Content Include="Samples\GettingStarted\AddVariousMapTools.aspx" />
+    <Content Include="Samples\GettingStarted\ChangeLoadingImage.aspx" />
+    <Content Include="Samples\GettingStarted\cursor.cur" />
+    <Content Include="Samples\GettingStarted\loading.gif" />
+    <Content Include="Samples\GettingStarted\SetImageFormatAndQuality.aspx" />
+    <Content Include="Samples\GettingStarted\Site1.Master" />
+    <Content Include="Samples\Labeling\DrawCurvedLabels.aspx" />
+    <Content Include="Samples\MapShapes\ChangeEditSettings.aspx" />
+    <Content Include="Samples\MapShapes\TrackShapeFinishedEvent.aspx" />
+    <Content Include="Samples\Markers\AddProjectedMarkers.aspx" />
+    <Content Include="Samples\Markers\MarkerWithContextMenu.aspx" />
+    <Content Include="Samples\Markers\UseDraggableMarkers.aspx" />
+    <Content Include="Samples\NavigateTheMap\CreateARestrictionLayer.aspx" />
+    <Content Include="Samples\NavigateTheMap\CreateAScaleLineAdornmentLayer.aspx" />
+    <Content Include="Samples\NavigateTheMap\ExtentChangedEvent.aspx" />
+    <Content Include="Samples\NavigateTheMap\KeyboardMapTool.aspx" />
+    <Content Include="Samples\NavigateTheMap\NavigationHistory.aspx" />
+    <Content Include="Samples\NavigateTheMap\RestrictedExtent.aspx" />
+    <Content Include="Samples\NavigateTheMap\ZoomLevelsLessThan20.aspx" />
+    <Content Include="Samples\Overlays\AddClickEventToHighlightOverlay.aspx" />
+    <Content Include="Samples\Overlays\AddContextMenuToHighlightOverlay.aspx" />
+    <Content Include="Samples\Overlays\BaseOverlayChangedEvent.aspx" />
+    <Content Include="Samples\Overlays\HighlightFeaturesWhileHovering.aspx" />
+    <Content Include="Samples\Overlays\LoadAWmsOverlay.aspx" />
+    <Content Include="Samples\Overlays\OnOverlaysDrawingClientEvent.aspx" />
+    <Content Include="Samples\Overlays\ShapeFilesOverGoogleMap.aspx" />
+    <Content Include="Samples\Overlays\UseGoogleMap.aspx" />
+    <Content Include="Samples\Projection\UseADifferentProjectionForAFeatureLayer.aspx" />
+    <Content Include="Samples\Projection\UseRotationProjectionForAFeatureLayer.aspx" />
+    <Content Include="Samples\QueryingFeatureLayers\ExecuteASqlQuery.aspx" />
+    <Content Include="Samples\QueryingFeatureLayers\FindFeaturesWithinDistance.aspx" />
+    <Content Include="Samples\QueryingFeatureLayers\GetAllTheFeatures.aspx" />
+    <Content Include="Samples\QueryingFeatureLayers\GetColumnData.aspx" />
+    <Content Include="Samples\QueryingFeatureLayers\GetDataWhenUserClicks.aspx" />
+    <Content Include="Samples\QueryingFeatureLayers\GetTheFeaturesCount.aspx" />
+    <Content Include="Samples\QueryingFeatureLayers\SpatialQueryAFeatureLayer.aspx" />
+    <Content Include="theme\default\samplepic\circle.png" />
+    <Content Include="theme\default\samplepic\MapView.JPG" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SampleData\USA\United States.png" />
+    <Content Include="SampleData\World\HoustonMuniBdySamp_Boundary.DAT" />
+    <Content Include="SampleData\World\HoustonMuniBdySamp_Boundary.ID" />
+    <Content Include="SampleData\World\HoustonMuniBdySamp_Boundary.IND" />
+    <Content Include="SampleData\World\HoustonMuniBdySamp_Boundary.MAP" />
+    <Content Include="SampleData\World\HoustonMuniBdySamp_Boundary.TAB" />
+    <Content Include="SampleData\World\JORWD6gdb.ldb" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SampleData\World\HoustonMuniBdySamp_Boundary.ids" />
+    <Content Include="SampleData\World\HoustonMuniBdySamp_Boundary.idx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SampleData\USA\quksigx020.dbf" />
+    <Content Include="SampleData\USA\quksigx020.ids" />
+    <Content Include="SampleData\USA\quksigx020.idx" />
+    <Content Include="SampleData\USA\quksigx020.shp" />
+    <Content Include="SampleData\USA\quksigx020.shx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SampleData\World\cntry02_3857.dbf" />
+    <Content Include="SampleData\World\cntry02_3857.ids" />
+    <Content Include="SampleData\World\cntry02_3857.idx" />
+    <Content Include="SampleData\World\cntry02_3857.shp" />
+    <Content Include="SampleData\World\cntry02_3857.shx" />
+    <None Include="packages.config" />
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>56990</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:56990/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <Import Project="..\packages\MapSuiteDependency-Fdo.10.5.0\build\net45\MapSuiteDependency-Fdo.targets" Condition="Exists('..\packages\MapSuiteDependency-Fdo.10.5.0\build\net45\MapSuiteDependency-Fdo.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\MapSuiteDependency-Fdo.10.5.0\build\net45\MapSuiteDependency-Fdo.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MapSuiteDependency-Fdo.10.5.0\build\net45\MapSuiteDependency-Fdo.targets'))" />
+    <Error Condition="!Exists('..\packages\MapSuiteDependency-HexagonGeospatialEcw.10.5.0\build\net45\MapSuiteDependency-HexagonGeospatialEcw.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MapSuiteDependency-HexagonGeospatialEcw.10.5.0\build\net45\MapSuiteDependency-HexagonGeospatialEcw.targets'))" />
+    <Error Condition="!Exists('..\packages\MapSuiteDependency-LizardTechMrSid.10.5.0\build\net45\MapSuiteDependency-LizardTechMrSid.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MapSuiteDependency-LizardTechMrSid.10.5.0\build\net45\MapSuiteDependency-LizardTechMrSid.targets'))" />
+    <Error Condition="!Exists('..\packages\MapSuiteDependency-Oracle.10.5.0\build\net45\MapSuiteDependency-Oracle.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MapSuiteDependency-Oracle.10.5.0\build\net45\MapSuiteDependency-Oracle.targets'))" />
+    <Error Condition="!Exists('..\packages\MapSuiteDependency-SkiaSharp.10.5.0\build\net45\MapSuiteDependency-SkiaSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MapSuiteDependency-SkiaSharp.10.5.0\build\net45\MapSuiteDependency-SkiaSharp.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.10.5.1\build\net45\ThinkGeo.MapSuite.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.10.5.1\build\net45\ThinkGeo.MapSuite.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.Layers.Ecw.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Ecw.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.Layers.Ecw.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Ecw.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.Layers.FdoVector.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.FdoVector.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.Layers.FdoVector.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.FdoVector.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.Layers.MrSid.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.MrSid.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.Layers.MrSid.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.MrSid.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.Layers.Oracle.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Oracle.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.Layers.Oracle.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Oracle.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.Layers.Sdf.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Sdf.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.Layers.Sdf.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Sdf.targets'))" />
+  </Target>
+  <Import Project="..\packages\MapSuiteDependency-HexagonGeospatialEcw.10.5.0\build\net45\MapSuiteDependency-HexagonGeospatialEcw.targets" Condition="Exists('..\packages\MapSuiteDependency-HexagonGeospatialEcw.10.5.0\build\net45\MapSuiteDependency-HexagonGeospatialEcw.targets')" />
+  <Import Project="..\packages\MapSuiteDependency-LizardTechMrSid.10.5.0\build\net45\MapSuiteDependency-LizardTechMrSid.targets" Condition="Exists('..\packages\MapSuiteDependency-LizardTechMrSid.10.5.0\build\net45\MapSuiteDependency-LizardTechMrSid.targets')" />
+  <Import Project="..\packages\MapSuiteDependency-Oracle.10.5.0\build\net45\MapSuiteDependency-Oracle.targets" Condition="Exists('..\packages\MapSuiteDependency-Oracle.10.5.0\build\net45\MapSuiteDependency-Oracle.targets')" />
+  <Import Project="..\packages\MapSuiteDependency-SkiaSharp.10.5.0\build\net45\MapSuiteDependency-SkiaSharp.targets" Condition="Exists('..\packages\MapSuiteDependency-SkiaSharp.10.5.0\build\net45\MapSuiteDependency-SkiaSharp.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.10.5.1\build\net45\ThinkGeo.MapSuite.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.10.5.1\build\net45\ThinkGeo.MapSuite.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.Layers.Ecw.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Ecw.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.Layers.Ecw.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Ecw.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.Layers.FdoVector.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.FdoVector.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.Layers.FdoVector.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.FdoVector.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.Layers.MrSid.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.MrSid.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.Layers.MrSid.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.MrSid.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.Layers.Oracle.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Oracle.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.Layers.Oracle.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Oracle.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.Layers.Sdf.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Sdf.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.Layers.Sdf.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Sdf.targets')" />
+</Project>

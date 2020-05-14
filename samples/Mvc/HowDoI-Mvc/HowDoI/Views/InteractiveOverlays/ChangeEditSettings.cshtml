@@ -1,0 +1,62 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Configuration;
+<script language="javascript" type="text/javascript">
+    function updateEditSetting() {
+        var isRotate = document.getElementById("cbxRotate").checked;
+        var isResize = document.getElementById("cbxResize").checked;
+        var isReshape = document.getElementById("cbxReshape").checked;
+        var isDrag = document.getElementById("cbxDrag").checked;
+
+        var setting = 0;
+        if (isRotate) setting |= EditSettings.Rotate;
+        if (isResize) setting |= EditSettings.Resize;
+        if (isReshape) setting |= EditSettings.Reshape;
+        if (isDrag) setting |= EditSettings.Drag;
+
+        Map1.setEditSetting(setting);
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Check the check boxes below and click the shape to see how they affect the shape
+            editing.
+            <br />
+            <br />
+            Edit Settings:<br />
+            <div>
+                <input type="checkbox" id="cbxRotate" name="checkBoxRotate" value="ROTATE" onchange="updateEditSetting();" />Rotatable<br />
+                <input type="checkbox" id="cbxResize" name="checkBoxResize" value="RESIZE" onchange="updateEditSetting()" />Resizable<br />
+                <input type="checkbox" id="cbxReshape" name="checkBoxReshape" value="RESHAPE" onchange="updateEditSetting();" />Reshapable<br />
+                <input type="checkbox" id="cbxDrag" name="checkBoxDrag" value="DRAG" onchange="updateEditSetting();" />Draggable
+            </div>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .MapUnit(GeographyUnit.Meter)
+                .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+                .CurrentExtent(-6901808.42918296, 16213801.067584, 12690421.9504332, -3763310.62714465)
+                .CustomOverlays(overlays =>
+                {
+                    // Please input your ThinkGeo Cloud API Key to enable the background map.
+                    overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+                })
+                .EditOverlay(eo =>
+                {
+                    eo.Feature(new Feature(new RectangleShape(-1113194.90793274, 6446275.84101716, 6679169.44759641, 1118889.97485796)));
+                })
+                .Render();
+        }
+    </div>
+</div>

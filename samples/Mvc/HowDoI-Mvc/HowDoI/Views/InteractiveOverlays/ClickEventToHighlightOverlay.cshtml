@@ -1,0 +1,34 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Configuration;
+
+@model ThinkGeo.MapSuite.Mvc.Map
+
+<script language="javascript" type="text/javascript">
+    function highlightOverlayClick(e) {
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'ClickEvent', { x: e.worldXY.lon, y: e.worldXY.lat }, function () {
+            Map1.sendPopupsRequest();
+        })
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Click on the rectangle to show a popup.
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map((ThinkGeo.MapSuite.Mvc.Map)Model)
+                .HighlightOverlay(hl => { hl.OnClientClick("highlightOverlayClick"); })
+                .Render();
+        }
+    </div>
+</div>

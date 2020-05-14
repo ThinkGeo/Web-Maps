@@ -1,0 +1,145 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                Select a number of items from the list below to show them on the map.
+            </p>
+            <select id="lsbControls" multiple="multiple" onchange="lsbControlsChange(this);">
+                <option value="PanZoom">PanZoom</option>
+                <option value="PanZoomBar">PanZoomBar</option>
+                <option value="MouseCoordinateLonLat">MouseCoordinate(LonLat)</option>
+                <option value="MouseCoordinateLatLon">MouseCoordinate(LatLon)</option>
+                <option value="MouseCoordinateDms">MouseCoordinate(Dms)</option>
+                <option value="MiniMap">MiniMap</option>
+                <option value="ScaleLine">ScaleLine</option>
+                <option value="OverlaySwitcher">OverlaySwitcher</option>
+            </select>
+            <br />
+            <br />
+            <input type="button" id="btnSelectAll" style="width: 88px;" value="Select All" onclick="checkAll('selected')" />
+            <input type="button" id="btnNoSelect" style="width: 88px;" value="Unselect All" onclick="checkAll('')" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .MapUnit(GeographyUnit.Meter)
+                .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+                .CurrentExtent(-14607343.5818934, 7371576.14679691, -6014592.08756057, 1910351.0222467)
+                .CustomOverlays(overlays =>
+                {
+                    // Please input your ThinkGeo Cloud API Key to enable the background map.
+                    overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+                })
+                .MapTools(tools =>
+                {
+                    tools.PanZoomBarMapTool().Enabled(false);
+                })
+                .Render();}
+    </div>
+</div>
+<script src="../../Scripts/Plugins/MapTools.js" type="text/javascript"></script>
+<script language="javascript" type="text/javascript">
+    function lsbControlsChange(listObj) {
+        var tools = new MapTools(Map1);
+
+        for (var i = 0; i < listObj.options.length; i++) {
+            switch (i) {
+                case 0:
+                    if (listObj.options[i].selected)
+                        Map1.addControl(tools.createPanZoom());
+                    else
+                        removeMapTool("OpenLayers.Control.PanZoom");
+                    break;
+                case 1:
+                    if (listObj.options[i].selected)
+                        Map1.addControl(tools.createPanZoomBar());
+                    else
+                        removeMapTool("OpenLayers.Control.PanZoomBar");
+                    break;
+                case 2:
+                    if (listObj.options[i].selected) {
+                        Map1.addControl(tools.createMouseCoordinateMapTool(MouseCoordinateType.lonlat));
+                    } else
+                        removeMapTool("OpenLayers.Control.MousePosition", MouseCoordinateType.lonlat);
+                    break;
+                case 3:
+                    if (listObj.options[i].selected) {
+                        Map1.addControl(tools.createMouseCoordinateMapTool(MouseCoordinateType.dmsLatLon));
+                    } else
+                        removeMapTool("OpenLayers.Control.MousePosition", MouseCoordinateType.dmsLatLon);
+                    break;
+                case 4:
+                    if (listObj.options[i].selected) {
+                        Map1.addControl(tools.createMouseCoordinateMapTool(MouseCoordinateType.dms));
+                    } else
+                        removeMapTool("OpenLayers.Control.MousePosition", MouseCoordinateType.dms);
+                    break;
+                case 5:
+                    if (listObj.options[i].selected)
+                        Map1.addControl(tools.createMiniMap());
+                    else
+                        removeMapTool("OpenLayers.Control.OverviewMap");
+                    break;
+                case 6:
+                    if (listObj.options[i].selected)
+                        Map1.addControl(tools.createScaleLine());
+                    else
+                        removeMapTool("OpenLayers.Control.ScaleLine");
+                    break;
+                case 7:
+                    if (listObj.options[i].selected) {
+                        var switcher = tools.createOverlaySwitcher();
+                        switcher.setMap(Map1);
+                        Map1.addControl(switcher);
+                        //Map1.addControl(tools.createOverlaySwitcher());
+
+                    }
+                    else
+                        removeMapTool("OpenLayers.Control.LayerSwitcher");
+                default: break;
+            }
+        }
+    }
+
+    function createMapTool(class_name, coordinateType) {
+        var mapTool = eval('new ' + class_name + '()');
+        if (coordinateType) {
+            mapTool.showType = coordinateType;
+        }
+
+        Map1.addControl(mapTool);
+    }
+
+    function removeMapTool(class_name, coordinateType) {
+        var mapTool = Map1.getControlsByClass(class_name);
+        if (mapTool.length > 0) {
+            if (coordinateType) {
+                if (mapTool[0].showType == coordinateType) {
+                    Map1.removeControl(mapTool[0]);
+                }
+            }
+            else {
+                Map1.removeControl(mapTool[0]);
+            }
+        }
+    }
+
+    function checkAll(selected) {
+        var listObj = document.getElementById("lsbControls");
+        for (var i = 0; i < listObj.options.length; i++) {
+            listObj.options[i].selected = selected;
+        }
+
+        lsbControlsChange(listObj);
+    }
+</script>

@@ -1,0 +1,58 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<script language="javascript" type="text/javascript">
+    function mapClick(e) {
+         Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'GetLengthOfFeature', { x: e.worldXY.lon, y: e.worldXY.lat }, function () {
+            Map1.redrawLayer(Map1.getDynamicOverlay().id);
+            Map1.sendPopupsRequest();
+        })
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Click on a street to show its length.
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    @{
+        Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+            .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+            .CurrentExtent(-97.766, 30.291, -97.755, 30.286)
+            .MapUnit(GeographyUnit.DecimalDegree)
+            .StaticOverlay(overlay =>
+            {
+                ShapeFileFeatureLayer roadLayer = new ShapeFileFeatureLayer(Server.MapPath(@"~\App_Data\austinstreets.shp"));
+                roadLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = LineStyles.CreateSimpleLineStyle(GeoColor.StandardColors.White, 9.2F, GeoColor.StandardColors.DarkGray, 12.2F, true);
+                roadLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                overlay.Layer("RoadLayer", roadLayer);
+            })
+            .DynamicOverlay(overlay =>
+            {
+                ShapeFileFeatureLayer roadLabelLayer = new ShapeFileFeatureLayer(Server.MapPath(@"~\App_Data\austinstreets.shp"));
+                roadLabelLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = TextStyles.CreateSimpleTextStyle("FENAME", "Arial", 9, DrawingFontStyles.Regular, GeoColor.StandardColors.Black, 0, 0);
+                roadLabelLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                InMemoryFeatureLayer streetLayer = new InMemoryFeatureLayer();
+                streetLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = LineStyles.CreateSimpleLineStyle(GeoColor.StandardColors.White, 9.2F, GeoColor.StandardColors.DarkGray, 12.2F, true);
+                streetLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle.InnerPen.Color = GeoColor.FromArgb(20, 60, 180, 60);
+                streetLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle.OuterPen.Color = GeoColor.GeographicColors.DeepOcean;
+                streetLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                overlay.Layer("StreetLayer", streetLayer).Layer("RoadLabelLayer", roadLabelLayer);
+            })
+            .Popups(popups =>
+            {
+                popups.CloudPopup("information").AutoSize(true).IsVisible(false);
+            })
+            .OnClientClick("mapClick")
+            .Render();
+    }
+</div> 

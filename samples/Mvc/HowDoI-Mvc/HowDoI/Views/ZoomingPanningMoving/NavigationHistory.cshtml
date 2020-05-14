@@ -1,0 +1,35 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using ThinkGeo.MapSuite.Mvc
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Navigate the map and click the buttons below to revert extent or toggle
+            extent.
+            <br />
+            <br />
+            <input id="btnPre" style="width:180px;" type="button" value="To Previous Extent" onclick="Map1.zoomToPreviousExtent();" />
+            <input id="btnNext" style="width:180px;" type="button" value="To Next Extent" onclick="Map1.zoomToNextExtent();" /><br />
+            <input id="btnToggle" style="width:180px;" type="button" value="Toggle Extent" onclick="Map1.toggleExtent();" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                    .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                    .MapUnit(GeographyUnit.Meter)
+                    .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+                    .CurrentExtent(-14607343.5818934, 7371576.14679691, -6014592.08756057, 1910351.0222467)
+                    .CustomOverlays(overlay =>{
+                      // Please input your ThinkGeo Cloud API Key to enable the background map.
+                      overlay.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+                    })
+                    .Render();
+        }
+    </div>
+</div>

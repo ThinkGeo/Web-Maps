@@ -1,0 +1,54 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<script language="javascript" type="text/javascript">
+    function btnUnion_Click() {
+        Map1.ajaxCallAction("InteractiveOverlays", "MergeFeature", null, callback);
+    }
+    function callback(result) {
+        Map1.redrawLayer("OverLayer");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Click the button to union the two features.
+            <br />
+            <input type="button" id="btnUnion" name="btnUnion" value="Union" onclick="btnUnion_Click();" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    @{
+        Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+            .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+            .MapUnit(GeographyUnit.Meter)
+            .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+            .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+            .CustomOverlays(overlays =>
+            {
+                // Please input your ThinkGeo Cloud API Key to enable the background map.
+                overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+                InMemoryFeatureLayer mapShapeLayer = new InMemoryFeatureLayer();
+                mapShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoSolidBrush(new GeoColor(50, 100, 100, 200)));
+                mapShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColor.StandardColors.RoyalBlue;
+                mapShapeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                BaseShape areaShape1 = new RectangleShape(-4452779.63173094, 4865942.27950318, 0, 0);
+                areaShape1.Id = "AreaShape1";
+                BaseShape areaShape2 = new RectangleShape(-2226389.81586547, 11068715.6593795, 3339584.72379821, 2273030.92698769);
+                areaShape2.Id = "AreaShape2";
+                mapShapeLayer.InternalFeatures.Add("AreaShape1", new Feature(areaShape1));
+                mapShapeLayer.InternalFeatures.Add("AreaShape2", new Feature(areaShape2));
+
+                overlays.LayerOverlay("OverLayer").TileType(TileType.SingleTile).IsBaseOverlay(false).Layer("InMemoryFeatureLayer", mapShapeLayer);
+
+            })
+            .Render();
+    }
+</div>

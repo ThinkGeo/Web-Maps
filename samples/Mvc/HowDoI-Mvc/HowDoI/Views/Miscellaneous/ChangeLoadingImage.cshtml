@@ -1,0 +1,35 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using ThinkGeo.MapSuite.Mvc
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            This sample uses a custom loading image when zoom in/out.
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760).MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .MapUnit(GeographyUnit.Meter)
+                .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+                .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+                .CustomOverlays(overlay =>
+                {
+                    // Please input your ThinkGeo Cloud API Key to enable the background map.
+                    overlay.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+                })
+                .MapTools(mapTools =>
+                {
+                    mapTools.LoadingImageMapTool().Enabled(true).Width(64).Height(64)
+                        .ImageUri(new Uri(new Uri(Request.Url.AbsoluteUri), "../../Content/Images/loading.gif"));
+                }
+                ).Render();
+        }
+    </div>
+</div>

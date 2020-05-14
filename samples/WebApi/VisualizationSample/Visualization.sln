@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visualization_Leaflet", "Leaflet\Visualization_Leaflet.csproj", "{02BEB1C5-C05D-4E93-B64A-D985D456A171}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visualization_OpenLayers", "OpenLayers\Visualization_OpenLayers.csproj", "{DADFA001-C7DC-400A-AA4F-6A04B3D7522D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{02BEB1C5-C05D-4E93-B64A-D985D456A171}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02BEB1C5-C05D-4E93-B64A-D985D456A171}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02BEB1C5-C05D-4E93-B64A-D985D456A171}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02BEB1C5-C05D-4E93-B64A-D985D456A171}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DADFA001-C7DC-400A-AA4F-6A04B3D7522D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DADFA001-C7DC-400A-AA4F-6A04B3D7522D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DADFA001-C7DC-400A-AA4F-6A04B3D7522D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DADFA001-C7DC-400A-AA4F-6A04B3D7522D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

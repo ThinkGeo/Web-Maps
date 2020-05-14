@@ -1,0 +1,105 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc;
+<style type="text/css">
+    html
+    {
+        height: 100%;
+    }
+    .descContent
+    {
+        font-family: :Verdana;
+        font-size: 11px;
+    }
+    input
+    {
+        margin: 3px;
+    }
+</style>
+<script language="javascript" type="text/javascript">
+    function changeRestrictionStyle(optionObj) {
+        var style = optionObj.value;
+
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'SetRestrictionStyle', { 'style': style }, mapCallback);
+    }
+
+    function showOrHideZones(optionObj) {
+        if (optionObj) {
+            Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'ShowZones', null, mapCallback);
+        }
+        else {
+            Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'HideZones', null, mapCallback);
+        }
+    }
+
+    function mapCallback(result) {
+        Map1.redrawLayer("StaticOverlay");
+        if (result.get_responseData()) {
+            document.getElementById("lbInfomation").innerHTML = result.get_responseData();
+        }
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <table border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td>
+                        Select the Restriction Style
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <select id="ddlRestrictionStyle" name="ddlRestrictionStyle" size="18" style="width: 200px;" onchange="changeRestrictionStyle(this);">
+                            <option value="HatchPattern" selected="selected">HatchPattern</option>
+                            <option value="UseCustomStyles">UseCustomStyles</option>
+                            <option value="CircleWithSlashImage">CircleWithSlashImage</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="radio" class="descContent" id="radShowZones" checked="checked" value="Show Zones"
+                            name="zones" onclick="showOrHideZones(true);" />Show Zones
+                        <input type="radio" class="descContent" id="radHideZones" value="Hide Zones" name="zones"
+                            onclick="showOrHideZones(false);" />Hide Zones
+                    </td>
+                </tr>
+                <tr>
+                    <td id="lbInfomation">
+                        You can see only Africa because we have added a RestrictionLayer and its mode is
+                        ShowZones.
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main"> <div id="map">
+@{
+    Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+        .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+        .MapUnit(GeographyUnit.Meter)
+        .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+        .CurrentExtent(-7124447.41076951, 7967317.53501591, 12467782.9688466, -8180386.88593525)
+        .CustomOverlays(overlays => 
+        {
+            // Please input your ThinkGeo Cloud API Key to enable the background map.
+            overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+        })
+        .CustomOverlays(overlays =>
+        {
+            RestrictionLayer restrictionLayer = new RestrictionLayer();
+            restrictionLayer.Zones.Add(new RectangleShape(-1967015.40231714, 4440500.74996535, 6681395.83741228, -4120479.00794152));
+            restrictionLayer.RestrictionMode = RestrictionMode.ShowZones;
+            restrictionLayer.UpperScale = 250000000;
+
+            overlays.LayerOverlay("StaticOverlay").IsBaseOverlay(false).Layer("RestrictionLayer", restrictionLayer);
+        })
+        .Render();
+}
+</div> </div> 

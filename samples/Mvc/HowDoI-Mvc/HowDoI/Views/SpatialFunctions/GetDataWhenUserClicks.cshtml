@@ -1,0 +1,74 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc;
+<script language="javascript" type="text/javascript">
+    function mapClick(e) {
+        var params = { x: e.worldXY.lon, y: e.worldXY.lat };
+
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'GetData', params, mapCallback);
+    }
+
+    function mapCallback(result) {
+        var str = result.get_responseData();
+        var strs = str.split('|');
+        document.getElementById('countryName').innerHTML = strs[0];
+        document.getElementById('population').innerHTML = strs[1];
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Click on the map to show the clicked country's information.
+            <br />
+            <br />
+            <div>
+                <table style="background-color: White; border-color: #CCCCCC; border-style: none;
+                    border-width: 1px; padding: 3px;">
+                    <tr style="background-color: #006699; font-weight: bold; color: White;">
+                        <td>
+                            Country Name&nbsp;
+                        </td>
+                        <td>
+                            Population
+                        </td>
+                    </tr>
+                    <tr style="background-color: White;">
+                        <td>
+                            <span id="countryName" />
+                        </td>
+                        <td>
+                            <span id="population" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div id="map">
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .MapUnit(GeographyUnit.Meter)
+                .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+                .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+                .CustomOverlays(overlays =>
+                {
+                    // Please input your ThinkGeo Cloud API Key to enable the background map.
+                    overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+                    ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02_3857.shp"));
+                    worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.SimpleColors.Transparent, GeoColor.FromArgb(100, GeoColor.SimpleColors.Green));
+                    worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                    overlays.LayerOverlay("StaticOverlay").IsBaseOverlay(false).Layer("WorldLayer", worldLayer);
+                })
+                .OnClientClick("mapClick")
+                .Render();
+        }
+    </div>
+</div>

@@ -1,0 +1,37 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Configuration;
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                This sample displays Bing Maps. Click the buttons below to display different types
+                of Bing map.
+            </p>
+            <input id="btnRoad" name="btnRoad" type="button" value="Road" size="40%" style="width: 40%;"
+                onclick="Map1.setCurrentBackgroundMapType('road');" />
+            <input id="btnAerial" name="btnAerial" type="button" value="Aerial" size="40%" style="width: 40%;"
+                onclick="Map1.setCurrentBackgroundMapType('aerial');" />
+            <input id="btnPhysical" name="btnPhysical" type="button" value="Hybrid" size="40%"
+                style="width: 40%;" onclick="Map1.setCurrentBackgroundMapType('aerialWithLabels');" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main"> <div>
+@{
+    Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+        .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+        .CurrentExtent(-13939426.6371, 6701997.4056, -7812401.86, 2626987.386962)
+        .MapUnit(GeographyUnit.Meter)
+        .CustomOverlays(overlays =>
+        {
+            overlays.BingMapsOverlay("BingMaps Map").MapType(BingMapsStyle.Road);
+        })
+        .Render();
+}
+</div> </div> 

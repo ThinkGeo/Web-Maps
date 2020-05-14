@@ -1,0 +1,86 @@
+﻿@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite.USDemographicMap
+@{
+    ViewBag.Title = "US Demographic Map";
+}
+<div id="container">
+    <div id="header">
+        <div id="left-header">
+            <span id="header-mapsuite">Map Suite</span> <span id="header-title">US Demographic Map</span>
+        </div>
+    </div>
+    <div id="content-container">
+        <div id="leftContainer">
+            <div id="leftContent">
+                <h4>
+                    Select data for display:
+                </h4>
+                <div id="accordion">
+                    @foreach (var category in ((Dictionary<string, Category>)ViewData["Categories"]).Values)
+                    {
+                        <h3>
+                            <img alt="Population" src=@category.CategoryImage />
+                            <span id="lbTitle" class="accordion-header">@category.Title</span>
+                            <input type="image" class="accordion-header-right" alt="Pie" title="Chart Map" src="@Url.Content("~/Content/Images/pie.png")"
+                                style="visibility: hidden;" />
+                        </h3>
+                        <div>
+                            <ul>
+                                @foreach (var subCategory in category.Items)
+                                {
+                                    if (subCategory.Alias.Contains("<= 5"))
+                                    {
+                                        subCategory.Alias = "0 ~ 5";
+                                    }
+                                    <li><span class="accordion-content">@subCategory.Alias</span>
+                                        <input id="ckbSelected" class="accordion-content-right" type="checkbox" checked="checked"
+                                            style="visibility: hidden; margin: 8px 10px 0 0;" />
+                                        <img class="accordion-content-right" alt="DotDensity" title="Present the data with Dot Density." src="@Url.Content("~/Content/Images/DotDensity.png")" />
+                                        <img class="accordion-content-right" alt="Thematic" title="Present the data in Thematic Colors." src="@Url.Content("~/Content/Images/Thematic.png")" />
+                                        <img class="accordion-content-right" alt="ValueCircle" title="Present the data in Value Circles." src="@Url.Content("~/Content/Images/ValueCircle.png")" />
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                </div>
+                <div class="settings">
+                    <div class="settings">
+                        <span id="spanBaseColor" class="settingTitle">Display Start Color:</span>
+                        <select id="colorStartselector">
+                        </select>
+                    </div>
+                    <div id="divEndColor" class="settings">
+                        <span class="settingTitle">Display End Color:</span>
+                        <select id="colorEndselector">
+                        </select>
+                    </div>
+                    <div id="divColorWheel" class="settings">
+                        <span class="settingTitle">ColorWheelDirection:</span>
+                        <select id="slColorWheelDirection" class="settingItem">
+                            <option value="Clockwise">Clockwise</option>
+                            <option value="CounterClockwise" selected="selected">CounterClockwise</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="divSlider" class="settings">
+                    <span id="spanSliderTitle" class="settingTitle"></span>
+                    <div id="slider" class="settingItem">
+                    </div>
+                </div>
+                <input type="hidden" id="clientStatusKeeper" value="" />
+            </div>
+        </div>
+        <div id="toggle">
+            <img alt="collapse" id="collapse" src="@Url.Content("~/Content/Images/collapse.gif")" />
+        </div>
+        <div id="map-content">
+            @{
+                Html.ThinkGeo().Map(Model).Render();
+            }
+        </div>
+    </div>
+    <div id="footer">
+        <span id="spanMouseCoordinate"></span>
+    </div>
+</div>

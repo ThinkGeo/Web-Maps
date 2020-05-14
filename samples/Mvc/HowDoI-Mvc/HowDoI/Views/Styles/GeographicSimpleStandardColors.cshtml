@@ -1,0 +1,67 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Collections.ObjectModel;
+@using ZedGraph;
+<script language="javascript" type="text/javascript">
+    function colorCallback(result) {
+        Map1.redrawLayer("StaticOverlay");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                This sample shows some of the predefined colors. Select a color from the drop down
+                list to change the countries.
+            </p>
+            <ul>
+                <li><span>
+                    <label id="label1">
+                        Border color:</label></span> <span>
+                            <select id="ddlStandardColor" name="ddlStandardColor" onchange="Map1.ajaxCallAction('Styles','StandardColorChanged',{color:this.value},colorCallback)" style="font-size:10px; width:120px;">
+                                <option value="LightGray" selected="selected">GeoColor.StandardColors.LightGray</option>
+                                <option value="Pink">GeoColor.StandardColors.Pink</option>
+                                <option value="Teal">GeoColor.StandardColors.Teal</option>
+                                <option value="Plum">GeoColor.StandardColors.Plum</option>
+                                <option value="DarkGreen">GeoColor.StandardColors.DarkGreen</option>
+                            </select>
+                        </span></li>
+                <li><span>
+                    <label id="label2">
+                        Fill color:</label></span> <span>
+                            <select id="ddlGeofraphicColor" name="ddlGeofraphicColor" onchange="Map1.ajaxCallAction('Styles','GeographicColorChanged',{color:this.value},colorCallback)" style="font-size:10px; width:120px;">
+                                <option value="Sand" selected="selected">GeoColor.GeographicColors.Sand</option>
+                                <option value="Dirt">GeoColor.GeographicColors.Dirt</option>
+                                <option value="Swamp">GeoColor.GeographicColors.Swamp</option>
+                                <option value="LightGreen">GeoColor.StandardColors.LightGreen</option>
+                                <option value="DarkBlue">GeoColor.SimpleColors.DarkBlue</option>
+                            </select>
+                        </span></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .CurrentExtent(-140, 60, 140, -60)
+                .MapUnit(GeographyUnit.DecimalDegree)
+                .StaticOverlay(staticOverlay =>
+                {
+                    ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02.shp"));
+                    worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillSolidBrush.Color = GeoColor.GeographicColors.Sand;
+                    worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColor.StandardColors.Pink;
+                    worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                    staticOverlay.IsBaseOverlay(false).Layer("WorldLayer", worldLayer);
+                })
+                .Render();
+        }
+    </div>
+</div>

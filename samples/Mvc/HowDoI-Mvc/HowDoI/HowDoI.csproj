@@ -1,0 +1,935 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{6A8A9D8F-8ACA-479C-99F5-D66441937FB7}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CSharp_HowDoISamples</RootNamespace>
+    <AssemblyName>HowDoI</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <MvcBuildViews>false</MvcBuildViews>
+    <UseIISExpress>false</UseIISExpress>
+    <MvcProjectUpgradeChecked>true</MvcProjectUpgradeChecked>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Ciloci.Flee, Version=0.9.26.0, Culture=neutral, PublicKeyToken=c8526a021ef298ed, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-CilociFlee.10.5.0\lib\net45\Ciloci.Flee.dll</HintPath>
+    </Reference>
+    <Reference Include="GeoAPI, Version=1.7.4.0, Culture=neutral, PublicKeyToken=a1a0da7def465678, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-GeoAPI.10.5.0\lib\net45\GeoAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-MicrosoftSqlServerTypes.10.5.0\lib\net45\Microsoft.SqlServer.Types.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NetTopologySuite, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-NetTopologySuite.10.5.0\lib\net45\NetTopologySuite.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-NewtonsoftJson.10.5.0\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp, Version=1.32.3057.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-PDFsharp.10.5.0\lib\net20\PdfSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp.Charting, Version=1.32.3057.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-PDFsharp.10.5.0\lib\net20\PdfSharp.Charting.dll</HintPath>
+    </Reference>
+    <Reference Include="PowerCollections, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2573bf8a1bdddcd5, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-NetTopologySuite.10.5.0\lib\net45\PowerCollections.dll</HintPath>
+    </Reference>
+    <Reference Include="SkiaSharp, Version=1.68.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-SkiaSharp.10.5.0\lib\net45\SkiaSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="ThinkGeo.MapSuite, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.10.5.1\lib\net45\ThinkGeo.MapSuite.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Drawing.PdfGeoCanvas, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Drawing.PdfGeoCanvas.10.5.0\lib\net45\ThinkGeo.MapSuite.Drawing.PdfGeoCanvas.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Adornments, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Adornments.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Adornments.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Background, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Background.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Background.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Ecw, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Ecw.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Ecw.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.FdoVector, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.FdoVector.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.FdoVector.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Graticule, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Graticule.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Graticule.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Grids, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Grids.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Grids.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Heat, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Heat.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Heat.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.MrSid, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.MrSid.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.MrSid.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.NativeImage, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.NativeImage.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.NativeImage.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.PersonalGeoDatabase, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Restriction, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Restriction.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Restriction.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Sdf, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Sdf.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Sdf.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.ShapeFile, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.ShapeFile.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.ShapeFile.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Tab, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Tab.10.5.0\lib\net45\ThinkGeo.MapSuite.Layers.Tab.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Mvc, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteWebForMvc-BareBone.10.5.0\lib\net45\ThinkGeo.MapSuite.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.ProductCenter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.ProductCenter.10.5.2\lib\net45\ThinkGeo.MapSuite.ProductCenter.exe</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Styles.ClassBreak, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.ClassBreak.10.5.0\lib\net45\ThinkGeo.MapSuite.Styles.ClassBreak.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Styles.DotDensity, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.DotDensity.10.5.0\lib\net45\ThinkGeo.MapSuite.Styles.DotDensity.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Styles.FleeBoolean, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.FleeBoolean.10.5.0\lib\net45\ThinkGeo.MapSuite.Styles.FleeBoolean.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Styles.Regex, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.Regex.10.5.0\lib\net45\ThinkGeo.MapSuite.Styles.Regex.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Styles.Value, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.Value.10.5.0\lib\net45\ThinkGeo.MapSuite.Styles.Value.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Styles.WorldStreets, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.WorldStreets.10.5.0\lib\net45\ThinkGeo.MapSuite.Styles.WorldStreets.dll</HintPath>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Styles.ZedGraph, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Styles.ZedGraph.10.5.0\lib\net45\ThinkGeo.MapSuite.Styles.ZedGraph.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="ZedGraph, Version=5.1.7.430, Culture=neutral, PublicKeyToken=02a83cbd123fcd60, processorArchitecture=MSIL">
+      <HintPath>..\packages\MapSuiteDependency-ZedGraph.10.5.0\lib\net35-Client\ZedGraph.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Controllers\BackgroundMaps\BackgroundMapController.cs" />
+    <Compile Include="Controllers\BackgroundMaps\LoadAnArcGISServerRestOverlayController.cs" />
+    <Compile Include="Controllers\BackgroundMaps\LoadAWmsOverlayController.cs" />
+    <Compile Include="Controllers\BackgroundMaps\ShapeFilesOverGoogleMapController.cs" />
+    <Compile Include="Controllers\BackgroundMaps\UseBingMapsController.cs" />
+    <Compile Include="Controllers\BackgroundMaps\UseGoogleMapController.cs" />
+    <Compile Include="Controllers\BackgroundMaps\UseMicrosoftMapsLayerController.cs" />
+    <Compile Include="Controllers\BackgroundMaps\UseOpenStreetMapController.cs" />
+    <Compile Include="Controllers\InteractiveMap\AddAClickEventController.cs" />
+    <Compile Include="Controllers\InteractiveMap\ChangeCursorStyleController.cs" />
+    <Compile Include="Controllers\InteractiveMap\InteractWithMapController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\AreaOfAFeatureController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\AutoRefreshOverlayController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\BufferAFeatureController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\ChangeEditSettingsController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\ClickEventOnMarkerController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\ClickEventToHighlightOverlayController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\ContextMenuToHighlightOverlayController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\DrawEditShapesController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\EnvelopeOfAFeatureController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\FindDifferenceOfTwoFeaturesController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\HighlightAFeatureWhileHoveringController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\InteractiveWithMapController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\LabelRotateAMarkerController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\LengthOfAFeatureController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\CreateAGraticuleAdornmentLayerController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\CreateAnInMemoryFeatureLayerController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\CreateARestrictionLayerController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\CreateaScaleLineAdormentLayerController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\CreateASpatialIndexForAShapeFileFeatureLayerController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\DisplayASatelliteImageController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\DisplayLayersAtDifferentScalesController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\LoadAGridFileFeatureLayerController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\LoadAHeatLayerController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\LoadAMapFromStreamsController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\LoadAMrSidImageController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\LoadAMSSQL2008FeatureLayerController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\LoadAnOracleFeatureLayerController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\LoadAPostgreSQLFeatureLayerController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\LoadAShapeFileFeatureLayerController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\LoadAStandardImageWithWorldFileController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\LoadGeoDatabaseFeatureLayerController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\LoadSdfFeatureLayerController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\LoadTabFileFeatureLayerController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\PlotAPointUsingLatLongController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\StopCertainFeaturesFromDrawingController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\UsingCustomDataController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\WKBConversionController.cs" />
+    <Compile Include="Controllers\LayersFeatureSources\WKTConversionController.cs" />
+    <Compile Include="Controllers\Printing\PrintAMapController.cs" />
+    <Compile Include="Controllers\SpatialFunctions\ExecuteSpatialQueryController.cs" />
+    <Compile Include="Controllers\SpatialFunctions\ExecuteSqlQueryController.cs" />
+    <Compile Include="Controllers\SpatialFunctions\FindFeatureByIdController.cs" />
+    <Compile Include="Controllers\SpatialFunctions\FindFeatureClickedController.cs" />
+    <Compile Include="Controllers\SpatialFunctions\FindFeaturesWithinDistanceController.cs" />
+    <Compile Include="Controllers\SpatialFunctions\GetAllFeaturesController.cs" />
+    <Compile Include="Controllers\SpatialFunctions\GetColumnDataController.cs" />
+    <Compile Include="Controllers\SpatialFunctions\GetDataWhenUserClicksController.cs" />
+    <Compile Include="Controllers\SpatialFunctions\GetFeaturesCountController.cs" />
+    <Compile Include="Controllers\SpatialFunctions\MeasureMapToolController.cs" />
+    <Compile Include="Controllers\SpatialFunctions\UseMapSimplificationController.cs" />
+    <Compile Include="Controllers\SpatialFunctions\ZoomInToAFeatureClickedController.cs" />
+    <Compile Include="Controllers\Styles\ChangeTheFillAndOutlineColorController.cs" />
+    <Compile Include="Controllers\Styles\ChangeTheWidthAndColorOfALineController.cs" />
+    <Compile Include="Controllers\Styles\DotDensityController.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Controllers\Styles\DrawUsingZedGraphStyleController.cs" />
+    <Compile Include="Controllers\Styles\DrawFeaturesBasedOnValueController.cs" />
+    <Compile Include="Controllers\Styles\DrawPointUsingBitmapController.cs" />
+    <Compile Include="Controllers\Styles\DrawPointUsingSymbolController.cs" />
+    <Compile Include="Controllers\Styles\GeoColorConversionController.cs" />
+    <Compile Include="Controllers\Styles\GeographicSimpleStandardColorsController.cs" />
+    <Compile Include="Controllers\Styles\GetAGroupOfColorController.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Controllers\Styles\PredefinedStylesController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\ShortestLineBetweenFeaturesController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\TrackShapeFinishedEventController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\UnionTwoFeaturesController.cs" />
+    <Compile Include="Controllers\Miscellaneous\AddAContextMenuController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\AddAMarkerController.cs" />
+    <Compile Include="Controllers\Miscellaneous\AddAdditionalCustomPropertiesAndMethodsController.cs" />
+    <Compile Include="Controllers\Miscellaneous\AddAPopupController.cs" />
+    <Compile Include="Controllers\Miscellaneous\AddVariousMapToolsController.cs" />
+    <Compile Include="Controllers\Miscellaneous\BaseOverlayChangedEventController.cs" />
+    <Compile Include="Controllers\Miscellaneous\ChangeLoadingImageController.cs" />
+    <Compile Include="Controllers\BackgroundMaps\DisplayASimpleMapController.cs" />
+    <Compile Include="Controllers\Miscellaneous\FindWorldCoordinatesWhereClickedController.cs" />
+    <Compile Include="Controllers\Miscellaneous\GetDistanceBetweenTwoPointsController.cs" />
+    <Compile Include="Controllers\Miscellaneous\MarkerWithContextMenuController.cs" />
+    <Compile Include="Controllers\Miscellaneous\MiniMapController.cs" />
+    <Compile Include="Controllers\Miscellaneous\OnOverlayDrawingClientEventController.cs" />
+    <Compile Include="Controllers\Miscellaneous\ScreenCoordinatesToWorldCoordinatesController.cs" />
+    <Compile Include="Controllers\Miscellaneous\UseDraggableMarkersController.cs" />
+    <Compile Include="Controllers\Miscellaneous\UsePdfExtensionController.cs" />
+    <Compile Include="Controllers\Miscellaneous\WorldCoordinatesToScreenCoordinatesController.cs" />
+    <Compile Include="Controllers\Miscellaneous\WrapDateLineController.cs" />
+    <Compile Include="Controllers\Miscellaneous\ZoomLevelsOnMarkersController.cs" />
+    <Compile Include="Controllers\Projection\UseADifferentProjectionForAFeatureLayerController.cs" />
+    <Compile Include="Controllers\Projection\UseRotationProjectionForAFeatureLayerController.cs" />
+    <Compile Include="Controllers\BackgroundMaps\SampleNotAvailableController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\SetBackgroundColorController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\SetImageFormatAndQualityController.cs" />
+    <Compile Include="Controllers\GetSourceCodeController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\GPStoGoogleMapDeskTopController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\NavigateHistoryController.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Controllers\InteractiveOverlays\PanTheMapController.cs" />
+    <Compile Include="Controllers\InteractiveOverlays\TrackZoomInController.cs" />
+    <Compile Include="Controllers\Labeling\ChangePointLabelPlacementController.cs" />
+    <Compile Include="Controllers\Labeling\DrawCurvedLabelsController.cs" />
+    <Compile Include="Controllers\Labeling\LabelNiceLookingRoadsController.cs" />
+    <Compile Include="Controllers\Labeling\LabelPointsofInterestController.cs" />
+    <Compile Include="Controllers\Labeling\LabelWaterFeaturesController.cs" />
+    <Compile Include="Controllers\ListPageController.cs" />
+    <Compile Include="Controllers\Styles\DrawUsingFleeBooleanStyleController.cs" />
+    <Compile Include="Controllers\Styles\RegularExpressionController.cs" />
+    <Compile Include="Controllers\Styles\ThematicFeaturesController.cs" />
+    <Compile Include="Controllers\VehicleTracking\VehicleTrackingController.cs" />
+    <Compile Include="Controllers\ZoomingPanningMoving\AnimationPanMapToolController.cs" />
+    <Compile Include="Controllers\ZoomingPanningMoving\ExtentChangedEventController.cs" />
+    <Compile Include="Controllers\ZoomingPanningMoving\MoveAFeatureController.cs" />
+    <Compile Include="Controllers\ZoomingPanningMoving\NavigationHistoryController.cs" />
+    <Compile Include="Controllers\ZoomingPanningMoving\PanTheMapController.cs" />
+    <Compile Include="Controllers\ZoomingPanningMoving\ScaleFeatureUpAndDownController.cs" />
+    <Compile Include="Controllers\ZoomingPanningMoving\TrackZoomInController.cs" />
+    <Compile Include="Controllers\ZoomingPanningMoving\UseKeyboardController.cs" />
+    <Compile Include="Controllers\ZoomingPanningMoving\ZoomInAndOutController.cs" />
+    <Compile Include="Controllers\ZoomingPanningMoving\ZoomLevelsLessThan20Controller.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Models\AdministrationShapeFileFeatureLayer.cs" />
+    <Compile Include="Models\Category.cs" />
+    <Compile Include="Models\Country.cs" />
+    <Compile Include="Models\FeatureColumn.cs" />
+    <Compile Include="Models\HotelInfomation.cs" />
+    <Compile Include="Models\ModelCategoriesSamples.cs" />
+    <Compile Include="Models\MvcPaging\IPagedList.cs" />
+    <Compile Include="Models\MvcPaging\PagedList.cs" />
+    <Compile Include="Models\MvcPaging\Pager.cs" />
+    <Compile Include="Models\MvcPaging\PagingExtensions.cs" />
+    <Compile Include="Models\Sample.cs" />
+    <Compile Include="Models\SecurityLevel.cs" />
+    <Compile Include="Models\Vehicle.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App_Data\BingMapsResult.png" />
+    <Content Include="App_Data\JORWD6gdb.mdb" />
+    <Content Include="App_Data\Sheboygan_CityLimits.sdf" />
+    <Content Include="App_Data\United States.png" />
+    <Content Include="App_Data\VehicleTrackingDb.mdb" />
+    <Content Include="App_Data\World.tif" />
+    <Content Include="Content\images\btn_edit.png" />
+    <Content Include="Content\images\Capture.PNG" />
+    <Content Include="Content\images\circle.png" />
+    <Content Include="Content\images\circle28.png" />
+    <Content Include="Content\images\city.png" />
+    <Content Include="Content\images\Cursor.png" />
+    <Content Include="Content\images\Delete.gif" />
+    <Content Include="Content\images\e.png" />
+    <Content Include="Content\images\ellipse28.png" />
+    <Content Include="Content\images\freehand28.gif" />
+    <Content Include="Content\images\frisco.png" />
+    <Content Include="Content\images\Industrial.png" />
+    <Content Include="Content\images\info.png" />
+    <Content Include="Content\images\line.png" />
+    <Content Include="Content\images\line28.png" />
+    <Content Include="Content\images\loading.gif" />
+    <Content Include="Content\images\MapView.JPG" />
+    <Content Include="Content\images\marker.gif" />
+    <Content Include="Content\images\marker_blue.gif" />
+    <Content Include="Content\images\marker_gold.gif" />
+    <Content Include="Content\images\marker_green.gif" />
+    <Content Include="Content\images\n.png" />
+    <Content Include="Content\images\ne.png" />
+    <Content Include="Content\images\nw.png" />
+    <Content Include="Content\images\point.png" />
+    <Content Include="Content\images\point28.png" />
+    <Content Include="Content\images\polygon28.png" />
+    <Content Include="Content\images\Print Map.png" />
+    <Content Include="Content\images\rectangle28.png" />
+    <Content Include="Content\images\s.png" />
+    <Content Include="Content\images\se.png" />
+    <Content Include="Content\images\square28.png" />
+    <Content Include="Content\images\sw.png" />
+    <Content Include="Content\images\toggleextent.png" />
+    <Content Include="Content\images\tool_save.gif" />
+    <Content Include="Content\images\ToPrevious.png" />
+    <Content Include="Content\images\Vehicle.png" />
+    <Content Include="Content\images\vehicle_van_1.png" />
+    <Content Include="Content\images\vehicle_van_2.png" />
+    <Content Include="Content\images\vehicle_van_3.png" />
+    <Content Include="Content\images\vehicle_van_4.png" />
+    <Content Include="Content\images\vehicle_van_5.png" />
+    <Content Include="Content\images\vehicle_van_6.png" />
+    <Content Include="Content\images\w.png" />
+    <Content Include="Content\images\yellowcircle.png" />
+    <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_65_ffffff_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_75_dadada_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+    <Content Include="Content\themes\base\images\ui-icons_222222_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_454545_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_888888_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="Content\themes\base\jquery.ui.accordion.css" />
+    <Content Include="Content\themes\base\jquery.ui.all.css" />
+    <Content Include="Content\themes\base\jquery.ui.autocomplete.css" />
+    <Content Include="Content\themes\base\jquery.ui.base.css" />
+    <Content Include="Content\themes\base\jquery.ui.button.css" />
+    <Content Include="Content\themes\base\jquery.ui.core.css" />
+    <Content Include="Content\themes\base\jquery.ui.datepicker.css" />
+    <Content Include="Content\themes\base\jquery.ui.dialog.css" />
+    <Content Include="Content\themes\base\jquery.ui.progressbar.css" />
+    <Content Include="Content\themes\base\jquery.ui.resizable.css" />
+    <Content Include="Content\themes\base\jquery.ui.selectable.css" />
+    <Content Include="Content\themes\base\jquery.ui.slider.css" />
+    <Content Include="Content\themes\base\jquery.ui.tabs.css" />
+    <Content Include="Content\themes\base\jquery.ui.theme.css" />
+    <Content Include="Content\images\United States.png" />
+    <Content Include="Global.asax" />
+    <Content Include="Content\Site.css" />
+    <Content Include="License-LGPL.txt" />
+    <Content Include="Resources\bannerad_offline.html" />
+    <Content Include="Resources\bannerad_offline.png" />
+    <Content Include="Resources\bg.png" />
+    <Content Include="Resources\footer_bkg.png" />
+    <Content Include="Resources\header_bkg.png" />
+    <Content Include="Resources\icon_contact.png" />
+    <Content Include="Resources\icon_forums.png" />
+    <Content Include="Resources\icon_productinfo.png" />
+    <Content Include="Resources\icon_support.png" />
+    <Content Include="Resources\icon_video.png" />
+    <Content Include="Resources\icon_wiki.png" />
+    <Content Include="Resources\masthead_top_blue_text.png" />
+    <Content Include="Resources\masthead_top_blue_text_mobile.png" />
+    <Content Include="Resources\masthead_top_blue_tile.png" />
+    <Content Include="Resources\masthead_top_blue_tile_mobile.png" />
+    <Content Include="Resources\ms.ico" />
+    <Content Include="Resources\page_bkg.png" />
+    <Content Include="Resources\screen.css" />
+    <Content Include="Resources\ScreenShot\AddAClickEvent.JPG" />
+    <Content Include="Resources\ScreenShot\AddAContextMenu.JPG" />
+    <Content Include="Resources\ScreenShot\AddAdditionalCustomPropertiesAndMethods.JPG" />
+    <Content Include="Resources\ScreenShot\AddAMarker.JPG" />
+    <Content Include="Resources\ScreenShot\AddAPopup.JPG" />
+    <Content Include="Resources\ScreenShot\AddVariousMapTools.JPG" />
+    <Content Include="Resources\ScreenShot\AnimationPanMapTool.JPG" />
+    <Content Include="Resources\ScreenShot\AreaOfAFeature.JPG" />
+    <Content Include="Resources\ScreenShot\AutoRefreshOverlay.JPG" />
+    <Content Include="Resources\ScreenShot\BackgroundMap.JPG" />
+    <Content Include="Resources\ScreenShot\BaseOverlayChangedEvent.JPG" />
+    <Content Include="Resources\ScreenShot\BufferAFeature.JPG" />
+    <Content Include="Resources\ScreenShot\ChangeCursorStyle.JPG" />
+    <Content Include="Resources\ScreenShot\ChangeEditSettings.JPG" />
+    <Content Include="Resources\ScreenShot\ChangeLoadingImage.JPG" />
+    <Content Include="Resources\ScreenShot\ChangePointLabelPlacement.JPG" />
+    <Content Include="Resources\ScreenShot\ChangeTheFillAndOutlineColor.JPG" />
+    <Content Include="Resources\ScreenShot\ChangeTheWidthAndColorOfALine.JPG" />
+    <Content Include="Resources\ScreenShot\ClickEventOnMarker.JPG" />
+    <Content Include="Resources\ScreenShot\ClickEventToHighlightOverlay.JPG" />
+    <Content Include="Resources\ScreenShot\ContextMenuToHighlightOverlay.JPG" />
+    <Content Include="Resources\ScreenShot\CreateAGraticuleAdornmentLayer.JPG" />
+    <Content Include="Resources\ScreenShot\CreateAnInMemoryFeatureLayer.JPG" />
+    <Content Include="Resources\ScreenShot\CreateARestrictionLayer.JPG" />
+    <Content Include="Resources\ScreenShot\CreateAScaleLineAdormentLayer.JPG" />
+    <Content Include="Resources\ScreenShot\CreateASpatialIndexForAShapeFileFeatureLayer.JPG" />
+    <Content Include="Resources\ScreenShot\DisplayASatelliteImage.JPG" />
+    <Content Include="Resources\ScreenShot\DisplayASimpleMap.JPG" />
+    <Content Include="Resources\ScreenShot\DisplayLayersAtDifferentScales.JPG" />
+    <Content Include="Resources\ScreenShot\DotDensity.JPG" />
+    <Content Include="Resources\ScreenShot\DrawCurvedLabels.JPG" />
+    <Content Include="Resources\ScreenShot\DrawEditShapes.JPG" />
+    <Content Include="Resources\ScreenShot\DrawFeaturesBasedOnValue.JPG" />
+    <Content Include="Resources\ScreenShot\DrawPointUsingBitmap.JPG" />
+    <Content Include="Resources\ScreenShot\DrawPointUsingSymbol.JPG" />
+    <Content Include="Resources\ScreenShot\DrawUsingFleeBooleanStyle.JPG" />
+    <Content Include="Resources\ScreenShot\DrawUsingZedGraphStyle.JPG" />
+    <Content Include="Resources\ScreenShot\EnvelopeOfAFeature.JPG" />
+    <Content Include="Resources\ScreenShot\ExecuteSpatialQuery.JPG" />
+    <Content Include="Resources\ScreenShot\ExecuteSqlQuery.JPG" />
+    <Content Include="Resources\ScreenShot\ExtentChangedEvent.JPG" />
+    <Content Include="Resources\ScreenShot\FindDifferenceOfTwoFeatures.JPG" />
+    <Content Include="Resources\ScreenShot\FindFeatureById.JPG" />
+    <Content Include="Resources\ScreenShot\FindFeatureClicked.JPG" />
+    <Content Include="Resources\ScreenShot\FindFeaturesWithinDistance.JPG" />
+    <Content Include="Resources\ScreenShot\FindWorldCoordinatesWhereClicked.JPG" />
+    <Content Include="Resources\ScreenShot\GeoColorConversion.JPG" />
+    <Content Include="Resources\ScreenShot\GeographicSimpleStandardColors.JPG" />
+    <Content Include="Resources\ScreenShot\GetAGroupOfColor.JPG" />
+    <Content Include="Resources\ScreenShot\GetAllFeatures.JPG" />
+    <Content Include="Resources\ScreenShot\GetColumnData.JPG" />
+    <Content Include="Resources\ScreenShot\GetDataWhenUserClicks.JPG" />
+    <Content Include="Resources\ScreenShot\GetDistanceBetweenTwoPoints.JPG" />
+    <Content Include="Resources\ScreenShot\GetFeaturesCount.JPG" />
+    <Content Include="Resources\ScreenShot\HighlightAFeatureWhileHovering.JPG" />
+    <Content Include="Resources\ScreenShot\InteractWithMap.JPG" />
+    <Content Include="Resources\ScreenShot\LabelNiceLookingRoads.JPG" />
+    <Content Include="Resources\ScreenShot\LabelPointsOfInterest.JPG" />
+    <Content Include="Resources\ScreenShot\LabelRotateAMarker.JPG" />
+    <Content Include="Resources\ScreenShot\LabelWaterFeatures.JPG" />
+    <Content Include="Resources\ScreenShot\LengthOfAFeature.JPG" />
+    <Content Include="Resources\ScreenShot\LoadAGridFileFeatureLayer.JPG" />
+    <Content Include="Resources\ScreenShot\LoadAHeatLayer.JPG" />
+    <Content Include="Resources\ScreenShot\LoadAMapFromStreams.JPG" />
+    <Content Include="Resources\ScreenShot\LoadAMrSidImage.JPG" />
+    <Content Include="Resources\ScreenShot\LoadAMSSQL2008FeatureLayer.JPG" />
+    <Content Include="Resources\ScreenShot\LoadAnArcGISServerRestOverlay.JPG" />
+    <Content Include="Resources\ScreenShot\LoadAnOracleFeatureLayer.JPG" />
+    <Content Include="Resources\ScreenShot\LoadAPostgreSQLFeatureLayer.JPG" />
+    <Content Include="Resources\ScreenShot\LoadAShapeFileFeatureLayer.JPG" />
+    <Content Include="Resources\ScreenShot\LoadAStandardImageWithWorldFile.JPG" />
+    <Content Include="Resources\ScreenShot\LoadAWmsOverlay.JPG" />
+    <Content Include="Resources\ScreenShot\LoadGeoDatabaseFeatureLayer.JPG" />
+    <Content Include="Resources\ScreenShot\LoadSdfFeatureLayer.JPG" />
+    <Content Include="Resources\ScreenShot\LoadTabFileFeatureLayer.JPG" />
+    <Content Include="Resources\ScreenShot\MarkerWithContextMenu.JPG" />
+    <Content Include="Resources\ScreenShot\MeasureMapTool.JPG" />
+    <Content Include="Resources\ScreenShot\MiniMap.JPG" />
+    <Content Include="Resources\ScreenShot\MoveAFeature.JPG" />
+    <Content Include="Resources\ScreenShot\NavigationHistory.JPG" />
+    <Content Include="Resources\ScreenShot\OnOverlayDrawingClientEvent.JPG" />
+    <Content Include="Resources\ScreenShot\PanTheMap.JPG" />
+    <Content Include="Resources\ScreenShot\PlotAPointUsingLatLong.JPG" />
+    <Content Include="Resources\ScreenShot\PredefinedStyles.JPG" />
+    <Content Include="Resources\ScreenShot\PrintAMap.JPG" />
+    <Content Include="Resources\ScreenShot\RegularExpression.JPG" />
+    <Content Include="Resources\ScreenShot\ScaleFeatureUpAndDown.JPG" />
+    <Content Include="Resources\ScreenShot\ScreenCoordinatesToWorldCoordinates.JPG" />
+    <Content Include="Resources\ScreenShot\SetBackgroundColor.JPG" />
+    <Content Include="Resources\ScreenShot\SetImageFormatAndQuality.JPG" />
+    <Content Include="Resources\ScreenShot\ShapeFilesOverGoogleMap.JPG" />
+    <Content Include="Resources\ScreenShot\ShortestLineBetweenFeatures.JPG" />
+    <Content Include="Resources\ScreenShot\StopCertainFeaturesFromDrawing.JPG" />
+    <Content Include="Resources\ScreenShot\ThematicFeatures.JPG" />
+    <Content Include="Resources\ScreenShot\TrackShapeFinishedEvent.JPG" />
+    <Content Include="Resources\ScreenShot\TrackZoomIn.JPG" />
+    <Content Include="Resources\ScreenShot\UnionTwoFeatures.JPG" />
+    <Content Include="Resources\ScreenShot\UseADifferentProjectionForAFeatureLayer.JPG" />
+    <Content Include="Resources\ScreenShot\UseBingMaps.JPG" />
+    <Content Include="Resources\ScreenShot\UseDraggableMarkers.JPG" />
+    <Content Include="Resources\ScreenShot\UseGoogleMap.JPG" />
+    <Content Include="Resources\ScreenShot\UseKeyboard.JPG" />
+    <Content Include="Resources\ScreenShot\UseMapSimplification.JPG" />
+    <Content Include="Resources\ScreenShot\UseMicrosoftMapsLayer.JPG" />
+    <Content Include="Resources\ScreenShot\UseOpenStreetMap.JPG" />
+    <Content Include="Resources\ScreenShot\UsePdfExtension.JPG" />
+    <Content Include="Resources\ScreenShot\UseRotationProjectionForAFeatureLayer.JPG" />
+    <Content Include="Resources\ScreenShot\UseYahooMap.JPG" />
+    <Content Include="Resources\ScreenShot\UsingCustomData.JPG" />
+    <Content Include="Resources\ScreenShot\VehicleTracking.JPG" />
+    <Content Include="Resources\ScreenShot\WKBConversion.JPG" />
+    <Content Include="Resources\ScreenShot\WKTConversion.JPG" />
+    <Content Include="Resources\ScreenShot\WorldCoordinatesToScreenCoordinates.JPG" />
+    <Content Include="Resources\ScreenShot\WrapDateLine.JPG" />
+    <Content Include="Resources\ScreenShot\ZoomInAndOut.JPG" />
+    <Content Include="Resources\ScreenShot\ZoomInToAFeatureClicked.JPG" />
+    <Content Include="Resources\ScreenShot\ZoomLevelsLessThan20.JPG" />
+    <Content Include="Resources\ScreenShot\ZoomLevelsOnMarkers.JPG" />
+    <Content Include="Resources\separator.png" />
+    <Content Include="Resources\SourceCode\06187969-bfba-4773-b63f-60b603430d83.htm" />
+    <Content Include="Resources\Stage_BG_top.png" />
+    <Content Include="Resources\SyntaxHighlighter\shBrushCSharp.js" />
+    <Content Include="Resources\SyntaxHighlighter\shBrushXml.js" />
+    <Content Include="Resources\SyntaxHighlighter\shCore.js" />
+    <Content Include="Resources\SyntaxHighlighter\SyntaxHighlighter.css" />
+    <Content Include="Resources\tab.png" />
+    <Content Include="Resources\tabcontainer_bkg.png" />
+    <Content Include="Resources\thinkgeo_logo.png" />
+    <Content Include="Resources\thinkgeo_logo_large.png" />
+    <Content Include="SampleList.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Scripts\CustomJs.js" />
+    <Content Include="Scripts\InstructionsPanel.js" />
+    <Content Include="Scripts\jquery-1.5.1-vsdoc.js" />
+    <Content Include="Scripts\jquery-1.5.1.js" />
+    <Content Include="Scripts\jquery-1.5.1.min.js" />
+    <Content Include="Scripts\jquery-ui-1.8.11.js" />
+    <Content Include="Scripts\jquery-ui-1.8.11.min.js" />
+    <Content Include="Scripts\jquery.validate-vsdoc.js" />
+    <Content Include="Scripts\jquery.validate.js" />
+    <Content Include="Scripts\jquery.validate.min.js" />
+    <Content Include="Scripts\modernizr-2.5.3.js" />
+    <Content Include="Scripts\Plugins\MapTools.js" />
+    <Content Include="Scripts\SyntaxHighlighter\shBrushCSharp.js" />
+    <Content Include="Scripts\SyntaxHighlighter\shBrushJava.js" />
+    <Content Include="Scripts\SyntaxHighlighter\shBrushJScript.js" />
+    <Content Include="Scripts\SyntaxHighlighter\shBrushXml.js" />
+    <Content Include="Scripts\SyntaxHighlighter\shCore.js" />
+    <Content Include="Scripts\SyntaxHighlighter\SyntaxHighlighter.css" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
+    <Content Include="Scripts\jquery.unobtrusive-ajax.min.js" />
+    <Content Include="Scripts\jquery.validate.unobtrusive.js" />
+    <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\MicrosoftAjax.js" />
+    <Content Include="Scripts\MicrosoftAjax.debug.js" />
+    <Content Include="Scripts\MicrosoftMvcAjax.js" />
+    <Content Include="Scripts\MicrosoftMvcAjax.debug.js" />
+    <Content Include="Scripts\MicrosoftMvcValidation.js" />
+    <Content Include="Scripts\MicrosoftMvcValidation.debug.js" />
+    <Content Include="Views\Web.config" />
+    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Views\Shared\Error.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\Layout.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages.config">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\SampleHeader.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\Footer.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\ListPageView.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\Header.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\BackgroundMaps\DisplayASimpleMap.cshtml" />
+    <Content Include="Views\SpatialFunctions\FindFeatureClicked.cshtml" />
+    <Content Include="Views\LayersFeatureSources\PlotAPointUsingLatLong.cshtml" />
+    <Content Include="Views\BackgroundMaps\SampleNotAvailable.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App_Data\austinstreets.dbf" />
+    <Content Include="App_Data\austinstreets.ids" />
+    <Content Include="App_Data\austinstreets.idx" />
+    <Content Include="App_Data\austinstreets.shp" />
+    <Content Include="App_Data\austinstreets.shx" />
+    <Content Include="App_Data\capital.dbf" />
+    <Content Include="App_Data\capital.ids" />
+    <Content Include="App_Data\capital.idx" />
+    <Content Include="App_Data\capital.shp" />
+    <Content Include="App_Data\capital.shx" />
+    <Content Include="App_Data\cities_a.dbf" />
+    <Content Include="App_Data\cities_a.ids" />
+    <Content Include="App_Data\cities_a.idx" />
+    <Content Include="App_Data\cities_a.shp" />
+    <Content Include="App_Data\cities_a.shx" />
+    <Content Include="App_Data\cntry02.dbf" />
+    <Content Include="App_Data\cntry02.ids" />
+    <Content Include="App_Data\cntry02.idx" />
+    <Content Include="App_Data\cntry02.shp" />
+    <Content Include="App_Data\cntry02.shx" />
+    <Content Include="App_Data\Countries02.dbf" />
+    <Content Include="App_Data\Countries02.ids" />
+    <Content Include="App_Data\Countries02.idx" />
+    <Content Include="App_Data\Countries02.shp" />
+    <Content Include="App_Data\Countries02.shx" />
+    <Content Include="App_Data\Hotels.dbf" />
+    <Content Include="App_Data\Hotels.ids" />
+    <Content Include="App_Data\Hotels.idx" />
+    <Content Include="App_Data\Hotels.shp" />
+    <Content Include="App_Data\Hotels.shx" />
+    <Content Include="App_Data\HoustonMuniBdySamp_Boundary.DAT" />
+    <Content Include="App_Data\HoustonMuniBdySamp_Boundary.ID" />
+    <Content Include="App_Data\HoustonMuniBdySamp_Boundary.ids" />
+    <Content Include="App_Data\HoustonMuniBdySamp_Boundary.idx" />
+    <Content Include="App_Data\HoustonMuniBdySamp_Boundary.IND" />
+    <Content Include="App_Data\HoustonMuniBdySamp_Boundary.MAP" />
+    <Content Include="App_Data\HoustonMuniBdySamp_Boundary.TAB" />
+    <Content Include="App_Data\JORWD6gdb.ldb" />
+    <Content Include="App_Data\PhValues.grd" />
+    <Content Include="App_Data\quksigx020.dbf" />
+    <Content Include="App_Data\quksigx020.ids" />
+    <Content Include="App_Data\quksigx020.idx" />
+    <Content Include="App_Data\quksigx020.shp" />
+    <Content Include="App_Data\quksigx020.shx" />
+    <Content Include="App_Data\sampleph.dbf" />
+    <Content Include="App_Data\sampleph.ids" />
+    <Content Include="App_Data\sampleph.idx" />
+    <Content Include="App_Data\sampleph.shp" />
+    <Content Include="App_Data\sampleph.shx" />
+    <Content Include="App_Data\STATES.DBF" />
+    <Content Include="App_Data\STATES.ids" />
+    <Content Include="App_Data\STATES.idx" />
+    <Content Include="App_Data\STATES.SHP" />
+    <Content Include="App_Data\STATES.SHX" />
+    <Content Include="App_Data\UtahWater.dbf" />
+    <Content Include="App_Data\UtahWater.ids" />
+    <Content Include="App_Data\UtahWater.idx" />
+    <Content Include="App_Data\UtahWater.shp" />
+    <Content Include="App_Data\UtahWater.shx" />
+    <Content Include="App_Data\World.ecw" />
+    <Content Include="App_Data\World.eww" />
+    <Content Include="App_Data\World.sdw" />
+    <Content Include="App_Data\World.sid" />
+    <Content Include="App_Data\World.tfw" />
+    <Content Include="Views\InteractiveOverlays\NavigateHistory.cshtml" />
+    <Content Include="Views\InteractiveOverlays\TrackZoomIn.cshtml" />
+    <Content Include="Views\InteractiveOverlays\PanTheMap.cshtml" />
+    <Content Include="Views\Shared\SourceCode.cshtml" />
+    <Content Include="Views\Labeling\LabelNiceLookingRoads.cshtml" />
+    <Content Include="Views\Labeling\LabelPointsofInterest.cshtml" />
+    <Content Include="Views\Labeling\ChangePointLabelPlacement.cshtml" />
+    <Content Include="Views\Labeling\LabelWaterFeatures.cshtml" />
+    <Content Include="Views\Labeling\DrawCurvedLabels.cshtml" />
+    <Content Include="Views\LayersFeatureSources\CreateaScaleLineAdormentLayer.cshtml" />
+    <Content Include="Views\InteractiveOverlays\AddAMarker.cshtml" />
+    <Content Include="Views\InteractiveOverlays\SetBackgroundColor.cshtml" />
+    <Content Include="Views\InteractiveOverlays\SetImageFormatAndQuality.cshtml" />
+    <Content Include="Views\LayersFeatureSources\CreateARestrictionLayer.cshtml" />
+    <Content Include="Views\LayersFeatureSources\CreateAGraticuleAdornmentLayer.cshtml" />
+    <Content Include="Views\LayersFeatureSources\LoadGeoDatabaseFeatureLayer.cshtml" />
+    <Content Include="Views\LayersFeatureSources\LoadSdfFeatureLayer.cshtml" />
+    <Content Include="Views\LayersFeatureSources\LoadTabFileFeatureLayer.cshtml" />
+    <Content Include="Views\LayersFeatureSources\CreateAnInMemoryFeatureLayer.cshtml" />
+    <Content Include="Views\LayersFeatureSources\CreateASpatialIndexForAShapeFileFeatureLayer.cshtml" />
+    <Content Include="Views\LayersFeatureSources\LoadAGridFileFeatureLayer.cshtml" />
+    <Content Include="Views\LayersFeatureSources\LoadAMapFromStreams.cshtml" />
+    <Content Include="Views\BackgroundMaps\BackgroundMap.cshtml" />
+    <Content Include="Views\InteractiveMap\AddAClickEvent.cshtml" />
+    <Content Include="Views\InteractiveMap\ChangeCursorStyle.cshtml" />
+    <Content Include="Views\Miscellaneous\AddAContextMenu.cshtml" />
+    <Content Include="Views\Miscellaneous\AddAPopup.cshtml" />
+    <Content Include="Views\Miscellaneous\AddVariousMapTools.cshtml" />
+    <Content Include="Views\Miscellaneous\ChangeLoadingImage.cshtml" />
+    <Content Include="Views\Printing\PrintAMap.cshtml" />
+    <Content Include="Views\LayersFeatureSources\LoadAMSSQL2008FeatureLayer.cshtml" />
+    <Content Include="Views\LayersFeatureSources\LoadAnOracleFeatureLayer.cshtml" />
+    <Content Include="Views\LayersFeatureSources\LoadAPostgreSQLFeatureLayer.cshtml" />
+    <Content Include="Views\LayersFeatureSources\LoadAShapeFileFeatureLayer.cshtml" />
+    <Content Include="Views\LayersFeatureSources\LoadAHeatLayer.cshtml" />
+    <Content Include="Views\LayersFeatureSources\DisplayASatelliteImage.cshtml" />
+    <Content Include="Views\LayersFeatureSources\LoadAMrSidImage.cshtml" />
+    <Content Include="Views\LayersFeatureSources\LoadAStandardImageWithWorldFile.cshtml" />
+    <Content Include="Views\BackgroundMaps\LoadAnArcGISServerRestOverlay.cshtml" />
+    <Content Include="Views\BackgroundMaps\LoadAWmsOverlay.cshtml" />
+    <Content Include="Views\BackgroundMaps\ShapeFilesOverGoogleMap.cshtml" />
+    <Content Include="Views\BackgroundMaps\UseBingMaps.cshtml" />
+    <Content Include="Views\BackgroundMaps\UseGoogleMap.cshtml" />
+    <Content Include="Views\BackgroundMaps\UseOpenStreetMap.cshtml" />
+    <Content Include="Views\LayersFeatureSources\UsingCustomData.cshtml" />
+    <Content Include="Views\LayersFeatureSources\DisplayLayersAtDifferentScales.cshtml" />
+    <Content Include="Views\LayersFeatureSources\StopCertainFeaturesFromDrawing.cshtml" />
+    <Content Include="Views\BackgroundMaps\UseMicrosoftMapsLayer.cshtml" />
+    <Content Include="Views\InteractiveOverlays\AutoRefreshOverlay.cshtml" />
+    <Content Include="Views\InteractiveOverlays\DrawEditShapes.cshtml" />
+    <Content Include="Views\Miscellaneous\MiniMap.cshtml" />
+    <Content Include="Views\Miscellaneous\WrapDateLine.cshtml" />
+    <Content Include="Views\Miscellaneous\MarkerWithContextMenu.cshtml" />
+    <Content Include="Views\Miscellaneous\ZoomLevelsOnMarkers.cshtml" />
+    <Content Include="Views\Miscellaneous\UseDraggableMarkers.cshtml" />
+    <Content Include="Views\Miscellaneous\BaseOverlayChangedEvent.cshtml" />
+    <Content Include="Views\InteractiveOverlays\ChangeEditSettings.cshtml" />
+    <Content Include="Views\InteractiveOverlays\TrackShapeFinishedEvent.cshtml" />
+    <Content Include="Views\InteractiveOverlays\LabelRotateAMarker.cshtml" />
+    <Content Include="Views\Miscellaneous\OnOverlayDrawingClientEvent.cshtml" />
+    <Content Include="Views\Miscellaneous\AddAdditionalCustomPropertiesAndMethods.cshtml" />
+    <Content Include="Views\Miscellaneous\UsePdfExtension.cshtml" />
+    <Content Include="Views\Miscellaneous\FindWorldCoordinatesWhereClicked.cshtml" />
+    <Content Include="Views\Miscellaneous\WorldCoordinatesToScreenCoordinates.cshtml" />
+    <Content Include="Views\Miscellaneous\ScreenCoordinatesToWorldCoordinates.cshtml" />
+    <Content Include="Views\Miscellaneous\GetDistanceBetweenTwoPoints.cshtml" />
+    <Content Include="Views\Projection\UseADifferentProjectionForAFeatureLayer.cshtml" />
+    <Content Include="Views\Projection\UseRotationProjectionForAFeatureLayer.cshtml" />
+    <Content Include="Views\SpatialFunctions\ZoomInToAFeatureClicked.cshtml" />
+    <Content Include="Views\SpatialFunctions\MeasureMapTool.cshtml" />
+    <Content Include="Views\SpatialFunctions\ExecuteSqlQuery.cshtml" />
+    <Content Include="Views\SpatialFunctions\ExecuteSpatialQuery.cshtml" />
+    <Content Include="Views\SpatialFunctions\FindFeaturesWithinDistance.cshtml" />
+    <Content Include="Views\SpatialFunctions\GetFeaturesCount.cshtml" />
+    <Content Include="Views\InteractiveOverlays\ClickEventOnMarker.cshtml" />
+    <Content Include="Views\InteractiveOverlays\HighlightAFeatureWhileHovering.cshtml" />
+    <Content Include="Views\InteractiveOverlays\ClickEventToHighlightOverlay.cshtml" />
+    <Content Include="Views\InteractiveOverlays\ContextMenuToHighlightOverlay.cshtml" />
+    <Content Include="Views\InteractiveOverlays\UnionTwoFeatures.cshtml" />
+    <Content Include="Views\InteractiveOverlays\FindDifferenceOfTwoFeatures.cshtml" />
+    <Content Include="Views\InteractiveOverlays\ShortestLineBetweenFeatures.cshtml" />
+    <Content Include="Views\InteractiveOverlays\BufferAFeature.cshtml" />
+    <Content Include="Views\InteractiveOverlays\AreaOfAFeature.cshtml" />
+    <Content Include="Views\InteractiveOverlays\LengthOfAFeature.cshtml" />
+    <Content Include="Views\InteractiveOverlays\EnvelopeOfAFeature.cshtml" />
+    <Content Include="Views\Styles\DrawFeaturesBasedOnValue.cshtml" />
+    <Content Include="Views\Styles\DrawPointUsingBitmap.cshtml" />
+    <Content Include="Views\Styles\DrawPointUsingSymbol.cshtml" />
+    <Content Include="Views\Styles\DrawUsingFleeBooleanStyle.cshtml" />
+    <Content Include="Views\Styles\PredefinedStyles.cshtml" />
+    <Content Include="Views\Styles\ChangeTheFillAndOutlineColor.cshtml" />
+    <Content Include="Views\Styles\ChangeTheWidthAndColorOfALine.cshtml" />
+    <Content Include="Views\Styles\GetAGroupOfColor.cshtml" />
+    <Content Include="Views\Styles\DrawUsingZedGraphStyle.cshtml" />
+    <Content Include="Views\Styles\DotDensity.cshtml" />
+    <Content Include="Views\Styles\RegularExpression.cshtml" />
+    <Content Include="Views\Styles\ThematicFeatures.cshtml" />
+    <Content Include="Views\Styles\GeographicSimpleStandardColors.cshtml" />
+    <Content Include="Views\SpatialFunctions\FindFeatureById.cshtml" />
+    <Content Include="Views\ZoomingPanningMoving\ZoomInAndOut.cshtml" />
+    <Content Include="Views\ZoomingPanningMoving\TrackZoomIn.cshtml" />
+    <Content Include="Views\ZoomingPanningMoving\PanTheMap.cshtml" />
+    <Content Include="Views\ZoomingPanningMoving\ZoomLevelsLessThan20.cshtml" />
+    <Content Include="Views\ZoomingPanningMoving\ExtentChangedEvent.cshtml" />
+    <Content Include="Views\ZoomingPanningMoving\UseKeyboard.cshtml" />
+    <Content Include="Views\ZoomingPanningMoving\NavigationHistory.cshtml" />
+    <Content Include="Views\VehicleTracking\VehicleTracking.cshtml" />
+    <Content Include="Views\ZoomingPanningMoving\AnimationPanMapTool.cshtml" />
+    <Content Include="Views\ZoomingPanningMoving\MoveAFeature.cshtml" />
+    <Content Include="Views\ZoomingPanningMoving\ScaleFeatureUpAndDown.cshtml" />
+    <Content Include="Views\InteractiveMap\InteractWithMap.cshtml" />
+    <Content Include="Views\SpatialFunctions\GetAllFeatures.cshtml" />
+    <Content Include="Views\SpatialFunctions\GetColumnData.cshtml" />
+    <Content Include="Views\SpatialFunctions\GetDataWhenUserClicks.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Views\Zooming Panning Moving\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\InteractiveOverlays\InteractWithMap.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\LayersFeatureSources\WKBConversion.cshtml" />
+    <Content Include="Views\LayersFeatureSources\WKTConversion.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Styles\GeoColorConversion.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\SpatialFunctions\UseMapSimplification.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App_Data\cntry02_3857.dbf" />
+    <Content Include="App_Data\cntry02_3857.ids" />
+    <Content Include="App_Data\cntry02_3857.idx" />
+    <Content Include="App_Data\cntry02_3857.shp" />
+    <Content Include="App_Data\cntry02_3857.shx" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target> -->
+  <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
+    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)" />
+  </Target>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>62373</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>
+          </IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Import Project="..\packages\MapSuiteDependency-Fdo.10.5.0\build\net45\MapSuiteDependency-Fdo.targets" Condition="Exists('..\packages\MapSuiteDependency-Fdo.10.5.0\build\net45\MapSuiteDependency-Fdo.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\MapSuiteDependency-Fdo.10.5.0\build\net45\MapSuiteDependency-Fdo.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MapSuiteDependency-Fdo.10.5.0\build\net45\MapSuiteDependency-Fdo.targets'))" />
+    <Error Condition="!Exists('..\packages\MapSuiteDependency-HexagonGeospatialEcw.10.5.0\build\net45\MapSuiteDependency-HexagonGeospatialEcw.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MapSuiteDependency-HexagonGeospatialEcw.10.5.0\build\net45\MapSuiteDependency-HexagonGeospatialEcw.targets'))" />
+    <Error Condition="!Exists('..\packages\MapSuiteDependency-LizardTechMrSid.10.5.0\build\net45\MapSuiteDependency-LizardTechMrSid.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MapSuiteDependency-LizardTechMrSid.10.5.0\build\net45\MapSuiteDependency-LizardTechMrSid.targets'))" />
+    <Error Condition="!Exists('..\packages\MapSuiteDependency-SkiaSharp.10.5.0\build\net45\MapSuiteDependency-SkiaSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MapSuiteDependency-SkiaSharp.10.5.0\build\net45\MapSuiteDependency-SkiaSharp.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.Layers.Ecw.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Ecw.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.Layers.Ecw.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Ecw.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.Layers.FdoVector.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.FdoVector.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.Layers.FdoVector.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.FdoVector.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.Layers.MrSid.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.MrSid.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.Layers.MrSid.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.MrSid.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.Layers.Sdf.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Sdf.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.Layers.Sdf.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Sdf.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.10.5.1\build\net45\ThinkGeo.MapSuite.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.10.5.1\build\net45\ThinkGeo.MapSuite.targets'))" />
+  </Target>
+  <Import Project="..\packages\MapSuiteDependency-HexagonGeospatialEcw.10.5.0\build\net45\MapSuiteDependency-HexagonGeospatialEcw.targets" Condition="Exists('..\packages\MapSuiteDependency-HexagonGeospatialEcw.10.5.0\build\net45\MapSuiteDependency-HexagonGeospatialEcw.targets')" />
+  <Import Project="..\packages\MapSuiteDependency-LizardTechMrSid.10.5.0\build\net45\MapSuiteDependency-LizardTechMrSid.targets" Condition="Exists('..\packages\MapSuiteDependency-LizardTechMrSid.10.5.0\build\net45\MapSuiteDependency-LizardTechMrSid.targets')" />
+  <Import Project="..\packages\MapSuiteDependency-SkiaSharp.10.5.0\build\net45\MapSuiteDependency-SkiaSharp.targets" Condition="Exists('..\packages\MapSuiteDependency-SkiaSharp.10.5.0\build\net45\MapSuiteDependency-SkiaSharp.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.Layers.Ecw.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Ecw.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.Layers.Ecw.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Ecw.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.Layers.FdoVector.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.FdoVector.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.Layers.FdoVector.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.FdoVector.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.Layers.MrSid.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.MrSid.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.Layers.MrSid.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.MrSid.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.PersonalGeoDatabase.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.Layers.Sdf.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Sdf.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.Layers.Sdf.10.5.0\build\net45\ThinkGeo.MapSuite.Layers.Sdf.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.10.5.1\build\net45\ThinkGeo.MapSuite.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.10.5.1\build\net45\ThinkGeo.MapSuite.targets')" />
+</Project>

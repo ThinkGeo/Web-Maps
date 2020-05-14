@@ -1,0 +1,259 @@
+﻿html, body
+{
+    margin: 0;
+    padding: 0;
+    color: #333;
+    font-size: .9em;
+    font-family: Arial, Verdana, Helvetica, Sans-Serif;
+}
+
+.table th, .table td
+{
+    font-size: 0.8em;
+    padding: 5px;
+}
+
+/*leaflet control*/
+.leaflet-bar-part img
+{
+    cursor: pointer;
+}
+
+#map
+{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #faf7f3;
+}
+
+#loadingImage
+{
+    position: absolute;
+    left: 50%;
+    bottom: 50%;
+    z-index: 9000;
+    display: none;
+}
+
+#legend
+{
+    display: block;
+    position: absolute;
+    right: 4px;
+    bottom: 20px;
+    background-color: #fff;
+    border: 1px solid #666;
+    z-index: 9998;
+}
+
+/* layer-options panel*/
+#left-panel
+{
+    display: block;
+    width: 220px;
+    height: 100%;
+    left: -220px;
+    top: 0px;
+    position: absolute;
+    z-index: 9999;
+    background-color: #fff;
+    box-shadow: 0px 0px 10px #333;
+}
+
+.panel-header
+{
+    position: relative;
+    height: 20px;
+    padding: 10px 10px 0 10px;
+}
+
+    .panel-header .title
+    {
+        font-size: 110%;
+        position: absolute;
+        text-shadow: 0 1px 0 #f3f3f3;
+    }
+
+.panel-content
+{
+    padding: 5px;
+}
+
+/*edit panel*/
+#edit-panel
+{
+    display: none;
+    position: relative;
+    background-color: #fff;
+    z-index: 9999;
+}
+
+    #edit-panel .edit-panel-header
+    {
+        position: relative;
+        background-color: #eee;
+        border-bottom: solid 1px #ccc;
+        line-height: 30px;
+        font-size: 110%;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    #edit-panel .edit-foot
+    {
+        bottom: 5px;
+        text-align: right;
+    }
+
+.edit-content, .edit-foot
+{
+    width: 94%;
+    margin-left: 15px;
+}
+
+.edit-content
+{
+    margin-top: 15px;
+}
+
+    .edit-content select
+    {
+        width: 100%;
+    }
+
+    .edit-content .valueTxt
+    {
+        width: 30px;
+        height: 20px;
+    }
+
+    .edit-content .valueLabel
+    {
+        color: green;
+    }
+
+#result-table img
+{
+    cursor: pointer;
+}
+
+#message
+{
+    display: none;
+    position: fixed;
+    left: 5em;
+    top: 0.5em;
+    background-color: rgb(241, 233, 233);
+    opacity: 0.6;
+    color: rgb(252, 8, 8);
+    z-index: 5001;
+    border-radius: 10%;
+    font-size: 110%;
+    line-height: 1.8em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+/* desktop broswer [portrait + landscape] */
+@media only screen and (min-device-width: 736px)
+{
+    #left-panel
+    {
+        overflow-y: auto;
+    }
+
+    .bg-mask
+    {
+        position: absolute;
+        left: 0pt;
+        top: 0pt;
+        width: 100%;
+        height: 100%;
+        display: block;
+        background-color: #333;
+        -moz-opacity: 0.7;
+        opacity: .7;
+        filter: alpha(opacity = 70);
+        z-index: 9998;
+    }
+
+    .centroid
+    {
+        top: 30%;
+        left: 50%;
+        position: absolute;
+    }
+
+    #edit-panel
+    {
+        width: 400px;
+        margin-left: -250px;
+        border-radius: 5px;
+        box-shadow: 5px 5px 5px #333;
+        padding-bottom: 10px;
+    }
+
+        #edit-panel .edit-foot
+        {
+            bottom: 5px;
+            right: 5%;
+        }
+}
+
+/* iphone(include 6 plus) [portrait + landscape] */
+@media only screen and (min-device-width : 320px) and (max-device-width : 736px)
+{
+    #left-panel
+    {
+        overflow-y: scroll;
+        left: -220px;
+    }
+
+    #layer-options li div
+    {
+        height: 35px;
+    }
+
+    #edit-panel
+    {
+        position: fixed;
+        left: 0px;
+        bottom: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9998;
+    }
+
+        #edit-panel select, input[type='text']
+        {
+            width: 100%;
+            padding: 4px 0 4px 0;
+        }
+
+        #edit-panel .edit-panel-header
+        {
+            height: 30px;
+            line-height: 30px;
+        }
+
+            #edit-panel .edit-panel-header .left-btn, .edit-panel-header .right-btn
+            {
+                display: block;
+            }
+
+        #edit-panel .edit-content
+        {
+            border: none;
+            box-shadow: 0px 0px 0px #999;
+            margin-top: 0;
+            width: 98%;
+            margin-left: 2%;
+        }
+
+        #edit-panel .edit-foot
+        {
+            position: relative;
+            margin-right: 10px;
+            right: 0;
+        }
+}

@@ -1,0 +1,80 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<script language="javascript" type="text/javascript">
+    function btnPlotPointClick() {
+        var xString = document.getElementById("LongitudeTextBox").value;
+        var yString = document.getElementById("LatitudeTextBox").value;
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'PlotPoint', { x: xString, y: yString }, mapCallback);
+    }
+
+    function mapCallback(result) {
+        Map1.redrawLayer('DynamicOverlay');
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            This sample demonstrates how to mark a place with a icon.
+            <br />
+            <br />
+            Click the button to plot a point at the coordinates in the text boxes.
+            <br />
+            <br />
+            <table>
+                <tr>
+                    <td>
+                        <span id="Label1" style="display: inline-block; font-size: 10pt; font-weight: bold;
+                            width: 80px;">Longitude:</span>
+                    </td>
+                    <td>
+                        <input name="LongitudeTextBox" type="text" value="-95.28109" readonly="readonly"
+                            id="LongitudeTextBox" style="font-family: verdana; font-size: 10px;" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span id="Label2" style="display: inline-block; font-size: 10pt; font-weight: bold;
+                            width: 80px;">Latitude:</span>
+                    </td>
+                    <td>
+                        <input name="LatitudeTextBox" type="text" value="38.95363" readonly="readonly" id="LatitudeTextBox"
+                            style="font-family: verdana; font-size: 10px;" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <br />
+                        <input type="button" name="btnPlotPoint" value="Plot a Point" id="btnPlotPoint" onclick="btnPlotPointClick();" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+          .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+          .MapUnit(GeographyUnit.Meter)
+          .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+          .CurrentExtent(-14607343.5818934, 7371576.14679691, -6014592.08756057, 1910351.0222467)
+          .CustomOverlays(overlays =>
+          {
+              // Please input your ThinkGeo Cloud API Key to enable the background map.
+              overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+              InMemoryFeatureLayer shapeLayer = new InMemoryFeatureLayer();
+              shapeLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle.PointType = PointType.Bitmap;
+              shapeLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle.Image = new GeoImage(HttpContext.Current.Request.MapPath("~/Content/images/United States.png"));
+              shapeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+              overlays.LayerOverlay("DynamicOverlay").Layer("ShapeLayer", shapeLayer).IsBaseOverlay(false);
+          }
+    ).Render();}
+    </div>
+</div>

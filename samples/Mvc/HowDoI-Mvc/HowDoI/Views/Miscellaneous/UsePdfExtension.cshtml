@@ -1,0 +1,143 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc;
+@using CSharp_HowDoISamples;
+<style type="text/css">
+    html
+    {
+        height: 100%;
+    }
+    .descContent
+    {
+        font-family: :Verdana;
+        font-size: 11px;
+    }
+    input
+    {
+        margin: 3px;
+    }
+</style>
+<script language="javascript" type="text/javascript">
+    function getElementPosition(element) {
+        var ua = navigator.userAgent.toLowerCase();
+        var isOpera = (ua.indexOf('opera') != -1);
+        var isIE = (ua.indexOf('msie') != -1 && !isOpera);
+        var pos = [];
+        var box;
+
+        if (element.getBoundingClientRect()) {
+            box = element.getBoundingClientRect();
+            var scrollTop = Math.max(document.documentElement.scrollTop, document.body.scrollTop);
+            var scrollLeft = Math.max(document.documentElement.scrollLeft, document.body.scrollLeft);
+
+            return { x: box.left + scrollLeft, y: box.top + scrollTop };
+        }
+        else if (document.getBoxObjectFor()) {
+            box = document.getBoxObjectFor(element);
+            var borderLeft = (element.style.borderLeftWidth) ? parseInt(element.style.borderLeftWidth) : 0;
+            var borderTop = (element.style.borderTopWidth) ? parseInt(element.style.borderTopWidth) : 0;
+            pos = [box.x - borderLeft, box.y - borderTop];
+        }
+        else {
+            pos = [element.offsetLeft, element.offsetTop];
+            parent = element.offsetParent;
+
+            if (element != parent) {
+                while (parent) {
+                    pos[0] += parent.offsetLeft;
+                    pos[1] += parent.offsetTop;
+                    parent = parent.offsetParent;
+                }
+            }
+
+            if (ua.indexOf('opera') != -1 || (ua.indexOf('safari') != -1 && element.style.position == 'absolute')) {
+                pos[0] -= document.body.offsetLeft;
+                pos[1] -= document.body.offsetTop;
+            }
+        }
+
+        return pos;
+    }
+
+    function btnToPdf_Click(element) {
+        var selectItemText = "Portrait";
+        if (document.getElementById("rdlLandscape").checked) {
+            selectItemText = "Landscape";
+        }
+        var elementPos = getElementPosition(element);
+        document.getElementById("imgDiv").style.left = (elementPos.x + 500) + "px";
+        document.getElementById("imgDiv").style.top = (elementPos.y - 100) + "px";
+
+        document.getElementById("imgDiv").style.visibility = "visible";
+
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'ToPdf', { 'selectItemText': selectItemText }, mapCallback);
+    }
+
+    function mapCallback(result) {
+        var url = "http://" + window.location.host + result.get_responseData();
+        window.open(url);
+        document.getElementById("imgLoading").style.visibility = "hidden";
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Select option from the RadioButton list below, then click button to print current
+            map into PDF document.
+            <br />
+            <br />
+            <input type="radio" id="rdlLandscape" name="rdlOptions" checked="checked" style="font-size: 10px;" />Landscape
+            <input type="radio" id="rdlPortrait" name="rdlOptions" style="font-size: 10px;" />Portrait
+            <br />
+            <input type="button" id="btnToPdf" value="Print into PDF" onclick="btnToPdf_Click(this);" />
+            <div id="imgDiv" style="position:absolute; left:650px; z-index:1000;top:400px;visibility: hidden;">
+            <input type="image" id="imgLoading" src="../../Content/Images/loading.gif" disabled="disabled"
+                />
+                </div>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div id="map">
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                 .MapBackground(new GeoSolidBrush(GeoColor.GeographicColors.ShallowOcean))
+                .CurrentExtent(-111.7875, 92.0859375, 148.36875, -93.5390625)
+                .MapUnit(GeographyUnit.DecimalDegree)
+                .StaticOverlay(staticOverlay =>
+                {
+                    EcwRasterLayer worldImageLayer = new EcwRasterLayer(Server.MapPath("~/App_Data/World.ecw"));
+
+                    ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02.shp"));
+                    worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 233, 232, 214), GeoColor.FromArgb(255, 118, 138, 69));
+                    worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.StartCap = DrawingLineCap.Round;
+                    worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.EndCap = DrawingLineCap.Round;
+                    worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                    ShapeFileFeatureLayer usStatesLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/STATES.SHP"));
+                    usStatesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.StandardColors.Transparent, GeoColor.FromArgb(255, 156, 155, 154), 1);
+                    usStatesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.StartCap = DrawingLineCap.Round;
+                    usStatesLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                    ShapeFileFeatureLayer worldCapitalsLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/capital.shp"));
+                    worldCapitalsLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = PointStyles.CreateSimpleCircleStyle(GeoColor.StandardColors.White, 6F, GeoColor.StandardColors.Black, 1F);
+                    worldCapitalsLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                    ShapeFileFeatureLayer worldCapitalsLabelsLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/capital.shp"));
+                    worldCapitalsLabelsLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = TextStyles.CreateSimpleTextStyle("city_name", "Arial", 13, DrawingFontStyles.Bold, GeoColor.StandardColors.Maroon, 0, -8);
+                    worldCapitalsLabelsLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle.HaloPen = new GeoPen(GeoColor.StandardColors.White, 2);
+                    worldCapitalsLabelsLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle.HaloPen.StartCap = DrawingLineCap.Round;
+                    worldCapitalsLabelsLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle.HaloPen.EndCap = DrawingLineCap.Round;
+                    worldCapitalsLabelsLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle.SuppressPartialLabels = true;
+                    worldCapitalsLabelsLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                    staticOverlay.Layer("WorldImageLayer", worldImageLayer).Layer("WorldLayer", worldLayer).Layer("USStatesLayer", usStatesLayer).Layer("WorldCapitals", worldCapitalsLayer).Layer("WorldCapitalsLabels", worldCapitalsLabelsLayer);
+                })
+                .Render();
+        }
+    </div>
+</div>

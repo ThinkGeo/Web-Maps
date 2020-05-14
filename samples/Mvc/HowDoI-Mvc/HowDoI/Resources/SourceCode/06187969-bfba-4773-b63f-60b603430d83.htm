@@ -1,0 +1,28 @@
+<b><h2 class='title'>Source Code</h2></b><hr class='hr'/><div  style='margin-top:-15px; height:100%;'/><pre name='code' class='c-sharp:nocontrols'>using System.Web.Mvc;
+using System.Web.UI.WebControls;
+using ThinkGeo.MapSuite;
+using ThinkGeo.MapSuite.Drawing;
+using ThinkGeo.MapSuite.Mvc;
+using ThinkGeo.MapSuite.Shapes;
+
+namespace CSharp_HowDoISamples
+{
+    public partial class BackgroundMapsController : Controller
+    {
+        public ActionResult DisplayASimpleMap()
+        {
+            Map map = new Map("Map1",
+                new Unit(100, UnitType.Percentage),
+                new Unit(100, UnitType.Percentage));
+
+            map.MapUnit = GeographyUnit.Meter;
+            map.ZoomLevelSet = new ThinkGeoCloudMapsZoomLevelSet();
+            map.CurrentExtent = new RectangleShape(-13939426.6371, 6701997.4056, -7812401.86, 2626987.386962);
+
+            map.MapBackground = new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF"));
+            map.CustomOverlays.Add(new ThinkGeoCloudRasterMapsOverlay("ThinkGeo Cloud API Key"));
+
+            return View(map);
+        }
+    }
+}</pre></div><link type='text/css' rel='stylesheet' href='http://localhost:62373/Scripts/SyntaxHighlighter/SyntaxHighlighter.css'></link><script language='javascript' src='http://localhost:62373/Scripts/SyntaxHighlighter/shCore.js'></script><script language='javascript' src='http://localhost:62373/Scripts/SyntaxHighlighter/shBrushCSharp.js'></script><script language='javascript' src='http://localhost:62373/Scripts/SyntaxHighlighter/shBrushXml.js'></script><script language='javascript'>try{dp.SyntaxHighlighter.HighlightAll('code');}catch(error){}</script>

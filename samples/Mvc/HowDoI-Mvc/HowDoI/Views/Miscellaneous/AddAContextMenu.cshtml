@@ -1,0 +1,58 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@{
+    ViewBag.Title = "AddAContextMenu";
+}
+<script type="text/javascript">
+    function contextMenuClick(e) {
+        document.getElementById("worldX").value = e.worldXY.lon;
+        document.getElementById("worldY").value = e.worldXY.lat;
+    }
+
+    function popupInfomation() {
+        alert("Infomation popup by ContextMenu");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Right click on the map to show the context menu and select an item.
+            <br />
+            <br />
+            <span>World-X</span>&nbsp;
+            <input type="text" id="worldX" />
+            <br />
+            <span>World-Y</span>&nbsp;
+            <input type="text" id="worldY" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div id="map">
+        <div>
+            @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                  .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                  .MapUnit(GeographyUnit.Meter)
+                  .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+                  .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+                  .CustomOverlays(overlay =>
+                  {
+                      // Please input your ThinkGeo Cloud API Key to enable the background map.
+                      overlay.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+                  })
+                  .ContextMenu(menu =>
+                  {
+                      menu.MenuItems(m => m.ContextMenuItem("<a href='http://www.thinkgeo.com' target='_blank'>ThinkGeo</a>"));
+                      menu.MenuItems(m => m.ContextMenuItem("CurrentPosition(Ajax Call)")
+                                           .OnClientClick("contextMenuClick"));
+                      menu.MenuItems(m => m.ContextMenuItem("<div onclick='popupInfomation();'>Infomation(Client Event)</div>"));
+                  })
+                  .Render();}
+        </div>
+    </div>
+</div>

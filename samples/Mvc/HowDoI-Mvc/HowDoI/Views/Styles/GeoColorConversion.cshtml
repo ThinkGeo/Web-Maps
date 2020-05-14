@@ -1,0 +1,96 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<script language="javascript" type="text/javascript">
+    function callback(result) {
+        Map1.redrawLayer("StaticOverlay");
+
+        var txtOLEElement = document.getElementById("txtOLE");
+        var txtWin32Element = document.getElementById("txtWin32");
+        var txtHTMLElement = document.getElementById("txtHTML");
+        var txtArgbElement = document.getElementById("txtArgb");
+
+        if (null != result) {
+            var resultArray = result.get_responseData().split('|');
+            if(null == resultArray || 0 >= resultArray.length) {
+                return;
+            }
+
+            txtOLEElement.value = resultArray[0];
+            txtWin32Element.value = resultArray[2];
+            txtHTMLElement.value = resultArray[1];
+            txtArgbElement.value = resultArray[3];
+        }
+
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                Select a color from the list and see it's different expressions in the text boxes.
+            </p>
+            <div style="text-align:right;">
+            GeoColor:
+            <select id="ddlGeoColors" name="ddlGeoColors" onchange="Map1.ajaxCallAction('Styles','ColorConversion',{color:this.value},callback)">
+                <option value="ShallowOcean" selected="selected">ShallowOcean</option>
+                <option value="Sand">Sand</option>
+                <option value="Lake">Lake</option>
+                <option value="Silver">Silver</option>
+                <option value="Green">Green</option>
+                <option value="Transparent">Transparent</option>
+            </select>
+            </div>
+            <br />
+            <div style="text-align: right;">
+                OLE:
+                <input type="text" id="txtOLE" name="txtOLE" value="" />
+                <br />
+                Win32:
+                <input type="text" id="txtWin32" name="txtWin32" value="" />
+                <br />
+                HTML:
+                <input type="text" id="txtHTML" name="txtHTML" value="" />
+                <br />
+                Argb:
+                <input type="text" id="txtArgb" name="txtArgb" value="" />
+            </div>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            GeoColor geoColor = GeoColor.GeographicColors.ShallowOcean;
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .CurrentExtent(-140, 60, 140, -60)
+                .MapUnit(GeographyUnit.DecimalDegree)
+                 .MapBackground(new GeoSolidBrush(GeoColor.GeographicColors.ShallowOcean))
+                .StaticOverlay(staticOverlay =>
+                {
+
+                    ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02.shp"));
+                    worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 243, 239, 228), GeoColor.FromArgb(255, 218, 193, 163), 1);
+                    worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                    staticOverlay.Layer("WorldLayer", worldLayer);
+                })
+                .Render();
+        }
+        <script language="javascript" type="text/javascript">
+            var txtOLEElement = document.getElementById("txtOLE");
+            var txtWin32Element = document.getElementById("txtWin32");
+            var txtHTMLElement = document.getElementById("txtHTML");
+            var txtArgbElement = document.getElementById("txtArgb");
+
+            txtOLEElement.value = '@GeoColor.ToOle(geoColor).ToString()';
+            txtWin32Element.value = '@GeoColor.ToWin32(geoColor).ToString()';
+            txtHTMLElement.value = '@GeoColor.ToHtml(geoColor)';
+            txtArgbElement.value = '@string.Format("A:{0}  R:{1}  G:{2}  B:{3}", geoColor.AlphaComponent, geoColor.RedComponent, geoColor.GreenComponent, geoColor.BlueComponent)';
+
+        </script>
+    </div>
+</div>

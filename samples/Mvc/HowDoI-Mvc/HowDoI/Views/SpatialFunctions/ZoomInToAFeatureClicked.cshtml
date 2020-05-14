@@ -1,0 +1,58 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<script language="javascript" type="text/javascript">
+    function zoomToFeature(e) {
+        var param = { x: e.worldXY.lon, y: e.worldXY.lat };
+
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'ZoomToShape', param, callback);
+    }
+
+    function callback(result) {
+        var parameters = result.get_responseData().split("|");
+        var extent = parameters[0].split(",");
+        var bbox = new OpenLayers.Bounds(extent[0], extent[1], extent[2], extent[3]);
+        Map1.zoomToExtent(bbox);
+        document.getElementById("dataInfoDiv").innerHTML = parameters[1];
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Click on a country to zoom to it.
+            <div id="dataInfoDiv"></div>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit("100%"), 760)
+        .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+        .MapUnit(GeographyUnit.Meter)
+        .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+        .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+        .CustomOverlays(overlays =>
+        {
+            // Please input your ThinkGeo Cloud API Key to enable the background map.
+            overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+            ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02_3857.shp"));
+            worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.SimpleColors.Transparent, GeoColor.FromArgb(100, GeoColor.SimpleColors.Green));
+            worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+            overlays.LayerOverlay("CountryOverlay").IsBaseOverlay(false).Layer("WorldLayer", worldLayer);
+
+            InMemoryFeatureLayer highlightLayer = new InMemoryFeatureLayer();
+            highlightLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(100, 60, 180, 60), GeoColor.GeographicColors.DeepOcean);
+            highlightLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = WorldStreetsTextStyles.GeneralPurpose("CNTRY_NAME",8);
+            highlightLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+            overlays.LayerOverlay("HighlightOverlay").IsBaseOverlay(false).TileType(TileType.SingleTile).Layer("HighlighLayer", highlightLayer);
+        })
+        .OnClientClick("zoomToFeature")
+        .Render();
+    }
+</div>

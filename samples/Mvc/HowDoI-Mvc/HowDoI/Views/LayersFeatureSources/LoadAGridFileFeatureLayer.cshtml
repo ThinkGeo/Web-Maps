@@ -1,0 +1,56 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            This sample simply load a grid file feature layer.
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+          .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+          .MapUnit(GeographyUnit.DecimalDegree)
+          .CurrentExtent(-96.1156129546119, 29.9548238510752, -96.105810851851, 29.9474722740045)
+          .StaticOverlay(overlay =>
+          {
+              ClassBreakStyle gridClassBreakStyle = new ClassBreakStyle("CellValue");
+              gridClassBreakStyle.ClassBreaks.Add(new ClassBreak(double.MinValue, new AreaStyle(new GeoSolidBrush(GeoColor.SimpleColors.Transparent))));
+              gridClassBreakStyle.ClassBreaks.Add(new ClassBreak(0, new AreaStyle(new GeoSolidBrush(GeoColor.FromArgb(100, GeoColor.SimpleColors.Black)))));
+              gridClassBreakStyle.ClassBreaks.Add(new ClassBreak(6.83, new AreaStyle(new GeoSolidBrush(GeoColor.StandardColors.Snow))));
+              gridClassBreakStyle.ClassBreaks.Add(new ClassBreak(7.0, new AreaStyle(new GeoSolidBrush(GeoColor.StandardColors.Silver))));
+              gridClassBreakStyle.ClassBreaks.Add(new ClassBreak(7.08, new AreaStyle(new GeoSolidBrush(GeoColor.StandardColors.Yellow))));
+              gridClassBreakStyle.ClassBreaks.Add(new ClassBreak(7.15, new AreaStyle(new GeoSolidBrush(GeoColor.StandardColors.Blue))));
+              gridClassBreakStyle.ClassBreaks.Add(new ClassBreak(7.21, new AreaStyle(new GeoSolidBrush(GeoColor.StandardColors.Green))));
+              gridClassBreakStyle.ClassBreaks.Add(new ClassBreak(7.54, new AreaStyle(new GeoSolidBrush(GeoColor.StandardColors.Red))));
+
+              GridFeatureLayer gridFeatureLayer = new GridFeatureLayer(Server.MapPath("~/App_Data/PhValues.grd"));
+              gridFeatureLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(gridClassBreakStyle);
+              gridFeatureLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+              ClassBreakStyle shapeFileClassBreakStyle = new ClassBreakStyle("PH");
+              shapeFileClassBreakStyle.ClassBreaks.Add(new ClassBreak(double.MinValue, new PointStyle(PointSymbolType.Circle, new GeoSolidBrush(GeoColor.SimpleColors.Transparent), new GeoPen(GeoColor.StandardColors.Black), 10)));
+              shapeFileClassBreakStyle.ClassBreaks.Add(new ClassBreak(0, new PointStyle(PointSymbolType.Circle, new GeoSolidBrush(GeoColor.FromArgb(255, 255, 0, 0)), new GeoPen(GeoColor.StandardColors.Black), 10)));
+              shapeFileClassBreakStyle.ClassBreaks.Add(new ClassBreak(6.83, new PointStyle(PointSymbolType.Circle, new GeoSolidBrush(GeoColor.FromArgb(255, 255, 128, 0)), new GeoPen(GeoColor.StandardColors.Black), 10)));
+              shapeFileClassBreakStyle.ClassBreaks.Add(new ClassBreak(7.0, new PointStyle(PointSymbolType.Circle, new GeoSolidBrush(GeoColor.FromArgb(255, 245, 210, 10)), new GeoPen(GeoColor.StandardColors.Black), 10)));
+              shapeFileClassBreakStyle.ClassBreaks.Add(new ClassBreak(7.08, new PointStyle(PointSymbolType.Circle, new GeoSolidBrush(GeoColor.FromArgb(255, 255, 255, 0)), new GeoPen(GeoColor.StandardColors.Black), 10)));
+              shapeFileClassBreakStyle.ClassBreaks.Add(new ClassBreak(7.15, new PointStyle(PointSymbolType.Circle, new GeoSolidBrush(GeoColor.FromArgb(255, 224, 251, 132)), new GeoPen(GeoColor.StandardColors.Black), 10)));
+              shapeFileClassBreakStyle.ClassBreaks.Add(new ClassBreak(7.21, new PointStyle(PointSymbolType.Circle, new GeoSolidBrush(GeoColor.FromArgb(255, 128, 255, 128)), new GeoPen(GeoColor.StandardColors.Black), 10)));
+              shapeFileClassBreakStyle.ClassBreaks.Add(new ClassBreak(7.54, new PointStyle(PointSymbolType.Circle, new GeoSolidBrush(GeoColor.FromArgb(255, 0, 255, 0)), new GeoPen(GeoColor.StandardColors.Black), 10)));
+
+              ShapeFileFeatureLayer phLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/sampleph.shp"));
+              phLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(shapeFileClassBreakStyle);
+              phLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+              overlay.Layer(gridFeatureLayer);
+              overlay.Layer(phLayer);
+          }
+    ).Render();}
+    </div>
+</div>

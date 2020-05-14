@@ -1,0 +1,58 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc;
+<script language="javascript" type="text/javascript">
+    function changeScaleLineLocation(optionObj) {
+        var placement = optionObj.value;
+
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'SetScaleLineLocation', { 'placement': placement }, mapCallback);
+    }
+
+    function mapCallback(result) {
+        Map1.redrawLayer("DynamicOverlay");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Switch item in the combo and see the position of labels.
+            <br />
+            <br />
+            <select id="ddlScaleLineLocation" name="ddlScaleLineLocation" size="18" style="width: 200px;" onchange="changeScaleLineLocation(this);">
+                <option value="UpperLeft">UpperLeft</option>
+                <option value="UpperCenter">UpperCenter</option>
+                <option value="UpperRight">UpperRight</option>
+                <option value="CenterRight" selected="selected">CenterRight</option>
+                <option value="Center">Center</option>
+                <option value="CenterLeft">CenterLeft</option>
+                <option value="LowerLeft">LowerLeft</option>
+                <option value="LowerCenter">LowerCenter</option>
+                <option value="LowerRight">LowerRight</option>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main"> <div id="map">
+@{
+    Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+        .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+        .MapUnit(GeographyUnit.Meter)
+        .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+        .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+        .CustomOverlays(overlays =>
+        {
+            // Please input your ThinkGeo Cloud API Key to enable the background map.
+            overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+        })
+        .CustomOverlays(overlays =>
+        {
+            ScaleLineAdornmentLayer scaleLineAdornmentLayer = new ScaleLineAdornmentLayer();
+            overlays.LayerOverlay("DynamicOverlay").IsBaseOverlay(false).TileType(TileType.SingleTile).Layer("ScaleLineAdornmentLayer", scaleLineAdornmentLayer);
+        })
+        .Render();
+}
+</div> </div> 

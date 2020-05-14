@@ -1,0 +1,48 @@
+﻿@*/*===========================================
+        Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require
+        An API Key. These were sent to you via email when you signed up
+        with ThinkGeo, or you can register now at https://cloud.thinkgeo.com.
+    ===========================================*/*@
+
+
+@using ThinkGeo.MapSuite;
+@using ThinkGeo.MapSuite.Drawing;
+@using ThinkGeo.MapSuite.Layers;
+@using ThinkGeo.MapSuite.Mvc;
+@using System.Web.UI.WebControls;
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<script language="javascript" type="text/javascript">
+    function UpdateDynamicOverlay(layerName) {
+        Map1.ajaxCallAction("Home", "UpdateOverlay", { layer: layerName }, function (result) {
+            // Refresh overlay after callback7
+            Map1.redrawLayer("ShapeOverlay");
+        })
+    }
+</script>
+<div style="height:90%">
+    @{Html.ThinkGeo().Map("Map1", new Unit(100, UnitType.Percentage), new Unit(100, UnitType.Percentage))
+        .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+        .MapUnit(GeographyUnit.Meter)
+        .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+        .CurrentExtent(-13086298.60, 7339062.72, -8111177.75, 2853137.62)
+        .CustomOverlays(overlays =>
+        {
+            // Please input your ThinkGeo Cloud API Key to enable the background map.
+            overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+            overlays.LayerOverlay("ShapeOverlay", false, TileType.MultipleTile);
+        })
+        .Render();
+    }
+</div>
+<div>
+    <input id="chKAddUs" name="group1" type="radio" value="Show US States" onclick="UpdateDynamicOverlay('US')" />
+    Show US States
+    <br />
+    <input id="chKAddCounty" name="group1" type="radio" value="Show US Counties" onclick="UpdateDynamicOverlay('City')" />
+    Show US Cities
+    <br />
+</div>

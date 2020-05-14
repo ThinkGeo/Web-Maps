@@ -1,0 +1,69 @@
+﻿@using ThinkGeo.MapSuite.VehicleTracking
+@model IEnumerable<Vehicle>
+@{
+    Layout = null;
+}
+<table id="tbVehiclelist">
+    @foreach (Vehicle item in Model)
+    {
+        <tr>
+            <td rowspan="5" class="vehicleImg">
+                <img id="imgVehicle" alt="@item.VehicleName" src='@item.VehicleIconVirtualPath' />
+            </td>
+            <td colspan="2" class="vehicleName">
+                <a href="#" id="btnZoomTo">@item.VehicleName</a>
+                <input type="hidden" id="lonlat" value='@item.Location.Longitude , @item.Location.Latitude' />
+            </td>
+        </tr>
+        <tr class="vehicleTxt">
+            <td colspan="2">
+                @{
+        if (item.MotionState == VehicleMotionState.Motion)
+        {
+                    <img alt="ball" src='Images/ball_green.png' />
+                    <span id="motionStatus" class="greenTxt">In Motion</span>
+        }
+        else
+        {
+                    <img alt="ball" src='Images/ball_gray.png' />            
+                    <span id="motionStatus" class="greenTxt">Idle</span>
+        }
+                }
+            </td>
+        </tr>
+        <tr class="vehicleTxt">
+            <td>Area:
+            </td>
+            <td id="isInFence">
+                @{
+        if (item.IsInFence)
+        { 
+                    <span class='redTxt'>In Restrict Area</span>
+        }
+        else
+        {
+                    <span>Out Of Restrict Area</span>
+        }
+                }
+            </td>
+        </tr>
+        <tr class="vehicleTxt">
+            <td>Speed:
+            </td>
+            <td>
+                @item.Location.Speed.ToString(System.Globalization.CultureInfo.InvariantCulture) mph
+            </td>
+        </tr>
+        <tr class="vehicleTxt">
+            <td>Duration:
+            </td>
+            <td>
+                @item.SpeedDuration.ToString(System.Globalization.CultureInfo.InvariantCulture) min
+            </td>
+        </tr>
+        <tr class="vehicleTxt">
+            <td colspan="3">&nbsp;
+            </td>
+        </tr>
+    }
+</table>

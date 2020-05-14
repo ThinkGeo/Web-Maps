@@ -1,0 +1,76 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Collections.ObjectModel;
+@using ZedGraph;
+<script language="javascript" type="text/javascript">
+    function btnSimplify_Click() {
+        var ddlToleranceObj = document.getElementById("ddlTolerance");
+        var ddlsimplificationObj = document.getElementById("ddlsimplification");
+
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', "SimplifyClick", { tolerance: ddlToleranceObj.value, simplificationType: ddlsimplificationObj.value }, callback);
+    }
+    function callback(result) {
+        Map1.redrawLayer("StaticOverlay");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                This sample shows how to render map using different simplification types. Please select
+                the drawing parameters from DropdownLists below, then click the button to draw.
+            </p>
+            <ul>
+                <li><span>
+                    <label id="label1">
+                        Tolerance:</label></span> <span>
+                            <select id="ddlTolerance" name="ddlTolerance" style="font-size:10px; width:50px;">
+                                <option value="0.75">0.75</option>
+                                <option value="1.5">1.5</option>
+                                <option value="3">3</option>
+                            </select>
+                        </span></li>
+                <li><span>
+                    <label id="label2">
+                        SimplificationType:</label></span> <span>
+                            <select id="ddlsimplification" name="ddlsimplification" style="font-size:10px;">
+                                <option value="TopologyPreserving">TopologyPreserving</option>
+                                <option value="DouglasPeucker">DouglasPeucker</option>
+                            </select>
+                        </span></li>
+            </ul>
+            <input type="button" id="btnSimplify" name="btnSimplify" value="Simplify" style="width:120px;" onclick="btnSimplify_Click();" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .CurrentExtent(-177.39584350585937, 83.113876342773437, -52.617362976074219, 14.550546646118164)
+                .MapUnit(GeographyUnit.DecimalDegree)
+                .StaticOverlay(staticOverlay =>
+                {
+                    ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02.shp"));
+
+                    worldLayer.Open();
+                    Feature feature = worldLayer.QueryTools.GetFeatureById("135", new string[0]);
+                    AreaBaseShape areaBaseShape = (AreaBaseShape)feature.GetShape();
+                    worldLayer.Close();
+
+                    InMemoryFeatureLayer simplificationLayer = new InMemoryFeatureLayer();
+                    simplificationLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                    simplificationLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.StandardColors.Transparent, GeoColor.FromArgb(255, 156, 155, 154), 1);
+                    simplificationLayer.InternalFeatures.Add(feature);
+                    staticOverlay.IsBaseOverlay(false).Layer("SimplificationLayer", simplificationLayer);
+                })
+                .Render();
+        }
+    </div>
+</div>

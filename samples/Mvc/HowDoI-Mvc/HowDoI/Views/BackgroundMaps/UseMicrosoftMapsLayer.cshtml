@@ -1,0 +1,32 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Configuration;
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            The sample demonstrates how to render Microsoft Layers using BingMapslayer. It requires
+            the Bing Maps development key that can be created following the document <a href="http://msdn.microsoft.com/en-us/library/ff428642.aspx" target="_blank">http://msdn.microsoft.com/en-us/library/ff428642.aspx.</a>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main"> <img src="@Url.Content("~/content/images/Capture.png")"
+width="100%" height="760" alt="Temp Picture" />
+ @*    @{
+        Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 510)
+            .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+            .CustomOverlays(overlays =>
+            {
+                Layer worldLayer = new BingMapsLayer("applicationId", BingMapsMapType.Road);
+                overlays.LayerOverlay("World Overlay")
+                    .Layer(worldLayer);
+            })
+            .MapUnit(GeographyUnit.Meter)
+            .CurrentScale((new ZoomLevelSet()).ZoomLevel03.Scale)
+            .Render();
+    }
+*@</div> 

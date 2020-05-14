@@ -1,0 +1,65 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+
+<script language="javascript" type="text/javascript">
+    function callback(result) {
+        Map1.redrawLayer("StaticOverlay");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                Click the buttons below to change the width or color of the roads.</p>
+            <table>
+                <tr>
+                    <td>
+                        <input type="button" id="btnWider" style="width:180px;" name="btnWider" value="Widen the road" onclick="Map1.ajaxCallAction('Styles','ChangeLineType', {lineType:'wider'}, callback);" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="button" id="btnNarrow" style="width:180px;" name="btnNarrow" value="Thin the road" onclick="Map1.ajaxCallAction('Styles','ChangeLineType', {lineType:'narrow'}, callback);" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="button" id="btnLineColorYellow" style="width:180px;" name="btnLineColorYellow" value="Draw with light yellow"
+                            onclick="Map1.ajaxCallAction('Styles','ChangeLineType', {lineType:'lineColorYellow'}, callback);" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="button" id="btnLineColorPink" style="width:180px;" name="btnLineColorPink" value="Draw with light pink"
+                            onclick="Map1.ajaxCallAction('Styles','ChangeLineType', {lineType:'lineColorPink'}, callback);" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .CurrentExtent(-97.745827547760484, 30.297694742808115, -97.728208518132988, 30.285123327073894)
+                .MapUnit(GeographyUnit.DecimalDegree)
+                .StaticOverlay(staticOverlay =>
+                {
+
+                    ShapeFileFeatureLayer streetLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/austinstreets.shp"));
+                    streetLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = LineStyles.CreateSimpleLineStyle(GeoColor.StandardColors.White, 8F, GeoColor.StandardColors.DarkGray, 10F, true);
+                    streetLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                    staticOverlay.Layer("Austin", streetLayer);
+
+                })
+                .Render();
+        }
+    </div>
+</div>

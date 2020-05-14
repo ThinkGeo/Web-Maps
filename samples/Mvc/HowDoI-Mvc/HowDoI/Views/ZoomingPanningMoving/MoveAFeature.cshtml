@@ -1,0 +1,77 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using ThinkGeo.MapSuite.Mvc
+<script language="javascript" type="text/javascript">
+    function callback(result) {
+        Map1.redrawLayer("mapShapeLayer");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                Click one of the buttons to move the feature on the screen either up, down, left
+                or right.
+            </p>
+            <table cellpadding="0" cellspacing="4">
+                <tr>
+                    <td colspan="3" align="center">
+                        <img id="btnMoveUp" onclick="Map1.ajaxCallAction('ZoomingPanningMoving','Move',{dir: 'up'},callback);" alt="Move Up"
+                            src="@Url.Content("~/Content/theme/default/img/north_mini.gif")" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <img id="btnMoveLeft" onclick="Map1.ajaxCallAction('ZoomingPanningMoving','Move',{dir: 'left'},callback);" alt="Move Left"
+                            src="@Url.Content("~/Content/theme/default/img/west_mini.gif")" />
+                    </td>
+                    <td>
+                        &nbsp;&nbsp;&nbsp;
+                    </td>
+                    <td>
+                        <img id="btnMoveRight" onclick="Map1.ajaxCallAction('ZoomingPanningMoving','Move',{dir: 'right'},callback);" alt="Move Right"
+                            src="@Url.Content("~/Content/theme/default/img/east_mini.gif")" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3" align="center">
+                        <img id="btnMoveDown" onclick="Map1.ajaxCallAction('ZoomingPanningMoving','Move',{dir: 'down'},callback);" alt="Move Down"
+                            src="@Url.Content("~/Content/theme/default/img/south_mini.gif")" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+              .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+              .MapUnit(GeographyUnit.Meter)
+              .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+              .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+              .CustomOverlays(overlay =>
+              {
+                  // Please input your ThinkGeo Cloud API Key to enable the background map.
+                  overlay.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+                  InMemoryFeatureLayer mapShapeLayer = new InMemoryFeatureLayer();
+                  mapShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillSolidBrush.Color = GeoColor.FromArgb(125, 141, 255, 141);
+                  mapShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColor.GeographicColors.DeepOcean;
+                  mapShapeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                  BaseShape feature = new EllipseShape(new PointShape(0, 3503549.84350437), 2000000, 1000000);
+                  feature.Id = "MutlipointShape";
+                  mapShapeLayer.InternalFeatures.Add(feature.Id, new Feature(feature));
+
+                  overlay.LayerOverlay("mapShapeLayer").Layer(mapShapeLayer).IsBaseOverlay(false).TileType(TileType.SingleTile);
+              })
+              .Render();
+        }
+    </div>
+</div>

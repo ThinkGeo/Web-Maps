@@ -1,0 +1,53 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Configuration;
+<script language="javascript" type="text/javascript">
+    function changeBackgroundMapType(mapType) {
+        Map1.setCurrentBackgroundMapType(mapType);
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                This sample displays a google map. Click buttons below to switch between different
+                Google maps.
+            </p>
+            <input id="btnRoad" name="btnRoad" type="button" value="roadmap" size="40%" style="width: 40%;"
+                onclick="changeBackgroundMapType(google.maps.MapTypeId.ROADMAP);" />
+            <input id="btnAerial" name="btnAerial" type="button" value="hybird" size="40%" style="width: 40%;"
+                onclick="changeBackgroundMapType(google.maps.MapTypeId.HYBRID);" />
+            <span>
+                <input id="btnSatellite" name="btnSatellite" type="button" value="satellite" size="40%"
+                    style="width: 40%;" onclick="changeBackgroundMapType(google.maps.MapTypeId.SATELLITE);" />
+                <input id="btnPhysical" name="btnPhysical" type="button" value="terrain" size="40%"
+                    style="width: 40%;" onclick="changeBackgroundMapType(google.maps.MapTypeId.TERRAIN);" />
+            </span>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .CurrentExtent(-13939426.6371, 6701997.4056, -7812401.86, 2626987.386962)
+                .MapUnit(GeographyUnit.Meter)
+                .MapTools(t =>
+                {
+                    t.OverlaySwitcherMapTool().Enabled(true);
+                    t.MouseCoordinateMapTool().Enabled(true);
+                })
+                .CustomOverlays(overlays =>
+                {
+                    overlays.GoogleOverlay("Google Map").GoogleMapType(GoogleMapType.Normal);
+                })
+                .Render();
+        }
+    </div>
+</div>

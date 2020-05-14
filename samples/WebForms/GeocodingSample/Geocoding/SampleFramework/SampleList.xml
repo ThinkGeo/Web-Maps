@@ -1,0 +1,57 @@
+<SampleList>
+  <Category Id="Samples" Name="Samples" SamplePath="" CodePath="">
+      <Sample Id="GeocodingInTexas" Name="Geocoding in Texas" >
+        <Description>Geocoding in Texas</Description>
+        <ContentPage>GeocodingInTexas.aspx</ContentPage>
+      </Sample>
+    <Sample Id="ReverseGeocodingInTexas" Name="Reverse Geocoding in Texas" >
+      <Description>Reverse Geocoding in Texas</Description>
+      <ContentPage>ReverseGeocodingInTexas.aspx</ContentPage>
+    </Sample>
+    <Sample Id="BatchGeocodingInTexas" Name="Batch Geocoding in Texas" >
+      <Description>Batch Geocoding in Texas</Description>
+      <ContentPage>BatchGeocodingInTexas.aspx</ContentPage>
+    </Sample>
+    <Sample Id="PostCodeSearching" Name="PostCode Searching" >
+      <Description>PostCode Searching</Description>
+      <ContentPage>PostCodeSearching.aspx</ContentPage>
+    </Sample>
+    <Sample Id="CensusBlockSearching" Name="Census Block Searching" >
+      <Description>Census Block Searching</Description>
+      <ContentPage>CensusBlockSearching.aspx</ContentPage>
+    </Sample>
+    <Sample Id="CensusBlockGroupSearching" Name="Census Block Group Searching" >
+      <Description>Census Block Group Searching</Description>
+      <ContentPage>CensusBlockGroupSearching.aspx</ContentPage>
+    </Sample>
+    <Sample Id="CensusTrackSearching" Name="Census Track Searching" >
+      <Description>Census Track Searching</Description>
+      <ContentPage>CensusTractSearching.aspx</ContentPage>
+    </Sample>
+    <Sample Id="BuildIndexFile" Name="Build an Index File" >
+      <Description>Build an Index File</Description>
+      <ContentPage>BuildIndexFile.aspx</ContentPage>
+    </Sample>
+    <Sample Id="CreateTextFileMatchingPlugIn" Name="Create Text File Matching PlugIn" >
+      <Description>Create Text File Matching PlugIn</Description>
+      <ContentPage>CreateTextFileMatchingPlugIn.aspx</ContentPage>
+    </Sample>
+    <Sample Id="CreateDatabaseMatchingPlugIn" Name="Create Database Matching PlugIn" >
+      <Description>Create Database File Matching PlugIn</Description>
+      <ContentPage>CreateDatabaseMatchingPlugIn.aspx</ContentPage>
+    </Sample>
+    <Sample Id="FuzzyLogicSearching" Name="Fuzzy Logic Searching" >
+      <Description>Fuzzy Logic Searching</Description>
+      <ContentPage>FuzzyLogicSearching.aspx</ContentPage>
+    </Sample>
+    <Sample Id="GetClosestStreetNumberInTexas" Name="Get Closest Street Number In Texas" >
+      <Description>Get Closest Street Number In Texas</Description>
+      <ContentPage>GetClosestStreetNumberInTexas.aspx</ContentPage>
+    </Sample>
+    <Sample Id="IpAddressMatchingPlugin" Name="Ip Address Matching Plugin" >
+      <Description>Ip Address Matching Plugin</Description>
+      <ContentPage>IpAddressMatchingPlugin.aspx</ContentPage>
+    </Sample>
+  </Category>
+</SampleList>
+ 

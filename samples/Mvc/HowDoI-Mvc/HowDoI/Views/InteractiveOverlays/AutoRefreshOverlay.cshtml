@@ -1,0 +1,55 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Configuration;
+<script language="javascript" type="text/javascript">
+    function refreshMarkers() {
+        Map1.ajaxCallAction("InteractiveOverlays", "RefreshMarkerOverlay", {}, function (result) {
+            Map1.redrawLayer("MarkerOverlay");
+        });
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                Demonstrate how to use the AutoRefresh functionality. Please wait for seconds, you
+                will see that markers are moving automatically.
+            </p>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .MapUnit(GeographyUnit.Meter)
+                .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+                .CurrentExtent(-10609977.5529722, 4719070.64212212, -10598015.1604916, 4710483.42982142)
+                .CustomOverlays(overlays =>
+                {
+                    // Please input your ThinkGeo Cloud API Key to enable the background map.
+                    overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+                    overlays.InMemoryMarkerOverlay("MarkerOverlay").AutoRefreshInterval(TimeSpan.FromMilliseconds(1000)).OnClientAutoRefreshTick("refreshMarkers")
+                        .ZoomLevelSet(zoomlevelset =>
+                        {
+                            zoomlevelset.ZoomLevel01.DefaultMarkerStyle.WebImage = new ThinkGeo.MapSuite.Mvc.WebImage(21, 25, -10.5f, -25f);
+                            zoomlevelset.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                        })
+                        .Feature(new Feature(-10604400.4464835, 4712974.81950668))
+                        .Feature(new Feature(-10604390.4277293, 4717312.24123085))
+                        .Feature(new Feature(-10604204.5241797, 4717028.74910805))
+                        .Feature(new Feature(-10607696.6166059, 4715518.3564733))
+                        .Feature(new Feature(-10600568.8296104, 4713478.60961773))
+                        .Feature(new Feature(-10605393.4163414, 4712409.51663098));
+                })
+                .Render();
+        }
+    </div>
+</div>

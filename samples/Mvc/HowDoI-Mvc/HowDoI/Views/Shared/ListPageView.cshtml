@@ -1,0 +1,74 @@
+﻿@using CSharp_HowDoISamples
+@model CSharp_HowDoISamples.ModelCategoriesSamples
+@{
+    Layout = "~/Views/Shared/Layout.cshtml";
+}
+<div id="maincontent">
+    <div class="container">
+        <div class="four columns" id="navigation">
+            <h4>
+                Categories</h4>
+            <ul id="categories">
+                @foreach (Category item in Model.Categories)
+                {
+                    TempData["tempData"] = string.Empty;
+                    if (Model.SelectedCatrgory == @item.Id)
+                    {
+                        TempData["tempData"] = "class=selected";
+                    }
+                    <li><a href="@Url.Content(string.Format("~/{0}/{1}/?categoryId={2}", @ViewContext.RouteData.Values["Controller"], @ViewContext.RouteData.Values["Action"], @item.Id))" id="@item.Id" title="@item.Name" @TempData["tempData"]>@item.Name</a></li>
+                }
+            </ul>
+            @using (Html.BeginForm())
+            {
+                <input type="text" id="filter" name="filter" style="width: 120px; margin-bottom: 5px;"
+                    class="txt" />
+                <input type="submit" id="Button1" value="Search" style="width: 60px; height: 22px;
+                    line-height: 16px;" class="tab" />
+            }
+        </div>
+        <!-- /navigation -->
+        <div class="sixteen columns" id="main">
+            <h1 id="category-name">
+                @Model.SelectedCatrgoryName</h1>
+            @*  <p id="category-desc">
+                @Model.SelectedCategoryDescritpion</p>*@ @*<div class="pager">
+                @Html.Pager(Model.Samples.PageSize, Model.Samples.PageNumber, Model.Samples.TotalItemCount, new { categoryId = Model.SelectedCatrgory })
+            </div>*@
+            <div id="apps">
+                @if (Model.Samples.Count == 0)
+                {
+                    <div class="app clearfix">
+                        <h2>
+                        No sample found.
+                        </h2>
+                    </div>
+                }
+                @foreach (var item in Model.Samples)
+                {
+                    <div class="app clearfix">
+                        <h2>
+                            <a name="@item.Id" /><a href="@Url.Content(string.Format("~/{0}/{1}/{2},{3}", @item.Category, @item.Id, Model.CurrentPage, Model.SelectedCatrgory))">@item.Name</a></h2>
+                        <div class="screenshot">
+                            <img src="@Url.Content("~/Resources/ScreenShot/" + @item.ImageFileName)" alt="Screenshot" /></div>
+                        <div class="app-desc">
+                            <p>@Html.Raw(item.Description)</p>
+                            <p class="listitembuttons">
+                                <a href="@Url.Content(string.Format("~/{0}/{1}/{2},{3}", @item.Category, @item.Id, Model.CurrentPage, Model.SelectedCatrgory))" class="button blue extraspace launch" title="View this sample application">
+                                    View Sample</a>
+                            </p>
+                        </div>
+                        <!-- /app-desc -->
+                    </div>
+                }
+                <!-- /app -->
+            </div>
+            <div class="pager one offset-by-four columns">
+                @Html.Pager(Model.Samples.PageSize, Model.Samples.PageNumber, Model.Samples.TotalItemCount, new { categoryId = Model.SelectedCatrgory })
+            </div>
+            <!-- /apps -->
+        </div>
+        <!-- /main -->
+    </div>
+    <!-- /container -->
+</div>

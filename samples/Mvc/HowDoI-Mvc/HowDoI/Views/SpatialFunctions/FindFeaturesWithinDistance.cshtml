@@ -1,0 +1,53 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc;
+@model ThinkGeo.MapSuite.Mvc.Map
+<script language="javascript" type="text/javascript">
+    var lonlat = null;
+
+    function mapClick(e) {
+        if (e) {
+            lonlat = e.worldXY;
+        }
+
+        var distance = document.getElementById("ddlDistance").value;
+        var params = { 'distance': distance, x: lonlat.lon, y: lonlat.lat };
+
+        Map1.ajaxCallAction('SpatialFunctions', 'FindQueriedFeatures', params, mapCallback);
+    }
+
+    function updateDistance() {
+        if (lonlat != null) {
+            mapClick();
+        }
+    }
+
+    function mapCallback(result) {
+        Map1.redrawLayer("DynamicOverlay");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Plaese click on the map to show the countries which are within the distance specified by the
+            selected item below.
+            <br />
+            Query Distance:
+            <select id="ddlDistance">
+                <option value="500" onclick="updateDistance();">500</option>
+                <option value="1000" onclick="updateDistance();">1,000</option>
+                <option value="2000" onclick="updateDistance();">2,000</option>
+                <option value="5000" onclick="updateDistance();">5,000</option>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div id="map">
+        @{Html.ThinkGeo().Map(Model).OnClientClick("mapClick").Render();}
+    </div>
+</div>

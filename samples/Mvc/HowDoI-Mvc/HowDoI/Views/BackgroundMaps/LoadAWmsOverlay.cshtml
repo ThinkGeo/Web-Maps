@@ -1,0 +1,42 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Configuration;
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Shows how to display a Wms overlay.
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.StandardColors.White))
+                .CurrentExtent(-131.22, 55.05, -54.03, 16.91)
+                .MapUnit(GeographyUnit.DecimalDegree)
+                .CustomOverlays(overlays =>
+                {
+                    overlays.WmsOverlay("WMS Overlay")
+                        .Parameters(paras =>
+                        {
+                            paras.Add("layers", "OSM-WMS");
+                            paras.Add("STYLE", "default");
+                        })
+                        .ServerUris(uris =>
+                        {
+                            uris.Add(new Uri("http://ows.mundialis.de/services/service"));
+                        })
+                        .TileType(TileType.MultipleTile)
+                        .TileHeight(256)
+                        .TileWidth(256);
+                })
+                .Render();
+        }
+    </div>
+</div>

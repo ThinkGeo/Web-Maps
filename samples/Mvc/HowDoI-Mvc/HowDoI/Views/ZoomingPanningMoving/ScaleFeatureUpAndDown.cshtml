@@ -1,0 +1,50 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using ThinkGeo.MapSuite.Mvc
+<script language="javascript" type="text/javascript">
+    function callback(result) {
+        Map1.redrawLayer("InMemoryFeatureLayer");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                Click one of the buttons to scale the feature up or down.
+            </p>
+            <input type="button" style="width:100px;" id="btnScaleUp" name="btnScaleUp" value="Scale Up" onclick="Map1.ajaxCallAction('ZoomingPanningMoving','Scale',{dir: 'up'},callback);" />
+            &nbsp;
+            <input type="button" style="width:100px;" id="btnScaleDown" name="btnScaleDown" value="Scale Down" onclick="Map1.ajaxCallAction('ZoomingPanningMoving','Scale',{dir: 'down'},callback);" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+              .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+              .MapUnit(GeographyUnit.Meter)
+              .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+              .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+              .CustomOverlays(overlay =>
+              {
+                  // Please input your ThinkGeo Cloud API Key to enable the background map.
+                  overlay.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+                  InMemoryFeatureLayer mapShapeLayer = new InMemoryFeatureLayer();
+                  mapShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillSolidBrush.Color = GeoColor.FromArgb(122, 145, 255, 144);
+                  mapShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColor.GeographicColors.DeepOcean;
+                  mapShapeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                  BaseShape feature = new RectangleShape(-2226389.81586547, 5621521.48619207, 2226389.81586547, 1689200.13960789);
+                  feature.Id = "Rectangle";
+                  mapShapeLayer.InternalFeatures.Add("Rectangle", new Feature(feature));
+
+                  overlay.LayerOverlay("InMemoryFeatureLayer").Layer(mapShapeLayer).IsBaseOverlay(false).TileType(TileType.SingleTile);
+              })
+              .Render();
+        }
+    </div>
+</div>

@@ -1,0 +1,36 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Collections.ObjectModel;
+@using ZedGraph;
+@model ThinkGeo.MapSuite.Mvc.Map
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                To use the ZedGraphStyle functions, you have to reference "[Install-Path]\Developer
+                Reference\Spatial Extension\ZedGraph Style Extension\ZedGraphStyleExtension.DLL"
+            </p>
+            <p>
+                We used zedgraph pie chart to represent the ratio of white to asian of the major
+                US cities.
+            </p>
+            <ul>
+                <li style="width:60px;height:18px;border-style:dotted;border-width:1px;border-color:Gray;background-color:#ADD8E6;text-align:center">White</li>
+                <li style="width:60px;height:18px;border-style:dotted;border-width:1px;border-color:Gray;background-color:#7CFC00;text-align:center">Asian</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map(Model)
+                .Render();
+        }
+    </div>
+</div>

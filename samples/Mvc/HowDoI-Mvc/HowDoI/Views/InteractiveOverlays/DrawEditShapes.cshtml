@@ -1,0 +1,105 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Configuration;
+<script language="javascript" type="text/javascript">
+    function saveMap() {
+        var features = Map1.getEditFeaturesInJson();
+        Map1.ajaxCallAction("InteractiveOverlays", "SaveMap", { editFeatures: features }, function callback() {
+            Map1.clearEditingFeatures();
+            Map1.setDrawMode("Normal");
+            Map1.redrawLayer("DynamicOverlay");
+        });
+    }
+
+    function editShape() {
+        Map1.ajaxCallAction("InteractiveOverlays", "EditShape", null, editShapeCallback);
+    }
+
+    function editShapeCallback(result) {
+        var features = Map1.getFeaturesFromJson(result.get_responseData());
+
+        var editOverlay = Map1.getEditOverlay();
+        editOverlay.addFeatures(features);
+
+        Map1.getDynamicOverlay().redraw(true);
+        Map1.setDrawMode("Modify");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Try clicking buttons below to draw different shapes.
+        </div>
+        <div class="ToolItems">
+            <ul>
+                <li>
+                    <img class="imgBtn" src="@Url.Content("~/Content/images/Cursor.png")" id="buttonNormal" onclick="Map1.setDrawMode('Normal');return false;" alt="Normal Mode" /></li>
+                <li>
+                    <img class="imgBtn" src="@Url.Content("~/Content/images/point28.png")" id="buttonDrawPoint" onclick="Map1.setDrawMode('Point');return false;" alt="Draw Point" /></li>
+                <li>
+                    <img class="imgBtn" src="@Url.Content("~/Content/images/line28.png")" id="buttonDrawLine" onclick="Map1.setDrawMode('Line');return false;" alt="Draw Line" /></li>
+                <li>
+                    <img class="imgBtn" src="@Url.Content("~/Content/images/rectangle28.png")" id="buttonDrawRectangle" onclick="Map1.setDrawMode('Rectangle');return false;" alt="Draw Rectangle" /></li>
+                <li>
+                    <img class="imgBtn" src="@Url.Content("~/Content/images/square28.png")" id="buttonDrawSquare" onclick="Map1.setDrawMode('Square');return false;" alt="Draw Square" /></li>
+                <li>
+                    <img class="imgBtn" src="@Url.Content("~/Content/images/polygon28.png")" id="buttonDrawPolygon" onclick="Map1.setDrawMode('Polygon');return false;" alt="Draw Polygon" /></li>
+                <li>
+                    <img class="imgBtn" src="@Url.Content("~/Content/images/circle28.png")" id="buttonDrawCircle" onclick="Map1.setDrawMode('Circle');return false;" alt="Draw Circle" /></li>
+                <li>
+                    <img class="imgBtn" src="@Url.Content("~/Content/images/ellipse28.png")" id="buttonDrawEllipse" onclick="Map1.setDrawMode('Ellipse');return false;" alt="Draw Ellipse" /></li>
+                <li>
+                    <img class="imgBtn" src="@Url.Content("~/Content/images/freehand28.gif")" id="buttonFreeHand" onclick="Map1.setDrawMode('FreeHand');return false;" alt="FreeHand" /></li>
+            </ul>
+        </div>
+        <div class="Clear">
+        </div>
+        <div>
+            Try clicking buttons below to remove the previous shape draw, save or edit the shapes
+            drew.
+        </div>
+        <div class="ToolItems">
+            <ul>
+                <li>
+                    <img class="imgBtn" src="@Url.Content("~/Content/images/Delete.gif")" id="buttonDeleteShape" onclick="Map1.cancelLatestFeature();return false;" alt="Delete Shape" /></li>
+                <li>
+                    <img class="imgBtn" src="@Url.Content("~/Content/images/tool_save.gif")" id="buttonSubmit" onclick="saveMap();" alt="Submit" /></li>
+                <li>
+                    <img class="imgBtn" src="@Url.Content("~/Content/images/btn_edit.png")" id="buttonEditShape" onclick="editShape();" alt="Edit Shape" /></li>
+            </ul>
+        </div>
+        <div class="Clear">
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .MapUnit(GeographyUnit.Meter)
+                .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+                .CurrentExtent(-14607343.5818934, 7371576.14679691, -6014592.08756057, 1910351.0222467)
+                .CustomOverlays(overlays =>
+                {
+                    // Please input your ThinkGeo Cloud API Key to enable the background map.
+                    overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+                    InMemoryFeatureLayer shapeLayer = new InMemoryFeatureLayer();
+                    shapeLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = PointStyles.CreateSimpleCircleStyle(GeoColor.FromArgb(180, 102, 255, 102), 10, GeoColor.StandardColors.DarkGreen, 1);
+                    shapeLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = LineStyles.CreateSimpleLineStyle(GeoColor.StandardColors.Green, 4, true);
+                    shapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(180, 102, 255, 102), GeoColor.StandardColors.DarkGreen, 1);
+                    shapeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                    shapeLayer.DrawingQuality = DrawingQuality.HighQuality;
+
+                    overlays.LayerOverlay("DynamicOverlay").Layer("shapeLayer", shapeLayer).IsBaseOverlay(false).TileType(TileType.SingleTile);
+                })
+                .Render();
+        }
+    </div>
+</div>

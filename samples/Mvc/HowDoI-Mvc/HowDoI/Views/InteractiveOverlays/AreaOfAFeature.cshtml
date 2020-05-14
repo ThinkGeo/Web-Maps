@@ -1,0 +1,48 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<script language="javascript" type="text/javascript">
+    function clickToGetArea(e) {
+        Map1.ajaxCallAction("InteractiveOverlays", "GetArea", { x: e.worldXY.lon, y: e.worldXY.lat }, function () {
+            Map1.sendPopupsRequest();
+        })
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Click on a country to show its area.
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    @{
+        Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+            .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+            .MapUnit(GeographyUnit.Meter)
+            .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+            .CurrentExtent(-13086298.60, 7339062.72, -8111177.75, 2853137.62)
+            .CustomOverlays(overlays =>
+            {
+                // Please input your ThinkGeo Cloud API Key to enable the background map.
+                overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+                ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02_3857.shp"));
+                worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.SimpleColors.Transparent, GeoColor.FromArgb(100, GeoColor.SimpleColors.Green));
+                worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                overlays.LayerOverlay("OverLayer").TileType(TileType.SingleTile).IsBaseOverlay(false).Layer("worldLayer", worldLayer);
+
+            })
+            .Popups(popups =>
+            {
+                popups.CloudPopup("information").AutoSize(true).IsVisible(false);
+            })
+            .OnClientClick("clickToGetArea")
+            .Render();
+    }
+</div>

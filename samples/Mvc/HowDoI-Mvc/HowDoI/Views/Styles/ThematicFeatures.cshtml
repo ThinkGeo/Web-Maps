@@ -1,0 +1,52 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Collections.ObjectModel;
+@using ZedGraph;
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                We have broken down the population of each country into ranges and then used different
+                colors to represent the ranges.
+            </p>
+            <ul>
+                <li><span><input type="button" class="legend" style="background-color: #d8dd8c;" /></span><span>Less than 1,000,000</span></li>
+                <li><span><input type="button" class="legend" style="background-color: #90EE90;" /></span><span>1,000,000 ~ 10,000,000</span></li>
+                <li><span><input type="button" class="legend" style="background-color: #9ACD32;" /></span><span>10,000,000 ~ 50,000,000</span></li>
+                <li><span><input type="button" class="legend" style="background-color: LightGreen;" /></span><span>50,000,000 ~ 100,000,000</span></li>
+                <li><span><input type="button" class="legend" style="background-color: DarkGreen;" /></span><span>More than 100,000,000</span></li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .CurrentExtent(-140, 60, 140, -60)
+                .MapUnit(GeographyUnit.DecimalDegree)
+                .StaticOverlay(staticOverlay =>
+                {
+                    ClassBreakStyle classBreakStyle = new ClassBreakStyle("POP_CNTRY");
+                    classBreakStyle.ClassBreaks.Add(new ClassBreak(double.MinValue, WorldStreetsAreaStyles.Grass()));
+                    classBreakStyle.ClassBreaks.Add(new ClassBreak(1000000, AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(150, 144, 238, 144))));
+                    classBreakStyle.ClassBreaks.Add(new ClassBreak(10000000, AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(150, 154, 205, 50))));
+                    classBreakStyle.ClassBreaks.Add(new ClassBreak(50000000, AreaStyles.CreateSimpleAreaStyle(GeoColor.StandardColors.LightGreen)));
+                    classBreakStyle.ClassBreaks.Add(new ClassBreak(100000000, AreaStyles.CreateSimpleAreaStyle(GeoColor.StandardColors.DarkGreen)));
+
+                    ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02.shp"));
+                    worldLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 233, 232, 214), GeoColor.FromArgb(255, 118, 138, 69)));
+                    worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                    worldLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(classBreakStyle);
+                    staticOverlay.IsBaseOverlay(false).Layer("WorldLayer", worldLayer);
+                })
+                .Render();
+        }
+    </div>
+</div>

@@ -1,0 +1,31 @@
+﻿@using System.Data;
+@using System.Collections.ObjectModel;
+@model DataTable
+@{ 
+    Layout = null;
+}
+<table id="resultTable">
+    <tr>
+        <td class="header">
+        </td>
+        <td class="header">
+            Name
+        </td>
+    </tr>
+    @foreach (DataRow dataRow in Model.Rows)
+    {
+        <tr>
+            <td style="width: 30px">
+                <img alt="Search" title="Zoom to sepcified POI" class="imgButton" src="@Url.Content("~/Content/Images/find.png")" onclick="zoomToPoi('@dataRow["WKT"]')" />
+            </td>
+            <td>@dataRow["Name"]
+            </td>
+        </tr>
+    }
+</table>
+@if (ViewData.ContainsKey("serviceAreaExtent"))
+{
+    <script type="text/javascript">
+        Map1.zoomToExtent(new OpenLayers.Bounds(@ViewData["serviceAreaExtent"]));
+    </script>
+}

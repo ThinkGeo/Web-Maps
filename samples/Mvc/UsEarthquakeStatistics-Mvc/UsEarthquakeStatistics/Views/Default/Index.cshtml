@@ -1,0 +1,149 @@
+﻿@using ThinkGeo.MapSuite.Mvc
+@{
+    ViewBag.Title = "US Earthquake Statistics";
+}
+<div id="container">
+    <div id="header">
+        <div id="left-header">
+            <span id="header-mapsuite">Map Suite</span> <span id="header-title">US Earthquake Statistic</span>
+        </div>
+    </div>
+    <div id="content-container">
+        <div id="leftContainer">
+            <div id="leftContent">
+                <h4>Display Type:</h4>
+                <div id="divBasemaps">
+                    <input type="image" id="btnHeatMap" src="@Url.Content("~/Content/Images/heatMap.png")" command="Heat Map" />
+                    <input type="image" id="btnPointMap" src="@Url.Content("~/Content/Images/pointMap.png")" command="Regular Point Map" />
+                    <input type="image" id="btnIsolineMap" src="@Url.Content("~/Content/Images/Isoline.png")" command="IsoLines Map" />
+                </div>
+                <div id="divblueBanner">
+                    Earthquake Information Explorer
+                </div>
+                <h4>Query Tool:</h4>
+                <div id="divTrackShapes" class="divBorder">
+                    <input type="image" id="btnPanMap" title="Pan the map" src="@Url.Content("~/Content/Images/Pan.png")" class="active" onclick="Map1.setDrawMode('normal');" />
+                    <input type="image" id="btnDrawPolygon" title="Draw a polygon" src="@Url.Content("~/Content/Images/DrawPolygon.png")" onclick="Map1.setDrawMode('Polygon');" />
+                    <input type="image" id="btnDrawRectangle" title="Draw a rectangle" src="@Url.Content("~/Content/Images/DrawRectangle.png")" onclick="Map1.setDrawMode('Rectangle');"/>
+                    <input type="image" id="btnDrawCircle" title="Draw a circle" src="@Url.Content("~/Content/Images/Drawcircle.png")" onclick="Map1.setDrawMode('Circle');"/>
+                    <input type="image" id="btnClearAll" title="Clear all" src="@Url.Content("~/Content/Images/clear.png")" command="ClearAll"/>
+                </div>
+                <h4>Query Configuration:</h4>
+                <div id="divQueryPanel" class="divBorder">
+                    <table>
+                        <tr>
+                            <td colspan="3">
+                                <h5>Magnitude:
+                                </h5>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="cfgRangeTitle">
+                                <span>0</span>
+                            </td>
+                            <td class="slider">
+                                <div id="sliderFortxbMagnitude">
+                                </div>
+                            </td>
+                            <td class="cfgRangeTitle">
+                                <span>12</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3">
+                                <h5>Depth of Hypocenter(Km):
+                                </h5>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="cfgRangeTitle">
+                                <span>0</span>
+                            </td>
+                            <td class="slider">
+                                <div id="sliderFortxbDepth">
+                                </div>
+                            </td>
+                            <td class="cfgRangeTitle">
+                                <span>300</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3">
+                                <h5>Date(Year):
+                                </h5>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="cfgRangeTitle">
+                                <span>1568</span>
+                            </td>
+                            <td class="slider">
+                                <div id="sliderFortxbYear">
+                                </div>
+                            </td>
+                            <td class="cfgRangeTitle">
+                                <span>2010</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="toggle">
+            <img alt="collapse" id="collapse" src="@Url.Content("~/Content/Images/collapse.gif")" />
+        </div>
+        <div id="map-content">
+            <div id="mapContainer">
+                @{
+                    // Binding triggers configuration.
+                    LayerOverlay earthquakeOverlay = Model.CustomOverlays["EarthquakeOverlay"] as LayerOverlay;
+                    
+                    ActionRequest layerSwitchActionRequest = new ActionRequest("SwitchMapType")      
+                    { 
+                        ClientGetArgumentsFunction = "getChangeLayerTypeArguments",
+                        OnClientActionRequested = "changeLayerTypeCallback" 
+                    };
+                    ActionRequest clearLayerActionRequest = new ActionRequest("ClearAllShapes") 
+                    { 
+                        OnClientActionRequested = "clearLayerCallback" 
+                    };
+                    
+                    earthquakeOverlay.ActionTriggers.Add(new ActionTrigger("btnHeatMap", "onclick", layerSwitchActionRequest));
+                    earthquakeOverlay.ActionTriggers.Add(new ActionTrigger("btnPointMap", "onclick", layerSwitchActionRequest));
+                    earthquakeOverlay.ActionTriggers.Add(new ActionTrigger("btnIsolineMap", "onclick", layerSwitchActionRequest));
+                    earthquakeOverlay.ActionTriggers.Add(new ActionTrigger("btnClearAll", "onclick", clearLayerActionRequest));
+
+                    // Render Map.
+                    Html.ThinkGeo().Map(Model).Render();   
+                }
+            </div>
+            <div id="resultContainer">
+                <div class="grid-contianer">
+                    <table id="resultTable">
+                        <tr>
+                            <td class="result-header"></td>
+                            <td class="result-header">Year
+                            </td>
+                            <td class="result-header">Longitude
+                            </td>
+                            <td class="result-header">Latitude
+                            </td>
+                            <td class="result-header">Depth(KM)
+                            </td>
+                            <td class="result-header">Magnitude
+                            </td>
+                            <td class="result-header">Location
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="footer">
+        <span id="spanMouseCoordinate"></span>
+    </div>
+</div>
+<div id="loading">
+    <img id="loading-image" src="@Url.Content("Content/Images/loading.gif")" alt="Loading..." />
+</div>

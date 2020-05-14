@@ -1,0 +1,73 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Collections.ObjectModel;
+<script language="javascript" type="text/javascript">
+    function btnFind_Click() {
+        var txtFeatureIdObj = document.getElementById("txtFeatureId");
+        Map1.ajaxCallAction("SpatialFunctions", "FindFeature", { featureID: txtFeatureIdObj.value }, function (result) {
+
+            var popup = Map1.popups[0];
+            popup.show();
+            popup.setContentHTML("<div style='color:#0065ce;font-size:10px;font-family:arial;'>The selected country is " + result.get_responseData().split('^')[1] + "</div>");
+            var lonlat = result.get_responseData().split('^')[0].split(',');
+            popup.lonlat = new OpenLayers.LonLat(lonlat[0], lonlat[1]);
+            popup.updatePosition();
+            Map1.redrawLayer("InMemoryFeatureLayer");
+        });
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                Click the button to find the feature based on its Id in the textbox.
+            </p>
+            <ul>
+                <li><span>
+                    <label id="label1">
+                        FeatureId(1-251):</label></span> <span>
+                            <input type="text" id="txtFeatureId" value="103" disabled="disabled" maxlength="3"
+                                style="width: 40px;" />
+                        </span></li>
+            </ul>
+            <input type="button" id="btnFind" name="btnFind" value="Get the feature" onclick="btnFind_Click();" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .MapUnit(GeographyUnit.Meter)
+                .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+                .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+                .CustomOverlays(overlays =>
+                {
+                    // Please input your ThinkGeo Cloud API Key to enable the background map.
+                    overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+                    ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02_3857.shp"));
+
+                    worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.SimpleColors.Transparent, GeoColor.FromArgb(100, GeoColor.SimpleColors.Green));
+                    worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                    InMemoryFeatureLayer mapShapeLayer = new InMemoryFeatureLayer();
+                    mapShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillSolidBrush.Color = GeoColor.FromArgb(150, 60, 180, 60);
+                    mapShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColor.GeographicColors.DeepOcean;
+                    mapShapeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                    overlays.LayerOverlay("WorldLayer").IsBaseOverlay(false).Layer(worldLayer);
+                    overlays.LayerOverlay("InMemoryFeatureLayer").IsBaseOverlay(false).TileType(TileType.SingleTile).Layer(mapShapeLayer);
+                })
+                .Popups(popups =>
+                {
+                    popups.CloudPopup("selectedFeature").Width(150).Height(30).IsVisible(false);
+                })
+                .Render();
+        }
+    </div>
+</div>

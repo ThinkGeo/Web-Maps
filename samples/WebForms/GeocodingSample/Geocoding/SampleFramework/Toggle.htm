@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Toggle</title>
+
+    <script language="javascript" type="text/javascript">
+        function toggleMenu()
+        {
+            var cols = parent.document.getElementById("contentFrameSet").cols;
+                 var toggle = this.document.getElementById("toggle");
+            if(cols == '0,5,*')
+            {
+                 parent.document.getElementById("contentFrameSet").cols = '250,5,*';
+                 toggle.alt = "Hide Sample List Panel";
+                 toggle.src = "theme/default/samplepic/collapse.gif";
+            }
+            else
+            {
+                 parent.document.getElementById("contentFrameSet").cols = '0,5,*';
+                 toggle.alt = "Show Sample List Panel";
+                 toggle.src = "theme/default/samplepic/expand.gif";
+            }
+        }
+    </script>
+
+</head>
+<body>
+    <div style="z-index: 1000; position: fixed; right: 0px; top: 220px;">
+        <img alt="Hide Sample List Panel" style="cursor: pointer" onclick="toggleMenu();"
+            id="toggle" src="theme/default/samplepic/collapse.gif" />
+    </div>
+</body>
+</html>

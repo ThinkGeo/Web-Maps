@@ -1,0 +1,51 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Configuration
+<script language="javascript" type="text/javascript">
+    function clickOnMarker(e) {
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'ClickOnMarker', { x: e.worldXY.lon, y: e.worldXY.lat }, function (result) {
+            document.getElementById("spanText").innerHTML = result.get_responseData();
+            Map1.redrawLayer("MarkerOverlay");
+        })
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Click the blue marker on the map to change its color.
+            <br />
+            <br />
+            <span id="spanText" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .MapUnit(GeographyUnit.Meter)
+                .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+                .CurrentExtent(-14607343.5818934, 7371576.14679691, -6014592.08756057, 1910351.0222467)
+                .CustomOverlays(overlays =>
+                {
+                    // Please input your ThinkGeo Cloud API Key to enable the background map.
+                    overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+                    overlays.InMemoryMarkerOverlay("MarkerOverlay")
+                        .Feature("Kansas", new Feature(-10517734.8833162, 4687318.87110816))
+                        .ZoomLevelSet(z =>
+                        {
+                            z.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                        })
+                        .OnClientClick("clickOnMarker");
+                })
+                .Render();
+        }
+    </div>
+</div>

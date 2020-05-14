@@ -1,0 +1,135 @@
+<body oncontextmenu='return false;'><pre name='code' class='c-sharp:nocontrols'>using System;
+using System.Collections.ObjectModel;
+using System.Data;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+using ThinkGeo.MapSuite.Core;
+using ThinkGeo.MapSuite.MapSuiteGeocoder;
+using ThinkGeo.MapSuite.WebEdition;
+
+namespace HowDoISamples
+{
+    public partial class CensusTract : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!Page.IsPostBack)
+            {
+                // Setup the map unit and set the Chicago extent
+                map1.MapUnit = GeographyUnit.DecimalDegree;
+                map1.CurrentExtent = new RectangleShape(-88.3330001640625, 42.5966329101563, -86.9157638359375, 41.1629170898438);
+
+                // Setup the World Map Kit WMS Overlay
+                WorldMapKitWmsWebOverlay worldMapKitOverlay = new WorldMapKitWmsWebOverlay();
+                map1.BackgroundOverlay = worldMapKitOverlay;
+
+                // Setup the marker layer and add it to the map            
+                MarkerLayer markerLayer = new MarkerLayer(Server.MapPath("~/SampleFramework/Images/marker_blue.gif"));
+                map1.DynamicOverlay.Layers.Add(markerLayer);
+
+            }    
+        }
+
+        protected void btnSearch_Click(object sender, EventArgs e)
+        {
+            // Get the path to the data files and create the Geocoder
+            string dataPath = Server.MapPath("~/SampleData/ChicagoData");
+            UsaGeocoder usaGeocoder = new UsaGeocoder(dataPath);
+
+            // Open the geocoder, get any matches and close it
+            MatchResult matchResult;
+            try
+            {
+                usaGeocoder.Open();
+                matchResult = usaGeocoder.Match(cboSourceText.Text);
+                matchItems = matchResult.MatchItems;
+            }
+            finally
+            {
+                usaGeocoder.Close();
+            }
+
+            PopulateAddressResultList(matchResult);
+        }
+
+        private void PopulateAddressResultList(MatchResult matchResult)
+        {
+            // Clear the results
+            lstResult.Items.Clear();
+            dataGridViewDetail.DataSource = null;
+
+            // Load the matching items into the grid
+
+            foreach (MatchItem matchItem in matchResult.MatchItems)
+            {
+                if (matchItem.MatchPairs.ContainsKey("ID_Tract"))
+                {
+                    lstResult.Items.Add(SampleHelper.GetMatchItemText(matchItem, new string[] { "ID_Tract", "State", "County" }));
+                }
+            }
+
+            // If we find addresses then select the first one to zoom in, if not then say we did not find any
+            if (lstResult.Items.Count > 0)
+            {
+                lstResult.SelectedIndex = 0;
+                lstResult_SelectedIndexChanged(this, new EventArgs());
+            }
+            else
+            {
+                ScriptManager.RegisterStartupScript(UpdatePanel1, UpdatePanel1.GetType(), "messageBox", "window.alert('No results found!')", true);
+
+            }
+        }
+
+        protected void lstResult_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Populate the address grid based on the selected address
+            MatchItem matchItem = matchItems[lstResult.SelectedIndex];
+
+            DataTable matchTable = new DataTable();
+            matchTable.Columns.Add("Key");
+            matchTable.Columns.Add("Value");
+            foreach (KeyValuePair<string, string> item in matchItem.MatchPairs)
+            {
+                matchTable.Rows.Add(new object[] { item.Key, item.Value });
+            }
+            dataGridViewDetail.DataSource = matchTable;
+            dataGridViewDetail.DataBind();
+
+            // Set the marker location to the address selected
+            MarkerLayer markerLayer = map1.DynamicOverlay.Layers[0] as MarkerLayer;
+            markerLayer.MarkerLocation = new PointShape(matchItem.MatchPairs["CentroidPoint"]);
+
+            // Set the extent around the address and refresh the map
+            map1.CurrentExtent = new RectangleShape(matchItem.MatchPairs["BoundingBox"]);
+        }
+
+        #region "Fields"
+
+        private Collection<MatchItem> matchItems
+        {
+            get
+            {
+                if (Session["MatchItems"] == null)
+                {
+                    return new Collection<MatchItem>();
+                }
+                else
+                {
+                    return Session["MatchItems"] as Collection<MatchItem>;
+                }
+            }
+            set
+            {
+                Session["MatchItems"] = value;
+            }
+        }
+
+        #endregion
+    }
+}
+</pre><link type='text/css' rel='stylesheet' href='SampleFramework/SyntaxHighlighter/SyntaxHighlighter.css'></link><script language='javascript' src='SampleFramework/SyntaxHighlighter/shCore.js'></script><script language='javascript' src='SampleFramework/SyntaxHighlighter/shBrushCSharp.js'></script><script language='javascript' src='SampleFramework/SyntaxHighlighter/shBrushXml.js'></script><script language='javascript'>dp.SyntaxHighlighter.HighlightAll('code');</script></body>

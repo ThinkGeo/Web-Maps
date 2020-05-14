@@ -1,0 +1,11 @@
+﻿@using ThinkGeo.MapSuite;
+@using ThinkGeo.MapSuite.Layers;
+@using ThinkGeo.MapSuite.Mvc;
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Drawing;
+@{
+    ViewBag.Title = "Index";
+}
+<div id=map style="height:100%">
+    @{Html.ThinkGeo().Map(Model).Render();}
+</div>

@@ -1,0 +1,43 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Drag a marker to a new place.
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+          .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+          .MapUnit(GeographyUnit.Meter)
+          .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+          .CurrentExtent(-13939426.6371, 6701997.4056, -7812401.86, 2626987.386962)
+          .MapTools(m =>
+              {
+                  m.PanZoomBarMapTool().Enabled(true);
+                  m.MouseCoordinateMapTool().Enabled(true);
+              })
+          .CustomOverlays(overlay =>
+              {
+                  // Please input your ThinkGeo Cloud API Key to enable the background map.
+                  overlay.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+                  overlay.SimpleMarkerOverlay("MarkerOverlay").DragMode(MarkerDragMode.Drag).Markers(m =>
+                  {
+                      m.Marker(-8922952.93266, 2984101.58384, new ThinkGeo.MapSuite.Mvc.WebImage(21, 25, -10.5f, -25f));
+                      m.Marker(-12454955.13517, 4980025.26614, new ThinkGeo.MapSuite.Mvc.WebImage(21, 25, -10.5f, -25f));
+                      m.Marker(-10772117.52067, 3864656.14956, new ThinkGeo.MapSuite.Mvc.WebImage(21, 25, -10.5f, -25f));
+                      m.Marker(-13164290.75755, 4035875.09290, new ThinkGeo.MapSuite.Mvc.WebImage(21, 25, -10.5f, -25f));
+                      m.Marker(-9754587.80028, 5156136.17929, new ThinkGeo.MapSuite.Mvc.WebImage(21, 25, -10.5f, -25f));
+                  });
+              })
+          .Render();}
+    </div>
+</div>

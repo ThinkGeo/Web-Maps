@@ -1,0 +1,59 @@
+﻿<!-- Header
+================================================== -->
+<div id="header">
+    <div class="container">
+        <div class="four columns">
+            <a href="http://thinkgeo.com" id="logo-link" target="_blank">
+                <img src="@Url.Content("~/Resources/thinkgeo_logo_large.png")" width="185" height="44" id="logo" alt="Logo" title="Visit ThinkGeo on the web" />
+            </a>
+        </div>
+    </div>
+    <!-- /.container -->
+</div>
+<!-- /header -->
+<div id="titlebar">
+    <div class="container">
+        <div class="sixteen columns">
+            @{
+                string uri = this.Context.Request.Url.AbsolutePath;
+                string[] uriParts = uri.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                string controllerName = uriParts[uriParts.Length - 3];
+                string actionName = uriParts[uriParts.Length - 2];
+                string page = string.Empty;
+                string categoryName = string.Empty;
+                if (uriParts.Length > 2)
+                {
+                    string[] parameters = uriParts[uriParts.Length - 1].Split(',');
+                    page = parameters[0];
+                    categoryName = parameters[1];
+                }
+                else
+                {
+                    string[] querys = this.Context.Request.Url.Query.Split(new char[] { '?', '&' });
+                    foreach (var item in querys)
+                    {
+                        if (item.Contains("page"))
+                        {
+                            page = item.Split('=')[1];
+                            break;
+                        }
+
+                    }
+                }
+            }
+
+            <h1>
+                <span>@actionName</span>
+            </h1>
+        </div>
+        <div class="four columns">
+            <p class="backlink">
+                <a href="@Url.Content(string.Format("~/ListPage/ListPageView/?categoryId={0}&page={1}#{2}", categoryName, @page, @actionName))" class="button">
+                    &larr; All Samples
+                </a>
+            </p>
+        </div>
+    </div>
+    <!-- /container -->
+</div>
+<!-- /titlebar -->

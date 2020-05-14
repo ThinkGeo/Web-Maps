@@ -1,0 +1,45 @@
+﻿@using ThinkGeo.MapSuite;
+@using ThinkGeo.MapSuite.Drawing;
+@using ThinkGeo.MapSuite.Layers;
+@using ThinkGeo.MapSuite.Shapes;
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc;
+@using System.Configuration;
+
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            In this sample, a layer overlay that contains a shapefile layer overlaps upon a
+            Google overlay.</div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .CurrentExtent(-13939426.6371, 6701997.4056, -7812401.86, 2626987.386962)
+                .MapUnit(GeographyUnit.Meter)
+                .MapTools(tools =>
+                {
+                    tools.OverlaySwitcherMapTool().Enabled(true);
+                    tools.MouseCoordinateMapTool().Enabled(true);
+                })
+                .CustomOverlays(overlays =>
+                {
+                    overlays.GoogleOverlay("Google Map")
+                        .JavaScriptLibraryUri(new Uri(ConfigurationManager.AppSettings["GoogleUriV3"]))
+                        .GoogleMapType(GoogleMapType.Normal);
+
+                    FeatureLayer layer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/STATES.SHP"));
+                    layer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(100, 212, 220, 184), GeoColor.FromArgb(255, 132, 132, 154), 1);
+                    layer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                    overlays.LayerOverlay("Shape Overlay", false, TileType.SingleTile)
+                        .Layer(layer);
+                })
+                .Render();
+        }
+    </div>
+</div>

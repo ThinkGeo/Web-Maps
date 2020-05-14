@@ -1,0 +1,49 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc;
+@model System.Collections.ObjectModel.Collection<CSharp_HowDoISamples.FeatureColumn>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            This sample gets all the column data of a feature layer and displayed them.
+            <br />
+            <div style="height: 200px; overflow: auto;">
+                <table style="height: 120px; background-color: White; border-color: #CCCCCC; border-style: none;
+                    border-width: 1px; padding: 3px;">
+                    <tr style="background-color: #006699; font-weight: bold; color: White;">
+                        <td>
+                            Column Name
+                        </td>
+                        <td>
+                            Max Length
+                        </td>
+                        <td>
+                            Type Name
+                        </td>
+                    </tr>
+                    @foreach (var country in Model)
+                    {
+                        <tr style="background-color: White;">
+                            <td>@country.ColumnName
+                            </td>
+                            <td>@country.MaxLength
+                            </td>
+                            <td>
+                                @country.TypeName
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div id="map">
+        @{Html.ThinkGeo().Map((Map)ViewData["map"]).Render();}
+    </div>
+</div>

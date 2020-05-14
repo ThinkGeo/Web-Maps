@@ -1,0 +1,43 @@
+﻿@{
+    string uri = this.Context.Request.Url.PathAndQuery;
+    string[] uriParts = uri.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+    string controllerName = string.Empty;
+    string actionName = string.Empty;
+    if (uriParts.Length == 2)
+    {
+        controllerName = uriParts[uriParts.Length - 2];
+        actionName = uriParts[uriParts.Length - 1];
+    }
+    else
+    {
+        controllerName = uriParts[uriParts.Length - 3];
+        actionName = uriParts[uriParts.Length - 2];
+    }
+}
+<div id="sourcebuttons-above">
+    <h4>
+        Source Code
+    </h4>
+    <div class="sourcebuttons">
+        <a onclick="javascript:invokeAction('http', '', 'GetSourceCode', 'Controller', 'protocol=http&subhost=&category=@controllerName&pageName=@actionName', sourceodeCallback)" class="button blue" target="_blank">
+            View Controller Source
+        </a>
+    </div>
+    <div class="sourcebuttons">
+        <a onclick="javascript:invokeAction('http', '', 'GetSourceCode', 'Razor', 'protocol=http&subhost=&category=@controllerName&pageName=@actionName', sourceodeCallback)" class="button blue" target="_blank">
+            View Aspx/Razor Source
+        </a>
+    </div>
+    <div class="sourcebuttons">
+        <a href="https://github.com/ThinkGeo/HowDoISample-ForMvc" class="button blue" target="_blank">
+            View In GitHub
+        </a>
+    </div>
+</div>
+<div id="instrux-showhide">
+    <input type="button" id="showhide-button" value="-" style="width: 18px; height: 18px;"
+           onclick="toggleInstrux()" />
+</div>
+<h4>
+    Instructions
+</h4>

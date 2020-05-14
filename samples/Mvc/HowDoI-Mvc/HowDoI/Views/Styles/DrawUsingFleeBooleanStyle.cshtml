@@ -1,0 +1,52 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            The sample demonstrates how to render map by FleeBooleanStyle, the hightlight features
+            are the landlocked countries whoes population is more than 10 million.
+            <br />
+            <span class="warning">To use the FleeBooleanStyle functions, you have to reference [Install-Path]\Developer
+                Reference\Spatial Extensions\FleeStyle Extension\FleeStyleExtension.dll and Ciloci.Flee.dll</span>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    @{
+        Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+            .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+            .CurrentExtent(-143.4, 109.3, 116.7, -76.3)
+            .MapUnit(GeographyUnit.DecimalDegree)
+            .CustomOverlays(overlays =>
+            {
+                string expression = "(ToInt32(POP_CNTRY)>10000000) AND (ToChar(LANDLOCKED)='Y')";
+                FleeBooleanStyle landLockedCountryStyle = new FleeBooleanStyle(expression);
+
+                // You can access the static methods on these types.  We use this
+                // to access the Convert.Toxxx methods to convert variable types
+                landLockedCountryStyle.StaticTypes.Add(typeof(System.Convert));
+
+                // The math class might be handy to include but in this sample we do not use it
+                //landLockedCountryStyle.StaticTypes.Add(typeof(System.Math));
+
+                landLockedCountryStyle.ColumnVariables.Add("POP_CNTRY");
+                landLockedCountryStyle.ColumnVariables.Add("LANDLOCKED");
+
+                landLockedCountryStyle.CustomTrueStyles.Add(new AreaStyle(new GeoPen(GeoColor.FromArgb(255, 118, 138, 69), 1), new GeoSolidBrush(GeoColor.SimpleColors.Yellow)));
+                landLockedCountryStyle.CustomFalseStyles.Add(AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 233, 232, 214), GeoColor.FromArgb(255, 118, 138, 69)));
+
+                ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02.shp"), GeoFileReadWriteMode.Read);
+                worldLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(landLockedCountryStyle);
+                worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                overlays.LayerOverlay("StaticOverlay").Layer(worldLayer);
+
+            })
+            .Render();
+    }
+</div>

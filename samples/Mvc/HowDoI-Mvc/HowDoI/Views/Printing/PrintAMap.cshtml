@@ -1,0 +1,22 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@model ThinkGeo.MapSuite.Mvc.Map
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Click the icon to print the current map.<br />
+            <input type="button" name="ClickButton" value="PrintMap" onclick="Map1.printMap();" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @Html.ThinkGeo().Map(Model).Render()
+        <br />
+    </div>
+</div>

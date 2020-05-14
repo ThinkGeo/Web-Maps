@@ -1,0 +1,52 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<style type="text/css">
+    .comment
+    {
+        width: 400px;
+        height: 100px;
+        left: 80px;
+        top: 5px;
+        padding: 5px;
+        font-size: 10px;
+        line-height: 20px;
+        z-index: 999;
+        position: absolute;
+        background-color: #feffc7;
+        border: solid 2px #cccccc;
+    }
+</style>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            The sample demonstrates how to render GeoDatabaseFeatureLayer using FdoExtension.<br />
+            <br />
+            <span class="warning">(To use the PersonalGeoDatabaseFeatureLayer functions, you have
+                to reference [Install-Path]\Developer Reference\Spatial Extensions\Fdo Extension\FdoExtension.dll,
+                And get Fdo dependencies from [Install-Path]\\Developer Reference\\System32, put
+                MapSuiteFdoExtensionx86 folder to System32\Map Suite *.* folder ) </span>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+          .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+          .MapUnit(GeographyUnit.Meter)
+          .CurrentExtent(2149408.38465815, 246471.365609125, 2204046.63635703, 213231.081162168)
+          .StaticOverlay(overlay =>
+          {
+              PersonalGeoDatabaseFeatureLayer worldLayer = new PersonalGeoDatabaseFeatureLayer(Server.MapPath("~/App_Data/JORWD6gdb.mdb"), null, null, "Mains");
+              worldLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = LineStyles.CreateSimpleLineStyle(GeoColor.StandardColors.White, 8F, GeoColor.StandardColors.DarkGray, 10F, true);
+              worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+              overlay.Layer("WorldLayer", worldLayer);
+          }
+    ).Render();}
+    </div>
+</div>

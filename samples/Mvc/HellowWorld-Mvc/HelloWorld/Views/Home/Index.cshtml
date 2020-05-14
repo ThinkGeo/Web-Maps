@@ -1,0 +1,34 @@
+﻿@*/*===========================================
+    Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require
+    An API Key. These were sent to you via email when you signed up
+    with ThinkGeo, or you can register now at https://cloud.thinkgeo.com.
+===========================================*/*@
+
+@using ThinkGeo.MapSuite;
+@using ThinkGeo.MapSuite.Layers;
+@using ThinkGeo.MapSuite.Mvc;
+@using ThinkGeo.MapSuite.Drawing;
+@using System.Web.UI.WebControls;
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<div style="height:80%">
+    @{Html.ThinkGeo().Map("Map1", new Unit(100, System.Web.UI.WebControls.UnitType.Percentage),
+                  new Unit(100, System.Web.UI.WebControls.UnitType.Percentage))
+            .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+            .MapUnit(GeographyUnit.Meter)
+            .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+            .CurrentExtent(-13086298.60, 7339062.72, -8111177.75, 2853137.62)
+            .CustomOverlays(overlays =>
+            {
+                // Please input your ThinkGeo Cloud API Key to enable the background map.
+                overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps","ThinkGeo Cloud API Key");
+
+            })
+            .Render();
+    }
+</div>

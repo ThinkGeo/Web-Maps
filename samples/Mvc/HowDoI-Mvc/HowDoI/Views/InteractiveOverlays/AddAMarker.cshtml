@@ -1,0 +1,54 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+
+<script language="javascript" type="text/javascript">
+    function mapCallback(result) {
+        Map1.redrawLayer("MarkerOverlay");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            This sample demonstrates how to add a marker on the map.<br />
+            <input type="button" onclick="Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'AddMarker', { markerId: 'Marker', x: '-10526148.4104304', y: '4732850.5697907' }, mapCallback);"
+                value="Add Marker" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+            .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+            .MapUnit(GeographyUnit.Meter)
+            .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+            .CurrentExtent(-14607343.5818934, 7371576.14679691, -6014592.08756057, 1910351.0222467)
+            .CustomOverlays(overlay =>
+            {
+                // Please input your ThinkGeo Cloud API Key to enable the background map.
+                overlay.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+                overlay.InMemoryMarkerOverlay("MarkerOverlay")
+                    .ZoomLevelSet(z =>
+                    {
+                        z.ZoomLevel01.DefaultMarkerStyle.Popup.ContentHtml = "<div style='font-size:11px'>Kansas City</Div>";
+                        z.ZoomLevel01.DefaultMarkerStyle.Popup.HasCloseButton = true;
+                        z.ZoomLevel01.DefaultMarkerStyle.Popup.Width = 100;
+                        z.ZoomLevel01.DefaultMarkerStyle.Popup.Height = 30;
+                        z.ZoomLevel01.DefaultMarkerStyle.Popup.BackgroundColor = GeoColor.StandardColors.LightBlue;
+                        z.ZoomLevel01.DefaultMarkerStyle.Popup.BorderColor = GeoColor.StandardColors.Black;
+                        z.ZoomLevel01.DefaultMarkerStyle.Popup.BorderWidth = 1;
+                        z.ZoomLevel01.DefaultMarkerStyle.WebImage.ImageOffsetX = -10.5f;
+                        z.ZoomLevel01.DefaultMarkerStyle.WebImage.ImageOffsetY = -25f;
+                        z.ZoomLevel01.DefaultMarkerStyle.WebImage.ImageWidth = 21;
+                        z.ZoomLevel01.DefaultMarkerStyle.WebImage.ImageHeight = 25;
+                        z.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                    });
+            })
+            .Render();}
+    </div>
+</div>

@@ -1,0 +1,56 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+
+<script language="javascript" type="text/javascript">
+    function ddlPreDefinedStyles_SelectedIndexChanged(selectObj) {
+        var styleOption = selectObj.value;
+        Map1.ajaxCallAction("Styles", "PreDefinedStyles_SelectedIndexChanged", { styleMode: styleOption }, callback);
+    }
+
+    function callback(result) {
+        Map1.redrawLayer("StaticOverlay");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                Select a predefined style from the list to use it for the countries.
+            </p>
+            <select id="ddlPreDefinedStyles" name="ddlPreDefinedStyles" size="8" onchange="ddlPreDefinedStyles_SelectedIndexChanged(this)">
+                <option value="AreaStyles.Country1">AreaStyles.Country1</option>
+                <option value="AreaStyles.Swamp1">AreaStyles.Swamp1</option>
+                <option value="AreaStyles.Grass1">AreaStyles.Grass1</option>
+                <option value="AreaStyles.Sand1">AreaStyles.Sand1</option>
+                <option value="AreaStyles.Crop1">AreaStyles.Crop1</option>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    @{
+        Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+            .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+            .MapUnit(GeographyUnit.Meter)
+            .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+            .CurrentExtent(-14607343.5818934, 7371576.14679691, -6014592.08756057, 1910351.0222467)
+            .CustomOverlays(overlays =>
+            {
+                // Please input your ThinkGeo Cloud API Key to enable the background map.
+                overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+                
+                ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02_3857.shp"));
+                worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 233, 232, 214), GeoColor.FromArgb(255, 118, 138, 69));
+                worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                overlays.LayerOverlay("StaticOverlay").Layer("WorldLayer", worldLayer).IsBaseOverlay(false);
+
+            })
+            .Render();
+    }
+</div>

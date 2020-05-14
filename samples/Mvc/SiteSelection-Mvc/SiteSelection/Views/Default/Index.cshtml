@@ -1,0 +1,114 @@
+﻿@using ThinkGeo.MapSuite.Mvc
+@{
+    ViewBag.Title = "Site Selection";
+}
+<div id="container">
+    <div id="header">
+        <div id="left-header">
+            <span id="header-mapsuite">Map Suite</span> <span id="header-title">Site Selection</span>
+        </div>
+    </div>
+    <div id="content-container">
+        <div id="leftContainer">
+            <div id="leftContent">
+                <h4>Highlight points of this type:</h4>
+                <div class="divBorder">
+                    <select id="sltCategory">
+                    </select>
+                    <select id="sltCategorySubtype">
+                    </select>
+                </div>
+                <h4>Place center pin on the map to highlight points of interest within a specified area
+                    around where you clicked:</h4>
+                <div id="divTrackMode" class="divBorder">
+                    <img id="btnPan" title="Switch current map to pan mode." class="imgButton" src="@Url.Content("~/Content/Images/pan.png")"/>
+                    <img id="btnPlot" title="Place the center pin on the map." class="active" class="imgButton"  src="@Url.Content("~/Content/Images/drawPoint.png")" />
+                    <img id="btnClear" title="Reset your selection." class="imgButton"  src="@Url.Content("~/Content/Images/clear.png")" />
+                </div>
+                <h4>Area Type:</h4>
+                <div class="divBorder">
+                    <div>
+                        <input type="radio" id="isServiceArea" value="ServiceArea" checked="true" name="serviceArea" />
+                        Service Area
+                    </div>
+                    <div id="divService">
+                        <div>
+                            Service Area in
+                            <input type="text" id="tbxServiceArea" class="valueTxt" value="5" />
+                            minutes Driving
+                        </div>
+                    </div>
+                    <div>
+                        <input type="radio" value="BufferedArea" name="serviceArea" />
+                        Buffered Area
+                    </div>
+                    <div id="divBuffer" style="display: none;">
+                        Buffered Distance:
+                        <input type="text" id="tbxDistance" class="valueTxt" value="2" />
+                        <select id="sltDistanceUnit">
+                            <option value="Mile">Mile</option>
+                            <option value="Kilometer">Kilometer</option>
+                        </select>
+                    </div>
+                    <div>
+                        <input type="button" id="btnApply" value="Apply" class="right-float" style="width: 76px;" />
+                    </div>
+                </div>
+                <div class="blueBanner">
+                    Pertential Similar Sites:
+                </div>
+                <div id="divSimilarSites">
+                    <table id="resultTable">
+                        <tr>
+                            <td class="header"></td>
+                            <td class="header">Name
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="toggle">
+            <img alt="collapse" src="@Url.Content("~/Content/Images/collapse.gif")" />
+        </div>
+        <div id="map-content">
+            @{
+                // Binding triggers configuration.
+                InMemoryMarkerOverlay pointOverlay = Model.CustomOverlays["DrawnPointOverlay"] as InMemoryMarkerOverlay;
+
+                ActionRequest searchActionRequest = new ActionRequest("SearchSimilarSites")
+                {
+                    ClientGetArgumentsFunction = "getApplyButtonParameters",
+                    OnClientActionRequested = "searchRequested"
+                };
+                ActionRequest clearActionRequest = new ActionRequest("Clear") 
+                { 
+                    OnClientActionRequested = "clearRequested" 
+                };
+                ActionRequest mapClickActionRequest = new ActionRequest("SearchSimilarSites") 
+                {
+                    ClientGetArgumentsFunction = "getPlotSearchParameters",
+                    OnClientActionRequesting = "searchRequesting", 
+                    OnClientActionRequested = "searchRequested" 
+                };
+
+                pointOverlay.ActionTriggers.Add(new ActionTrigger("btnApply", "onclick", searchActionRequest));
+                pointOverlay.ActionTriggers.Add(new ActionTrigger("sltCategory", "onchange", searchActionRequest));
+                pointOverlay.ActionTriggers.Add(new ActionTrigger("sltCategorySubtype", "onchange", searchActionRequest));
+                pointOverlay.ActionTriggers.Add(new ActionTrigger("btnClear", "onclick", clearActionRequest));
+                pointOverlay.ActionTriggers.Add(new ActionTrigger("Map1", "click", mapClickActionRequest));
+
+                // Render Map
+                Html.ThinkGeo().Map(Model).Render();
+            }
+        </div>
+    </div>
+    <div id="footer">
+        <span id="spanMouseCoordinate"></span>
+    </div>
+    <div id="dlgErrorMessage" title="Warning">
+        Please note that this sample map is only able to analyze service areas within the
+        Frisco, TX city limits, which are indicated by a dashed red line. Click inside that
+        boundary for best results.
+    </div>
+</div>

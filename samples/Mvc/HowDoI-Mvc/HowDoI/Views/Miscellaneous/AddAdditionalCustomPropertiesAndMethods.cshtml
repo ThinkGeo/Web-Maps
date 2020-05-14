@@ -1,0 +1,70 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using ThinkGeo.MapSuite.Mvc;
+@using CSharp_HowDoISamples
+<style type="text/css">
+    html
+    {
+        height: 100%;
+    }
+    .descContent
+    {
+        font-family: :Verdana;
+        font-size: 11px;
+    }
+    input
+    {
+        margin: 3px;
+    }
+</style>
+<script language="javascript" type="text/javascript">
+    function changeSecurityLevel(optionObj) {
+        var securityLevel = optionObj.value;
+
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'SetSecurityLevel', { 'securityLevel': securityLevel }, mapCallback);
+    }
+
+    function mapCallback(result) {
+        Map1.redrawLayer("StaticOverlay");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            This sample simply adds additional customer properties and methods to your objects.
+            <br />
+            <br />
+            SecurityLevel<br />
+            <select id="ddlSecurityLevel" name="ddlSecurityLevel" onchange="changeSecurityLevel(this);">
+                <option value="AdministrationLevel">AdministrationLevel</option>
+                <option value="AverageUsageLevel1">AverageUsageLevel1</option>
+                <option value="AverageUsageLevel2">AverageUsageLevel2</option>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main"> <div id="map">
+@{
+    Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+        .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+        .CurrentExtent(-131.22, 55.05, -54.03, 16.91)
+        .MapUnit(GeographyUnit.DecimalDegree)
+        .CustomOverlays(overlays =>
+        {
+            AdministrationShapeFileFeatureLayer worldLayer = new AdministrationShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02.shp"), SecurityLevel.AverageUsageLevel1);
+            worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+            worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 243, 239, 228), GeoColor.FromArgb(255, 218, 193, 163), 1);
+
+            AdministrationShapeFileFeatureLayer statesLayer = new AdministrationShapeFileFeatureLayer(Server.MapPath("~/App_Data/STATES.SHP"), SecurityLevel.AverageUsageLevel2);
+            statesLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 243, 239, 228), GeoColor.FromArgb(255, 218, 193, 163), 1);
+            statesLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+            overlays.LayerOverlay("StaticOverlay").IsBaseOverlay(false).Layer(worldLayer).Layer(statesLayer);
+        })
+        .Render();
+}
+</div> </div> 

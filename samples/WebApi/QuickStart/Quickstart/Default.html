@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Hello World</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+</head>
+<body>
+    <div id="map" style="height: 800px; width: 1200px"></div>
+    <div>
+        <input id="chKAddStates" name="group1" type="radio" value="Show US States" onclick="updateLayer('usstates')" />
+        Show US States
+        <br />
+        <input id="chKAddCites" name="group1" type="radio" value="Show US Counties" onclick="updateLayer('uscities')" />
+        Show US Cities
+        <br />
+    </div>
+</body>
+<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+<script>
+    var map = L.map('map', { zoomAnimation: false }).setView([39.6948, -96.8150], 4);
+
+    // add thinkgeo map
+    var thinkgeoCloudMapsLayer = L.tileLayer('https://{s}.thinkgeo.com/api/v1/maps/raster/light/x1/3857/256/{z}/{x}/{y}.png?apikey=ThinkGeo Cloud API Key', {
+        subdomains: ['cloud1', 'cloud2', 'cloud3', 'cloud4', 'cloud5', 'cloud6'],
+        layers: 'ThinkGeoCloudMaps',
+        format: 'image/png',
+        styles: 'Light',
+        version: '1.1.1'
+    });
+
+    // --------------------------------------------------------------------------------------
+    // Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require
+    // an API Key. The following function is just for reminding you to input the key.
+    // Feel free to remove this function after the key was input.
+    // --------------------------------------------------------------------------------------
+    thinkgeoCloudMapsLayer.on('tileloadstart', function (e) {
+        //e.tile.src = drawException();
+        fetch(e.tile.src).then((response) => {
+            if (response.status === 401) {
+                var canvas = document.createElement("canvas");
+                canvas.width = 256;
+                canvas.height = 256;
+                var context = canvas.getContext("2d");
+                context.font = "14px Arial";
+                context.strokeText("Backgrounds for this sample are", 10, 20);
+                context.strokeText("powered by ThinkGeo Cloud Maps and", 10, 40);
+                context.strokeText("require an API Key. This was sent", 10, 60);
+                context.strokeText("to you via email when you signed up", 10, 80);
+                context.strokeText("with ThinkGeo, or you can register", 10, 100);
+                context.strokeText("now at https://cloud.thinkgeo.com", 10, 120);
+                e.tile.src = canvas.toDataURL("image/png", 1);
+            }
+            else {
+                response.blob().then((blob) => {
+                    if (blob) {
+                        e.tile.src = URL.createObjectURL(blob);
+                    }
+                    else {
+                        e.tile.src = "";
+                    }
+                });
+            }
+        });
+    });
+    thinkgeoCloudMapsLayer.addTo(map);
+
+    var worldLayer = L.tileLayer('/HelloWorld/Tile/{z}/{x}/{y}').addTo(map);
+
+    function updateLayer(layerId) {
+        worldLayer.setUrl('/HelloWorld/Tile/' + layerId + '/{z}/{x}/{y}');
+        worldLayer.redraw();
+    }
+</script>
+</html>

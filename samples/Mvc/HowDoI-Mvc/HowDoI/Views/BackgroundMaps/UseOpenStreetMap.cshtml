@@ -1,0 +1,33 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Configuration;
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                This sample demonstrates how to set the OpenStreetMap as base layer.
+            </p>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .CurrentExtent(-13939426.6371, 6701997.4056, -7812401.86, 2626987.386962)
+                .MapUnit(GeographyUnit.Meter)
+                .MapTools(tools =>
+                {
+                    tools.MouseCoordinateMapTool().Enabled(true);
+                })
+                .CustomOverlays(overlays => overlays.OpenStreetMapOverlay("Open Street Map"))
+                .Render();
+        }
+    </div>
+</div>

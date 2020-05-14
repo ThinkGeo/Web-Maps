@@ -1,0 +1,41 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<script type="text/javascript">
+    function OnOverlaysDrawing(layers) {
+        for (var index = 0; index < layers.length; index++) {
+            var templayer = layers[index];
+            if (templayer.id == "Google Map") {
+                templayer.MIN_ZOOM_LEVEL = 10;
+                templayer.MAX_ZOOM_LEVEL = 18;
+            }
+        }
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            This sample demonstrates how to reset the GoogleOverlay's PanZoomBar by client event
+            'OnOverlaysDrawing'.
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div id="map">
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+          .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+          .MapUnit(GeographyUnit.Meter)
+          .CurrentExtent(-10620313.58252, 4795964.90206, -10431514.12268, 4667244.94644)
+          .MapTools(m =>
+              {
+                  m.OverlaySwitcherMapTool().Enabled(true);
+                  m.MouseCoordinateMapTool().Enabled(true);
+              })
+          .CustomOverlays(overlay => overlay.GoogleOverlay("Google Map").JavaScriptLibraryUri(new Uri(System.Configuration.ConfigurationManager.AppSettings["GoogleUriV3"])))
+          .Render();}
+    </div>
+</div>

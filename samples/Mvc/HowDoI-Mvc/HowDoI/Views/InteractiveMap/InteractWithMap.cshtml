@@ -1,0 +1,111 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc;
+
+@model System.Collections.ObjectModel.Collection<CSharp_HowDoISamples.HotelInfomation>
+
+<script language="javascript" type="text/javascript">
+    function RowClick(id) {
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'HighlighHotel', { 'featureid': id }, function () {
+            var layer = Map1.getLayer("dynamic");
+            layer.redraw(true);
+
+            var dataInfo = document.getElementById("dataInfo");
+            for (var i = 0; i < dataInfo.rows.length; i++) {
+                if (dataInfo.rows[i].id == id) {
+                    dataInfo.rows[i].style.backgroundColor = "#2E9AFE";
+                }
+                else {
+                    dataInfo.rows[i].style.backgroundColor = "white";
+                }
+            }
+        });
+    }
+
+    function mapClick(e) {
+        Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'HighlighPoint', { 'x': e.worldXY.lon, 'y': e.worldXY.lat }, function (result) {
+            var id = result.get_responseData();
+            var layer = Map1.getLayer("dynamic");
+            layer.redraw(true);
+
+            var dataInfo = document.getElementById("dataInfo");
+            for (var i = 0; i < dataInfo.rows.length; i++) {
+                if (dataInfo.rows[i].id == id) {
+                    dataInfo.rows[i].style.backgroundColor = "#2E9AFE";
+                }
+                else {
+                    dataInfo.rows[i].style.backgroundColor = "white";
+                }
+            }
+        });
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            <p>
+                Please click on a point of the map, and then you will see the corresponding item highlighted
+                in the GridView. Or vice-versa; you can click on an item in the GridView and you
+                will see its feature highlighted on the map.
+            </p>
+            @if (Model != null)
+            {
+                <table id="dataInfo" cellspacing="0" style="border: 1px solid #cccccc;">
+                    <tr>
+                        <td style="border: 1px solid #cccccc; background: #aaaaaa;">
+                            Name
+                        </td>
+                        <td style="border: 1px solid #cccccc; background: #aaaaaa;">
+                            Rooms
+                        </td>
+                    </tr>
+                    @foreach (var hotel in Model)
+                    {
+                        <tr id="@hotel.FeatureId" onclick="RowClick('@hotel.FeatureId');">
+                            <td style="border:1px solid #cccccc;">
+                                @hotel.Name
+                            </td>
+                            <td style="border:1px solid #cccccc;">
+                                @hotel.Rooms.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                            </td>
+                        </tr>
+                    }
+                </table>
+            }
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+            .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+            .MapUnit(GeographyUnit.Meter)
+            .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+            .CurrentExtent(2476560.14177953, 7108272.73142821, 2487589.72212108, 7082611.7400441)
+            .CustomOverlays(overlays =>
+            {
+                // Please input your ThinkGeo Cloud API Key to enable the background map.
+                overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps","ThinkGeo Cloud API Key");
+
+                InMemoryFeatureLayer highLightLayer = new InMemoryFeatureLayer();
+                highLightLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = PointStyles.CreateSimpleCircleStyle(GeoColor.SimpleColors.Yellow, 12);
+                highLightLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                ShapeFileFeatureLayer shapeLayer = new ShapeFileFeatureLayer(Url.RequestContext.HttpContext.Server.MapPath(@"~/App_Data/Hotels.shp"));
+                Proj4Projection proj4 = new Proj4Projection(4326, 3857);
+                proj4.Open();
+                shapeLayer.FeatureSource.Projection = proj4;
+                shapeLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = PointStyles.CreateSimpleCircleStyle(GeoColor.SimpleColors.Red, 1000000);
+                shapeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                overlays.LayerOverlay("dynamic").Layer("points", shapeLayer).Layer("highlight", highLightLayer).IsBaseOverlay(false);
+            })
+            .OnClientClick("mapClick")
+            .Render(); 
+        }
+    </div>
+</div>

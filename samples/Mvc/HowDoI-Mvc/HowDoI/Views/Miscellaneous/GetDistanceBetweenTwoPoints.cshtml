@@ -1,0 +1,29 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@model ThinkGeo.MapSuite.Mvc.Map 
+
+<script language="javascript" type="text/javascript">
+    function mapClick(e) {
+       Map1.ajaxCallAction('@ViewContext.RouteData.Values["Controller"].ToString()', 'GetDistance', { x: e.worldXY.lon, y: e.worldXY.lat }, function () {
+            Map1.redrawLayer(Map1.getDynamicOverlay().id);
+            Map1.sendPopupsRequest();
+        })
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Click two different places on the map to see the distance between them.
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div id="map">
+        @{Html.ThinkGeo().Map(Model).OnClientClick("mapClick").Render();}
+    </div>
+</div>

@@ -1,0 +1,87 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<style type="text/css">
+    .popCss
+    {
+        font-family: verdana;
+        font-size: 10px;
+        background-color: Transparent;
+        border: none 0px #ffffff;
+        color: black;
+    }
+</style>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Zoom in to see the changes of the markers.
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+             .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+             .MapUnit(GeographyUnit.Meter)
+             .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+             .CurrentExtent(-14607343.5818934, 7371576.14679691, -6014592.08756057, 1910351.0222467)
+             .MapTools(m =>
+             {
+                 m.PanZoomBarMapTool().Enabled(true);
+                 m.MouseCoordinateMapTool().Enabled(true);
+             })
+             .CustomOverlays(overlay =>
+             {
+                 // Please input your ThinkGeo Cloud API Key to enable the background map.
+                 overlay.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+                 MarkerClassBreak classBreak1 = new MarkerClassBreak(double.MinValue);
+                 classBreak1.DefaultMarkerStyle.WebImage = new ThinkGeo.MapSuite.Mvc.WebImage("../../Content/images/Industrial.png", 20, 19);
+                 classBreak1.DefaultMarkerStyle.Popup.ContentHtml = "<span class='popCss'>Population in 2000 is <br/><span style='color:red'>[#POP2000#]</span></span>";
+                 classBreak1.DefaultMarkerStyle.Popup.AutoSize = true;
+                 classBreak1.DefaultMarkerStyle.Popup.BorderColor = GeoColor.FromHtml("#CCCCCC");
+                 classBreak1.DefaultMarkerStyle.Popup.BorderWidth = 1;
+
+                 MarkerClassBreak classBreak2 = new MarkerClassBreak(400000);
+                 classBreak2.DefaultMarkerStyle.WebImage = new ThinkGeo.MapSuite.Mvc.WebImage("../../Content/images/Industrial.png", 40, 38);
+                 classBreak2.DefaultMarkerStyle.Popup.ContentHtml = "<span class='popCss'>Population in 2000 is <br/><span style='color:red'>[#POP2000#]</span></span>";
+                 classBreak2.DefaultMarkerStyle.Popup.AutoSize = true;
+                 classBreak2.DefaultMarkerStyle.Popup.BorderColor = GeoColor.FromHtml("#CCCCCC");
+                 classBreak2.DefaultMarkerStyle.Popup.BorderWidth = 1;
+
+                 MarkerClassBreak classBreak3 = new MarkerClassBreak(600000);
+                 classBreak3.DefaultMarkerStyle.WebImage = new ThinkGeo.MapSuite.Mvc.WebImage("../../Content/images/Industrial.png", 60, 56);
+                 classBreak3.DefaultMarkerStyle.Popup.ContentHtml = "<span class='popCss'>Population in 2000 is <br/><span style='color:red'>[#POP2000#]</span></span>";
+                 classBreak3.DefaultMarkerStyle.Popup.AutoSize = true;
+                 classBreak3.DefaultMarkerStyle.Popup.BorderColor = GeoColor.FromHtml("#CCCCCC");
+                 classBreak3.DefaultMarkerStyle.Popup.BorderWidth = 1;
+
+                 ClassBreakMarkerStyle classBreakStyle = new ClassBreakMarkerStyle("POP2000");
+                 classBreakStyle.ClassBreaks.Add(classBreak1);
+                 classBreakStyle.ClassBreaks.Add(classBreak2);
+                 classBreakStyle.ClassBreaks.Add(classBreak3);
+
+                 MarkerZoomLevelSet zoomLevelSet = new MarkerZoomLevelSet();
+                 zoomLevelSet.ZoomLevel04.DefaultMarkerStyle.WebImage = new ThinkGeo.MapSuite.Mvc.WebImage("../../Content/images/circle.png");
+                 zoomLevelSet.ZoomLevel04.DefaultMarkerStyle.Popup.ContentHtml = "<div class='popCss'><span style='color:#ff6500;'><b>[#AREANAME#]</b></span> city with <span style='color:#ff6500;'><b>[#POP2000#]</b></span> thousand people.</div>";
+                 zoomLevelSet.ZoomLevel04.DefaultMarkerStyle.Popup.AutoSize = true;
+                 zoomLevelSet.ZoomLevel04.DefaultMarkerStyle.Popup.BorderColor = GeoColor.StandardColors.Gray;
+                 zoomLevelSet.ZoomLevel04.DefaultMarkerStyle.Popup.BorderWidth = 1;
+                 zoomLevelSet.ZoomLevel04.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level05;
+                 zoomLevelSet.ZoomLevel06.CustomMarkerStyle = classBreakStyle;
+                 zoomLevelSet.ZoomLevel06.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level10;
+
+                 ShapeFileFeatureSource shapeFileFeatureSource = new ShapeFileFeatureSource(Server.MapPath("~/App_Data/cities_a.shp"));
+                 Proj4Projection proj4Projection = new Proj4Projection(4326, 3857);
+                 proj4Projection.Open();
+                 shapeFileFeatureSource.Projection = proj4Projection;
+                 overlay.FeatureSourceMarkerOverlay("Markers").FeatureSource(shapeFileFeatureSource)
+                   .ZoomLevelSet(zoomLevelSet);
+             })
+             .Render();}
+    </div>
+</div>

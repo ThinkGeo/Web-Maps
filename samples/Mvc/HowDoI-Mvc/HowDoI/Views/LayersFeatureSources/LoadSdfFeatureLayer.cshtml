@@ -1,0 +1,61 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<style type="text/css">
+    .comment {
+        width: 400px;
+        height: 100px;
+        left: 80px;
+        top: 5px;
+        padding: 5px;
+        font-size: 10px;
+        line-height: 20px;
+        z-index: 999;
+        position: absolute;
+        background-color: #feffc7;
+        border: solid 2px #cccccc;
+    }
+</style>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            The sample demonstrates how to render SdfFeatureLayer using FdoExtension.
+            <br />
+            <span class="warning">
+                (To use the SdfFeatureLayer functions, you have to reference [Install-Path]\Developer
+                Reference\Spatial Extensions\Fdo Extension\FdoExtension.dll, And copy MapSuiteFdoExtensionx86/MapSuiteFdoExtensionx64
+                folder from [Install-Path]\\Developer Reference\\System32 to System32\\Map Suite
+                *.* folder for x86/x64 platform. )
+            </span>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                   .MapBackground(new GeoSolidBrush(GeoColor.GeographicColors.ShallowOcean))
+                   .MapUnit(GeographyUnit.Meter)
+                   .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+                   .CurrentExtent(-9769953.66131226, 5434161.21780853, -9762220.80824933, 5417808.88477184)
+                   .CustomOverlays(overlays =>
+                   {
+                       // Please input your ThinkGeo Cloud API Key to enable the background map.
+                       overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+                   })
+                   .CustomOverlays(overlays =>
+                   {
+                       SdfFeatureLayer worldLayer = new SdfFeatureLayer(Server.MapPath("~/App_Data/Sheboygan_CityLimits.sdf"), null);
+                       Proj4Projection proj4Projection = new Proj4Projection(4326, 3857);
+                       proj4Projection.Open();
+                       worldLayer.FeatureSource.Projection = proj4Projection;
+                       worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(100, GeoColor.SimpleColors.Green), GeoColor.SimpleColors.Green);
+                       worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                       overlays.LayerOverlay().IsBaseOverlay(false).Layer("WorldLayer", worldLayer);
+                   }).Render();}
+    </div>
+</div>

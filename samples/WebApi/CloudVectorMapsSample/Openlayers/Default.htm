@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>ThinkGeoCloudVectorMaps</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="author" content="ThinkGeo" />
+    <meta name="apple-mobile-web-app-title" content="ThinkGeoCloudVectorMaps" />
+    <link href="Images/desktop.png" rel="apple-touch-icon" />
+    <link href="Images/favicon.ico" rel="shortcut icon" type="Images/x-icon" />
+    <link href="Content/ol.css" rel="stylesheet" />
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/site.css" rel="stylesheet" />
+    <link href="Content/thinkgeo.openlayers.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="map"></div>
+    <div id="leftPanel">
+        <div id="leftPanelHeader">
+            <span>Map Type List</span>
+        </div>
+        <div id="leftPanelContent">
+            <ul id="leftPanelOptions">
+                <li>
+                    <div id="light" title="ThinkGeo World Street Light" class="selected" hastargetlayer="true">
+                        <span>WorldStreet-Light</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="dark" title="ThinkGeo World Street Dark" class="unselected" hastargetlayer="true">
+                        <span>WorldStreet-Dark</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="hybrid" title="ThinkGeo World Streets Hybrid" class="unselected" hastargetlayer="true">
+                        <span>WorldStreets-Hybrid</span>
+                    </div>
+                </li>
+                <li>
+                    <div id="custom" title="Custom StyleJson" class="unselected" hastargetlayer="true">
+                        <span>Custom StyleJson</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script src="Scripts/jquery-1.11.1.min.js"></script>
+    <script src="Scripts/ol.js"></script>
+    <script src="Scripts/thinkgeo.openlayers.js"></script>
+    <script src="Scripts/thinkgeo.js"></script>
+</body>
+</html>

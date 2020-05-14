@@ -1,0 +1,56 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<script language="javascript" type="text/javascript">
+    function btnGetShortestLine_Click() {
+        Map1.ajaxCallAction("InteractiveOverlays", "ShortestLineFeature", null, callback);
+    }
+    function callback(result) {
+        Map1.redrawLayer("OverLayer");
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Click the button to show a line representing the shortest distance between the two
+            features.
+            <br />
+            <input type="button" id="btnGetShortestLine" name="btnGetShortestLine" value="Get the shortest line"
+                onclick="btnGetShortestLine_Click();" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+@{
+    Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+        .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+        .MapUnit(GeographyUnit.Meter)
+        .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+        .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+        .CustomOverlays(overlays =>
+        {
+            // Please input your ThinkGeo Cloud API Key to enable the background map.
+            overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+            InMemoryFeatureLayer mapShapeLayer = new InMemoryFeatureLayer();
+            mapShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillSolidBrush.Color = GeoColor.FromArgb(125, 141, 255, 141);
+            mapShapeLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color = GeoColor.GeographicColors.DeepOcean;
+            mapShapeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+            mapShapeLayer.InternalFeatures.Add("AreaShape1", new Feature(BaseShape.CreateShapeFromWellKnownData("POLYGON((-1113194.90793274 4865942.27950318,4452779.63173094 11068715.6593795,5565974.53966368 -7.08115455161362E-10,-1113194.90793274 4865942.27950318))")));
+            mapShapeLayer.InternalFeatures.Add("AreaShape2", new Feature(new EllipseShape(new PointShape(-7792364.35552915, -2273030.92698769), 1000000, 2000000)));
+
+            InMemoryFeatureLayer shortestLineLayer = new InMemoryFeatureLayer();
+            shortestLineLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = LineStyles.CreateSimpleLineStyle(GeoColor.StandardColors.Red, 2, false);
+            shortestLineLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+            overlays.LayerOverlay("OverLayer").TileType(TileType.SingleTile).IsBaseOverlay(false).Layer("InMemoryFeatureLayer", mapShapeLayer)
+                .Layer("ShortestLineLayer", shortestLineLayer);
+
+        })
+        .Render();
+}
+</div> 

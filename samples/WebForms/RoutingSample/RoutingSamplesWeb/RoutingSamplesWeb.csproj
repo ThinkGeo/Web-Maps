@@ -1,0 +1,411 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{32C4B89D-3504-4BD4-95E8-422E0E8C103F}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ThinkGeo.MapSuite.RoutingSamples</RootNamespace>
+    <AssemblyName>ThinkGeo.MapSuite.RoutingSamples</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <UseIISExpress>false</UseIISExpress>
+    <TargetFrameworkProfile />
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\HowDoISamples.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="GeoAPI, Version=1.7.4.0, Culture=neutral, PublicKeyToken=a1a0da7def465678">
+      <HintPath>..\packages\MapSuiteDependency-GeoAPI.10.6.0\lib\net45\GeoAPI.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">
+      <HintPath>..\packages\MapSuiteDependency-MicrosoftSqlServerTypes.10.6.0\lib\net45\Microsoft.SqlServer.Types.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NetTopologySuite, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1">
+      <HintPath>..\packages\MapSuiteDependency-NetTopologySuite.10.6.0\lib\net45\NetTopologySuite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\packages\MapSuiteDependency-NewtonsoftJson.10.6.0\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PowerCollections, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2573bf8a1bdddcd5">
+      <HintPath>..\packages\MapSuiteDependency-NetTopologySuite.10.6.0\lib\net45\PowerCollections.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SkiaSharp, Version=1.68.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">
+      <HintPath>..\packages\MapSuiteDependency-SkiaSharp.10.6.0\lib\net45\SkiaSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data.SQLite, Version=1.0.102.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139">
+      <HintPath>..\packages\MapSuiteDependency-SQLiteCore.10.6.0\lib\net45\System.Data.SQLite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Web.Mobile" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="ThinkGeo.MapSuite, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
+      <HintPath>..\packages\ThinkGeo.MapSuite.10.6.7\lib\net45\ThinkGeo.MapSuite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Background, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Background.10.6.0\lib\net45\ThinkGeo.MapSuite.Layers.Background.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.ShapeFile, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.ShapeFile.10.6.0\lib\net45\ThinkGeo.MapSuite.Layers.ShapeFile.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Layers.Sqlite, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Layers.Sqlite.10.6.0\lib\net45\ThinkGeo.MapSuite.Layers.Sqlite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.ProductCenter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
+      <HintPath>..\packages\ThinkGeo.MapSuite.ProductCenter.10.6.0\lib\net45\ThinkGeo.MapSuite.ProductCenter.exe</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.Routing, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
+      <HintPath>..\packages\ThinkGeo.MapSuite.Routing.10.6.0\lib\net45\ThinkGeo.MapSuite.Routing.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ThinkGeo.MapSuite.WebForms, Version=10.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207">
+      <HintPath>..\packages\MapSuiteWebForWebForms-BareBone.10.6.4\lib\net45\ThinkGeo.MapSuite.WebForms.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="WindowsBase">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Banner.aspx" />
+    <Content Include="Content.aspx" />
+    <Content Include="Default.aspx" />
+    <Content Include="Header.htm" />
+    <Content Include="Helper\DescriptionPanel.htm" />
+    <Content Include="Helper\DescriptionPanel.js" />
+    <Content Include="Navigation.aspx" />
+    <Content Include="SampleList.xml" />
+    <Content Include="Samples\ExtendingRoutingSource.aspx" />
+    <Content Include="Samples\GetRoadInformationByRoadId.aspx" />
+    <Content Include="Samples\GetShortestPathByCoordinates.aspx" />
+    <Content Include="Samples\IntermediatePointsSupport.aspx" />
+    <Content Include="Samples\OneWayRouting.aspx" />
+    <Content Include="Samples\OptimizeRoadType.aspx" />
+    <Content Include="Samples\RouteAvoidingCertainArea.aspx" />
+    <Content Include="Samples\RouteOnlyInASpecificArea.aspx" />
+    <Content Include="Samples\RoutingAroundRoadblocks.aspx" />
+    <Content Include="Samples\RoutingDirections.aspx" />
+    <Content Include="Samples\ServiceAreaDefinition.aspx" />
+    <Content Include="Samples\SimpleRouting.aspx" />
+    <Content Include="Samples\TravelingSalesman.aspx" />
+    <Content Include="Samples\UseDifferentAlgorithms.aspx" />
+    <Content Include="Source Code Not Available in Beta.html" />
+    <Content Include="SyntaxHighlighter\csCode.aspx" />
+    <Content Include="SyntaxHighlighter\shBrushCSharp.js" />
+    <Content Include="SyntaxHighlighter\shBrushXml.js" />
+    <Content Include="SyntaxHighlighter\shCore.js" />
+    <Content Include="SyntaxHighlighter\SyntaxHighlighter.css" />
+    <Content Include="theme\default\samplepic\Banner.bmp" />
+    <Content Include="theme\default\samplepic\bannerad_offline.png" />
+    <Content Include="theme\default\samplepic\bg.png" />
+    <Content Include="theme\default\samplepic\collapse.gif" />
+    <Content Include="theme\default\samplepic\expand.gif" />
+    <Content Include="theme\default\samplepic\frame\bg.png" />
+    <Content Include="theme\default\samplepic\frame\dbottom.png" />
+    <Content Include="theme\default\samplepic\frame\dcontent.png" />
+    <Content Include="theme\default\samplepic\frame\dhide.png" />
+    <Content Include="theme\default\samplepic\frame\dhidebg.png" />
+    <Content Include="theme\default\samplepic\frame\dshow.png" />
+    <Content Include="theme\default\samplepic\frame\dtop.png" />
+    <Content Include="theme\default\samplepic\frame\Stage_BG_top.png" />
+    <Content Include="theme\default\samplepic\loading.gif" />
+    <Content Include="theme\default\samplepic\map_suite_web_samples_header.png" />
+    <Content Include="theme\default\samplepic\map_suite_web_samples_header_bkg.jpg" />
+    <Content Include="theme\default\samplepic\roadblock.png" />
+    <Content Include="theme\default\samplepic\style.css" />
+    <Content Include="theme\default\tabs\Tab-Background.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-BGActive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-BGInactive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-EndLeftActive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-EndLeftInactive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-EndRightActive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-EndRightInactive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-LeftisActive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-NoneActive.gif" />
+    <Content Include="theme\default\tabs\Tab-Body-RightisActive.gif" />
+    <Content Include="Toggle.htm" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Banner.aspx.cs">
+      <DependentUpon>Banner.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Banner.aspx.designer.cs">
+      <DependentUpon>Banner.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Content.aspx.cs">
+      <DependentUpon>Content.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Content.aspx.designer.cs">
+      <DependentUpon>Content.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Default.aspx.cs">
+      <SubType>ASPXCodeBehind</SubType>
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Helper\DescriptionPanel.cs" />
+    <Compile Include="Navigation.aspx.cs">
+      <DependentUpon>Navigation.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Navigation.aspx.designer.cs">
+      <DependentUpon>Navigation.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Samples\POIonRoute.aspx.cs">
+      <DependentUpon>POIonRoute.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\POIonRoute.aspx.designer.cs">
+      <DependentUpon>POIonRoute.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\DifferentProjectionsWithRouting.aspx.cs">
+      <DependentUpon>DifferentProjectionsWithRouting.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\DifferentProjectionsWithRouting.aspx.designer.cs">
+      <DependentUpon>DifferentProjectionsWithRouting.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\ExtendingRoutingSource.aspx.cs">
+      <DependentUpon>ExtendingRoutingSource.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\ExtendingRoutingSource.aspx.designer.cs">
+      <DependentUpon>ExtendingRoutingSource.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GetRoadInformationByRoadId.aspx.cs">
+      <DependentUpon>GetRoadInformationByRoadId.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GetRoadInformationByRoadId.aspx.designer.cs">
+      <DependentUpon>GetRoadInformationByRoadId.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\GetShortestPathByCoordinates.aspx.cs">
+      <DependentUpon>GetShortestPathByCoordinates.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\GetShortestPathByCoordinates.aspx.designer.cs">
+      <DependentUpon>GetShortestPathByCoordinates.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\IntermediatePointsSupport.aspx.cs">
+      <DependentUpon>IntermediatePointsSupport.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\IntermediatePointsSupport.aspx.designer.cs">
+      <DependentUpon>IntermediatePointsSupport.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\OneWayRouting.aspx.cs">
+      <DependentUpon>OneWayRouting.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\OneWayRouting.aspx.designer.cs">
+      <DependentUpon>OneWayRouting.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\OptimizeRoadType.aspx.cs">
+      <DependentUpon>OptimizeRoadType.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\OptimizeRoadType.aspx.designer.cs">
+      <DependentUpon>OptimizeRoadType.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\RouteAvoidingCertainArea.aspx.cs">
+      <DependentUpon>RouteAvoidingCertainArea.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\RouteAvoidingCertainArea.aspx.designer.cs">
+      <DependentUpon>RouteAvoidingCertainArea.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\RouteOnlyInASpecificArea.aspx.cs">
+      <DependentUpon>RouteOnlyInASpecificArea.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\RouteOnlyInASpecificArea.aspx.designer.cs">
+      <DependentUpon>RouteOnlyInASpecificArea.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\RoutingAroundRoadblocks.aspx.cs">
+      <DependentUpon>RoutingAroundRoadblocks.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\RoutingAroundRoadblocks.aspx.designer.cs">
+      <DependentUpon>RoutingAroundRoadblocks.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\RoutingDirections.aspx.cs">
+      <DependentUpon>RoutingDirections.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\RoutingDirections.aspx.designer.cs">
+      <DependentUpon>RoutingDirections.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\ServiceAreaDefinition.aspx.cs">
+      <DependentUpon>ServiceAreaDefinition.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\ServiceAreaDefinition.aspx.designer.cs">
+      <DependentUpon>ServiceAreaDefinition.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\SimpleRouting.aspx.cs">
+      <DependentUpon>SimpleRouting.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\SimpleRouting.aspx.designer.cs">
+      <DependentUpon>SimpleRouting.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\TravelingSalesman.aspx.cs">
+      <DependentUpon>TravelingSalesman.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\TravelingSalesman.aspx.designer.cs">
+      <DependentUpon>TravelingSalesman.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\TSPAnalysisWithFixedEnds.aspx.cs">
+      <DependentUpon>TSPAnalysisWithFixedEnds.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\TSPAnalysisWithFixedEnds.aspx.designer.cs">
+      <DependentUpon>TSPAnalysisWithFixedEnds.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Samples\UseDifferentAlgorithms.aspx.cs">
+      <DependentUpon>UseDifferentAlgorithms.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Samples\UseDifferentAlgorithms.aspx.designer.cs">
+      <DependentUpon>UseDifferentAlgorithms.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="SyntaxHighlighter\csCode.aspx.cs">
+      <DependentUpon>csCode.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SyntaxHighlighter\csCode.aspx.designer.cs">
+      <DependentUpon>csCode.aspx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Samples\POIonRoute.aspx" />
+    <Content Include="Samples\DifferentProjectionsWithRouting.aspx" />
+    <Content Include="Samples\TSPAnalysisWithFixedEnds.aspx" />
+    <Content Include="theme\default\samplepic\Gas Station.png" />
+    <Content Include="theme\default\samplepic\Station.png" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Properties\PublishProfiles\file.pubxml" />
+    <None Include="Properties\PublishProfiles\Routing.pubxml" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>62111</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>
+          </IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Import Project="..\packages\MapSuiteDependency-SkiaSharp.10.6.0\build\net45\MapSuiteDependency-SkiaSharp.targets" Condition="Exists('..\packages\MapSuiteDependency-SkiaSharp.10.6.0\build\net45\MapSuiteDependency-SkiaSharp.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\MapSuiteDependency-SkiaSharp.10.6.0\build\net45\MapSuiteDependency-SkiaSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MapSuiteDependency-SkiaSharp.10.6.0\build\net45\MapSuiteDependency-SkiaSharp.targets'))" />
+    <Error Condition="!Exists('..\packages\MapSuiteDependency-SQLiteCore.10.6.0\build\net45\MapSuiteDependency-SQLiteCore.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MapSuiteDependency-SQLiteCore.10.6.0\build\net45\MapSuiteDependency-SQLiteCore.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.MapSuite.10.6.7\build\net45\ThinkGeo.MapSuite.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.MapSuite.10.6.7\build\net45\ThinkGeo.MapSuite.targets'))" />
+  </Target>
+  <Import Project="..\packages\MapSuiteDependency-SQLiteCore.10.6.0\build\net45\MapSuiteDependency-SQLiteCore.targets" Condition="Exists('..\packages\MapSuiteDependency-SQLiteCore.10.6.0\build\net45\MapSuiteDependency-SQLiteCore.targets')" />
+  <Import Project="..\packages\ThinkGeo.MapSuite.10.6.7\build\net45\ThinkGeo.MapSuite.targets" Condition="Exists('..\packages\ThinkGeo.MapSuite.10.6.7\build\net45\ThinkGeo.MapSuite.targets')" />
+</Project>

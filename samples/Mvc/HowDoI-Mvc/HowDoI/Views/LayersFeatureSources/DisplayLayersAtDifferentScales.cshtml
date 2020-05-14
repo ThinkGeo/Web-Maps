@@ -1,0 +1,72 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc
+<script language="javascript" type="text/javascript">
+    function zoomToScale(optionObj) {
+        Map1.zoomToScale(optionObj);
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Click the buttons to go to different scales and see the new layers.
+            <br />
+            <br />
+            <table>
+                <tr>
+                    <td>
+                        <input type="button" id="btnLow" style="width: 150px;" value="1:10,000" onclick="zoomToScale(10000);" />
+                        <br />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="button" id="btnNoraml" style="width: 150px;" value="1:10,000,000" onclick="zoomToScale(10000000);" />
+                        <br />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="button" id="btnHigh" style="width: 150px;" value="1:100,000,000" onclick="zoomToScale(100000000);" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+              .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+              .MapUnit(GeographyUnit.DecimalDegree)
+              .CurrentExtent(-195.7852, 91.2020, 0.2821, -30.6353)
+              .MapTools(t => t.MouseMapTool().Enabled(false))
+              .StaticOverlay(overlay =>
+              {
+                  ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02.shp"));
+                  worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 243, 239, 228), GeoColor.FromArgb(255, 218, 193, 163), 1);
+                  worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                  ShapeFileFeatureLayer citiesLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cities_a.shp"));
+                  citiesLayer.ZoomLevelSet.ZoomLevel05.DefaultPointStyle = PointStyles.CreateCompoundCircleStyle(GeoColor.StandardColors.White, 6F, GeoColor.StandardColors.Black, 1F, GeoColor.StandardColors.Black, 3F);
+                  citiesLayer.ZoomLevelSet.ZoomLevel05.DefaultTextStyle = new TextStyle("AREANAME", new GeoFont("Verdana", 9), new GeoSolidBrush(GeoColor.StandardColors.Black));
+                  citiesLayer.ZoomLevelSet.ZoomLevel05.DefaultTextStyle.HaloPen = new GeoPen(GeoColor.StandardColors.White, 2);
+                  citiesLayer.ZoomLevelSet.ZoomLevel05.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                  ShapeFileFeatureLayer streetsLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/austinstreets.shp"));
+                  streetsLayer.ZoomLevelSet.ZoomLevel10.DefaultLineStyle = LineStyles.CreateSimpleLineStyle(GeoColor.StandardColors.White, 3F, GeoColor.StandardColors.DarkGray, 5F, true);
+                  streetsLayer.ZoomLevelSet.ZoomLevel10.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                  overlay.Layer(worldLayer);
+                  overlay.Layer(citiesLayer);
+                  overlay.Layer(streetsLayer);
+              })
+              .Render();
+        }
+    </div>
+</div>

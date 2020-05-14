@@ -1,0 +1,37 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            The sample demonstrates how to render TabFeatureLayer.
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+             .MapBackground(new GeoSolidBrush(GeoColor.GeographicColors.ShallowOcean))
+             .MapUnit(GeographyUnit.Meter)
+             .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+             .CurrentExtent(-10743975.0504299, 3601560.44049351, -10503638.2735581, 3364278.94410933)
+             .CustomOverlays(overlays =>
+             {
+                 // Please input your ThinkGeo Cloud API Key to enable the background map.
+                 overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+             })
+             .CustomOverlays(overlays =>
+             {
+                 TabFeatureLayer worldLayer = new TabFeatureLayer(Server.MapPath("~/App_Data/HoustonMuniBdySamp_Boundary.TAB"));
+                 worldLayer.FeatureSource.Projection = new Proj4Projection(4326, 3857);
+                 worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(100, GeoColor.SimpleColors.Green), GeoColor.SimpleColors.Green);
+                 worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                 overlays.LayerOverlay("StaticOverlay").IsBaseOverlay(false).Layer(worldLayer);
+             }).Render();}
+    </div>
+</div>

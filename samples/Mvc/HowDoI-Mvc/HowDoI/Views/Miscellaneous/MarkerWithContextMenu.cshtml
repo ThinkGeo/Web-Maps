@@ -1,0 +1,64 @@
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles;
+@using ThinkGeo.MapSuite.Mvc;
+<script language="javascript" type="text/javascript">
+    function onClientClick(e) {
+        document.getElementById("worldX").innerHTML = e.worldXY.lon;
+        document.getElementById("worldY").innerHTML = e.worldXY.lat;
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Right click on the Marker to show the context menu and select an item.
+            <br />
+            World-X : <span id="worldX"></span>
+            <br />
+            World-Y : <span id="worldY"></span>
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div id="map">
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                        .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                        .MapUnit(GeographyUnit.Meter)
+                        .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+                        .CurrentExtent(-13914936.3491592, 11753184.6153385, 5565974.53966368, -5780349.22025635)
+                        .CustomOverlays(overlays =>
+                        {
+                            // Please input your ThinkGeo Cloud API Key to enable the background map.
+                            overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+                        })
+                        .MarkerOverlay(markerOverlay =>
+                        {
+                            ContextMenu menuOnMarker = new ContextMenu("kansas", 180);
+                            ContextMenuItem redirectItem = new ContextMenuItem("<a href='http://en.wikipedia.org/wiki/Lawrence%2C_Kansas' target='_blank'>Kansas city<a>");
+                            ContextMenuItem showPositionItem = new ContextMenuItem("Current Position");
+                            showPositionItem.OnClientClick = "onClientClick";
+                            ContextMenuItem zoomOutItem = new ContextMenuItem("<div onclick='Map1.zoomIn();'>Zoom in</div>");
+                            ContextMenuItem zoomInItem = new ContextMenuItem("<div onclick='Map1.zoomOut();'>Zoom out</div>");
+                            ContextMenuItem centerItem = new ContextMenuItem("<div onclick='Map1.panToWorldCoordinate(-10526148.4104304,4732850.5697907);'>Center map here</div>");
+
+                            menuOnMarker.MenuItems.Add(redirectItem);
+                            menuOnMarker.MenuItems.Add(showPositionItem);
+                            menuOnMarker.MenuItems.Add(zoomOutItem);
+                            menuOnMarker.MenuItems.Add(zoomInItem);
+                            menuOnMarker.MenuItems.Add(centerItem);
+
+                            BaseShape kansas = new PointShape(-10526148.4104304, 4732850.5697907);
+                            markerOverlay.Id("MarkerOverlay").Feature("kansasCity", new Feature(kansas))
+                                .ZoomLevelSet(zoomlevelSet =>
+                                {
+                                    zoomlevelSet.ZoomLevel01.DefaultMarkerStyle.ContextMenu = menuOnMarker;
+                                    zoomlevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+                                });
+                        })
+                        .Render();
+        }
+    </div>
+</div>

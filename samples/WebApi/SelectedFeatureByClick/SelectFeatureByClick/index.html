@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html style="height:100%">
+<head>
+    <title>Select Feature By Click</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+</head>
+<body style="height:100%;margin:0px 11px;">
+    <div id="map" style="height: 90%; width: 100%"></div>
+    <label>Search Radius</label>
+    <input id="radius_input" value="5" />
+    <label>Meter</label>
+</body>
+</html>
+<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js"></script>
+<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+<script>
+    const map = L
+        .map('map', { zoomAnimation: false })
+        .setView([30.29174, -97.73570], 16);
+
+    L.tileLayer('/SelectFeatureByClick/Tile/{z}/{x}/{y}')
+        .addTo(map);
+
+    map.on('click', function (e) {
+        const data = {
+            x: e.latlng.lng,
+            y: e.latlng.lat,
+            radius: $('#radius_input').val()
+        };
+
+        $.ajax({
+            url: '/SelectFeatureByClick/SelectRoad',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json'
+        }).done(function (data) {
+            if (data.success) {
+                L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(data.name)
+                    .openOn(map);
+            }
+        });
+    });
+</script>

@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<DemographicMap>
+  <Category name="Population" icon="Images/Demograph_Population.png">
+    <item>
+      <columnName>Population</columnName>
+      <alias>Population</alias>
+      <legendTitle>Population</legendTitle>
+    </item>
+  </Category>
+  <Category name="Population Density" icon="Images/DemoGraph_PopDensity.png">
+    <item>
+      <columnName>PopDensity</columnName>
+      <alias>Population Density</alias>
+    </item>
+  </Category>
+  <Category name="Gender" icon="Images/Demograph_Gender.png">
+    <item>
+      <columnName>Female</columnName>
+      <alias>Female</alias>
+    </item>
+    <item>
+      <columnName>Male</columnName>
+      <alias>Male</alias>
+    </item>
+  </Category>
+  <Category name="Total Land Area" icon="Images/Demograph_LandArea.png">
+    <item>
+      <columnName>AREALAND</columnName>
+      <alias>Total Land Area</alias>
+    </item>
+  </Category>
+  <Category name="Total Water Area" icon="Images/Demograph_WaterArea.png">
+    <item>
+      <columnName>AREAWATR</columnName>
+      <alias>Total Water Area</alias>
+    </item>
+  </Category>
+  <Category name="Race and Ethnicity" icon="Images/Demograph_Nationality.png">
+    <item>
+      <columnName>Indian</columnName>
+      <alias>American Indian</alias>
+    </item>
+    <item>
+      <columnName>Asian</columnName>
+      <alias>Asian</alias>
+    </item>
+    <item>
+      <columnName>Black</columnName>
+      <alias>Black</alias>
+    </item>
+    <item>
+      <columnName>MultiRace</columnName>
+      <alias>Multiracial</alias>
+    </item>
+    <item>
+      <columnName>Islander</columnName>
+      <alias>Native Pacific Islander</alias>
+    </item>
+    <item>
+      <columnName>White</columnName>
+      <alias>White</alias>
+    </item>
+    <item>
+      <columnName>Other</columnName>
+      <alias>Other</alias>
+    </item>
+  </Category>
+  <Category name="Age" icon="Images/Demograph_Age.png">
+    <item>
+      <columnName>Under5</columnName>
+      <alias>0 ~ 5</alias>
+    </item>
+    <item>
+      <columnName>5to9</columnName>
+      <alias>5 ~ 10</alias>
+    </item>
+    <item>
+      <columnName>10to14</columnName>
+      <alias>10 ~ 15</alias>
+    </item>
+    <item>
+      <columnName>15to17</columnName>
+      <alias>15 ~ 18</alias>
+    </item>
+    <item>
+      <columnName>18to24</columnName>
+      <alias>18 ~ 25</alias>
+    </item>
+    <item>
+      <columnName>25to34</columnName>
+      <alias>25 ~ 35</alias>
+    </item>
+    <item>
+      <columnName>35to44</columnName>
+      <alias>35 ~ 45</alias>
+    </item>
+    <item>
+      <columnName>45to54</columnName>
+      <alias>45 ~ 55</alias>
+    </item>
+    <item>
+      <columnName>55to64</columnName>
+      <alias>55 ~ 65</alias>
+    </item>
+    <item>
+      <columnName>65to74</columnName>
+      <alias>65 ~ 75</alias>
+    </item>
+    <item>
+      <columnName>75to84</columnName>
+      <alias>75 ~ 85</alias>
+    </item>
+    <item>
+      <columnName>over85</columnName>
+      <alias>&gt;= 85</alias>
+    </item>
+  </Category>
+  <!--<Category name="Custom Data" icon="Images/Demograph_CustomData.png">
+  </Category>-->
+</DemographicMap>

@@ -1,0 +1,118 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+<script language="javascript" type="text/javascript">
+    var timer;
+
+    function trackVehicle() {
+        timer = window.setInterval('Map1.ajaxCallAction("VehicleTracking", "GetCurrentPosition", {}, Success)', 1000);
+    }
+
+    function Success(result) {
+        var json = result.get_responseData();
+        if (json == null || json == '') return;
+
+        var vehicles = Sys.Serialization.JavaScriptSerializer.deserialize(json);
+
+        var markerLayer = Map1.getLayer("Vehicles");
+        // Clear markers and popups
+        // Clear markers and popups
+        for (var i = 0; i < markerLayer.markers.length; i++) {
+            markerLayer.markers[i].destroy();
+        }
+        markerLayer.clearMarkers();
+
+        while (Map1.popups.length > 0) {
+            Map1.popups[0].destroy();
+        }
+
+        for (var i = 0; i < vehicles.length; i++) {
+            var size = new OpenLayers.Size(32, 32);
+            var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
+            var icon = new OpenLayers.Icon('../../Content/images/' + vehicles[i].n, size, offset);
+
+            var marker = new OpenLayers.Marker(new OpenLayers.LonLat(vehicles[i].x, vehicles[i].y), icon);
+            markerLayer.addMarker(marker);
+            AddPopup(marker, vehicles[i].id, vehicles[i].y, vehicles[i].x);
+        }
+    }
+
+    function stopTracking() {
+        window.clearInterval(timer);
+    }
+
+    function AddPopup(marker, siteId, lat, lon) {
+        var content = "<span class='popup'>" + siteId + "</span>"
+        var popup = new OpenLayers.Popup.FramedCloud(siteId,
+                   new OpenLayers.LonLat(parseFloat(lon), parseFloat(lat)),
+                   new OpenLayers.Size(200, 200),
+                   content,
+                   null,
+                   true);
+
+        Map1.addPopup(popup);
+        popup.hide();
+
+        for (i in Map1.popups) {
+            if (Map1.popups[i].visible && Map1.popups[i] != popup) {
+                Map1.popups[i].hide();
+            }
+        }
+
+        marker.events.register('mouseover', popup, function (evt) {
+            popup.show();
+        });
+
+        marker.events.register('mouseout', popup, function (evt) {
+            for (i in Map1.popups) {
+                if (Map1.popups[i].visible) {
+                    Map1.popups[i].hide();
+                }
+            }
+        });
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            Click the button below to track the vehicles.<br />
+            <br />
+            <input type="button" value="Track Vehicles" style="width:100px;" onclick="trackVehicle();" />
+            <input type="button" value="Stop Tracking" style="width:100px;" onclick="stopTracking();" />
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .MapUnit(GeographyUnit.Meter)
+                .ZoomLevelSet(new ThinkGeoCloudMapsZoomLevelSet())
+                .CurrentExtent(-10609977.5529722, 4719070.64212212, -10598015.1604916, 4710483.42982142)
+                .MapTools(mapTools =>
+                {
+                    mapTools.MouseCoordinateMapTool().Enabled(true);
+                })
+                .CustomOverlays(overlays =>
+                {
+                    // Please input your ThinkGeo Cloud API Key to enable the background map.
+                    overlays.ThinkGeoCloudRasterMapsOverlay("ThinkGeoCloudMaps", "ThinkGeo Cloud API Key");
+
+                    overlays.SimpleMarkerOverlay("Vehicles").Markers(markers =>
+                    {
+                        PointShape[] startPositions = TempData["InitPositions"] as PointShape[];
+                        for (int i = 0; i < startPositions.Length; i++)
+                        {
+                            ThinkGeo.MapSuite.Mvc.WebImage webImage = new ThinkGeo.MapSuite.Mvc.WebImage("../../Content/images/vehicle_van_" + (i + 1) + ".png");
+                            markers.Marker(startPositions[i].X, startPositions[i].Y, webImage).Id((i + 1).ToString());
+                        }
+                    });
+                })
+                .Render();
+        }
+    </div>
+</div>

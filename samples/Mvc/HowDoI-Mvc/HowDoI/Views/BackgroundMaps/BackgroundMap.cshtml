@@ -1,0 +1,101 @@
+@using ThinkGeo.MapSuite.Mvc
+@using ThinkGeo.MapSuite
+@using ThinkGeo.MapSuite.Drawing
+@using ThinkGeo.MapSuite.Layers
+@using ThinkGeo.MapSuite.Shapes
+@using ThinkGeo.MapSuite.Styles
+@using System.Configuration;
+<script type="text/javascript">
+
+    function onLayerChanged(newLayer) {
+        var container = document.getElementById("changeSubTypeContainer");
+        container.innerHTML = "";
+
+        if (newLayer == "Google Map") {
+            appendButton(container, "Hybrid", google.maps.MapTypeId.HYBRID);
+            appendButton(container, "Normal", google.maps.MapTypeId.ROADMAP);
+            appendButton(container, "Satellite", google.maps.MapTypeId.SATELLITE);
+            appendButton(container, "Physical", google.maps.MapTypeId.TERRAIN);
+        }
+        else if (newLayer == "Bing Map") {
+            appendButton(container, "Road", VEMapStyle.Road);
+            appendButton(container, "Aerial", VEMapStyle.Aerial);
+            appendButton(container, "Hybrid", VEMapStyle.Hybrid);
+        }
+    }
+
+    function appendButton(container, btnName, mapType) {
+        container.appendChild(getInputElement(btnName, mapType));
+    }
+
+    function getInputElement(name, mapType) {
+        var btn = document.createElement("INPUT");
+        btn.className = "sampleBtn";
+        btn.type = "button";
+        btn.value = name;
+        btn.onclick = function () {
+            Map1.setCurrentBackgroundMapType(mapType);
+        };
+
+        return btn;
+    }
+</script>
+<div class="four columns" id="navigation">
+    @{Html.RenderPartial("SourceCode");}
+    <div id="instrux-body">
+        <div id="instrux-text">
+            This sample simply shows how to use different popular maps as the base overlay.
+        </div>
+        <div id="changeSubTypeContainer">
+        </div>
+    </div>
+</div>
+<div class="sixteen columns" id="main">
+    <div>
+        @{
+            Html.ThinkGeo().Map("Map1", new System.Web.UI.WebControls.Unit(100, System.Web.UI.WebControls.UnitType.Percentage), 760)
+                .MapBackground(new GeoSolidBrush(GeoColor.FromHtml("#E5E3DF")))
+                .CurrentExtent(-13939426.6371, 6701997.4056, -7812401.86, 2626987.386962)
+                .MapUnit(GeographyUnit.Meter)
+                .MapTools(mapTools =>
+                {
+                    mapTools.OverlaySwitcherMapTool().Enabled(true).OnClientBaseOverlayChanged("onLayerChanged");
+                    mapTools.MouseCoordinateMapTool().Enabled(true);
+                    mapTools.PanZoomBarMapTool().Enabled(true);
+                })
+                .CustomOverlays(overlays =>
+                {
+                    // Wms
+                    overlays.WmsOverlay("WMS Overlay").Parameters(paraCollection =>
+                        {
+                            paraCollection.Add("layers", "Countries02,USSTATES,USMAJORCITIES");
+                            paraCollection.Add("STYLE", "SIMPLE");
+                        })
+                        .ServerUris(servers =>
+                        {
+                            servers.Add(new Uri("http://wmssamples.thinkgeo.com/WmsServer.aspx"));
+                        })
+                        .SetBaseEpsgProjection("EPSG:900913");
+                    // Google Map
+                    overlays.GoogleOverlay("Google Map").GoogleMapType(GoogleMapType.Normal);
+                    //OpenStreet Map
+                    overlays.OpenStreetMapOverlay("Open Street Map");
+                    // Bing Map
+                    overlays.BingMapsOverlay("Bing Map").MapType(BingMapsStyle.Road);
+                    // Custom ShapeFile
+                    ShapeFileFeatureLayer worldLayer = new ShapeFileFeatureLayer(Server.MapPath("~/App_Data/cntry02.shp"));
+                    worldLayer.ZoomLevelSet = new ZoomLevelSet();
+                    worldLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyles.CreateSimpleAreaStyle(GeoColor.FromArgb(255, 243, 239, 228), GeoColor.FromArgb(255, 218, 193, 163), 1);
+                    worldLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+                    Proj4Projection proj4 = new Proj4Projection();
+                    proj4.InternalProjectionParametersString = Proj4Projection.GetEpsgParametersString(4326);
+                    proj4.ExternalProjectionParametersString = Proj4Projection.GetGoogleMapParametersString();
+                    worldLayer.FeatureSource.Projection = proj4;
+
+                    overlays.LayerOverlay("WorldOverlay").Name("Custom ShapeFile").SetBaseEpsgProjection("EPSG:900913").Layer(worldLayer);
+                })
+                .Render();
+        }
+    </div>
+</div>

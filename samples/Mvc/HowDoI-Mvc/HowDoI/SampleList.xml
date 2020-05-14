@@ -1,0 +1,473 @@
+<SampleList>
+  <Category Id="AllSamples" Name="All Samples" description="The complete list of sample applications for Map Suite MVC Edition." ></Category>
+  <Category Id="FeaturedMvc" Name="MVC Edition vs. Web Edition" description="These samples demonstrate the differences between Map Suite MVC Edition and the traditional Web Edition." >
+    <Sample Id="ZoomInToAFeatureClicked" />
+    <Sample Id="FindFeaturesWithinDistance" />
+    <Sample Id="VehicleTracking" />
+    <Sample Id="InteractWithMap" />
+  </Category>
+  <Category Id="BackgroundMaps" Name="Background Maps (Google, Bing, etc)" description="These samples show how to incorporate third-party background maps into your application." Path="views/BackgroundMaps">
+    <Sample Id="DisplayASimpleMap" Name="Display a Simple Map" VideoUrl="http://www.youtube.com/watch%3Fv=l73gMNmk3kc" >
+      <Description>This sample simply shows how to load a ThinkGeo default world map.</Description>
+    </Sample>
+    <Sample Id="UseBingMaps" Name="Use Bing Map" VideoUrl="http://www.youtube.com/watch%3Fv=vnkKsGJSNbY" >
+      <Description>This sample shows how to load a map from Bing's REST service and switch between different map types (road, aerial, hybrid, etc.).</Description>
+    </Sample>
+    <Sample Id="LoadAnArcGISServerRestOverlay" Name="Load An ArcGISServerRestOverlay" VideoUrl="http://www.youtube.com/watch%3Fv=ZElBHAhbTgA">
+      <Description>
+        This sample demonstrates how to load a map from the ESRI ArcGIS REST service. This overlay gives developers a simple
+        and powerful tool to access their maps that reside on ArcGIS Server. This new overlay utilizes the ArcGIS Server REST API
+        at http://resources.esri.com/help/9.3/arcgisserver/apis/rest/.
+      </Description>
+    </Sample>
+    <Sample Id="UseOpenStreetMap" Name="Use OpenStreetMap" VideoUrl="http://www.youtube.com/watch%3Fv=i1ATWDa3Obk">
+      <Description>
+        This sample shows how to load a map from OpenStreetMap.  OpenStreetMap (OSM) is a collaborative project
+        to create free geographic data for the entire world. It can be thought of the "Free Wiki World Map".
+      </Description>
+    </Sample>
+    <Sample Id="LoadAWmsOverlay" Name="Load a WmsOverlay" VideoUrl="http://www.youtube.com/watch%3Fv=tKDsu79jQGk">
+      <Description>
+        This sample demonstrates loading map images from a standards-compliant Web Map Service (WMS).
+        It supports WMS schemas of version 1.1.0, 1.1.1 and 1.3.0.
+      </Description>
+    </Sample>
+  </Category>
+  <Category Id="InteractiveOverlays" Name="InteractiveOverlays" description="These samples show various aspects of how to extend or create InteractiveOverlays, which allow you to draw and manipulate shapes, add markers and more."  Path="views/InteractiveOverlays">
+    <Sample Id="SetImageFormatAndQuality" Name="Set Image Format and Quality" VideoUrl="http://www.youtube.com/watch%3Fv=mrCIyDoiBVM" >
+      <Description>
+        This sample simply sets the format and quality of the map images. With these properties,
+        we can reduce the size of each map tile to improve the access speed.
+      </Description>
+    </Sample>
+    <Sample Id="SetBackgroundColor" Name="Set the Background Color" VideoUrl="http://www.youtube.com/watch%3Fv=yBy4_n09gCA" >
+      <Description>This sample demonstrates how to change the map's background color on the fly.</Description>
+    </Sample>
+    <Sample Id="AddAMarker" Name="Add a Marker" VideoUrl="http://www.youtube.com/watch%3Fv=hbrBm5I4BAQ" >
+      <Description>This sample shows how to display a small marker image on the map to represent a point of interest.</Description>
+    </Sample>
+    <Sample Id="AutoRefreshOverlay" Name="AutoRefreshOverlay" VideoUrl="http://www.youtube.com/watch%3Fv=uxOenUrRwUo">
+      <Description>
+        This sample demonstrates how to use the AutoRefresh functionality to refresh the map periodically.
+      </Description>
+    </Sample>
+    <Sample Id="DrawEditShapes" Name="Draw and Edit Shapes" VideoUrl="http://www.youtube.com/watch%3Fv=eRmQIe9MBaQ" >
+      <Description>
+        This sample demonstrates how to use the EditOverlay to draw and edit shapes on the map.
+        The EditOverlay is used to contain the features that you want to edit on the client
+        side. All of the features in this Overlay will be converted to client shapes. Of course,
+        you can pass these shapes to the controller to save them.
+      </Description>
+    </Sample>
+    <Sample Id="TrackShapeFinishedEvent" Name="Track Shape Finished Event" VideoUrl="http://www.youtube.com/watch%3Fv=ncwnMzoyAi4" >
+      <Description>
+        The sample demonstrates the TrackShapeFinished event of the map. If you attach handlers to this
+        event, the map will raise a form-submit each time you finish drawing a shape.
+      </Description>
+    </Sample>
+    <Sample Id="ChangeEditSettings" Name="Change Edit Settings" VideoUrl="http://www.youtube.com/watch%3Fv=rWT31jGL7SU" >
+      <Description>This sample demonstrates the editing modes supported by Map Suite MVC Edition.</Description>
+    </Sample>
+    <Sample Id="LabelRotateAMarker" Name="Label and Rotate a Marker" VideoUrl="http://www.youtube.com/watch%3Fv=RXmPBH-6TYA" >
+      <Description>This sample demonstrates how to label and rotate a marker at runtime.</Description>
+    </Sample>
+    <Sample Id="ClickEventOnMarker" Name="Click Event on a Marker" VideoUrl="http://www.youtube.com/watch%3Fv=GqoXmV-9k-8" >
+      <Description>
+        This sample demonstrates the click event on a marker. If you click on the marker,
+        it will raise a form-submit and pass the available information to an action in the controller.
+      </Description>
+    </Sample>
+    <Sample Id="HighlightAFeatureWhileHovering" Name="Highlight a Feature While Hovering" VideoUrl="http://www.youtube.com/watch%3Fv=y-VT7XmE3yc">
+      <Description>This sample shows how to select and highlight a feature specified by hovering over it with your mouse.</Description>
+    </Sample>
+    <Sample Id="ClickEventToHighlightOverlay" Name="Add a Click Event to a HighlightOverlay" VideoUrl="http://www.youtube.com/watch%3Fv=A6hvlXeX740">
+      <Description>This sample demonstrates the use of the click ServerEvent of the HighlightOverlay.</Description>
+    </Sample>
+    <Sample Id="ContextMenuToHighlightOverlay" Name="Add a Context Menu to a HighlightOverlay" VideoUrl="http://www.youtube.com/watch%3Fv=jf1HPmMr5FE">
+      <Description>
+        This samples demonstrates adding a context menu on a HighlightOverlay. If you right-click on a feature
+        contained in the overlay, the context menu will show up; otherwise, nothing will happen.
+      </Description>
+    </Sample>
+    <Sample Id="UnionTwoFeatures" Name="Union Two Features" VideoUrl="http://www.youtube.com/watch%3Fv=-re_TO75ekc">
+      <Description>This sample shows how to perform Union geoprocessing on two features.</Description>
+    </Sample>
+    <Sample Id="FindDifferenceOfTwoFeatures" Name="Find the Differences Between Two Features" VideoUrl="http://www.youtube.com/watch%3Fv=oizxqttFkE8">
+      <Description>This sample shows how to find the differences between two specified features.</Description>
+    </Sample>
+    <Sample Id="ShortestLineBetweenFeatures" Name="Shortest Line Between Features" VideoUrl="http://www.youtube.com/watch%3Fv=9TEZiqRvKPo">
+      <Description>This sample shows how to calculate the shortest line between features.</Description>
+    </Sample>
+    <Sample Id="BufferAFeature" Name="Buffer a Feature" VideoUrl="http://www.youtube.com/watch%3Fv=xx2Von_eRl4">
+      <Description>This sample shows how to buffer a feature and then display it on the map.</Description>
+    </Sample>
+    <Sample Id="AreaOfAFeature" Name="Area of a Feature" VideoUrl="http://www.youtube.com/watch%3Fv=8J-sW6ec4Tk">
+      <Description>This sample shows how to calculate the area of a feature.</Description>
+    </Sample>
+    <Sample Id="LengthOfAFeature" Name="Length of a Feature" VideoUrl="http://www.youtube.com/watch%3Fv=5cmzujPmPcg">
+      <Description>This samples shows how to calculate the length of a feature.</Description>
+    </Sample>
+    <Sample Id="EnvelopeOfAFeature" Name="Envelope of a Feature" VideoUrl="http://www.youtube.com/watch%3Fv=vedJ9RonRf0">
+      <Description>This sample shows how to get the envelope of a feature.  The envelope is a rectangle that encompasses all of the feature's geometry.</Description>
+    </Sample>
+  </Category>
+  <Category Id="Labeling" Name="Labeling" description="These samples show various ways to use labeling in your application."  Path="Samples/Labeling">
+    <Sample Id="LabelNiceLookingRoads" Name="Label Nice Looking Roads" VideoUrl="http://www.youtube.com/watch%3Fv=ukz1IZwVAX8">
+      <Description>This sample demonstrates how to draw and label a series of roads using a visually pleasing style.</Description>
+    </Sample>
+    <Sample Id="LabelPointsOfInterest" Name="Label Points of Interest" VideoUrl="http://www.youtube.com/watch%3Fv=2URwUjSnaC0">
+      <Description>This sample demonstrates how to draw and label a layer of cities with a predefined style. </Description>
+    </Sample>
+    <Sample Id="ChangePointLabelPlacement" Name="Change Point Label Placement" VideoUrl="http://www.youtube.com/watch%3Fv=cJnhX7oPatA">
+      <Description>This sample demonstrates how to change the position of the labels for point-based features.</Description>
+    </Sample>
+    <Sample Id="LabelWaterFeatures" Name="Label Water Features" VideoUrl="http://www.youtube.com/watch%3Fv=uqAGeYYTbgQ">
+      <Description>This sample demonstrates how to draw and label a layer of lakes and other water features, using a visually pleasing style.</Description>
+    </Sample>
+    <Sample Id="DrawCurvedLabels" Name="Draw Curved Labels" VideoUrl="http://www.youtube.com/watch%3Fv=jnHZ0Nf0jTE">
+      <Description>This sample demonstrates how to render labels that follow the contours of curved streets or other line-based features.</Description>
+    </Sample>
+  </Category>
+  <Category Id="LayersFeatureSources" Name="Layers &amp; FeatureSources" description="These samples demonstrate custom layers and feature sources, which you can use as inspiration for integrating your own custom types of data."  Path="views/LayersFeatureSources">
+    <Sample Id="PlotAPointUsingLatLong" Name="Plot a Point Using Lat and Long" VideoUrl="http://www.youtube.com/watch%3Fv=DnXKhoRisWA" >
+      <Description>This sample demonstrates how to draw a point on the map at the specified coordinates by using a custom image.</Description>
+    </Sample>
+    <Sample Id="CreateAScaleLineAdormentLayer" Name="Create a ScaleLineAdormentLayer" VideoUrl="http://www.youtube.com/watch%3Fv=MUDfwC9SN7Q" >
+      <Description>This sample demonstrates how to display a scale line on the map using ScaleLineAdornmentLayer.</Description>
+    </Sample>
+    <Sample Id="CreateARestrictionLayer" Name="Create a RestrictionLayer" VideoUrl="http://www.youtube.com/watch%3Fv=ymHYCZxYtyo" >
+      <Description>This sample shows how to render the map at a limited extent or prevent certain areas from displaying.</Description>
+    </Sample>
+    <Sample Id="CreateAGraticuleAdornmentLayer" Name="Create a GraticuleAdornmentLayer" VideoUrl="http://www.youtube.com/watch%3Fv=J4aUupMfCVo">
+      <Description>This sample demonstrates adding a graticule layer to the map to display a grid of latitude and longitude values.</Description>
+    </Sample>
+    <Sample Id="LoadTabFileFeatureLayer" Name="Load TabFileFeatureLayer" VideoUrl="http://www.youtube.com/watch%3Fv=aLjwVQZIZug" >
+      <Description>This sample shows how to display a map using data loaded from a MapInfo TAB file.</Description>
+    </Sample>
+    <Sample Id="CreateAnInMemoryFeatureLayer" Name="Create an InMemoryFeatureLayer" VideoUrl="http://www.youtube.com/watch%3Fv=wHq3XZdJMCQ">
+      <Description>This sample shows how to display a map using data that is stored only in memory.</Description>
+    </Sample>
+    <Sample Id="CreateASpatialIndexForAShapeFileFeatureLayer" Name="Create a Spatial Index for a ShapeFileFeatureLayer" VideoUrl="http://www.youtube.com/watch%3Fv=qz_7yz6zqHM">
+      <Description>This sample shows how to create a spatial index for a ShapeFileFeatureLayer.</Description>
+    </Sample>
+    <Sample Id="LoadAGridFileFeatureLayer" Name="Load a GridFileFeatureLayer" VideoUrl="http://www.youtube.com/watch%3Fv=47uR2p6P0bw">
+      <Description>This sample shows how to display a map using data loaded from a Grid file.</Description>
+    </Sample>
+    <Sample Id="LoadAMapFromStreams" Name="Load a Map from Streams" VideoUrl="http://www.youtube.com/watch%3Fv=dP-GvtERhiw">
+      <Description>
+        As an alternative to loading data from a specified data source on the file system, you can choose to pass
+        your own stream. This sample shows you how to use the StreamLoading event of the ShapeFileFeatureSource for this purpose.
+      </Description>
+    </Sample>
+    <Sample Id="LoadAMSSQL2008FeatureLayer" Name="Load a MSSQL2008FeatureLayer" VideoUrl="http://www.youtube.com/watch%3Fv=8xHKZaIbjSQ">
+      <Description>This sample shows how to display a map using data loaded from Microsoft SQL Server 2008.</Description>
+    </Sample>
+    <Sample Id="LoadAnOracleFeatureLayer" Name="Load a OracleFeatureLayer" VideoUrl="http://www.youtube.com/watch%3Fv=HTBAyUV8sHU">
+      <Description>This sample shows how to display a map using data loaded from an Oracle Spatial database.</Description>
+    </Sample>
+    <Sample Id="LoadAPostgreSQLFeatureLayer" Name="Load a PostgreSQLFeatureLayer" VideoUrl="http://www.youtube.com/watch%3Fv=Bw92pD9_cdE">
+      <Description>This sample shows how to display a map using data loaded from PostgreSQL PostGIS.</Description>
+    </Sample>
+    <Sample Id="LoadAShapeFileFeatureLayer" Name="Load a ShapeFileFeatureLayer" VideoUrl="http://www.youtube.com/watch%3Fv=b4i5mjxjx5s">
+      <Description>This sample shows how to display a map using data loaded from a ShapeFile (.shp).</Description>
+    </Sample>
+    <Sample Id="LoadAHeatLayer" Name="Load A HeatLayer" VideoUrl="http://www.youtube.com/watch%3Fv=xztTaAdjHAg">
+      <Description>
+        <a href="http://en.wikipedia.org/wiki/Heat_map" target="_blank">Heat maps</a> are a technique increasingly used
+        in various fields such as biology and geology. They are also used for displaying areas of web pages that are
+        most frequently interacted with.
+        &lt;br/&gt;
+        &lt;br/&gt;
+        In this sample, we apply this concept to geographic maps.  Heat maps are a great way to give users a
+        visually compelling representation of the distribution and intensity of geographic phenomena.
+      </Description>
+    </Sample>
+    <Sample Id="DisplayASatelliteImage" Name="Display a Satellite Image" VideoUrl="http://www.youtube.com/watch%3Fv=23aNYDg7qhU">
+      <Description>This sample simply adds an ECW layer to show a satellite image on the map. </Description>
+    </Sample>
+    <Sample Id="LoadAStandardImageWithWorldFile" Name="Load a Standard Image with World File" VideoUrl="http://www.youtube.com/watch%3Fv=9g6fj3j_FTg">
+      <Description>
+        A "standard image" is one of several formats supported natively by the Windows operating system; these
+        include .bmp, .png, .gif and so on.  In this sample we'll show you how to load these types of images onto a map
+        with just a few lines of code.
+      </Description>
+    </Sample>
+    <Sample Id="UsingCustomData" Name="Using Custom Data" VideoUrl="http://www.youtube.com/watch%3Fv=uG2X06vAPJg">
+      <Description>This sample demonstrates how to add your own data to a ShapeFile feature layer. </Description>
+    </Sample>
+    <Sample Id="DisplayLayersAtDifferentScales" Name="Display Layers at Different Scales" VideoUrl="http://www.youtube.com/watch%3Fv=VABhdZTR8U4">
+      <Description>
+        In this sample, we show you how to set different styles for the map or load different data to the map
+        at scales from 1:10,000 to 1:100,000,000.
+        &lt;br/&gt;
+        &lt;br/&gt;
+        This sample is also an opportunity to review the very basic concept of scale in GIS. The easiest way to
+        think about scale is to consider it a ratio between what you see on the screen and the real world. So, if the
+        scale is 1:10,000 it basically means that one centimeter (you can use any unit) on the screen represents
+        10,000 centimeters (or 100 meters) in the real world. Of course, there are some intricacies involved with calculating
+        the scale for a map according to its projection, etc. But if you think of scale in that very simple way, you will have
+        a general idea of what your map's scale truly represents.
+      </Description>
+    </Sample>
+    <Sample Id="StopCertainFeaturesFromDrawing" Name="Prevent Certain Features from Drawing" VideoUrl="http://www.youtube.com/watch%3Fv=PUcoYpj6REI">
+      <Description>This sample shows how to apply a filter to your data before rendering.</Description>
+    </Sample>
+    <Sample Id="WKBConversion" Name="Convert To/From Well Known Binary" VideoUrl="http://www.youtube.com/watch%3Fv=oE0KbHS37vc">
+      <Description>This sample shows you how to convert a geographic shape to WKB (Well Known Binary) and back.</Description>
+    </Sample>
+    <Sample Id="WKTConversion" Name="Convert To/From Well Known Text" VideoUrl="http://www.youtube.com/watch%3Fv=tj51IIGGz2w">
+      <Description>This sample shows you how to convert a geographic shape to WKT (Well Known Text) and back.</Description>
+    </Sample>
+  </Category>
+  <Category Id="Miscellaneous" Name="Miscellaneous" description="These samples demonstrate a variety of miscellaneous features of Map Suite MVC Edition."  Path="views/Miscellaneous">
+    <Sample Id="ChangeLoadingImage" Name="Change Loading Image" VideoUrl="http://www.youtube.com/watch%3Fv=gi9R9BMkXQU" >
+      <Description>This sample shows how to customize the loading image that appears when zooming in/out on the map.</Description>
+    </Sample>
+    <Sample Id="AddAContextMenu" Name="Add a Context Menu" VideoUrl="http://www.youtube.com/watch%3Fv=npLBkuZf_Qc" >
+      <Description>This sample shows how to display a context menu when you right-click on the map.</Description>
+    </Sample>
+    <Sample Id="AddAPopup" Name="Add a Popup" VideoUrl="http://www.youtube.com/watch%3Fv=Ot_K95o3-Ow" >
+      <Description>This sample shows how to display a pop-up information bubble on the map.</Description>
+    </Sample>
+    <Sample Id="MiniMap" Name="Using a Mini-Map" VideoUrl="http://www.youtube.com/watch%3Fv=jKDAOvgUuHE" >
+      <Description>This sample enables a small mini-map that pans/interacts together with your main map. </Description>
+    </Sample>
+    <Sample Id="WrapDateLine" Name="Wrap Dateline" VideoUrl="http://www.youtube.com/watch%3Fv=ICAAzVi3mL4">
+      <Description>
+        This sample shows how to work around dateline issues by wrapping the dateline
+        on a number of layer types.
+      </Description>
+    </Sample>
+    <Sample Id="MarkerWithContextMenu" Name="Marker with Context Menu" VideoUrl="http://www.youtube.com/watch%3Fv=ynF2UlFezgQ" >
+      <Description>
+        This sample shows how to add a context menus that appears when right-clicking a marker, which allows us to
+        perform various actions.
+      </Description>
+    </Sample>
+    <Sample Id="ZoomLevelsOnMarkers" Name="ZoomLevels on Markers" VideoUrl="http://www.youtube.com/watch%3Fv=vyjW-7GdWb8" >
+      <Description>
+        Just like the sample "Display Layers at Different Scales", this sample shows how to set
+        different marker styles and attached popup information when the map is zoomed to different
+        magnification levels.
+      </Description>
+    </Sample>
+    <Sample Id="UseDraggableMarkers" Name="Draggable Markers" VideoUrl="http://www.youtube.com/watch%3Fv=gWbokwszrPQ" >
+      <Description>
+        In this sample, we show how to place markers which can then be dragged to move them
+        to a new location.
+      </Description>
+    </Sample>
+    <Sample Id="BaseOverlayChangedEvent" Name="BaseOverlayChanged Event" VideoUrl="http://www.youtube.com/watch%3Fv=i7NAXrv63Dk">
+      <Description>
+        This sample shows how to raise the BaseOverlayChanged event when you switch the base
+        overlay of the map using the Overlay Switcher controls (or any other method).
+      </Description>
+    </Sample>
+    <Sample Id="OnOverlayDrawingClientEvent" Name="OnOverlayDrawing Client Event" VideoUrl="http://www.youtube.com/watch%3Fv=CY58O7-KoBs">
+      <Description>
+        In this sample, we show you how to reset the GoogleOverlay's PanZoomBar by using the client-side
+        "OnOverlaysDrawing" event.
+      </Description>
+    </Sample>
+    <Sample Id="AddAdditionalCustomPropertiesAndMethods" Name="Add Additional Custom Properties and Methods" VideoUrl="http://www.youtube.com/watch%3Fv=Tz2bWqMyPDo" >
+      <Description>
+        This sample shows how you can add additional custom properties and methods to your objects.
+      </Description>
+    </Sample>
+    <Sample Id="UsePdfExtension" Name="Use PDF Extension" VideoUrl="http://www.youtube.com/watch%3Fv=2MBz80WEFFI" >
+      <Description>
+        In this sample, we show you how to use the PdfGeoCanvas in PdfExtension to
+        print a typical map as a PDF document.
+      </Description>
+    </Sample>
+    <Sample Id="FindWorldCoordinatesWhereClicked" Name="Find World Coordinates Where the User Clicked" VideoUrl="http://www.youtube.com/watch%3Fv=WIfcVWgU_Uk">
+      <Description>This sample shows how to get the coordinates (in world system) at the point where the user clicked.</Description>
+    </Sample>
+    <Sample Id="WorldCoordinatesToScreenCoordinates" Name="Convert World Coordinates to Screen" VideoUrl="http://www.youtube.com/watch%3Fv=I2fUpkfdtJc">
+      <Description>This sample shows you how to convert a coordinate in the world system to a drawing coordinate on the screen.</Description>
+    </Sample>
+    <Sample Id="ScreenCoordinatesToWorldCoordinates" Name="Convert Screen Coordinates to World" VideoUrl="http://www.youtube.com/watch%3Fv=kggNGbDxGj8">
+      <Description>This sample shows you how to convert a drawing coordinate on the screen to a coordinate in the world system.</Description>
+    </Sample>
+    <Sample Id="GetDistanceBetweenTwoPoints" Name="Get Distance Between Two Points" VideoUrl="http://www.youtube.com/watch%3Fv=-ZvZmbZ4lUc">
+      <Description>This sample simply shows you how to get the distance between two points.</Description>
+    </Sample>
+  </Category>
+  <Category Id="Printing" Name="Printing" description="These samples demonstrate robust printing and page layout features."  Path="views/Printing">
+    <Sample Id="PrintAMap" Name="Print a Map" VideoUrl="http://www.youtube.com/watch%3Fv=2LXDgKTSmco" >
+      <Description>
+        This sample demonstrates the robust controls available for creating a page layout and printing
+        the map to it.
+      </Description>
+    </Sample>
+  </Category>
+  <Category Id="Projection" Name="Projection" description="These sample features various usages of projections."  Path="views/Projection">
+    <Sample Id="UseADifferentProjectionForAFeatureLayer" Name="Use a Different Projection for a Feature Layer" VideoUrl="http://www.youtube.com/watch%3Fv=XMMnPvTCf1M" >
+      <Description>This sample shows how to convert a single layer's projection from EPSG:4326 to EPSG:2163.</Description>
+    </Sample>
+    <Sample Id="UseRotationProjectionForAFeatureLayer" Name="Use RotationProjection for a Feature Layer" VideoUrl="http://www.youtube.com/watch%3Fv=GhHnFqKv2qo" >
+      <Description>
+        This sample shows how to project a layer from its own internal projection to an external projection while doing a rotation at the same time.
+      </Description>
+    </Sample>
+  </Category>
+  <Category Id="SpatialFunctions" Name="Spatial Functions" description="These samples demonstrate various spatial functions such as union, buffer, merge, etc."  Path="Views/SpatialFunctions">
+    <Sample Id="FindFeatureClicked" Name="Find the Feature the User Clicked" VideoUrl="http://www.youtube.com/watch%3Fv=n_iQpfzm90E" >
+      <Description>This sample show you how to find the feature at the point where the user clicked. </Description>
+    </Sample>
+    <Sample Id="ZoomInToAFeatureClicked" Name="Zoom In to the Feature the User Clicked" VideoUrl="http://www.youtube.com/watch%3Fv=JkOQJ_p0nJg" >
+      <Description>
+        This sample is similar to the sample "Find The Feature The User Clicked On". Here, instead of just showing information
+        about the selected feature, we will instead highlight the feature and the extent of the map will be set to the bounding box
+        of that feature. Just click on a country and the map will zoom in to it.
+      </Description>
+    </Sample>
+    <Sample Id="MeasureMapTool" Name="Measure Map Tool" VideoUrl="http://www.youtube.com/watch%3Fv=Ls3EfODuSk4">
+      <Description>This sample demonstrates the Measure map tool, which is used to measure distances and areas.</Description>
+    </Sample>
+    <Sample Id="ExecuteSpatialQuery" Name="Execute a Spatial Query" VideoUrl="http://www.youtube.com/watch%3Fv=PEgI3s78yJI">
+      <Description>This sample shows how to perform various types of geoprocessing in order to query the features in a ShapeFileFeatureSource.</Description>
+    </Sample>
+    <Sample Id="FindFeaturesWithinDistance" Name="Find Features Within a Distance" VideoUrl="http://www.youtube.com/watch%3Fv=Hp3ziZWDrm4">
+      <Description>This sample demonstrates finding the features in a ShapeFileFeatureSource that are within a specified distance.</Description>
+    </Sample>
+    <Sample Id="GetFeaturesCount" Name="Get the Feature Count" VideoUrl="http://www.youtube.com/watch%3Fv=2PoDOqhaPY0">
+      <Description>This sample shows how to determine the number of features in a feature layer.</Description>
+    </Sample>
+    <Sample Id="GetAllFeatures" Name="Get All Features" VideoUrl="http://www.youtube.com/watch%3Fv=kyW8eXjaaX4">
+      <Description>
+        This sample simply retrieves all the features from a feature layer and displays some of their data.
+      </Description>
+    </Sample>
+    <Sample Id="GetColumnData" Name="Get Column Data" VideoUrl="http://www.youtube.com/watch%3Fv=ze-h-lPg-3g">
+      <Description>
+        This sample simply shows how to get all the column data from a feature layer and display them.
+      </Description>
+    </Sample>
+    <Sample Id="GetDataWhenUserClicks" Name="Get Data of the Location Where the User Clicked" VideoUrl="http://www.youtube.com/watch%3Fv=8_a-qT145ZM">
+      <Description>This sample shows how to perform a spatial query and display resulting information about the area we clicked on.</Description>
+    </Sample>
+    <Sample Id="FindFeatureById" Name="Find Feature by ID" VideoUrl="http://www.youtube.com/watch%3Fv=oOA1r9L5cNI">
+      <Description>This sample shows how to find and display detailed information about a feature based on its ID.</Description>
+    </Sample>
+    <Sample Id="UseMapSimplification" Name="Draw the Map Using Different Simplification Types" VideoUrl="http://www.youtube.com/watch%3Fv=zJVNvHlfZdw">
+      <Description>
+        The sample shows how to render the map geometry using two different simplification types (TopologyPeserving or DouglasPeucker).
+      </Description>
+    </Sample>
+  </Category>
+  <Category Id="Styles" Name="Styles" description="These samples show various kinds of styles that can be applied to features, including custom symbols, colors, and data-driven styles."  Path="Views/Styles">
+    <Sample Id="DrawUsingFleeBooleanStyle" Name="Draw using FleeBooleanStyle" VideoUrl="http://www.youtube.com/watch%3Fv=fPxd6rAFlEw" >
+      <Description>
+        The sample shows how to style a map using the FleeBooleanStyle. In this example, the hightlighted features are the landlocked countries whose population is greater than 10 million.
+      </Description>
+    </Sample>
+    <Sample Id="PredefinedStyles" Name="Using Predefined Styles" VideoUrl="http://www.youtube.com/watch%3Fv=8wjAXuWNkxg">
+      <Description>
+        Map Suite MVC Edition includes numerous built-in styles like these, which allow you easily set up a visually appealing map.
+      </Description>
+    </Sample>
+    <Sample Id="DrawPointUsingBitmap" Name="Draw a Point Using a Bitmap" VideoUrl="http://www.youtube.com/watch%3Fv=EWScGnAE9ZU">
+      <Description>This sample shows how to mark a point on the map using a custom bitmap image.</Description>
+    </Sample>
+    <Sample Id="DrawPointUsingSymbol" Name="Draw a Point Using a Symbol" VideoUrl="http://www.youtube.com/watch%3Fv=WHt2C2fw-aI">
+      <Description>This samples shows how to mark a point on the map using a symbol.</Description>
+    </Sample>
+    <Sample Id="DrawFeaturesBasedOnValue" Name="Draw Features Based on a Value" VideoUrl="http://www.youtube.com/watch%3Fv=w8stuwN5vS8">
+      <Description>This sample renders cities in different styles based on their "POP_RANK" data value. </Description>
+    </Sample>
+    <Sample Id="ChangeTheFillAndOutlineColor" Name="Change the Fill and Outline Colors" VideoUrl="http://www.youtube.com/watch%3Fv=tJMjyXi9Xt8">
+      <Description>This sample shows how to change the fill and outline colors of a polygon at runtime.</Description>
+    </Sample>
+    <Sample Id="ChangeTheWidthAndColorOfALine" Name="Change the Width and Color of a Line" VideoUrl="http://www.youtube.com/watch%3Fv=69xLxVltPuI">
+      <Description>This sample shows how to change the width and color of a line at runtime.</Description>
+    </Sample>
+    <Sample Id="GeoColorConversion" Name="Convert GeoColor to/from OLE, Win32, HTML, or ARGB Colors" VideoUrl="http://www.youtube.com/watch%3Fv=Mew2N-sv83k">
+      <Description>This sample shows how to convert GeoColor to and from OLE, Win32, HTML, or ARGB colors.</Description>
+    </Sample>
+    <Sample Id="GetAGroupOfColor" Name="Get a Group of Colors in the Same Quality (Hue) Family" VideoUrl="http://www.youtube.com/watch%3Fv=B-i2M4oYdRc">
+      <Description>
+        In this sample, we use a group of colors in the same family of red (but with different strengths)
+        to draw five different countries.
+      </Description>
+    </Sample>
+    <Sample Id="DrawUsingZedGraphStyle" Name="Draw using ZedGraphStyle" VideoUrl="http://www.youtube.com/watch%3Fv=kNEfRDhahIo">
+      <Description>This sample shows how to add pie graphs to the map using the ZedGraph library.</Description>
+    </Sample>
+    <Sample Id="DotDensity" Name="Dot Density Drawing Using Numerical Data" VideoUrl="http://www.youtube.com/watch%3Fv=Vxiglt3adj4">
+      <Description>This sample uses a different density of dots to represent different populations of U.S. states. </Description>
+    </Sample>
+    <Sample Id="RegularExpression" Name="Draw Features Based on a Regular Expression" VideoUrl="http://www.youtube.com/watch%3Fv=1P_p3SgOYbM">
+      <Description>
+        In this sample, we use a regular expression to draw countries that have the string
+        "land" in their name (such as Greenland) using a distinct style.
+      </Description>
+    </Sample>
+    <Sample Id="ThematicFeatures" Name="Draw Thematic Features" VideoUrl="http://www.youtube.com/watch%3Fv=0cmzJ2Y9u3U">
+      <Description>
+        In this sample, we have broken down the population of each country into ranges and then used
+        different colors to represent the ranges.
+      </Description>
+    </Sample>
+    <Sample Id="GeographicSimpleStandardColors" Name="Using Geographic, Simple and Standard Colors" VideoUrl="http://www.youtube.com/watch%3Fv=-8R-ld5NDJ8">
+      <Description>This sample shows how to change the border and fill colors by using built-in styles.</Description>
+    </Sample>
+  </Category>
+  <Category Id="VehicleTracking" Name="Vehicle Tracking" description="These samples show various features related to vehicle and asset tracking."  Path="views/VehicleTracking">
+    <Sample Id="VehicleTracking" Name="Vehicle Tracking" VideoUrl="http://www.youtube.com/watch%3Fv=FgZRbRuRCiA">
+      <Description>
+        In this sample, we create a simple vehicle tracking demo to show how to interact between the client
+        and the server action in a controller. All of the functionalities are based on AJAX technology, which will
+        greatly improve the user experience.
+      </Description>
+    </Sample>
+  </Category>
+  <Category Id="ZoomingPanningMoving" Name="Zooming, Panning, Moving" description="These samples show various ways to move the map around."  Path="views/ZoomingPanningMoving">
+    <Sample Id="ZoomInAndOut" Name="Zoom In and Out" VideoUrl="http://www.youtube.com/watch%3Fv=47cnqabipZM" >
+      <Description>
+        This sample shows how to zoom the map in or out.
+      </Description>
+    </Sample>
+    <Sample Id="NavigationHistory" Name="Navigation History" VideoUrl="http://www.youtube.com/watch%3Fv=csnLboNlqgI" >
+      <Description>This sample demonstrates how to zoom back and forth between previously used map extents.</Description>
+    </Sample>
+    <Sample Id="TrackZoomIn" Name="Track Zoom in a Map" VideoUrl="http://www.youtube.com/watch%3Fv=yCgI-pcAab4" >
+      <Description>This sample shows how to track zoom the map to a specified extent defined by dragging the mouse.</Description>
+    </Sample>
+    <Sample Id="PanTheMap" Name="Pan the Map" VideoUrl="http://www.youtube.com/watch%3Fv=0JgN-YRJeFI" >
+      <Description>
+        This sample shows how to enable/disable the functionality which allows the user to pan the map or use the
+        mouse wheel to zoom in or out.
+      </Description>
+    </Sample>
+    <Sample Id="UseKeyboard" Name="Control the Map Via Keyboard" VideoUrl="http://www.youtube.com/watch%3Fv=HP5wbWD04KU" >
+      <Description>This sample shows how to manipulate the map using the keyboard.</Description>
+    </Sample>
+    <Sample Id="ZoomLevelsLessThan20" Name="Restrict ZoomLevels to Less than 20" VideoUrl="http://www.youtube.com/watch%3Fv=7zvfNFehTNA" >
+      <Description>This sample shows how to limit the number of available ZoomLevels to less than 20.</Description>
+    </Sample>
+    <Sample Id="ExtentChangedEvent" Name="ExtentChanged Event" VideoUrl="http://www.youtube.com/watch%3Fv=Y1EUmJnexDw" >
+      <Description>This sample reports the updated scale and extent as you pan or zoom the map.</Description>
+    </Sample>
+    <Sample Id="AnimationPanMapTool" Name="AnimationPanMapTool" VideoUrl="http://www.youtube.com/watch%3Fv=YZIYD4ZE0tI">
+      <Description>This sample shows how to center the map at the clicked point using a smooth animation.</Description>
+    </Sample>
+    <Sample Id="MoveAFeature" Name="Move a Feature" VideoUrl="http://www.youtube.com/watch%3Fv=OKntLHMN1BU">
+      <Description>This sample shows how to move a feature drawn in the InMemoryFeatureLayer.</Description>
+    </Sample>
+    <Sample Id="ScaleFeatureUpAndDown" Name="Scale Feature Up and Down" VideoUrl="http://www.youtube.com/watch%3Fv=Y1uYPsr3YUc">
+      <Description>This sample shows how to change the size of a polygon by scaling it up or down.</Description>
+    </Sample>
+  </Category>
+  <Category Id="InteractiveMap" Name="Interactive Map" description="These samples show various aspects of how to interact with map using JavaScript."  Path="views/InteractiveMap">
+    <Sample Id="ChangeCursorStyle" Name="Change Cursor Style" VideoUrl="http://www.youtube.com/watch%3Fv=w_hpMec1fX4" >
+      <Description>In this MVC-based sample, we show how to change the cursor style when moving the mouse on the map.</Description>
+    </Sample>
+    <Sample Id="AddAClickEvent" Name="Add a Click Event" VideoUrl="http://www.youtube.com/watch%3Fv=Lx0HtHoAr_c" >
+      <Description>This sample demonstrates how to raise the click event on the map.</Description>
+    </Sample>
+    <Sample Id="InteractWithMap" Name="Interact With Map" VideoUrl="http://www.youtube.com/watch%3Fv=vRo_2gCXuck" >
+      <Description>In this web-based project, we show you how to do a two-way interaction between the features in an InMemoryFeatureLayer and their information in GridView.</Description>
+    </Sample>
+  </Category>
+</SampleList>

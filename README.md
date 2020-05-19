@@ -28,7 +28,7 @@ We have a number of samples for both WebAPI and Blazor that show off ThinkGeo We
 
 We will begin by creating an **ASP.NET Core Web - API** project as the service and a simple HTML-based sample with [Leaflet](https://leafletjs.com/) to consume the service. Next, we will walk you through adding the required packages and getting a Restful map service.  Then, we will add some code to show a nice looking background map, and finally, add some custom data to the map and style it. After reading this, you will be in a good position to look over the [How Do I Sample](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/samples/web-api) and explore our other features.
 
-![alt text](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/assets/quickstart_webmaps_webapi_screenshot.png "Simple Map")
+![alt text](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/master/assets/quickstart_webmaps_webapi_screenshot.png "Simple Map")
 
 ### Step 1: Setup a New Project
 
@@ -193,7 +193,7 @@ You are now in a great position to look over the [other samples available](https
 
 We will begin by creating a **Blazor App** as the client to consuming the service in your favorite editor.  Next, we will walk you through adding the required packages and getting a map on the default form.  Then, we will add some code to show a nice looking background map, and finally, add some custom data to the map and style it.  After reading this, you will be in a good position to look over the [How Do I Sample](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/samples/blazor/HowDoISample) and explore our other features.
 
-![alt text](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/assets/quickstart_webmaps_blazor_screenshot.png "Simple Map")
+![alt text](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/master/assets/quickstart_webmaps_blazor_screenshot.png "Simple Map")
 
 ### Step 1: Setup a New Project
 

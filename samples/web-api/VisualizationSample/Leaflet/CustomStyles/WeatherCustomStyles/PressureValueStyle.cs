@@ -5,6 +5,7 @@ using ThinkGeo.Core;
 
 namespace Visualization
 {
+    [Serializable]
     public class PressureValueStyle : ValueStyle
     {
         private ValueItem lowPressureValueItem;
@@ -30,6 +31,7 @@ namespace Visualization
             base.DrawCore(features, canvas, labelsInThisLayer, labelsInAllLayers);
         }
 
+        [Serializable]
         public class SquareTextPointStyle : PointStyle
         {
             private string text;

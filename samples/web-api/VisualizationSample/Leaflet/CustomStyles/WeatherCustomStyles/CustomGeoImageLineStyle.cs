@@ -6,6 +6,7 @@ using ThinkGeo.Core;
 
 namespace Visualization
 {
+    [Serializable]
     public class CustomGeoImageLineStyle : LineStyle
     {
         private LineStyle lineStyle;

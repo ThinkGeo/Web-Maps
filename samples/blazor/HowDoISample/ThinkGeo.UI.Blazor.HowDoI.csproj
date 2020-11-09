@@ -14,8 +14,8 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="ThinkGeo.Ecw" Version="12.2.7" />
-    <PackageReference Include="ThinkGeo.UI.Blazor" Version="12.2.7" />
+    <PackageReference Include="ThinkGeo.Ecw" Version="13.0.0-beta180" />
+    <PackageReference Include="ThinkGeo.UI.Blazor" Version="13.0.0-beta187" />
   </ItemGroup>
 
   <ItemGroup>

@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="12.2.7" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="12.3.0" />
   </ItemGroup>
 
 </Project>

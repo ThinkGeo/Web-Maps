@@ -5,6 +5,7 @@ using ThinkGeo.Core;
 
 namespace Visualization
 {
+    [Serializable]
     public class WindPointStyle : Style
     {
         private string textColumn;

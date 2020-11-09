@@ -6,6 +6,7 @@ using ThinkGeo.Core;
 
 namespace Visualization
 {
+    [Serializable]
     public class WeatherLineStyle : LineStyle
     {
         private GeoImage geoImage;

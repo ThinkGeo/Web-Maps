@@ -15,7 +15,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DisplayNauticalCharts</RootNamespace>
     <AssemblyName>DisplayNauticalCharts</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
@@ -35,7 +35,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -62,8 +62,8 @@
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="SkiaSharp, Version=1.68.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.Dependency.SkiaSharp.12.2.1\lib\net45\SkiaSharp.dll</HintPath>
+    <Reference Include="SkiaSharp, Version=2.80.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.Dependency.SkiaSharp.12.3.0\lib\net462\SkiaSharp.dll</HintPath>
     </Reference>
     <Reference Include="SQLitePCLRaw.batteries_v2, Version=2.0.2.669, Culture=neutral, PublicKeyToken=8226ea5df37bcae9, processorArchitecture=MSIL">
       <HintPath>..\packages\SQLitePCLRaw.bundle_e_sqlite3.2.0.2\lib\net461\SQLitePCLRaw.batteries_v2.dll</HintPath>
@@ -80,7 +80,6 @@
     <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.4.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
     </Reference>
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.3\lib\netstandard2.0\System.Memory.dll</HintPath>
     </Reference>
@@ -101,7 +100,6 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Web.Http, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.7\lib\net45\System.Web.Http.dll</HintPath>
     </Reference>
@@ -114,21 +112,20 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="ThinkGeo.Core, Version=12.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.Core.12.2.12\lib\net461\ThinkGeo.Core.dll</HintPath>
+      <HintPath>..\packages\ThinkGeo.Core.12.3.0\lib\net462\ThinkGeo.Core.dll</HintPath>
     </Reference>
     <Reference Include="ThinkGeo.Dependency.Gdal, Version=12.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.Dependency.Gdal.12.2.4\lib\net461\ThinkGeo.Dependency.Gdal.dll</HintPath>
+      <HintPath>..\packages\ThinkGeo.Dependency.Gdal.12.2.5\lib\net461\ThinkGeo.Dependency.Gdal.dll</HintPath>
     </Reference>
     <Reference Include="ThinkGeo.Gdal, Version=12.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.Gdal.12.2.12\lib\net461\ThinkGeo.Gdal.dll</HintPath>
+      <HintPath>..\packages\ThinkGeo.Gdal.12.3.0\lib\net462\ThinkGeo.Gdal.dll</HintPath>
     </Reference>
     <Reference Include="ThinkGeo.NauticalCharts, Version=12.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.NauticalCharts.12.2.12\lib\net461\ThinkGeo.NauticalCharts.dll</HintPath>
+      <HintPath>..\packages\ThinkGeo.NauticalCharts.12.3.0\lib\net462\ThinkGeo.NauticalCharts.dll</HintPath>
     </Reference>
     <Reference Include="ThinkGeo.UI.WebApi, Version=12.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.UI.WebApi.12.2.12\lib\net461\ThinkGeo.UI.WebApi.dll</HintPath>
+      <HintPath>..\packages\ThinkGeo.UI.WebApi.12.3.0\lib\net462\ThinkGeo.UI.WebApi.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -226,13 +223,13 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
-   <Target Name="CopyRoslynFiles" AfterTargets="AfterBuild" Condition="!$(Disable_CopyWebApplication) And '$(OutDir)' != '$(OutputPath)'">
+  <Target Name="CopyRoslynFiles" AfterTargets="AfterBuild" Condition="!$(Disable_CopyWebApplication) And '$(OutDir)' != '$(OutputPath)'">
     <ItemGroup>
       <RoslynFiles Include="$(CscToolPath)\*" />
     </ItemGroup>
     <MakeDir Directories="$(WebProjectOutputDir)\bin\roslyn" />
     <Copy SourceFiles="@(RoslynFiles)" DestinationFolder="$(WebProjectOutputDir)\bin\roslyn" SkipUnchangedFiles="true" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)" />
- </Target>
+  </Target>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
@@ -240,12 +237,12 @@
     <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.3.1.1\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.3.1.1\build\Microsoft.Net.Compilers.props'))" />
     <Error Condition="!Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.2\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.2\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets'))" />
-    <Error Condition="!Exists('..\packages\ThinkGeo.Dependency.SkiaSharp.12.2.1\build\net45\ThinkGeo.Dependency.SkiaSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Dependency.SkiaSharp.12.2.1\build\net45\ThinkGeo.Dependency.SkiaSharp.targets'))" />
-    <Error Condition="!Exists('..\packages\ThinkGeo.Core.12.2.12\build\net461\ThinkGeo.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Core.12.2.12\build\net461\ThinkGeo.Core.targets'))" />
-    <Error Condition="!Exists('..\packages\ThinkGeo.Dependency.Gdal.12.2.4\build\net461\ThinkGeo.Dependency.Gdal.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Dependency.Gdal.12.2.4\build\net461\ThinkGeo.Dependency.Gdal.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.Dependency.SkiaSharp.12.3.0\build\net462\ThinkGeo.Dependency.SkiaSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Dependency.SkiaSharp.12.3.0\build\net462\ThinkGeo.Dependency.SkiaSharp.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.Core.12.3.0\build\net462\ThinkGeo.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Core.12.3.0\build\net462\ThinkGeo.Core.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.Dependency.Gdal.12.2.5\build\net461\ThinkGeo.Dependency.Gdal.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Dependency.Gdal.12.2.5\build\net461\ThinkGeo.Dependency.Gdal.targets'))" />
   </Target>
   <Import Project="..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.2\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.2\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />
-  <Import Project="..\packages\ThinkGeo.Dependency.SkiaSharp.12.2.1\build\net45\ThinkGeo.Dependency.SkiaSharp.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.SkiaSharp.12.2.1\build\net45\ThinkGeo.Dependency.SkiaSharp.targets')" />
-  <Import Project="..\packages\ThinkGeo.Core.12.2.12\build\net461\ThinkGeo.Core.targets" Condition="Exists('..\packages\ThinkGeo.Core.12.2.12\build\net461\ThinkGeo.Core.targets')" />
-  <Import Project="..\packages\ThinkGeo.Dependency.Gdal.12.2.4\build\net461\ThinkGeo.Dependency.Gdal.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.Gdal.12.2.4\build\net461\ThinkGeo.Dependency.Gdal.targets')" />
+  <Import Project="..\packages\ThinkGeo.Dependency.SkiaSharp.12.3.0\build\net462\ThinkGeo.Dependency.SkiaSharp.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.SkiaSharp.12.3.0\build\net462\ThinkGeo.Dependency.SkiaSharp.targets')" />
+  <Import Project="..\packages\ThinkGeo.Core.12.3.0\build\net462\ThinkGeo.Core.targets" Condition="Exists('..\packages\ThinkGeo.Core.12.3.0\build\net462\ThinkGeo.Core.targets')" />
+  <Import Project="..\packages\ThinkGeo.Dependency.Gdal.12.2.5\build\net461\ThinkGeo.Dependency.Gdal.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.Gdal.12.2.5\build\net461\ThinkGeo.Dependency.Gdal.targets')" />
 </Project>

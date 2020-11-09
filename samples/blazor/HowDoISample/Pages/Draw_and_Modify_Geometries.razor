@@ -1,19 +1,35 @@
 ﻿@page "/draw-and-modify-geometries"
 @using ThinkGeo.Core
+@using System.Xml.Linq
+@using Newtonsoft.Json;
+@using Newtonsoft.Json.Linq;
+
+<Modal @ref="modal">
+    <Title>Description of drawn shape</Title>
+    <Body>
+        <input class="form-control" @bind="@featureName" />
+    </Body>
+    <Footer>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" @onclick="@CloseModal">Ok</button>
+    </Footer>
+</Modal>
 
 <div class="map-container">
-    <MapView Id="map" @ref="map" Center="@(new PointShape(-10892935.00064512, 4536780.40385816))"
+    <MapView Id="map" @ref="map" Center="@(new PointShape(-10777396.5012, 3914579.4368))"
              Width="100"
              Height="100"
              MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
              Zoom="15" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter">
         <EditOverlaySetting>
-            <EditOverlay TrackMode="@trackMode" />
+            <EditOverlay TrackMode="@trackMode" OnFeatureDrawn="@OnFeatureDrawn" />
         </EditOverlaySetting>
         <OverlaysSetting>
             <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay"
                                             ApiKey="@GlobalSettings.ThinkGeoApiKey"
                                             MapType="ThinkGeoCloudRasterMapsMapType.Hybrid" />
+
+            <LayerOverlay Id="ExistingLayerOverlay" TileWidth="512" TileHeight="512"
+                          Layers="@editingLayers"></LayerOverlay>
         </OverlaysSetting>
         <MapToolsSetting>
             <MapTools>
@@ -48,7 +64,7 @@
                 <img src="images/big-circle.svg" alt="Circle">
             </span>
         </a>
-        <a href="javascript:void(0);" class="@GetCss(TrackMode.Modify)" title="Modify" @onclick="@(e => trackMode = TrackMode.Modify)">
+        <a href="javascript:void(0);" class="@GetCss(TrackMode.Modify)" title="Modify" @onclick="@HandleModify">
             <span>
                 <img src="images/edit.svg" alt="Modify">
             </span>
@@ -58,13 +74,163 @@
                 <img src="images/close.svg" alt="Clear">
             </span>
         </a>
+
+        <a href="javascript:void(0);" class="@GetCss(TrackMode.None)" title="Save" @onclick="@HandleSaveFeatures">
+            <span>
+                <img src="images/save.png" alt="Save">
+            </span>
+        </a>
     </nav>
 </div>
 
 @code{
+    private Modal modal { get; set; }
+    Feature AddedFeature;
+    public string featureName { get; set; }
+
+    private GeoCollection<Layer> editingLayers;
     MapView map;
     TrackMode trackMode = TrackMode.None;
 
+    string accessId = Guid.NewGuid().ToString();
+
     string GetCss(TrackMode mode) => mode == trackMode ? "active" : string.Empty;
 
+    protected override void OnInitialized()
+    {
+        editingLayers = new GeoCollection<Layer>();
+        InMemoryFeatureLayer drawnShapesFeatureLayer = GetDrawnShapesFeatureLayer();
+        editingLayers.Add(drawnShapesFeatureLayer);
+    }
+
+    void OnFeatureDrawn(FeatureDrawnEditOverlayEventArgs args)
+    {
+        AddedFeature = args.DrawnFeature;
+        modal.Open();
+    }
+
+    void CloseModal()
+    {
+        AddedFeature.ColumnValues.Add("Name", featureName);
+        featureName = "";
+        modal.Close();
+    }
+
+    private InMemoryFeatureLayer GetDrawnShapesFeatureLayer()
+    {
+        InMemoryFeatureLayer shapesFeatureLayer = new InMemoryFeatureLayer(new Collection<FeatureSourceColumn>() { new FeatureSourceColumn("Name") }, new Collection<BaseShape>());
+
+        shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyle.CreateSimpleAreaStyle(GeoColor.FromArgb(100, GeoColor.FromHtml("#1e469e")), GeoColor.FromHtml("#5799D5"));
+        shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = PointStyle.CreateSimpleCircleStyle(GeoColor.FromHtml("#2b7a05"), 14, GeoColor.FromHtml("#5799D5"));
+        shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = LineStyle.CreateSimpleLineStyle(GeoColor.FromHtml("#5799D5"), 2, true);
+        shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = TextStyle.CreateSimpleTextStyle("Name", "Arial", 12, DrawingFontStyles.Bold, GeoColors.Gray, GeoColors.White, 2);
+        shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+        // Restore the features if have, or we will use the default features loaded from the xml file.
+        Collection<Feature> savedFeatures = GetFeatures();
+        if (!savedFeatures.Any())
+        {
+            string dataFilePath = $"./Data/Data.xml";
+            XElement xElement = XElement.Load(dataFilePath);
+            foreach (var geometryXElement in xElement.Descendants("Geometry"))
+            {
+                Feature feature = new Feature(geometryXElement.Value);
+                feature.Id = geometryXElement.Attribute("id").Value;
+                feature.ColumnValues.Add("name", geometryXElement.Attribute("name").Value);
+                shapesFeatureLayer.InternalFeatures.Add(feature.Id, feature);
+            }
+        }
+        else
+        {
+            foreach (Feature feature in savedFeatures)
+            {
+                shapesFeatureLayer.InternalFeatures.Add(feature.Id, feature);
+            }
+        }
+        return shapesFeatureLayer;
+    }
+
+    async void ReloadData()
+    {
+        // Reload the Editing layer.
+        editingLayers.Clear();
+        InMemoryFeatureLayer drawnShapesFeatureLayer = GetDrawnShapesFeatureLayer();
+        editingLayers.Add(drawnShapesFeatureLayer);
+        await map.Overlays["ExistingLayerOverlay"].RedrawAsync();
+
+        // Clear the EditOverlay.
+        map.EditOverlay.Features.Clear();
+        await map.EditOverlay.RedrawAsync();
+    }
+
+    private Collection<Feature> GetFeatures()
+    {
+        Collection<Feature> features = new Collection<Feature>();
+        string jsonFilePath = $"./Data/Temp/{accessId}.json";
+        if (System.IO.File.Exists(jsonFilePath))
+        {
+            string[] geojsons = System.IO.File.ReadAllLines(jsonFilePath);
+            foreach (string geojson in geojsons)
+            {
+                features.Add(Feature.CreateFeatureFromGeoJson(geojson));
+            }
+        }
+        return features;
+    }
+
+    async void HandleModify()
+    {
+        var editingLayer = (InMemoryFeatureLayer)editingLayers[0];
+        for (int i = 0; i < editingLayer.InternalFeatures.Count; i++)
+        {
+            map.EditOverlay.Features.Add(editingLayer.InternalFeatures[i]);
+        }
+        editingLayer.InternalFeatures.Clear();
+        trackMode = TrackMode.Modify;
+        await map.Overlays["ExistingLayerOverlay"].RedrawAsync();
+        await map.EditOverlay.RedrawAsync();
+    }
+
+    private void HandleSaveFeatures()
+    {
+        try
+        {
+            Collection<Feature> features = new Collection<Feature>();
+
+            // Add the feature in current editing layer.
+            var editingLayer = (InMemoryFeatureLayer)editingLayers[0];
+            foreach (Feature feature in editingLayer.InternalFeatures)
+            {
+                features.Add(feature);
+            }
+
+            // Deal with newly added shapes.
+            foreach (Feature feature in map.EditOverlay.Features)
+            {
+                features.Add(feature);
+            }
+
+            // Update the local saved features for a specific access id.
+            SaveFeatures(features);
+            ReloadData();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
+
+    private void SaveFeatures(Collection<Feature> features)
+    {
+        string jsonFilePath = $"./Data/Temp/{accessId}.json";
+        using (StreamWriter streamWriter = new StreamWriter(jsonFilePath, false))
+        {
+
+            foreach (Feature feature in features)
+            {
+                streamWriter.WriteLine(feature.GetGeoJson());
+            }
+            streamWriter.Close();
+        }
+    }
 }

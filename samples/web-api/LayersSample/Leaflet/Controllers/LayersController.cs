@@ -266,7 +266,7 @@ namespace Layers.Controllers
             LayerOverlay layerOverlay = new LayerOverlay();
 
             string projWkt = System.IO.File.ReadAllText(Path.Combine(baseDirectory, "MrSid", "US380AndGeeRoad.prj"));
-            ProjectionConverter feetToGoogleProjectionConverter = new ProjectionConverter()
+            ProjectionConverter feetToGoogleProjectionConverter = new UnmanagedProjectionConverter()
             {
                 InternalProjection = new Projection(Projection.ConvertWktToProjString(projWkt)),
                 ExternalProjection = new Projection(Projection.GetGoogleMapProjString())

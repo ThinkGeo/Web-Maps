@@ -105,34 +105,41 @@ $("#CustomOverlay").click(function () {
 // Hook up click event on "OK" button in edit dialog.
 $('#btnSave').click(function () {
     bingMapsKey = document.getElementById("bingMapsKey").value;
-    var paras = {
-        keyStr: bingMapsKey
+    var parms = {
+        key: bingMapsKey
     }
     // Validate Bing Maps key. If successful, replace the basemap to Bing Maps.
-    $.post(getRootPath() + '/Overlays/ValidateBingMapsKey/', { '': JSON.stringify(paras) }, function (data) {
-        if (data) {
-            hideDlg();
-            map.setView(new ol.View({
-                center: ol.proj.transform([-96.8277325, 33.150205], 'EPSG:4326', 'EPSG:3857'),
-                zoom: 13
-            }));
-            baseLayerGroup.getLayers().forEach(function (sublayer) {
-                sublayer.setVisible(false);
-            });
+    $.ajax({
+        url: getRootPath() + '/Overlays/ValidateBingMapsKey/',
+        type: 'post',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify(parms),
+        success: function (data) {
+            if (data) {
+                hideDlg();
+                map.setView(new ol.View({
+                    center: ol.proj.transform([-96.8277325, 33.150205], 'EPSG:4326', 'EPSG:3857'),
+                    zoom: 13
+                }));
+                baseLayerGroup.getLayers().forEach(function (sublayer) {
+                    sublayer.setVisible(false);
+                });
 
-            // Create BingMap layer.
-            bingMapLayer = new ol.layer.Tile({
-                source: new ol.source.BingMaps({
-                    key: bingMapsKey,
-                    imagerySet: 'aerial'
-                })
-            });
-            baseLayerGroup.getLayers().setAt(1, bingMapLayer);
-            $('.selected').attr('class', 'unselected');
-            $('#' + selectedOverlay).attr('class', 'selected');
-        }
-        else {
-            alert('The remote server returned an error:(401) Unauthorized.');
+                // Create BingMap layer.
+                bingMapLayer = new ol.layer.Tile({
+                    source: new ol.source.BingMaps({
+                        key: bingMapsKey,
+                        imagerySet: 'aerial'
+                    })
+                });
+                baseLayerGroup.getLayers().setAt(1, bingMapLayer);
+                $('.selected').attr('class', 'unselected');
+                $('#' + selectedOverlay).attr('class', 'selected');
+            }
+            else {
+                alert('The remote server returned an error:(401) Unauthorized.');
+            }
         }
     });
 });

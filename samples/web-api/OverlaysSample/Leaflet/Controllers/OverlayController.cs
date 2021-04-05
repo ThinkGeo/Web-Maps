@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using ThinkGeo.Core;
 using ThinkGeo.UI.WebApi;
 
@@ -44,16 +45,14 @@ namespace ThinkGeo.MapSuite.Overlays
         /// </summary>
         [Route("ValidateBingMapsKey")]
         [HttpPost]
-        public bool ValidateBingMapsKey([FromBody] string postData)
+        public bool ValidateBingMapsKey([FromBody] Dictionary<string, string> postData)
         {
             bool validated = true;
             try
-            {
-                // Get bing maps key from post data
-                Dictionary<string, string> parameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(postData);
+            { 
                 // Validate key for BingMaps.
                 string loginServiceTemplate = "http://dev.virtualearth.net/REST/v1/Imagery/Metadata/{0}?&incl=ImageryProviders&o=xml&key={1}";
-                string loginServiceUri = string.Format(CultureInfo.InvariantCulture, loginServiceTemplate, BingMapsMapType.Road, parameters["keyStr"]);
+                string loginServiceUri = string.Format(CultureInfo.InvariantCulture, loginServiceTemplate, BingMapsMapType.Road, postData["key"]);
 
                 WebRequest request = WebRequest.Create(loginServiceUri);
                 request.GetResponse();

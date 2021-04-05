@@ -120,11 +120,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="12.3.0" />
-    <PackageReference Include="ThinkGeo.Jpeg2000" Version="12.3.0" />
-    <PackageReference Include="ThinkGeo.MrSid" Version="12.3.0" />
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="12.3.0" />
-    <PackageReference Include="ThinkGeo.UnmanagedProj" Version="12.3.0" />
+    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="12.3.5" />
+    <PackageReference Include="ThinkGeo.Jpeg2000" Version="12.3.5" />
+    <PackageReference Include="ThinkGeo.MrSid" Version="12.3.5" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="12.3.5" />
+    <PackageReference Include="ThinkGeo.UnmanagedProj" Version="12.3.5" />
   </ItemGroup>
 
 </Project>

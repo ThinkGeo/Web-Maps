@@ -149,4 +149,46 @@ A demonstration of how to use printing with map suite that can be added to your 
 
 ![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/blob/support/v10/samples/WebApi/PrintingSample/ScreenShot.png)
 
+# [Projection Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/ProjectionSample)
 
+Learn about Map Projection and how to apply it to your data.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/ProjectionSample/ScreenShot.png)
+
+# [Query Tools Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/QueryToolsSample)
+
+This sample shows the different ways you can query your data.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/QueryToolsSample/ScreenShot.png)
+
+# [Quickstart Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/QuickStart)
+
+The Map Suite WebAPI illustrated QuickStart Guide will guide you through the process of creating a sample application and will help you become familiar with Map Suite. This edition of the QuickStart Guide supports Map Suite WebAPI 10.0.0.0 and higher and will show you how to create a ASP.NET WebAPI application using this product.
+
+Please refer to [Wiki](http://wiki.thinkgeo.com/wiki/map_suite_web_for_webapi) for the details.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/QuickStart/Screenshot.PNG)
+
+# [Select Feature By Click Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/SelectedFeatureByClick)
+
+The purpose of this project is to show the technique for finding the feature the user clicked on. To give the user the expected behavior, a buffer in screen coordinates needs to be set so that the feature gets selected within a constant distance in screen coordinates to where the user clicked, regardless of the zoom level.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/SelectedFeatureByClick/Screenshot.png)
+
+# [Site Selection Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/SiteSelection)
+
+This sample template allows you to view, understand, interpret, and visualize spatial data in many ways that reveal relationships, patterns, and trends. In this example, the user can apply the features of GIS to analyze spatial data to efficiently choose a suitable site for a new retail outlet.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/blob/support/v10/samples/WebApi/SiteSelection/ScreenShot.png)
+
+# [Topology Validation Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/TopologyValidationSample)
+
+This sample shows simple ways to validate topology rules. 
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/TopologyValidationSample/ScreenShot.png)
+
+# [Visualization Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/VisualizationSample)
+
+This sample shows you how to explore the different styles available to help you analyze and visualize your data.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/VisualizationSample/ScreenShot.png)

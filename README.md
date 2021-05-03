@@ -59,4 +59,56 @@ The Vehicle Tracking sample template gives you a head start on your next trackin
 
 ![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/Mvc/VehicleTracking-Mvc/Screenshot.gif)
 
+# [Adornments Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/AdornmentsSample)
 
+Learn how to add legends, scale bars, directional arrows, and many more adornments to your map.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/AdornmentsSample/Screenshot.gif)
+
+# [Basic Styling Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/BasicStylingSample)
+
+This sample shows you how to apply basic styles to render your vector data layers.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/BasicStylingSample/Screenshot.gif)
+
+# [Building 3D JS Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/Building3DSample)
+
+This project shows to create a simulated 3D buildings and use world map kit server as background map.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/Building3DSample/Screenshot.png)
+
+# [ThinkGeo Cloud Vector Maps Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/CloudVectorMapsSample)
+
+This sample demonstrates how you can draw the map with Vector Tiles requested from ThinkGeo Cloud Services in your Map Suite GIS applications, with any style you want from [StyleJSON (Mapping Definition Grammar)](https://wiki.thinkgeo.com/wiki/thinkgeo_stylejson). It will show you how to use the XyzFileBitmapTileCache and XyzFileVectorTileCache to improve the performance of map rendering. It supports 3 built-in default map styles and more awasome styles from StyleJSON file you passed in, by 'Custom': 
+- Light
+- Dark
+- TransparentBackground
+- Custom
+
+ThinkGeo Cloud Vector Maps support would work in all of the Map Suite controls such as Wpf, Web, MVC, WebApi, Android and iOS.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/CloudVectorMapsSample/Screenshot.gif)
+
+# [Display Nautical Charts Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/DisplayNauticalCharts)
+
+This sample shows how you can use Map Suite WebAPI Edition to display nautical charts in your web application.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/DisplayNauticalCharts/Screenshot.png)
+
+# [Drawing And Editing Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/DrawingAndEditing)
+
+This sample demonstrates how to implement drawing and editing shapes into your web application.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/DrawingAndEditing/ScreenShot.png)
+
+# [Geometric Functions Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/GeometricFunctionsSample)
+
+This sample shows how to explore all the different APIs for Geometric Functions.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/GeometricFunctionsSample/ScreenShot.png)
+
+# [Getting Started Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/GettingStatedSample)
+
+This sample shows you how to get started building your first application with the Map Suite WebAPI Edition.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/GettingStatedSample/ScreenShot.png)

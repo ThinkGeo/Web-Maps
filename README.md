@@ -3,3 +3,60 @@
 ## Repository Layout
 
 `/samples`: A collection of samples for ThinkGeo version 10 for Web API and Webforms editions.  These are no longer supported but may contain valuable insight into various features of those products.
+
+# [ThinkGeo Cloud Maps Sample for Mvc](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/Mvc/CloudMapsSample-Mvc)
+
+This sample demonstrates how you can display ThinkGeo Cloud Maps in your Map Suite GIS applications. It will show you how to use the XYZFileBitmapTileCache to improve the performance of map rendering. ThinkGeoCloudMapsOverlay uses the ThinkGeo Cloud XYZ Tile Server as raster map tile server. It supports 5 different map styles: 
+- Light
+- Dark
+- Aerial
+- Hybrid
+- TransparentBackground
+
+ThinkGeo Cloud Maps support would work in all of the Map Suite controls such as Wpf, WinForms, Web, WebApi, Android and iOS.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/Mvc/CloudMapsSample-Mvc/Screenshot.gif)
+
+# [Hello World Sample for Mvc](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/Mvc/HellowWorld-Mvc)
+
+This sample shows you how to get started building your first application with the Map Suite Web for Mvc 10.0.0.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/Mvc/HellowWorld-Mvc/Screenshot.gif)
+
+# [How Do I Sample for Mvc](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/Mvc/HowDoI-Mvc)
+
+The "How Do I?" samples collection is a comprehensive set containing a lot of interactive samples.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/Mvc/HowDoI-Mvc/Screenshot.gif)
+
+# [Quickstart Sample for Mvc](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/Mvc/QuickStart-Mvc)
+
+The Map Suite MVC QuickStart Guide will guide you through the process of creating a sample application and will help you become familiar with Map Suite. The QuickStart Guide supports Map Suite 10.0.0.0 and higher and will show you how to create an ASP.NET MVC application. 
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/Mvc/QuickStart-Mvc/Screenshot.gif)
+
+# [Site Selection Sample for Mvc](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/Mvc/SiteSelection-Mvc)
+
+The Site Selection sample template allows you to view, understand, interpret, and visualize spatial data in many ways that reveal relationships, patterns, and trends. In the example illustrated, the user can apply the features of GIS to analyze spatial data to efficiently choose a suitable site for a new retail outlet.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/Mvc/SiteSelection-Mvc/Screenshot.gif)
+
+# [Us Demographic Map Sample for Mvc](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/Mvc/UsDemographicMap-Mvc)
+
+The Demographic and Lifestyle sample template gives you a head start on your statistics project, which includes details about race, age, gender, land usage, and more for all the states in U.S. The template contains pre-styled layers that can be used as-is, or as the foundation for adding your own map notes and layers.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/Mvc/UsDemographicMap-Mvc/Screenshot.gif)
+
+# [Us Earthquake Statistics Sample for Mvc](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/Mvc/UsEarthquakeStatistics-Mvc)
+
+The Earthquake Statistics sample template is a statistical report system for earthquakes that have occurred in the past few years across the United States. It can help you generate infographics and analyze the severely afflicted areas, or used as supporting evidence when recommending measures to minimize the damage in future quakes.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/Mvc/UsEarthquakeStatistics-Mvc/Screenshot.gif)
+
+# [Vehicle Tracking Sample for Mvc](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/Mvc/VehicleTracking-Mvc)
+
+The Vehicle Tracking sample template gives you a head start on your next tracking project. With a working code example to draw from, you can spend more of your time implementing the features you care about and less time thinking about how to accomplish the basic functionality of a tracking system.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/Mvc/VehicleTracking-Mvc/Screenshot.gif)
+
+

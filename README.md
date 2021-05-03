@@ -112,3 +112,41 @@ This sample shows how to explore all the different APIs for Geometric Functions.
 This sample shows you how to get started building your first application with the Map Suite WebAPI Edition.
 
 ![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/GettingStatedSample/ScreenShot.png)
+
+# [HowDoISample-ForWebAPI](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/HowDoI)
+
+The “How Do I?” samples collection is a comprehensive set containing dozens of interactive samples. Available in C# (WebAPI), these samples are designed to hit all the highlights of ThinkGeo WebAPI UIs, from simply adding a layer to a map to performing vehicle tracking and applying a thematic style. Consider this collection your “encyclopedia” of all the ThinkGeo basics and a great starting place for new users.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/blob/support/v10/raw/WebApi/HowDoI/Screenshot.gif)
+
+# [Labeling Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/LabelingSample)
+
+This sample shows you how to examine different labeling techniques to make your maps informative.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/LabelingSample/ScreenShot.png)
+
+# [Layers Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/LayerSample)
+
+This sample shows the different types of layers and data formats you can use to build up your map.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/LayerSample/ScreenShot.png)
+
+# [Marker And Popup Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/MarkerAndPopup)
+
+This sample shows you how to make your maps more interactive by using Markers and Popups.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/MarkerAndPopup/ScreenShot.png)
+
+# [Overlays Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/OverlaySample)
+
+Discover how to use Overlays to build up your map, or to add existing basemaps to your application.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/OverlaySample/ScreenShot.png)
+
+# [Printing Sample for WebApi](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10/samples/WebApi/PrintingSample)
+
+A demonstration of how to use printing with map suite that can be added to your projects.
+
+![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/blob/support/v10/samples/WebApi/PrintingSample/ScreenShot.png)
+
+

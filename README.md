@@ -192,3 +192,5 @@ This sample shows simple ways to validate topology rules.
 This sample shows you how to explore the different styles available to help you analyze and visualize your data.
 
 ![Screenshot](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/raw/support/v10/samples/WebApi/VisualizationSample/ScreenShot.png)
+
+

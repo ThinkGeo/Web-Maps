@@ -172,6 +172,9 @@ textarea {
     background-image: url(../Images/CustomProjection.png);
 }
 
+#rasterProjection {
+    background-image: url(../Images/RasterProjection.png);
+}
 
 @media only screen and (min-device-width:320px) and (max-device-width:739px) {
     #leftPanel {

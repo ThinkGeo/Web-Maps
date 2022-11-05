@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\App_Data\World.tfw" />
+    <Content Remove="wwwroot\App_Data\World.tif" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\Leaflet\Controllers\ProjectionController.cs" Link="Controllers\ProjectionController.cs" />
   </ItemGroup>
 
@@ -58,11 +63,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ThinkGeo.Core" Version="12.4.1" />
     <PackageReference Include="ThinkGeo.UI.WebApi" Version="12.4.1" />
+    <PackageReference Include="ThinkGeo.UnmanagedProj" Version="12.4.1" />
   </ItemGroup>
 
   <ItemGroup>
-    
+    <Resource Include="wwwroot\App_Data\World.tfw" />
+    <Resource Include="wwwroot\App_Data\World.tif" />
   </ItemGroup>
 
 </Project>

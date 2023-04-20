@@ -1,76 +1,119 @@
 ﻿@page "/load-feature-source"
 @using ThinkGeo.Core
 
-<MapView Id="map" BackgroundColor="@(GeoColor.FromHtml("#89d3f0ff"))"
-         Width="100"
-         Height="100"
-         MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-         Center="@(new PointShape(1056665.479014, 6066042.564712))"
-         Zoom="5"
-         MapUnit="@ThinkGeo.Core.GeographyUnit.Meter">
+<MapView @ref="_thisMapView" Id="demomap" MapUnit="ThinkGeo.Core.GeographyUnit.Meter" Zoom="15" Width="800" Height="600"
+         Center="@(new PointShape(-253382.80457225442, 6700009.268913746))">
+
     <OverlaysSetting>
-        <LayerOverlay Id="CustomOverlay" Layers="@layers"></LayerOverlay>
+        <LayerOverlay Id="BaseMapLayerOverlay" TileHeight="512" TileWidth="512" Layers="@_baseMapLayer"></LayerOverlay>
+
+        <LayerOverlay Id="VehicleLayerOverlay" TileWidth="512" TileHeight="512" Layers="@_vehicleLayers"></LayerOverlay>
     </OverlaysSetting>
-    <MapToolsSetting>
-        <MapTools>
-            <ZoomBarMapTool />
-        </MapTools>
-    </MapToolsSetting>
 </MapView>
+
 @code {
-    GeoCollection<Layer> layers = new GeoCollection<Layer>();
+    private MapView _thisMapView;
+    private GeoCollection<Layer> _baseMapLayer;
+    private GeoCollection<Layer> _vehicleLayers;
+    private InMemoryFeatureLayer vehicleShapesLayer;
 
     protected override void OnInitialized()
     {
+        _baseMapLayer = new GeoCollection<Layer>();
+        _vehicleLayers = new GeoCollection<Layer>();
 
-        // Load the Countries with themetic style.
-        var countriesLayer = new ShapeFileFeatureLayer("./Data/countries/countries.shp");
+        _baseMapLayer = new GeoCollection<Layer>()
+        {
+            new GeoTiffRasterLayer(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "map.tif"))
+        };
 
-        countriesLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(4326, 3857);
-        var countryStyle = new ClassBreakStyle("POP_EST");
-        countryStyle.BreakValueInclusion = BreakValueInclusion.IncludeValue;
-        countryStyle.ClassBreaks.Add(new ClassBreak(double.MinValue, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#BBD1BB"))));
-        countryStyle.ClassBreaks.Add(new ClassBreak(10000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#8A89AF"))));
-        countryStyle.ClassBreaks.Add(new ClassBreak(50000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#9B9ABA"))));
-        countryStyle.ClassBreaks.Add(new ClassBreak(100000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#ACABC6"))));
-        countryStyle.ClassBreaks.Add(new ClassBreak(500000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#BCBBD1"))));
-        countryStyle.ClassBreaks.Add(new ClassBreak(1000000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#BA9A9A"))));
-        countryStyle.ClassBreaks.Add(new ClassBreak(5000000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#C6ABAB"))));
-        countryStyle.ClassBreaks.Add(new ClassBreak(10000000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#D1BBBB"))));
-        countryStyle.ClassBreaks.Add(new ClassBreak(50000000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#9ABA9A"))));
-        countryStyle.ClassBreaks.Add(new ClassBreak(100000000, AreaStyle.CreateSimpleAreaStyle(GeoColor.FromHtml("#ABC6AB"))));
-        countriesLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(countryStyle);
-        countriesLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
-        layers.Add(countriesLayer);
 
-        // Show rivers with different width based on different scale_rank.
-        var riverLayer = new ShapeFileFeatureLayer("./Data/rivers/rivers.shp");
-        riverLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(4326, 3857);
+        vehicleShapesLayer = new InMemoryFeatureLayer(new Collection<FeatureSourceColumn>()
+            {
+                new FeatureSourceColumn("VehicleName"),
+                new FeatureSourceColumn("Heading"),
+            },
+        new Collection<BaseShape>());
 
-        var riverStyle = new ClassBreakStyle("scalerank");
-        riverStyle.BreakValueInclusion = BreakValueInclusion.IncludeValue;
-        riverStyle.ClassBreaks.Add(new ClassBreak(0, LineStyle.CreateSimpleLineStyle(GeoColor.FromHtml("#5cbdf1"), 3, false)));
-        riverStyle.ClassBreaks.Add(new ClassBreak(1.1, LineStyle.CreateSimpleLineStyle(GeoColor.FromHtml("#5cbdf1"), 2, false)));
-        riverStyle.ClassBreaks.Add(new ClassBreak(3.1, LineStyle.CreateSimpleLineStyle(GeoColor.FromHtml("#5cbdf1"), 1, false)));
-        riverLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(riverStyle);
-        riverLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
-        layers.Add(riverLayer);
+        // Retrieves the different vehicle arrow point styles
+        // --------------------------------------------------
+        ICollection<PointStyle> arrowHeadingPointStylesFrom15to18 = InitializeArrowPointHeadingStyles(18);
+        ICollection<PointStyle> arrowHeadingPointStylesFrom18to20 = InitializeArrowPointHeadingStyles(26);
 
-        var pointValueStyle = new ValueStyle { ColumnName = "FEATURECLA" };
-        pointValueStyle.ValueItems.Add(new ValueItem("Admin-0 capital", new PointStyle(PointSymbolType.Star, 10, new GeoSolidBrush(new GeoColor(128, 79, 63)))));
-        pointValueStyle.ValueItems.Add(new ValueItem("Admin-1 capital", new PointStyle(PointSymbolType.Circle, 5, new GeoSolidBrush(new GeoColor(128, 79, 63)))));
-        pointValueStyle.ValueItems.Add(new ValueItem("Admin-0 region capital", new PointStyle(PointSymbolType.Circle, 5, new GeoSolidBrush(new GeoColor(128, 79, 63)))));
-        pointValueStyle.ValueItems.Add(new ValueItem("Populated place", new PointStyle(PointSymbolType.Square, 5, new GeoSolidBrush(new GeoColor(128, 79, 63)))));
 
-        var placesTextStyle = new TextStyle("name", new GeoFont("Arial", 10, DrawingFontStyles.Bold), new GeoSolidBrush(new GeoColor(128, 79, 63)));
-        placesTextStyle.YOffsetInPixel = -3;
+        // Adds the correct point style associated with the vehicle heading
+        // ----------------------------------------------------------------
 
-        var placeLayer = new ShapeFileFeatureLayer("./Data/place/place.shp");
-        placeLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(4326, 3857);
-        placeLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(placesTextStyle);
-        placeLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(pointValueStyle);
-        placeLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+        ClassBreakStyle arrowTypeStyleZoom15 = new ClassBreakStyle("Heading");
+        int angleIncrement = 0;
 
-        layers.Add(placeLayer);
+        foreach (PointStyle arrowHeadingStyle in arrowHeadingPointStylesFrom15to18)
+        {
+            arrowTypeStyleZoom15.ClassBreaks.Add(new ClassBreak(value: angleIncrement, pointStyle: arrowHeadingStyle));
+            angleIncrement += 10;
+        }
+
+
+        ClassBreakStyle arrowTypeStyleZoom18 = new ClassBreakStyle("Heading");
+        angleIncrement = 0;
+
+        foreach (PointStyle arrowHeadingStyle in arrowHeadingPointStylesFrom18to20)
+        {
+            arrowTypeStyleZoom18.ClassBreaks.Add(new ClassBreak(value: angleIncrement, pointStyle: arrowHeadingStyle));
+            angleIncrement += 10;
+        }
+
+
+        TextStyle vehicleLabelStyle = TextStyle.CreateSimpleTextStyle("VehicleName", "Interstate", 16, DrawingFontStyles.Regular, GeoColors.White, GeoColors.Gray, 0, 0, 12);
+        vehicleLabelStyle.Mask = AreaStyle.CreateSimpleAreaStyle(GeoColor.FromArgb(170, GeoColor.FromHtml("#000000")), GeoColor.FromHtml("#FFFFFF"), 1);
+        vehicleLabelStyle.MaskType = MaskType.Rectangle;
+        vehicleLabelStyle.MaskMargin = new DrawingMargin(2, 2, 2, 2);
+        vehicleLabelStyle.OverlappingRule = LabelOverlappingRule.AllowOverlapping;
+        vehicleLabelStyle.DrawingLevel = DrawingLevel.LabelLevel;
+
+
+
+        // Only display between zoom levels 16 & 20
+        // ----------------------------------------
+        vehicleShapesLayer.ZoomLevelSet.ZoomLevel16.CustomStyles.Add(vehicleLabelStyle);
+        vehicleShapesLayer.ZoomLevelSet.ZoomLevel16.CustomStyles.Add(arrowTypeStyleZoom15);
+        vehicleShapesLayer.ZoomLevelSet.ZoomLevel16.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level18;
+
+        vehicleShapesLayer.ZoomLevelSet.ZoomLevel18.CustomStyles.Add(vehicleLabelStyle);
+        vehicleShapesLayer.ZoomLevelSet.ZoomLevel18.CustomStyles.Add(arrowTypeStyleZoom18);
+        vehicleShapesLayer.ZoomLevelSet.ZoomLevel18.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+        _vehicleLayers.Add(vehicleShapesLayer);
+
+
+        // Add sample feature point
+
+        Feature latestPositionFeature = new Feature(-253382.80457225442, 6700009.268913746, "Test");
+        latestPositionFeature.ColumnValues["VehicleName"] = "VHC" + "123";
+        latestPositionFeature.ColumnValues["Heading"] = "0";  // This rotates the png due to the class break style
+        vehicleShapesLayer.InternalFeatures.Add(latestPositionFeature.Id, latestPositionFeature);        
     }
+
+    private static ICollection<PointStyle> InitializeArrowPointHeadingStyles(float symbolSize)
+    {
+        ICollection<PointStyle> arrowHeadingPointStyles = new Collection<PointStyle>();
+        int angleIncrement = 0;
+
+        for (int i = 0; i < 36; i++)
+        {
+            PointStyle arrowPointStyle = new PointStyle
+                {
+                    PointType = PointType.Image,
+                    RotationAngle = 360 - angleIncrement,
+                    Image = new GeoImage(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "inProgressVehicleArrow.png")),
+                    SymbolSize = symbolSize,
+                    DrawingLevel = DrawingLevel.LevelFour
+                };
+
+            arrowHeadingPointStyles.Add(arrowPointStyle);
+            angleIncrement += 10;
+        }
+
+        return arrowHeadingPointStyles;
+    }
+
 }

@@ -117,7 +117,7 @@
     private List<object> popups = new List<object> { new object() };
     private GeoCollection<Layer> spatialFenceLayers;
     private DateTime? startTime;
-    private TrackMode trackMode;
+    private BlazorTrackMode trackMode;
     private List<Vehicle> vehicles;
     private MarkerZoomLevelSet zoomLevelSet;
 
@@ -289,7 +289,7 @@
 
     private void RemoveDrwanFeature(FeatureClickedEditOverlayEventArgs e)
     {
-        if (trackMode == TrackMode.None)
+        if (trackMode == BlazorTrackMode.None)
             map.EditOverlay.Features.Remove(e.ClickedFeature);
     }
 

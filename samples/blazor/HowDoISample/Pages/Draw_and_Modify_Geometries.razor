@@ -39,32 +39,32 @@
     </MapView>
 
     <nav class="icon-group draw-edit-tool-bar">
-        <a href="javascript:void(0);" class="@GetCss(TrackMode.None)" title="None" @onclick="@(e => trackMode = TrackMode.None)">
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.None)" title="None" @onclick="@(e => trackMode = BlazorTrackMode.None)">
             <span>
                 <img src="images/mouse-pointer.svg" alt="None">
             </span>
         </a>
-        <a href="javascript:void(0);" class="@GetCss(TrackMode.Point)" title="Point" @onclick="@(e => trackMode = TrackMode.Point)">
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.Point)" title="Point" @onclick="@(e => trackMode = BlazorTrackMode.Point)">
             <span>
                 <img src="images/map-pin.svg" alt="Point">
             </span>
         </a>
-        <a href="javascript:void(0);" class="@GetCss(TrackMode.LineString)" title="Line" @onclick="@(e => trackMode = TrackMode.LineString)">
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.LineString)" title="Line" @onclick="@(e => trackMode = BlazorTrackMode.LineString)">
             <span>
                 <img src="images/Line-Tool.svg" alt="Line">
             </span>
         </a>
-        <a href="javascript:void(0);" class="@GetCss(TrackMode.Polygon)" title="Polygon" @onclick="@(e => trackMode = TrackMode.Polygon)">
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.Polygon)" title="Polygon" @onclick="@(e => trackMode = BlazorTrackMode.Polygon)">
             <span>
                 <img src="images/vector-polygon.svg" alt="Polygon">
             </span>
         </a>
-        <a href="javascript:void(0);" class="@GetCss(TrackMode.Circle)" title="Circle" @onclick="@(e => trackMode = TrackMode.Circle)">
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.Circle)" title="Circle" @onclick="@(e => trackMode = BlazorTrackMode.Circle)">
             <span>
                 <img src="images/big-circle.svg" alt="Circle">
             </span>
         </a>
-        <a href="javascript:void(0);" class="@GetCss(TrackMode.Modify)" title="Modify" @onclick="@HandleModify">
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.Modify)" title="Modify" @onclick="@HandleModify">
             <span>
                 <img src="images/edit.svg" alt="Modify">
             </span>
@@ -75,7 +75,7 @@
             </span>
         </a>
 
-        <a href="javascript:void(0);" class="@GetCss(TrackMode.None)" title="Save" @onclick="@HandleSaveFeatures">
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.None)" title="Save" @onclick="@HandleSaveFeatures">
             <span>
                 <img src="images/save.png" alt="Save">
             </span>
@@ -90,11 +90,11 @@
 
     private GeoCollection<Layer> editingLayers;
     MapView map;
-    TrackMode trackMode = TrackMode.None;
+    BlazorTrackMode trackMode = BlazorTrackMode.None;
 
     string accessId = Guid.NewGuid().ToString();
 
-    string GetCss(TrackMode mode) => mode == trackMode ? "active" : string.Empty;
+    string GetCss(BlazorTrackMode mode) => mode == trackMode ? "active" : string.Empty;
 
     protected override void OnInitialized()
     {
@@ -186,7 +186,7 @@
             map.EditOverlay.Features.Add(editingLayer.InternalFeatures[i]);
         }
         editingLayer.InternalFeatures.Clear();
-        trackMode = TrackMode.Modify;
+        trackMode = BlazorTrackMode.Modify;
         await map.Overlays["ExistingLayerOverlay"].RedrawAsync();
         await map.EditOverlay.RedrawAsync();
     }

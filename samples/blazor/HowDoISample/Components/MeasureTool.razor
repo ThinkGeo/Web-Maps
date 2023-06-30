@@ -80,7 +80,7 @@
     public EventCallback<MeasureType> OnMeasureTypeChanged { get; set; }
 
     [Parameter]
-    public EventCallback<TrackMode> OnTrackModeChanged { get; set; }
+    public EventCallback<BlazorTrackMode> OnTrackModeChanged { get; set; }
 
     private bool showDistanceMeasure = false;
     private bool showDrawActions = false;
@@ -95,7 +95,7 @@
         await OnCancelDrawAction.InvokeAsync(null);
     }
 
-    private async void HandleOnTrackModeChanged(TrackMode trackMode)
+    private async void HandleOnTrackModeChanged(BlazorTrackMode trackMode)
     {
         await OnTrackModeChanged.InvokeAsync(trackMode);
     }
@@ -113,7 +113,7 @@
         panClass = active;
         drawClass = "";
         measureClass = "";
-        HandleOnTrackModeChanged(TrackMode.None);
+        HandleOnTrackModeChanged(BlazorTrackMode.None);
         HandleOnMeasureModeChanged(MeasureType.None);
     }
 
@@ -143,7 +143,7 @@
         LineMeasureClass = "";
         AreaMeasureClass = "";
 
-        HandleOnTrackModeChanged(TrackMode.None);
+        HandleOnTrackModeChanged(BlazorTrackMode.None);
     }
 
     private void DrawPolygonAction()
@@ -151,7 +151,7 @@
         DrawPolygonClass = active;
         EditPolygonClass = "";
         RemovePolygonClass = "";
-        HandleOnTrackModeChanged(TrackMode.Polygon);
+        HandleOnTrackModeChanged(BlazorTrackMode.Polygon);
     }
 
     private void EditPolygonAction()
@@ -159,7 +159,7 @@
         DrawPolygonClass = "";
         EditPolygonClass = active;
         RemovePolygonClass = "";
-        HandleOnTrackModeChanged(TrackMode.Modify);
+        HandleOnTrackModeChanged(BlazorTrackMode.Modify);
     }
 
     private void RemovePolygonAction()
@@ -167,7 +167,7 @@
         DrawPolygonClass = "";
         EditPolygonClass = "";
         RemovePolygonClass = active;
-        HandleOnTrackModeChanged(TrackMode.None);
+        HandleOnTrackModeChanged(BlazorTrackMode.None);
     }
 
     private async void HandleOnSave()

@@ -64,7 +64,8 @@ namespace DrawingAndEditing.Controllers
 
         [Route("saveshapes/{accessId}")]
         [HttpPost]
-        public HttpResponseMessage SaveShapes(string accessId, [FromBody] string modifiedShapesInJson)
+        [Consumes("application/x-www-form-urlencoded")]
+        public HttpResponseMessage SaveShapes(string accessId, [FromForm] string modifiedShapesInJson)
         {
             try
             {

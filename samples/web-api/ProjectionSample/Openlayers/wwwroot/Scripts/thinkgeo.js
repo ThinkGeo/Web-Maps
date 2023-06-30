@@ -66,6 +66,13 @@ var layerCustomProjectionSource = new ol.source.XYZ({
     maxZoom: 19,
     tileLoadFunction: function (imageTile, src) { imageTile.getImage().src = src + '?t=' + new Date().getTime(); }
 });
+// Raster projection source.
+var layerRasterProjectionSource = new ol.source.XYZ({
+    projection: projection2163,
+    url: getRootPath() + 'Projection/LoadRasterProjectionLayer/{z}/{x}/{y}',
+    maxZoom: 19,
+    tileLoadFunction: function (imageTile, src) { imageTile.getImage().src = src + '?t=' + new Date().getTime(); }
+});
 // Create rotation Source.
 var rotationSource = new ol.source.XYZ({
     projection: projection3857,
@@ -116,6 +123,14 @@ $('#leftPanelOptions div').bind('click', function () {
 
             // Add countries layer with Custom Projection.
             countriesLayer.setSource(layerCustomProjectionSource);
+            map.addLayer(countriesLayer);
+            break;
+        case "rasterProjection":
+            var newView = new ol.View({ center: [0, 0], projection: projection2163, zoom: 2 });
+            map.setView(newView);
+
+            // Add raster layer with Custom Projection.
+            countriesLayer.setSource(layerRasterProjectionSource);
             map.addLayer(countriesLayer);
             break;
     }

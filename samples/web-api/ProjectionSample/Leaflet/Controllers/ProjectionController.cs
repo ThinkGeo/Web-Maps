@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using ThinkGeo.Core;
 using ThinkGeo.UI.WebApi;
 
@@ -17,6 +13,7 @@ namespace Projection.Controllers
         private static readonly string baseDirectory;
         private static readonly LayerOverlay customProjectionOverlay;
         private static readonly LayerOverlay rotaionProjectionOverlay;
+        private static readonly LayerOverlay rasterProjectionOverlay;
 
         static ProjectionController()
         {
@@ -25,6 +22,7 @@ namespace Projection.Controllers
             // Initialize custom and rotation projection overlay.
             customProjectionOverlay = InitializeCustomProjectionOverlay();
             rotaionProjectionOverlay = InitializeRotaionProjectionOverlay();
+            rasterProjectionOverlay = InitializeRasterProjectionOverlay();
         }
 
         /// <summary>
@@ -98,6 +96,16 @@ namespace Projection.Controllers
         }
 
         /// <summary>
+        /// Loads countries layer with custom projection EPSG2163.
+        /// </summary>
+        [Route("LoadRasterProjectionLayer/{z}/{x}/{y}")]
+        [HttpGet]
+        public IActionResult LoadRasterProjectionLayer(int z, int x, int y)
+        {
+            return DrawTileImage(rasterProjectionOverlay, GeographyUnit.Meter, z, x, y);
+        }
+
+        /// <summary>
         /// Initialize custom projection overlay.
         /// </summary>
         /// <returns></returns>
@@ -123,6 +131,23 @@ namespace Projection.Controllers
             countriesLayer.FeatureSource.ProjectionConverter = decimalDegreeToEpsg2163;
 
             layerOverlay.Layers.Add(countriesLayer);
+
+            return layerOverlay;
+        }
+
+        private static LayerOverlay InitializeRasterProjectionOverlay()
+        {
+            LayerOverlay layerOverlay = new LayerOverlay();
+            
+            string tiffFilePath = string.Format(@"{0}/World.tif", baseDirectory);
+            GeoTiffRasterLayer geoTiffRasterLayer = new GeoTiffRasterLayer(tiffFilePath);
+
+            UnmanagedProjectionConverter decimalDegreeToEpsg2163 = new UnmanagedProjectionConverter();
+            decimalDegreeToEpsg2163.InternalProjection = new ThinkGeo.Core.Projection(4326);
+            decimalDegreeToEpsg2163.ExternalProjection = new ThinkGeo.Core.Projection(ThinkGeo.Core.Projection.GetProjStringByEpsgSrid(2163));
+            geoTiffRasterLayer.ImageSource.ProjectionConverter = decimalDegreeToEpsg2163;
+
+            layerOverlay.Layers.Add(geoTiffRasterLayer);
 
             return layerOverlay;
         }

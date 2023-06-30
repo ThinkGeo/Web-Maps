@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework><EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,11 +12,11 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="12.3.5" />
-	  <PackageReference Include="ThinkGeo.Jpeg2000" Version="12.3.5" />
-	  <PackageReference Include="ThinkGeo.MrSid" Version="12.3.5" />
-	  <PackageReference Include="ThinkGeo.UI.WebApi" Version="12.3.5" />
-	  <PackageReference Include="ThinkGeo.UnmanagedProj" Version="12.3.5" />
+	  <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="13.0.0" />
+	  <PackageReference Include="ThinkGeo.Jpeg2000" Version="13.0.0" />
+	  <PackageReference Include="ThinkGeo.MrSid" Version="13.0.0" />
+	  <PackageReference Include="ThinkGeo.UI.WebApi" Version="13.0.0" />
+	  <PackageReference Include="ThinkGeo.UnmanagedProj" Version="13.0.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -107,6 +107,13 @@ $('#leftPanelOptions div').bind('click', function () {
             countriesLayer.setUrl(L.Util.getRootPath() + 'Projection/LoadCustomProjectionLayer/{z}/{x}/{y}');
             countriesLayer.addTo(map);
             break;
+        case "rasterProjection":
+            map.options.crs = L.CRS.EPSG3857;
+
+            // Add countries layer with Custom Projection.
+            countriesLayer.setUrl(L.Util.getRootPath() + 'Projection/LoadRasterProjectionLayer/{z}/{x}/{y}');
+            countriesLayer.addTo(map);
+            break;
     }
 
     var center = $(this).attr('center').split(',');

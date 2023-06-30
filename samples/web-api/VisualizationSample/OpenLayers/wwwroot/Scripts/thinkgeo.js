@@ -14,7 +14,8 @@ var map = new ol.Map({
         })]),
     view: new ol.View({
         center: [-10777396.499651, 4821690.0604384],
-        zoom: 4
+        zoom: 4,
+        maxZoom: 18
     })
 });
 
@@ -80,6 +81,8 @@ $('#style-options div').click(function () {
     }
     $(this).attr("class", "selected");
 
+    var maxZoom = parseInt($(this).attr("maxZoom"));
+
     // Disable edit toolbar button
     selectedLayer = $(this).attr('id');
     $('#btnConfig').removeClass('active');
@@ -98,7 +101,7 @@ $('#style-options div').click(function () {
     }
 
     // Redraw the map
-    redrawLayer();
+    redrawLayer(maxZoom);
 });
 
 // Hook up click event on "save" button in edit dialog
@@ -123,19 +126,21 @@ $('#btnCancel').click(function (e) {
     hideDlg();
 });
 
-function redrawLayer() {
+function redrawLayer(maxZoom) {
     switch (selectedLayer) {
         case 'IconStyle':
             map.setView(new ol.View({
                 center: [-10770913.637479, 3917015.5139286],
-                zoom: 13
+                zoom: 13,
+                maxZoom
             }));
             break;
         case 'ZedGraphStyle':
         default:
             map.setView(new ol.View({
                 center: [-10777396.499651, 4821690.0604384],
-                zoom: 4
+                zoom: 4,
+                maxZoom
             }));
             break;
     }

@@ -36,15 +36,6 @@ body {
         background: #555;
     }
 
-/* nav */
-.beta, .preview {
-    background: #ff7a14;
-    margin-left: 1rem;
-    padding: 0 0.7rem;
-    font-size: 0.9em;
-    border-radius: 0 10px 0 0;
-}
-
 .download-sample {
     margin-right: 2rem;
     margin-top: 4rem;

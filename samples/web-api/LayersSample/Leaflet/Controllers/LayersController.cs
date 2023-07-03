@@ -33,7 +33,6 @@ namespace Layers.Controllers
             noaaWeatherStationFeatureLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(new NoaaWeatherStationStyle());
             noaaWeatherStationFeatureLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
             noaaWeatherStationFeatureLayer.FeatureSource.ProjectionConverter = wgs84ToGoogleProjectionConverter;
-            NoaaWeatherStationMonitor.StationsUpdated += (sender, args) => NoaaWeatherStationMonitor.StopMonitoring();
             noaaWeatherStationFeatureLayer.Open();
         }
 

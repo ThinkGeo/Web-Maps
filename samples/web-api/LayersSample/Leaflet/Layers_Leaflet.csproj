@@ -76,7 +76,6 @@
     <None Include="wwwroot\App_Data\MrSid\TXlkaA40.shx" />
     <None Include="wwwroot\App_Data\MrSid\US380AndGeeRoad.prj" />
     <None Include="wwwroot\App_Data\MrSid\US380AndGeeRoad.sid" />
-    <None Include="wwwroot\App_Data\PNG\ThinkGeoLogo.png" />
     <None Include="wwwroot\App_Data\ShapeFile\USStates.dbf" />
     <None Include="wwwroot\App_Data\ShapeFile\USStates.ids" />
     <None Include="wwwroot\App_Data\ShapeFile\USStates.idx" />

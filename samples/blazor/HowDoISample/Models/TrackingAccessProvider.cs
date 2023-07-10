@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,7 +10,7 @@ namespace ThinkGeo.UI.Blazor.HowDoI
 {
     public class TrackingAccessProvider
     {
-        private string dataRootPath;
+        private readonly string dataRootPath;
 
         public TrackingAccessProvider(string dataRootPath)
         {
@@ -162,9 +161,8 @@ namespace ThinkGeo.UI.Blazor.HowDoI
             File.WriteAllLines(path, result.Values);
         }
 
-        private List<List<string>> ParseCsv(string filePath)
+        private static List<List<string>> ParseCsv(string filePath)
         {
-            char[] bufffer = null;
             List<string> dataLine = new List<string>();
             List<char> dataSubStr = new List<char>();
             List<List<string>> LinesInfo = new List<List<string>>();
@@ -178,7 +176,7 @@ namespace ThinkGeo.UI.Blazor.HowDoI
                     StreamReader CsvReader = new StreamReader(fs);
                     while (CsvReader.Peek() >= 0)
                     {
-                        bufffer = new char[1024];
+                        var bufffer = new char[1024];
                         CsvReader.Read(bufffer, 0, bufffer.Length);
                         for (int i = 0; i < bufffer.Length; i++)
                         {
@@ -219,7 +217,7 @@ namespace ThinkGeo.UI.Blazor.HowDoI
                 }
                 return LinesInfo;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }

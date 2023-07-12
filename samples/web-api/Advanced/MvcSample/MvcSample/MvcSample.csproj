@@ -165,10 +165,10 @@
     </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="ThinkGeo.Core, Version=13.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.Core.13.0.0\lib\net462\ThinkGeo.Core.dll</HintPath>
+      <HintPath>..\packages\ThinkGeo.Core.13.1.0\lib\net462\ThinkGeo.Core.dll</HintPath>
     </Reference>
     <Reference Include="ThinkGeo.UI.WebApi, Version=13.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.UI.WebApi.13.0.0\lib\net462\ThinkGeo.UI.WebApi.dll</HintPath>
+      <HintPath>..\packages\ThinkGeo.UI.WebApi.13.1.0\lib\net462\ThinkGeo.UI.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="WebGrease">
       <HintPath>..\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
@@ -258,19 +258,19 @@
     <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.macOS.2.88.3\build\net462\SkiaSharp.NativeAssets.macOS.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.macOS.2.88.3\build\net462\SkiaSharp.NativeAssets.macOS.targets'))" />
     <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.Win32.2.88.3\build\net462\SkiaSharp.NativeAssets.Win32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.Win32.2.88.3\build\net462\SkiaSharp.NativeAssets.Win32.targets'))" />
     <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.Linux.2.88.3\build\net462\SkiaSharp.NativeAssets.Linux.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.Linux.2.88.3\build\net462\SkiaSharp.NativeAssets.Linux.targets'))" />
-    <Error Condition="!Exists('..\packages\ThinkGeo.Core.13.0.0\build\net462\ThinkGeo.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Core.13.0.0\build\net462\ThinkGeo.Core.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.Core.13.1.0\build\net462\ThinkGeo.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Core.13.1.0\build\net462\ThinkGeo.Core.targets'))" />
   </Target>
   <Import Project="..\packages\ThinkGeo.Dependency.SkiaSharp.12.3.0\build\net462\ThinkGeo.Dependency.SkiaSharp.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.SkiaSharp.12.3.0\build\net462\ThinkGeo.Dependency.SkiaSharp.targets')" />
   <Import Project="..\packages\ThinkGeo.Dependency.NetTopologySuite.12.2.3\build\net462\ThinkGeo.Dependency.NetTopologySuite.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.NetTopologySuite.12.2.3\build\net462\ThinkGeo.Dependency.NetTopologySuite.targets')" />
   <Import Project="..\packages\SkiaSharp.NativeAssets.macOS.2.88.3\build\net462\SkiaSharp.NativeAssets.macOS.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.macOS.2.88.3\build\net462\SkiaSharp.NativeAssets.macOS.targets')" />
   <Import Project="..\packages\SkiaSharp.NativeAssets.Win32.2.88.3\build\net462\SkiaSharp.NativeAssets.Win32.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Win32.2.88.3\build\net462\SkiaSharp.NativeAssets.Win32.targets')" />
   <Import Project="..\packages\SkiaSharp.NativeAssets.Linux.2.88.3\build\net462\SkiaSharp.NativeAssets.Linux.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Linux.2.88.3\build\net462\SkiaSharp.NativeAssets.Linux.targets')" />
-  <Import Project="..\packages\ThinkGeo.Core.13.0.0\build\net462\ThinkGeo.Core.targets" Condition="Exists('..\packages\ThinkGeo.Core.13.0.0\build\net462\ThinkGeo.Core.targets')" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">
     <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
     <Error Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="The build restored NuGet packages. Build the project again to include these packages in the build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
   </Target>
+  <Import Project="..\packages\ThinkGeo.Core.13.1.0\build\net462\ThinkGeo.Core.targets" Condition="Exists('..\packages\ThinkGeo.Core.13.1.0\build\net462\ThinkGeo.Core.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

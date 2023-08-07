@@ -35,7 +35,7 @@ xyzSource.tileLoadFunction = function (imageTile, src) {
     imageTile.getImage().src = src + '?t=' + new Date().getTime();;
 };
 map.addLayer(new ol.layer.Tile({
-    source: xyzSource
+    source: xyzSource    
 }));
 
 // Add image buttons for layers, execute etc.
@@ -54,7 +54,8 @@ var imgControls = new app.ImagesControl({
                 var url = getRootPath() + '/tile/Execute/' + actionType + '/' + accessId;
 
                 $.post(url, { '': paramters }, function (data) {
-                    xyzSource.setUrl(getRootPath() + '/tile/output/{z}/{x}/{y}/' + accessId);
+                    xyzSource.setUrl(getRootPath() + '/tile/output/{z}/{x}/{y}/' + accessId);    
+                    xyzSource.refresh();
                 });
             }
         },
@@ -65,6 +66,7 @@ map.addControl(imgControls);
 
 // Select a style from options
 $('#style-options div').click(function () {
+    accessId = guid();
     var actionContainers = $("#style-options div");
     for (var i = 0; i < actionContainers.length; i++) {
         $(actionContainers[i]).attr("class", "unselected");
@@ -82,6 +84,7 @@ $('#style-options div').click(function () {
         center: projectedPoint,
         zoom: centerInfo.z
     }));
+    xyzSource.refresh();
 });
 
 // Do the layers panel animation

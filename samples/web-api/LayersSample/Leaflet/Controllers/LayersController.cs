@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using ThinkGeo.Core;
 using ThinkGeo.MapSuite.Layers;
 using ThinkGeo.UI.WebApi;
@@ -395,6 +396,7 @@ namespace Layers.Controllers
                 GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
                 RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
                 geoCanvas.BeginDrawing(image, boundingBox, GeographyUnit.Meter);
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 layerOverlay.Draw(geoCanvas);
                 geoCanvas.EndDrawing();
 

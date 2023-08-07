@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+	  <PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
 	  <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="13.1.0" />
 	  <PackageReference Include="ThinkGeo.Jpeg2000" Version="13.1.0" />
 	  <PackageReference Include="ThinkGeo.MrSid" Version="13.1.0" />

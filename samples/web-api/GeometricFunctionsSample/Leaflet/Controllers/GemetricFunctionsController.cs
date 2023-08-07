@@ -710,7 +710,9 @@ namespace GeometricFunctions.Controllers
         private static void SaveFeatures(string accessId, IEnumerable<Feature> features)
         {
             string jsonFilePath = Path.Combine(baseDirectory, "App_Data", "Temp", string.Format("{0}.json", accessId));
-
+            string folder = Path.GetDirectoryName(jsonFilePath);
+            if (!Directory.Exists(folder))                
+                Directory.CreateDirectory(folder);
             using (StreamWriter sw = new StreamWriter(jsonFilePath, false))
             {
                 foreach (Feature feature in features)

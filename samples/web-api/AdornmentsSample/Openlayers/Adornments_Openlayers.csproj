@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework><EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+    <TargetFramework>net8.0</TargetFramework><EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Leaflet\Controllers\AdornmentsController.cs" Link="Controllers\AdornmentsController.cs" />
     <Compile Include="..\Leaflet\Models\AdornmentsType.cs" Link="Models\AdornmentsType.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="13.0.0" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="13.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.28" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.336902">
       <PrivateAssets>all</PrivateAssets>

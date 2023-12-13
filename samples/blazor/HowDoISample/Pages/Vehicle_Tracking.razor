@@ -110,14 +110,14 @@
     private DateTime adjustedStartTime = new DateTime(2019, 7, 10, 11, 31, 0);
     private InMemoryFeatureSource inMemoryFeatureSource;
     private MapView map;
-    private MeasureTool measureTool;
+    //private MeasureTool measureTool;
     private MeasureType measureType;
     private object popupItem;
     private PointShape popupPosition;
     private List<object> popups = new List<object> { new object() };
     private GeoCollection<Layer> spatialFenceLayers;
     private DateTime? startTime;
-    private TrackMode trackMode;
+    private BlazorTrackMode trackMode;
     private List<Vehicle> vehicles;
     private MarkerZoomLevelSet zoomLevelSet;
 
@@ -289,7 +289,7 @@
 
     private void RemoveDrwanFeature(FeatureClickedEditOverlayEventArgs e)
     {
-        if (trackMode == TrackMode.None)
+        if (trackMode == BlazorTrackMode.None)
             map.EditOverlay.Features.Remove(e.ClickedFeature);
     }
 

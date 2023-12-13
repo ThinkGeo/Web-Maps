@@ -586,6 +586,11 @@ namespace Labeling
             string styleFile = string.Format("{0}_{1}.json", accessId, overlayId);
             string styleFilePath = Path.Combine(baseDirectory, "Temp", styleFile);
 
+            string folderName = Path.GetDirectoryName(styleFilePath);
+
+            if (!Directory.Exists(folderName))
+                Directory.CreateDirectory(folderName);
+
             using (StreamWriter streamWriter = new StreamWriter(styleFilePath, false))
             {
                 streamWriter.WriteLine(JsonConvert.SerializeObject(newStyles));

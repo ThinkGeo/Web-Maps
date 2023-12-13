@@ -73,7 +73,7 @@
     GeoCollection<Layer> trackLayers = new GeoCollection<Layer>();
     Feature trackFeature;
     string spatialQueryMode = "Polygon";
-    TrackMode trackMode = TrackMode.Polygon;
+    BlazorTrackMode trackMode = BlazorTrackMode.Polygon;
     QueryType queryType = QueryType.Within;
 
     protected override void OnInitialized()
@@ -140,7 +140,7 @@
     void OnQueryModeChange(string queryMode)
     {
         spatialQueryMode = queryMode;
-        trackMode = spatialQueryMode == "Polygon" ? TrackMode.Polygon : TrackMode.None;
+        trackMode = spatialQueryMode == "Polygon" ? BlazorTrackMode.Polygon : BlazorTrackMode.None;
         map.EditOverlay.Features.Clear();
         HighlightSpaticalQueryFeatures(new Feature[0]);
         HighlightTrackFeature(null);

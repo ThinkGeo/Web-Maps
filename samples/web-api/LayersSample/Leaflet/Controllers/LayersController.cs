@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using ThinkGeo.Core;
 using ThinkGeo.MapSuite.Layers;
 using ThinkGeo.UI.WebApi;
@@ -13,28 +14,11 @@ namespace Layers.Controllers
     {
         private static readonly string baseDirectory = null;
         private static ProjectionConverter wgs84ToGoogleProjectionConverter;
-        private static readonly NoaaRadarRasterLayer noaaRadarRasterLayer;
-        private static readonly NoaaWeatherStationFeatureLayer noaaWeatherStationFeatureLayer;
 
         static LayersController()
         {
             baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "App_Data");
             wgs84ToGoogleProjectionConverter = new ProjectionConverter(4326, 3857);
-
-            // Noaa layers need to download the imformantion from server, we can open to start downloading data when application starting.
-            noaaRadarRasterLayer = new NoaaRadarRasterLayer();
-            noaaRadarRasterLayer.Name = "noaaRadar";
-            noaaRadarRasterLayer.ImageSource.ProjectionConverter = new UnmanagedProjectionConverter(4326, 3857);
-            NoaaRadarMonitor.RadarUpdated += (sender, args) => NoaaRadarMonitor.StopMonitoring();
-            noaaRadarRasterLayer.Open();
-
-            noaaWeatherStationFeatureLayer = new NoaaWeatherStationFeatureLayer();
-            noaaWeatherStationFeatureLayer.Name = "noaaWeather";
-            noaaWeatherStationFeatureLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(new NoaaWeatherStationStyle());
-            noaaWeatherStationFeatureLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
-            noaaWeatherStationFeatureLayer.FeatureSource.ProjectionConverter = wgs84ToGoogleProjectionConverter;
-            NoaaWeatherStationMonitor.StationsUpdated += (sender, args) => NoaaWeatherStationMonitor.StopMonitoring();
-            noaaWeatherStationFeatureLayer.Open();
         }
 
         /// <summary>
@@ -108,6 +92,8 @@ namespace Layers.Controllers
         {
             string fileGeoDatabaeFilePathName = string.Format(@"{0}/FileGeodatabase/USStates.gdb", baseDirectory);
             FileGeoDatabaseFeatureLayer fileGeoDatabaseLayer = new FileGeoDatabaseFeatureLayer(fileGeoDatabaeFilePathName);
+            fileGeoDatabaseLayer.ActiveLayer = "USStates";
+
             fileGeoDatabaseLayer.Name = "fileGeoDatabase";
             fileGeoDatabaseLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillBrush = new GeoSolidBrush(new GeoColor(50, GeoColors.Orange));
             fileGeoDatabaseLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen = new GeoPen(GeoColors.Black);
@@ -362,8 +348,7 @@ namespace Layers.Controllers
         [HttpGet]
         public IActionResult LoadNativeImage(int z, int x, int y)
         {
-            NativeImageRasterLayer gdiPlusRasterLayer = new NativeImageRasterLayer(string.Format(@"{0}/PNG/ThinkGeoLogo.png", baseDirectory),
-                new RectangleShape(-10776876.6105256, 3912354.07403825, -10776796.6105256, 3912334.07403825));
+            NativeImageRasterLayer gdiPlusRasterLayer = new NativeImageRasterLayer($"{baseDirectory}/PNG/m_3309650_sw_14_1_20160911_20161121.png");
             gdiPlusRasterLayer.Name = "nativeImage";
 
             LayerOverlay layerOverlay = new LayerOverlay();
@@ -372,51 +357,6 @@ namespace Layers.Controllers
             return DrawTileImage(layerOverlay, z, x, y);
         }
 
-        /// <summary>
-        /// Load NoaaRadarRasterLayer.
-        /// </summary>
-        [Route("WebServiceLayers/noaaRadar/{z}/{x}/{y}")]
-        [HttpGet]
-        public IActionResult LoadNoaaRadar(int z, int x, int y)
-        {
-            LayerOverlay layerOverlay = new LayerOverlay();
-            layerOverlay.Layers.Add(noaaRadarRasterLayer);
-            return DrawTileImage(layerOverlay, z, x, y);
-        }
-
-        /// <summary>
-        /// Load NoaaWeatherStationFeatureLayer.
-        /// </summary>
-        [Route("WebServiceLayers/noaaWeather/{z}/{x}/{y}")]
-        [HttpGet]
-        public IActionResult LoadNoaaWeatherStation(int z, int x, int y)
-        {
-            LayerOverlay layerOverlay = new LayerOverlay();
-            layerOverlay.Layers.Add(noaaWeatherStationFeatureLayer);
-
-            return DrawTileImage(layerOverlay, z, x, y);
-        }
-
-        /// <summary>
-        /// Load WmsRasterLayer.
-        /// </summary>
-        [Route("WebServiceLayers/wms/{z}/{x}/{y}")]
-        [HttpGet]
-        public IActionResult LoadWms(int z, int x, int y)
-        {
-            WmsRasterLayer wmsLayer = new WmsRasterLayer();
-            wmsLayer.Name = "wms";
-            wmsLayer.Crs = "EPSG:900913";
-            wmsLayer.Uri = new Uri("https://cloud.thinkgeo.com/api/v1/maps/wms");
-            wmsLayer.ActiveLayerNames.Add("WorldStreets");
-            wmsLayer.Parameters.Add("STYLES", "Light");
-            wmsLayer.Parameters.Add("apikey", "PIbGd76RyHKod99KptWTeb-Jg9JUPEPUBFD3SZJYLDE~");
-
-            LayerOverlay layerOverlay = new LayerOverlay();
-            layerOverlay.Layers.Add(wmsLayer);
-
-            return DrawTileImage(layerOverlay, z, x, y);
-        }
 
         /// <summary>
         /// Load CustomizedLayers.
@@ -456,6 +396,7 @@ namespace Layers.Controllers
                 GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
                 RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
                 geoCanvas.BeginDrawing(image, boundingBox, GeographyUnit.Meter);
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 layerOverlay.Draw(geoCanvas);
                 geoCanvas.EndDrawing();
 

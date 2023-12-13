@@ -286,12 +286,8 @@ $("#stylingOptions div").bind("click", function () {
     } else {
         $("#btnConfig").addClass('openlayers-disabled');
     }
-    //map.removeLayer(thinkgeoCloudMapsLayer);
-    //if (selectedLayer !== "PredefinedStyles") {
-    //    map.addLayer(thinkgeoCloudMapsLayer);
-    //}
-    // Redraw the map
     xyzSource.setUrl(getRootPath() + 'BasicStyling/' + selectedLayer + '/{z}/{x}/{y}/' + accessId);
+    xyzSource.refresh();
     map.addLayer(new ol.layer.Tile({
         source: xyzSource
     }));

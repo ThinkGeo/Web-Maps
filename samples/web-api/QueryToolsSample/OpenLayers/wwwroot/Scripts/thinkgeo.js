@@ -80,7 +80,8 @@ map.addLayer(resultLayer);
 $('#SpatialQueryDescription input[name="SpatialQueryGroup"]').click(function () {
     var queryType = $(this).attr("id");
     map.setView(new ol.View({ center: [0, 0], zoom: 3 }));
-    layerSource.setUrl(GetBaseUrl() + '?queryType=' + queryType);
+    layerSource.setUrl(GetBaseUrl() + '?queryType=' + queryType);    
+    layerSource.refresh();    
 });
 
 // Trigger the events when changing distance in query features. 
@@ -102,6 +103,7 @@ $('#leftPanelOptions div').bind('click', function () {
     if (hasTargetLayer) {
         resultLayer.setVisible(true);
         layerSource.setUrl(GetBaseUrl());
+        layerSource.refresh(); 
     }
 });
 
@@ -147,6 +149,7 @@ map.on('click', function onMapClick(e) {
     }
 
     layerSource.setUrl(url);
+    layerSource.refresh();
 });
 
 // Zoom map to new extent by given world point.

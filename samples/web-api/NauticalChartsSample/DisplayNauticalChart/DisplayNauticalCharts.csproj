@@ -53,8 +53,8 @@
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Data.Sqlite, Version=7.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Data.Sqlite.Core.7.0.0\lib\netstandard2.0\Microsoft.Data.Sqlite.dll</HintPath>
+    <Reference Include="Microsoft.Data.Sqlite, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.Sqlite.Core.8.0.0\lib\netstandard2.0\Microsoft.Data.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="NetTopologySuite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
       <HintPath>..\packages\NetTopologySuite.2.5.0\lib\netstandard2.0\NetTopologySuite.dll</HintPath>
@@ -71,16 +71,16 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="SkiaSharp, Version=2.88.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\SkiaSharp.2.88.3\lib\net462\SkiaSharp.dll</HintPath>
+      <HintPath>..\packages\SkiaSharp.2.88.6\lib\net462\SkiaSharp.dll</HintPath>
     </Reference>
-    <Reference Include="SQLitePCLRaw.batteries_v2, Version=2.1.2.1721, Culture=neutral, PublicKeyToken=8226ea5df37bcae9, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.bundle_e_sqlite3.2.1.2\lib\net461\SQLitePCLRaw.batteries_v2.dll</HintPath>
+    <Reference Include="SQLitePCLRaw.batteries_v2, Version=2.1.6.2060, Culture=neutral, PublicKeyToken=8226ea5df37bcae9, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.bundle_e_sqlite3.2.1.6\lib\net461\SQLitePCLRaw.batteries_v2.dll</HintPath>
     </Reference>
-    <Reference Include="SQLitePCLRaw.core, Version=2.1.2.1721, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.core.2.1.2\lib\netstandard2.0\SQLitePCLRaw.core.dll</HintPath>
+    <Reference Include="SQLitePCLRaw.core, Version=2.1.6.2060, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.core.2.1.6\lib\netstandard2.0\SQLitePCLRaw.core.dll</HintPath>
     </Reference>
-    <Reference Include="SQLitePCLRaw.provider.dynamic_cdecl, Version=2.1.2.1721, Culture=neutral, PublicKeyToken=b68184102cba0b3b, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.provider.dynamic_cdecl.2.1.2\lib\netstandard2.0\SQLitePCLRaw.provider.dynamic_cdecl.dll</HintPath>
+    <Reference Include="SQLitePCLRaw.provider.dynamic_cdecl, Version=2.1.6.2060, Culture=neutral, PublicKeyToken=b68184102cba0b3b, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.provider.dynamic_cdecl.2.1.6\lib\netstandard2.0\SQLitePCLRaw.provider.dynamic_cdecl.dll</HintPath>
     </Reference>
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -89,8 +89,8 @@
       <HintPath>..\packages\System.Collections.Immutable.1.7.1\lib\net461\System.Collections.Immutable.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+    <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.Formatting, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -124,19 +124,19 @@
     <Reference Include="System.EnterpriseServices" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="ThinkGeo.Core, Version=13.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.Core.13.1.0\lib\net462\ThinkGeo.Core.dll</HintPath>
+      <HintPath>..\packages\ThinkGeo.Core.13.2.0\lib\net462\ThinkGeo.Core.dll</HintPath>
     </Reference>
     <Reference Include="ThinkGeo.Dependency.Gdal, Version=13.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
       <HintPath>..\packages\ThinkGeo.Dependency.Gdal.13.0.1\lib\net462\ThinkGeo.Dependency.Gdal.dll</HintPath>
     </Reference>
     <Reference Include="ThinkGeo.Gdal, Version=13.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.Gdal.13.1.0\lib\net462\ThinkGeo.Gdal.dll</HintPath>
+      <HintPath>..\packages\ThinkGeo.Gdal.13.2.0\lib\net462\ThinkGeo.Gdal.dll</HintPath>
     </Reference>
     <Reference Include="ThinkGeo.NauticalCharts, Version=13.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.NauticalCharts.13.1.0\lib\net462\ThinkGeo.NauticalCharts.dll</HintPath>
+      <HintPath>..\packages\ThinkGeo.NauticalCharts.13.2.0\lib\net462\ThinkGeo.NauticalCharts.dll</HintPath>
     </Reference>
     <Reference Include="ThinkGeo.UI.WebApi, Version=13.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.UI.WebApi.13.1.0\lib\net462\ThinkGeo.UI.WebApi.dll</HintPath>
+      <HintPath>..\packages\ThinkGeo.UI.WebApi.13.2.0\lib\net462\ThinkGeo.UI.WebApi.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -249,17 +249,17 @@
     <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.3.1.1\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.3.1.1\build\Microsoft.Net.Compilers.props'))" />
     <Error Condition="!Exists('..\packages\ThinkGeo.Dependency.SkiaSharp.12.3.0\build\net462\ThinkGeo.Dependency.SkiaSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Dependency.SkiaSharp.12.3.0\build\net462\ThinkGeo.Dependency.SkiaSharp.targets'))" />
     <Error Condition="!Exists('..\packages\ThinkGeo.Dependency.NetTopologySuite.12.2.3\build\net462\ThinkGeo.Dependency.NetTopologySuite.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Dependency.NetTopologySuite.12.2.3\build\net462\ThinkGeo.Dependency.NetTopologySuite.targets'))" />
-    <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.macOS.2.88.3\build\net462\SkiaSharp.NativeAssets.macOS.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.macOS.2.88.3\build\net462\SkiaSharp.NativeAssets.macOS.targets'))" />
-    <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.Win32.2.88.3\build\net462\SkiaSharp.NativeAssets.Win32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.Win32.2.88.3\build\net462\SkiaSharp.NativeAssets.Win32.targets'))" />
-    <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.Linux.2.88.3\build\net462\SkiaSharp.NativeAssets.Linux.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.Linux.2.88.3\build\net462\SkiaSharp.NativeAssets.Linux.targets'))" />
     <Error Condition="!Exists('..\packages\ThinkGeo.Dependency.Gdal.13.0.1\build\net462\ThinkGeo.Dependency.Gdal.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Dependency.Gdal.13.0.1\build\net462\ThinkGeo.Dependency.Gdal.targets'))" />
-    <Error Condition="!Exists('..\packages\ThinkGeo.Core.13.1.0\build\net462\ThinkGeo.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Core.13.1.0\build\net462\ThinkGeo.Core.targets'))" />
+    <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.macOS.2.88.6\build\net462\SkiaSharp.NativeAssets.macOS.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.macOS.2.88.6\build\net462\SkiaSharp.NativeAssets.macOS.targets'))" />
+    <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.Win32.2.88.6\build\net462\SkiaSharp.NativeAssets.Win32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.Win32.2.88.6\build\net462\SkiaSharp.NativeAssets.Win32.targets'))" />
+    <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.Linux.2.88.6\build\net462\SkiaSharp.NativeAssets.Linux.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.Linux.2.88.6\build\net462\SkiaSharp.NativeAssets.Linux.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.Core.13.2.0\build\net462\ThinkGeo.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Core.13.2.0\build\net462\ThinkGeo.Core.targets'))" />
   </Target>
   <Import Project="..\packages\ThinkGeo.Dependency.SkiaSharp.12.3.0\build\net462\ThinkGeo.Dependency.SkiaSharp.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.SkiaSharp.12.3.0\build\net462\ThinkGeo.Dependency.SkiaSharp.targets')" />
   <Import Project="..\packages\ThinkGeo.Dependency.NetTopologySuite.12.2.3\build\net462\ThinkGeo.Dependency.NetTopologySuite.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.NetTopologySuite.12.2.3\build\net462\ThinkGeo.Dependency.NetTopologySuite.targets')" />
-  <Import Project="..\packages\SkiaSharp.NativeAssets.macOS.2.88.3\build\net462\SkiaSharp.NativeAssets.macOS.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.macOS.2.88.3\build\net462\SkiaSharp.NativeAssets.macOS.targets')" />
-  <Import Project="..\packages\SkiaSharp.NativeAssets.Win32.2.88.3\build\net462\SkiaSharp.NativeAssets.Win32.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Win32.2.88.3\build\net462\SkiaSharp.NativeAssets.Win32.targets')" />
-  <Import Project="..\packages\SkiaSharp.NativeAssets.Linux.2.88.3\build\net462\SkiaSharp.NativeAssets.Linux.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Linux.2.88.3\build\net462\SkiaSharp.NativeAssets.Linux.targets')" />
   <Import Project="..\packages\ThinkGeo.Dependency.Gdal.13.0.1\build\net462\ThinkGeo.Dependency.Gdal.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.Gdal.13.0.1\build\net462\ThinkGeo.Dependency.Gdal.targets')" />
-  <Import Project="..\packages\ThinkGeo.Core.13.1.0\build\net462\ThinkGeo.Core.targets" Condition="Exists('..\packages\ThinkGeo.Core.13.1.0\build\net462\ThinkGeo.Core.targets')" />
+  <Import Project="..\packages\SkiaSharp.NativeAssets.macOS.2.88.6\build\net462\SkiaSharp.NativeAssets.macOS.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.macOS.2.88.6\build\net462\SkiaSharp.NativeAssets.macOS.targets')" />
+  <Import Project="..\packages\SkiaSharp.NativeAssets.Win32.2.88.6\build\net462\SkiaSharp.NativeAssets.Win32.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Win32.2.88.6\build\net462\SkiaSharp.NativeAssets.Win32.targets')" />
+  <Import Project="..\packages\SkiaSharp.NativeAssets.Linux.2.88.6\build\net462\SkiaSharp.NativeAssets.Linux.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Linux.2.88.6\build\net462\SkiaSharp.NativeAssets.Linux.targets')" />
+  <Import Project="..\packages\ThinkGeo.Core.13.2.0\build\net462\ThinkGeo.Core.targets" Condition="Exists('..\packages\ThinkGeo.Core.13.2.0\build\net462\ThinkGeo.Core.targets')" />
 </Project>

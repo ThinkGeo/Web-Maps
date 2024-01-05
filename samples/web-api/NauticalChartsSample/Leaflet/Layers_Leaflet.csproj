@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework><EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Controllers\NauticalChartsController.cs" />
+    <Content Include="CustomizedLayer\ThinkGeoHeadquartersFeatureLayer.cs" />
+    <Content Include="CustomizedLayer\ThinkGeoHeadquartersFeatureSource.cs" />
+    <Content Include="Helper\SampleHelper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\App_Data\LayerData.xml" />
+    <None Include="wwwroot\Content\bootstrap.min.css" />
+    <None Include="wwwroot\Content\leaflet.css" />
+    <None Include="wwwroot\Content\site.css" />
+    <None Include="wwwroot\index.html" />
+    <None Include="wwwroot\Images\ajax-loader.gif" />
+    <None Include="wwwroot\Images\collapse.png" />
+    <None Include="wwwroot\Images\desktop.png" />
+    <None Include="wwwroot\Images\expend.png" />
+    <None Include="wwwroot\Images\favicon.ico" />
+    <None Include="wwwroot\Images\info.png" />
+    <None Include="wwwroot\Images\layers.png" />
+    <None Include="wwwroot\Scripts\jquery-1.11.1.min.js" />
+    <None Include="wwwroot\Scripts\leaflet.js" />
+    <None Include="wwwroot\Scripts\thinkgeo.js" />
+    <None Include="wwwroot\Scripts\thinkgeo.leaflet.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ThinkGeo.Core" Version="13.2.0" />
+    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="13.2.0" />
+    <PackageReference Include="ThinkGeo.Jpeg2000" Version="13.2.0" />
+    <PackageReference Include="ThinkGeo.MrSid" Version="13.2.0" />
+    <PackageReference Include="ThinkGeo.NauticalCharts" Version="13.2.0" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="13.2.0" />
+    <PackageReference Include="ThinkGeo.UnmanagedProj" Version="13.2.0" />
+  </ItemGroup>
+
+</Project>

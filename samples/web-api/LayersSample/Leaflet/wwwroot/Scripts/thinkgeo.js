@@ -1,5 +1,5 @@
 ﻿// Create the map.
-var map = L.map('map').setView([40.14711, -95.81131], 5);
+var map = L.map('map').setView([0, 0], 5);
 
 // Add image buttons for layers and help.
 L.imageButtons({

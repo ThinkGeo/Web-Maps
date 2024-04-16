@@ -30,7 +30,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="13.2.0" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="13.3.0-beta058" />
   </ItemGroup>
  
 

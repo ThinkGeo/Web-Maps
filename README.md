@@ -28,7 +28,7 @@ We have a number of samples for both WebAPI and Blazor that show off ThinkGeo We
         
 - [ThinkGeo Blog](https://www.thinkgeo.com/blog/) 
 
-- ThinkGeo Desktop Edition Legacy Samples
+- ThinkGeo Web Edition Legacy Samples
    - [ThinkGeo Version 9 WebAPI Samples](https://wiki.thinkgeo.com/wiki/thinkgeo_web_for_api)
    - [ThinkGeo Version 9 Blazor Samples](https://wiki.thinkgeo.com/wiki/thinkgeo_web_for_blazor)
    - [ThinkGeo Version 10 WebAPI/Blazor Samples](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/support/v10?ref_type=heads)

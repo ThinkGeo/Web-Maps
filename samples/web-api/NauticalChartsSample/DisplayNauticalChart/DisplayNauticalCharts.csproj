@@ -138,20 +138,20 @@
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="ThinkGeo.Core, Version=13.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.Core.13.3.0\lib\net462\ThinkGeo.Core.dll</HintPath>
+    <Reference Include="ThinkGeo.Core, Version=14.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.Core.14.0.0\lib\net462\ThinkGeo.Core.dll</HintPath>
     </Reference>
-    <Reference Include="ThinkGeo.Dependency.Gdal, Version=13.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.Dependency.Gdal.13.1.0\lib\net462\ThinkGeo.Dependency.Gdal.dll</HintPath>
+    <Reference Include="ThinkGeo.Dependency.Gdal, Version=14.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.Dependency.Gdal.14.0.0\lib\net462\ThinkGeo.Dependency.Gdal.dll</HintPath>
     </Reference>
-    <Reference Include="ThinkGeo.Gdal, Version=13.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.Gdal.13.3.0\lib\net462\ThinkGeo.Gdal.dll</HintPath>
+    <Reference Include="ThinkGeo.Gdal, Version=14.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.Gdal.14.0.0\lib\net462\ThinkGeo.Gdal.dll</HintPath>
     </Reference>
-    <Reference Include="ThinkGeo.NauticalCharts, Version=13.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.NauticalCharts.13.3.0\lib\net462\ThinkGeo.NauticalCharts.dll</HintPath>
+    <Reference Include="ThinkGeo.NauticalCharts, Version=14.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.NauticalCharts.14.0.0\lib\net462\ThinkGeo.NauticalCharts.dll</HintPath>
     </Reference>
-    <Reference Include="ThinkGeo.UI.WebApi, Version=13.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
-      <HintPath>..\packages\ThinkGeo.UI.WebApi.13.3.0\lib\net462\ThinkGeo.UI.WebApi.dll</HintPath>
+    <Reference Include="ThinkGeo.UI.WebApi, Version=14.0.0.0, Culture=neutral, PublicKeyToken=0828af5241fb4207, processorArchitecture=MSIL">
+      <HintPath>..\packages\ThinkGeo.UI.WebApi.14.0.0\lib\net462\ThinkGeo.UI.WebApi.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -267,16 +267,16 @@
     <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.macOS.2.88.8\build\net462\SkiaSharp.NativeAssets.macOS.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.macOS.2.88.8\build\net462\SkiaSharp.NativeAssets.macOS.targets'))" />
     <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.Win32.2.88.8\build\net462\SkiaSharp.NativeAssets.Win32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.Win32.2.88.8\build\net462\SkiaSharp.NativeAssets.Win32.targets'))" />
     <Error Condition="!Exists('..\packages\SkiaSharp.NativeAssets.Linux.2.88.8\build\net462\SkiaSharp.NativeAssets.Linux.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SkiaSharp.NativeAssets.Linux.2.88.8\build\net462\SkiaSharp.NativeAssets.Linux.targets'))" />
-    <Error Condition="!Exists('..\packages\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.13.1.0\build\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.13.1.0\build\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.targets'))" />
-    <Error Condition="!Exists('..\packages\ThinkGeo.Dependency.Gdal.13.1.0\build\net462\ThinkGeo.Dependency.Gdal.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Dependency.Gdal.13.1.0\build\net462\ThinkGeo.Dependency.Gdal.targets'))" />
-    <Error Condition="!Exists('..\packages\ThinkGeo.Core.13.3.0\build\net462\ThinkGeo.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Core.13.3.0\build\net462\ThinkGeo.Core.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.Core.14.0.0\build\net462\ThinkGeo.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Core.14.0.0\build\net462\ThinkGeo.Core.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.14.0.0\build\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.14.0.0\build\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.targets'))" />
+    <Error Condition="!Exists('..\packages\ThinkGeo.Dependency.Gdal.14.0.0\build\net462\ThinkGeo.Dependency.Gdal.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ThinkGeo.Dependency.Gdal.14.0.0\build\net462\ThinkGeo.Dependency.Gdal.targets'))" />
   </Target>
   <Import Project="..\packages\ThinkGeo.Dependency.SkiaSharp.12.3.0\build\net462\ThinkGeo.Dependency.SkiaSharp.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.SkiaSharp.12.3.0\build\net462\ThinkGeo.Dependency.SkiaSharp.targets')" />
   <Import Project="..\packages\ThinkGeo.Dependency.NetTopologySuite.12.2.3\build\net462\ThinkGeo.Dependency.NetTopologySuite.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.NetTopologySuite.12.2.3\build\net462\ThinkGeo.Dependency.NetTopologySuite.targets')" />
   <Import Project="..\packages\SkiaSharp.NativeAssets.macOS.2.88.8\build\net462\SkiaSharp.NativeAssets.macOS.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.macOS.2.88.8\build\net462\SkiaSharp.NativeAssets.macOS.targets')" />
   <Import Project="..\packages\SkiaSharp.NativeAssets.Win32.2.88.8\build\net462\SkiaSharp.NativeAssets.Win32.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Win32.2.88.8\build\net462\SkiaSharp.NativeAssets.Win32.targets')" />
   <Import Project="..\packages\SkiaSharp.NativeAssets.Linux.2.88.8\build\net462\SkiaSharp.NativeAssets.Linux.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Linux.2.88.8\build\net462\SkiaSharp.NativeAssets.Linux.targets')" />
-  <Import Project="..\packages\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.13.1.0\build\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.13.1.0\build\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.targets')" />
-  <Import Project="..\packages\ThinkGeo.Dependency.Gdal.13.1.0\build\net462\ThinkGeo.Dependency.Gdal.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.Gdal.13.1.0\build\net462\ThinkGeo.Dependency.Gdal.targets')" />
-  <Import Project="..\packages\ThinkGeo.Core.13.3.0\build\net462\ThinkGeo.Core.targets" Condition="Exists('..\packages\ThinkGeo.Core.13.3.0\build\net462\ThinkGeo.Core.targets')" />
+  <Import Project="..\packages\ThinkGeo.Core.14.0.0\build\net462\ThinkGeo.Core.targets" Condition="Exists('..\packages\ThinkGeo.Core.14.0.0\build\net462\ThinkGeo.Core.targets')" />
+  <Import Project="..\packages\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.14.0.0\build\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.14.0.0\build\ThinkGeo.Dependency.MicrosoftVisualCRunTime140.targets')" />
+  <Import Project="..\packages\ThinkGeo.Dependency.Gdal.14.0.0\build\net462\ThinkGeo.Dependency.Gdal.targets" Condition="Exists('..\packages\ThinkGeo.Dependency.Gdal.14.0.0\build\net462\ThinkGeo.Dependency.Gdal.targets')" />
 </Project>

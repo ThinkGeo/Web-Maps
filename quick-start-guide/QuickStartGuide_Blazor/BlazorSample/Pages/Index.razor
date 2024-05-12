@@ -1,0 +1,40 @@
+﻿@page "/"
+
+@using ThinkGeo.Core;
+@using ThinkGeo.UI.Blazor;
+
+<!--You can control the width and height in CSS too, if you like. -->
+<MapView Id="demomap" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter" Zoom="3" Width="800" Height="600">
+    <OverlaysSetting>
+        <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="ThinkGeo.Core.ThinkGeoCloudRasterMapsMapType.Aerial" ApiKey="PIbGd76RyHKod99KptWTeb-Jg9JUPEPUBFD3SZJYLDE~"></ThinkGeoCloudRasterMapsOverlay>
+        <!-- Add one more Overlay for hosting point FeatureLayer -->
+        <LayerOverlay Id="PointOverlay" Layers="@layers"></LayerOverlay>
+    </OverlaysSetting>
+</MapView>
+
+@code {
+    GeoCollection<Layer> layers = new GeoCollection<Layer>();
+
+    protected override void OnInitialized()
+    {
+        // Create the point layer for capitals.
+        ShapeFileFeatureLayer capitalFeatureLayer = new ShapeFileFeatureLayer(Path.Combine(AppContext.BaseDirectory, "../../../Data/capital.shp"));
+        // Create the "Mercator projection" and apply it to the layer to match the background map.
+        capitalFeatureLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(Projection.GetWgs84ProjString(), Projection.GetSphericalMercatorProjString());
+
+        // Create the point style for positions.
+        var pointStyle = new PointStyle(PointSymbolType.Circle, 4, new GeoSolidBrush(GeoColor.FromHtml("#21FF00")), new GeoPen(GeoColor.FromHtml("#ffffff"), 1));
+        capitalFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = pointStyle;
+        
+        // Create the labeling style for capitals.
+        var textStyle = new TextStyle("CITY_NAME", new GeoFont("Arial", 14), new GeoSolidBrush(GeoColor.FromHtml("#21FF00")));
+        textStyle.YOffsetInPixel = 5;
+        capitalFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = textStyle;
+        capitalFeatureLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+        
+        // Set DrawingMarginPercentage to a proper value to avoid some labels are cut-off
+        capitalFeatureLayer.DrawingMarginInPixel = 300;
+
+        layers.Add(capitalFeatureLayer);
+    }
+}

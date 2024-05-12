@@ -26,10 +26,10 @@ namespace BasicStyling.Controllers
             Dictionary<string, object> styles = new Dictionary<string, object>();
             GeoColor fillSolidBrushColor = (featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillBrush as GeoSolidBrush).Color;
             styles["FillSolidBrushColor"] = GeoColor.ToHtml(fillSolidBrushColor);
-            styles["FillSolidBrushAalpha"] = fillSolidBrushColor.AlphaComponent;
+            styles["FillSolidBrushAalpha"] = fillSolidBrushColor.A;
             GeoColor outlinePenColor = featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color;
             styles["OutlinePenColor"] = GeoColor.ToHtml(outlinePenColor);
-            styles["OutlinePenAalpha"] = outlinePenColor.AlphaComponent;
+            styles["OutlinePenAalpha"] = outlinePenColor.A;
             styles["OutlinePenWidth"] = featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Width;
             return styles;
         }
@@ -49,17 +49,17 @@ namespace BasicStyling.Controllers
             Dictionary<string, object> styles = new Dictionary<string, object>();
             GeoPen centerPen = featureLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle.CenterPen;
             styles["CenterPenColor"] = GeoColor.ToHtml(centerPen.Color);
-            styles["CenterPenAlpha"] = centerPen.Color.AlphaComponent;
+            styles["CenterPenAlpha"] = centerPen.Color.A;
             styles["CenterPenWidth"] = centerPen.Width;
 
             GeoPen innerPen = featureLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle.InnerPen;
             styles["InnerPenColor"] = GeoColor.ToHtml(innerPen.Color);
-            styles["InnerPenAlpha"] = innerPen.Color.AlphaComponent;
+            styles["InnerPenAlpha"] = innerPen.Color.A;
             styles["InnerPenWidth"] = innerPen.Width;
 
             GeoPen outerPen = featureLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle.OuterPen;
             styles["OuterPenColor"] = GeoColor.ToHtml(outerPen.Color);
-            styles["OuterPenAlpha"] = outerPen.Color.AlphaComponent;
+            styles["OuterPenAlpha"] = outerPen.Color.A;
             styles["OuterPenWidth"] = outerPen.Width;
             return styles;
         }
@@ -85,13 +85,13 @@ namespace BasicStyling.Controllers
             //GeoPen symbolPen = targetPointStyle.SymbolPen;
             GeoPen symbolPen = targetPointStyle.OutlinePen;
             styles["SymbolPenColor"] = GeoColor.ToHtml(symbolPen.Color);
-            styles["SymbolPointPenAlpha"] = symbolPen.Color.AlphaComponent;
+            styles["SymbolPointPenAlpha"] = symbolPen.Color.A;
             styles["SymbolPointPenWidth"] = symbolPen.Width;
 
             //GeoColor symbolSolidBrushColor = targetPointStyle.SymbolSolidBrush.Color;
             GeoColor symbolSolidBrushColor = (targetPointStyle.FillBrush as GeoSolidBrush).Color;
             styles["SymbolSolidBrushColor"] = GeoColor.ToHtml(symbolSolidBrushColor);
-            styles["SymbolSolidBrushAlpha"] = symbolSolidBrushColor.AlphaComponent;
+            styles["SymbolSolidBrushAlpha"] = symbolSolidBrushColor.A;
             return styles;
         }
 

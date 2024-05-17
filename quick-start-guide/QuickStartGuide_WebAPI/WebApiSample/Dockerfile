@@ -33,8 +33,4 @@ RUN dotnet publish "./WebApiSample.csproj" -c $BUILD_CONFIGURATION -o /app/publi
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-
-# Manually add SkiaSharp package to the project
-RUN echo '<ItemGroup><PackageReference Include="SkiaSharp" Version="2.88.8" /></ItemGroup>' >> WebApiSample.csproj
-
 ENTRYPOINT ["dotnet", "WebApiSample.dll"]

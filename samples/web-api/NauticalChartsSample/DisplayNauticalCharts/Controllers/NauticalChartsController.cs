@@ -2,30 +2,31 @@
 using System.Drawing.Imaging;
 using System.IO;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Web;
-using System.Web.Http;
+using Microsoft.AspNetCore.Mvc;
 using ThinkGeo.Core;
 using ThinkGeo.UI.WebApi;
 
 namespace DisplayNauticalChart
 {
-    [RoutePrefix("DisplayNauticalChart")]
-    public class HelloWorldController : ApiController
+    [Route("DisplayNauticalChart")]
+    [ApiController]
+    public class NauticalChartsController : ControllerBase
     {
-        private readonly string nauticalChartsFilePath = HttpContext.Current.Server.MapPath("~/App_Data/US4IL10M.000");
-        private static NauticalChartsFeatureLayer nauticalChartsFeatureLayer;
+        private readonly string nauticalChartsFilePath = Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "US4IL10M.000");
+        private static NauticalChartsFeatureLayer? nauticalChartsFeatureLayer;
         private static ProjectionConverter projectionConverter = new ProjectionConverter(4326, 3857);
+        private static readonly object layerLock = new object();
 
-        [Route("tile/{z}/{x}/{y}")]
-        [HttpGet]
-        public HttpResponseMessage GetTile(int z, int x, int y)
+        [HttpGet("tile/{z}/{x}/{y}")]        
+        public IActionResult GetTile(int z, int x, int y)
         {
-            if (nauticalChartsFeatureLayer == null)
-                nauticalChartsFeatureLayer = new NauticalChartsFeatureLayer(nauticalChartsFilePath);
-            lock (nauticalChartsFeatureLayer)
+            lock (layerLock)
             {
+                if (nauticalChartsFeatureLayer == null)
+                nauticalChartsFeatureLayer = new NauticalChartsFeatureLayer(nauticalChartsFilePath);            
+                { 
+                    nauticalChartsFeatureLayer = new NauticalChartsFeatureLayer(nauticalChartsFilePath);
+                }
                 nauticalChartsFeatureLayer.IsDepthContourTextVisible = true;
                 nauticalChartsFeatureLayer.IsLightDescriptionVisible = true;
                 nauticalChartsFeatureLayer.StylingType = NauticalChartsStylingType.EmbeddedStyling;
@@ -41,7 +42,7 @@ namespace DisplayNauticalChart
                 nauticalChartsFeatureLayer.DrawingMode = NauticalChartsDrawingMode.Optimized;
                 nauticalChartsFeatureLayer.IsFullLightLineVisible = true;
                 nauticalChartsFeatureLayer.IsMetaObjectsVisible = false;
-                nauticalChartsFeatureLayer.FeatureSource.ProjectionConverter = projectionConverter;
+                nauticalChartsFeatureLayer.FeatureSource.ProjectionConverter = projectionConverter;            
             }
 
             LayerOverlay layerOverlay = new LayerOverlay();
@@ -50,24 +51,29 @@ namespace DisplayNauticalChart
             return DrawLayerOverlay(layerOverlay, z, x, y);
         }
 
-        private HttpResponseMessage DrawLayerOverlay(LayerOverlay layerOverlay, int z, int x, int y)
+        private IActionResult DrawLayerOverlay(LayerOverlay layerOverlay, int z, int x, int y)
         {
             using (GeoImage bitmap = new GeoImage(256, 256))
             {
                 GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
+                if (geoCanvas == null)
+                {
+                    return StatusCode((int)HttpStatusCode.InternalServerError, "Failed to create GeoCanvas.");
+                }
+
                 RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
-                geoCanvas.BeginDrawing(bitmap, boundingBox, GeographyUnit.Meter);
-                layerOverlay.Draw(geoCanvas);
-                geoCanvas.EndDrawing();
 
-                MemoryStream ms = new MemoryStream();
-                bitmap.Save(ms, GeoImageFormat.Png);
-
-                HttpResponseMessage msg = new HttpResponseMessage(HttpStatusCode.OK);
-                msg.Content = new ByteArrayContent(ms.ToArray());
-                msg.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
-
-                return msg;
+                lock (layerLock) 
+                {
+                    geoCanvas.BeginDrawing(bitmap, boundingBox, GeographyUnit.Meter);
+                    layerOverlay.Draw(geoCanvas);
+                    geoCanvas.EndDrawing();
+                }
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    bitmap.Save(ms, GeoImageFormat.Png);
+                    return File(ms.ToArray(), "image/png");
+                }
             }
         }
     }

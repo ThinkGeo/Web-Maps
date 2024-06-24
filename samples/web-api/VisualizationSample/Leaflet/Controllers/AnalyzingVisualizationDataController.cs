@@ -15,10 +15,6 @@ namespace Visualization.Controllers
     public class VisualizationController : ControllerBase
     {
         private static readonly string baseDirectory;
-        private const string filterOverlayKey = "filterStyle";
-
-        // Initialize the overlays for drawing, which is cached for whole website.
-        private static Dictionary<string, LayerOverlay> cachedOverlays;
 
         // Initialize the filter expression.
         private static Dictionary<string, Tuple<string, string>> filterExpressions;
@@ -27,16 +23,6 @@ namespace Visualization.Controllers
         {
             baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 
-            cachedOverlays = new Dictionary<string, LayerOverlay>() {
-            {"HeatStyle",  OverlayBuilder.GetOverlayWithHeatStyle()},
-            {"ClassBreakStyle", OverlayBuilder.GetOverlayWithClassBreakStyle()},
-            {"DotDensityStyle", OverlayBuilder.GetOverlayWithDotDensityStyle()},
-            {"IsolineStyle", OverlayBuilder.GetOverlayWithIsoLineStyle()},
-            {"ClusterStyle", OverlayBuilder.GetOverlayWithClusterPointStyle()},
-            //{"ZedGraphStyle", OverlayBuilder.GetOverlayWithZedGraphStyle()},
-            {"IconStyle", OverlayBuilder.GetOverlayWithIconStyle()},
-            {"CustomStyle", OverlayBuilder.GetOverlayWithCustomeStyle()} };
-
             filterExpressions = new Dictionary<string, Tuple<string, string>>(){
             {"GreaterThanOrEqualTo", new Tuple<string, string>(">=", string.Empty)},
             {"GreaterThan", new Tuple<string, string>(">", string.Empty)},
@@ -44,6 +30,28 @@ namespace Visualization.Controllers
             {"LessThan", new Tuple<string, string>("<", string.Empty)},
             {"Equal", new Tuple<string, string>("^", "$")},
             {"DoesNotEqual", new Tuple<string, string>("^(?!", ").*?$")}};
+        }
+
+        private LayerOverlay GetOverlay(string id)
+        {
+            switch (id)
+            {
+                case "HeatStyle":
+                    return OverlayBuilder.GetOverlayWithHeatStyle();
+                case "ClassBreakStyle":
+                    return OverlayBuilder.GetOverlayWithClassBreakStyle();
+                case "DotDensityStyle":
+                    return OverlayBuilder.GetOverlayWithDotDensityStyle();
+                case "IsolineStyle":
+                    return OverlayBuilder.GetOverlayWithIsoLineStyle();
+                case "ClusterStyle":
+                    return OverlayBuilder.GetOverlayWithClusterPointStyle();
+                case "IconStyle":
+                    return OverlayBuilder.GetOverlayWithIconStyle();
+                case "CustomStyle":
+                    return OverlayBuilder.GetOverlayWithCustomeStyle();
+                default: return null;
+            }
         }
 
         [Route("{layerId}/{z}/{x}/{y}/{accessId}")]
@@ -58,7 +66,7 @@ namespace Visualization.Controllers
             }
             else
             {
-                layerOverlay = cachedOverlays[layerId];
+                layerOverlay = GetOverlay(layerId);
             }
 
             // Draw the map and return the image back to client in an IActionResult. 

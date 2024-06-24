@@ -11,18 +11,10 @@ namespace Projection.Controllers
     public class ProjectionController : ControllerBase
     {
         private static readonly string baseDirectory;
-        private static readonly LayerOverlay customProjectionOverlay;
-        private static readonly LayerOverlay rotaionProjectionOverlay;
-        private static readonly LayerOverlay rasterProjectionOverlay;
 
         static ProjectionController()
         {
             baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "App_Data");
-
-            // Initialize custom and rotation projection overlay.
-            customProjectionOverlay = InitializeCustomProjectionOverlay();
-            rotaionProjectionOverlay = InitializeRotaionProjectionOverlay();
-            rasterProjectionOverlay = InitializeRasterProjectionOverlay();
         }
 
         /// <summary>
@@ -62,9 +54,10 @@ namespace Projection.Controllers
             RotationProjectionConverter projectionConverter = new RotationProjectionConverter(angle);
             projectionConverter.PivotCenter = new PointShape(coordinateX, coordinateY);
 
-            UpdateRotationProjection(projectionConverter);
-
-            return DrawTileImage(rotaionProjectionOverlay, GeographyUnit.Meter, z, x, y);
+            var rotationProjectionOverlay = GetRotationProjectionOverlay();
+            UpdateRotationProjection(rotationProjectionOverlay,projectionConverter);
+          
+            return DrawTileImage(rotationProjectionOverlay, GeographyUnit.Meter, z, x, y);
         }
 
         /// <summary>
@@ -92,6 +85,7 @@ namespace Projection.Controllers
         [HttpGet]
         public IActionResult LoadCustomProjectionLayer(int z, int x, int y)
         {
+            var customProjectionOverlay = GetCustomProjectionOverlay();
             return DrawTileImage(customProjectionOverlay, GeographyUnit.Meter, z, x, y);
         }
 
@@ -102,6 +96,7 @@ namespace Projection.Controllers
         [HttpGet]
         public IActionResult LoadRasterProjectionLayer(int z, int x, int y)
         {
+            var rasterProjectionOverlay = GetRasterProjectionOverlay();
             return DrawTileImage(rasterProjectionOverlay, GeographyUnit.Meter, z, x, y);
         }
 
@@ -109,7 +104,7 @@ namespace Projection.Controllers
         /// Initialize custom projection overlay.
         /// </summary>
         /// <returns></returns>
-        private static LayerOverlay InitializeCustomProjectionOverlay()
+        private LayerOverlay GetCustomProjectionOverlay()
         {
             LayerOverlay layerOverlay = new LayerOverlay();
             // Add background lyer.
@@ -135,7 +130,7 @@ namespace Projection.Controllers
             return layerOverlay;
         }
 
-        private static LayerOverlay InitializeRasterProjectionOverlay()
+        private LayerOverlay GetRasterProjectionOverlay()
         {
             LayerOverlay layerOverlay = new LayerOverlay();
             
@@ -156,7 +151,7 @@ namespace Projection.Controllers
         /// Initialize ratation projection overlay.
         /// </summary>
         /// <returns></returns>
-        private static LayerOverlay InitializeRotaionProjectionOverlay()
+        private LayerOverlay GetRotationProjectionOverlay()
         {
             LayerOverlay layerOverlay = new LayerOverlay();
 
@@ -207,9 +202,9 @@ namespace Projection.Controllers
         /// Update the layer's projection by rotation projection.
         /// </summary>
         /// <param name="projectionConverter"></param>
-        private void UpdateRotationProjection(RotationProjectionConverter projectionConverter)
+        private void UpdateRotationProjection(LayerOverlay layerOverlay, RotationProjectionConverter projectionConverter)
         {
-            foreach (var layer in rotaionProjectionOverlay.Layers.OfType<FeatureLayer>())
+            foreach (var layer in layerOverlay.Layers.OfType<FeatureLayer>())
             {
                 layer.FeatureSource.ProjectionConverter = projectionConverter;
             }

@@ -8,12 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
-    <PackageReference Include="ThinkGeo.Core" Version="14.1.0" />
+    <PackageReference Include="ThinkGeo.Core" Version="14.2.1" />
     <PackageReference Include="ThinkGeo.Dependency.Gdal" Version="14.0.0" />
     <PackageReference Include="ThinkGeo.Dependency.MicrosoftVisualCRunTime140" Version="14.0.0" />
-    <PackageReference Include="ThinkGeo.Gdal" Version="14.1.0" />
-    <PackageReference Include="ThinkGeo.NauticalCharts" Version="14.1.0" />
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.1.0" />
+    <PackageReference Include="ThinkGeo.Gdal" Version="14.2.1" />
+    <PackageReference Include="ThinkGeo.NauticalCharts" Version="14.2.1" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.2.1" />
   </ItemGroup>
 
   <ItemGroup>

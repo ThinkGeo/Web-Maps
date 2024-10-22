@@ -34,8 +34,8 @@
   </ItemGroup>
   
   <ItemGroup>
-	  <PackageReference Include="ThinkGeo.Printers" Version="14.2.0-beta004" />
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.2.0-beta004" />
+	  <PackageReference Include="ThinkGeo.Printers" Version="14.2.1" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.2.1" />
   </ItemGroup>
 
 </Project>

@@ -24,10 +24,10 @@ namespace ThinkGeo.UI.Blazor.HowDoI
             var styles = new AreaStyleModel();
             GeoColor fillSolidBrushColor = ((GeoSolidBrush)featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillBrush).Color;
             styles.BrushColor = GeoColor.ToHtml(fillSolidBrushColor);
-            styles.BrushAlpha = fillSolidBrushColor.AlphaComponent;
+            styles.BrushAlpha = fillSolidBrushColor.A;
             GeoColor outlinePenColor = featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Color;
             styles.OutlinePenColor = GeoColor.ToHtml(outlinePenColor);
-            styles.OutlinePenAlpha = outlinePenColor.AlphaComponent;
+            styles.OutlinePenAlpha = outlinePenColor.A;
             styles.OutlinePenWidth = featureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.OutlinePen.Width;
             return styles;
         }
@@ -47,17 +47,17 @@ namespace ThinkGeo.UI.Blazor.HowDoI
             var styles = new LineStyleModel();
             GeoPen centerPen = featureLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle.CenterPen;
             styles.CenterPenColor = GeoColor.ToHtml(centerPen.Color);
-            styles.CenterPenAlpha = centerPen.Color.AlphaComponent;
+            styles.CenterPenAlpha = centerPen.Color.A;
             styles.CenterPenWidth = centerPen.Width;
 
             GeoPen innerPen = featureLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle.InnerPen;
             styles.InnerPenColor = GeoColor.ToHtml(innerPen.Color);
-            styles.InnerPenAlpha = innerPen.Color.AlphaComponent;
+            styles.InnerPenAlpha = innerPen.Color.A;
             styles.InnerPenWidth = innerPen.Width;
 
             GeoPen outerPen = featureLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle.OuterPen;
             styles.OuterPenColor = GeoColor.ToHtml(outerPen.Color);
-            styles.OuterPenAlpha = outerPen.Color.AlphaComponent;
+            styles.OuterPenAlpha = outerPen.Color.A;
             styles.OuterPenWidth = outerPen.Width;
             return styles;
         }
@@ -82,12 +82,12 @@ namespace ThinkGeo.UI.Blazor.HowDoI
 
             GeoPen symbolPen = targetPointStyle.OutlinePen;
             styles.PenColor = GeoColor.ToHtml(symbolPen.Color);
-            styles.PenAlpha = symbolPen.Color.AlphaComponent;
+            styles.PenAlpha = symbolPen.Color.A;
             styles.PenWidth = symbolPen.Width;
 
             GeoColor symbolSolidBrushColor = ((GeoSolidBrush)targetPointStyle.FillBrush).Color;
             styles.BrushColor = GeoColor.ToHtml(symbolSolidBrushColor);
-            styles.BrushAlpha = symbolSolidBrushColor.AlphaComponent;
+            styles.BrushAlpha = symbolSolidBrushColor.A;
             return styles;
         }
 

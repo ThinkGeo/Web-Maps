@@ -414,7 +414,7 @@ namespace Labeling
             Dictionary<string, object> styles = new Dictionary<string, object>();
 
             TextStyle textStyle = ((ShapeFileFeatureLayer)overlay.Layers[0]).ZoomLevelSet.ZoomLevel10.DefaultTextStyle;
-            styles["haloPen"] = textStyle.HaloPen.Color.AlphaComponent != 0;
+            styles["haloPen"] = int.TryParse(textStyle.HaloPen.Color.Argb,out int argbValue) && argbValue != 0;
             styles["mask"] = textStyle.Mask.IsActive;
             styles["overlapping"] = textStyle.OverlappingRule == LabelOverlappingRule.AllowOverlapping;
             styles["duplicate"] = textStyle.DuplicateRule.ToString();
@@ -475,9 +475,9 @@ namespace Labeling
                         }
                         foreach (var textStyle in textStyles)
                         {
-                            byte red = textStyle.HaloPen.Color.RedComponent;
-                            byte green = textStyle.HaloPen.Color.GreenComponent;
-                            byte blue = textStyle.HaloPen.Color.BlueComponent;
+                            byte red = textStyle.HaloPen.Color.R;
+                            byte green = textStyle.HaloPen.Color.G;
+                            byte blue = textStyle.HaloPen.Color.B;
                             byte alpha = useHalopen ? (byte)255 : (byte)0;
 
                             textStyle.HaloPen = new GeoPen(GeoColor.FromArgb(alpha, red, green, blue), textStyle.HaloPen.Width);

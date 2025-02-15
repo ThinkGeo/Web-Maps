@@ -119,10 +119,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="14.2.1" />
+    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="14.3.0-beta070" />
     <PackageReference Include="ThinkGeo.Jpeg2000" Version="14.2.1" />
     <PackageReference Include="ThinkGeo.MrSid" Version="14.2.1" />
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.2.1" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.3.0-beta071" />
     <PackageReference Include="ThinkGeo.UnmanagedProj" Version="14.2.1" />
   </ItemGroup>
 

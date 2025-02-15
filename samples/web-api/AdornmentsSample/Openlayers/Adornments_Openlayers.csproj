@@ -7,7 +7,7 @@
     <Compile Include="..\Leaflet\Models\AdornmentsType.cs" Link="Models\AdornmentsType.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.2.1" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.3.0-beta071" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.28" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.336902">
       <PrivateAssets>all</PrivateAssets>

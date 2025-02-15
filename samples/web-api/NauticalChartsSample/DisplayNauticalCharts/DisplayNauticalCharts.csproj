@@ -8,10 +8,10 @@
 
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
-    <PackageReference Include="ThinkGeo.Core" Version="14.2.1" />
-    <PackageReference Include="ThinkGeo.Gdal" Version="14.2.1" />
-    <PackageReference Include="ThinkGeo.NauticalCharts" Version="14.2.1" />
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.2.1" />
+    <PackageReference Include="ThinkGeo.Core" Version="14.3.0-beta070" />
+    <PackageReference Include="ThinkGeo.Gdal" Version="14.3.0-beta070" />
+    <PackageReference Include="ThinkGeo.NauticalCharts" Version="14.3.0-beta070" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.3.0-beta071" />
   </ItemGroup>
 
   <ItemGroup>

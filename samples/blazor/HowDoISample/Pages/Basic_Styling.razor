@@ -15,9 +15,14 @@
 
             @foreach (var style in stylings)
             {
+                var layerCollection = new GeoCollection<ThinkGeo.Core.LayerBase>();
+                foreach (var layer in style.Layers)
+                {
+                    layerCollection.Add(layer);  
+                }
                 <LayerOverlay Id="@style.Id" TileHeight="512" TileWidth="512"
                               IsVisible="@style.IsActive"
-                              Layers="@style.Layers"></LayerOverlay>
+                              Layers="@layerCollection"></LayerOverlay>
             }
         </OverlaysSetting>
         <MapToolsSetting>

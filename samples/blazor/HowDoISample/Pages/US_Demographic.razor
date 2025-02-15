@@ -14,9 +14,15 @@
         <OverlaysSetting>
             <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="ThinkGeoCloudRasterMapsMapType.Light"
                                             ApiKey="@GlobalSettings.ThinkGeoApiKey" />
-
+            @{
+                var layerCollection = new GeoCollection<ThinkGeo.Core.LayerBase>();
+                foreach (var layer in layers)
+                {
+                    layerCollection.Add(layer);
+                }
+            }
             <LayerOverlay Id="DemographicLayerOverlay" TileHeight="512" TileWidth="512"
-                          Layers="layers" />
+                          Layers="layerCollection" />
         </OverlaysSetting>
         <AdornmentOverlaySetting>
             <AdornmentOverlay Layers="adornmentLayers" />

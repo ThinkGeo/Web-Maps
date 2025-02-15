@@ -27,9 +27,15 @@
             <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay"
                                             ApiKey="@GlobalSettings.ThinkGeoApiKey"
                                             MapType="ThinkGeoCloudRasterMapsMapType.Hybrid" />
-
+            @{
+                var layerCollection = new GeoCollection<ThinkGeo.Core.LayerBase>();
+                foreach (var layer in editingLayers)
+                {
+                    layerCollection.Add(layer);
+                }
+            }
             <LayerOverlay Id="ExistingLayerOverlay" TileWidth="512" TileHeight="512"
-                          Layers="@editingLayers"></LayerOverlay>
+                          Layers="@layerCollection"></LayerOverlay>
         </OverlaysSetting>
         <MapToolsSetting>
             <MapTools>

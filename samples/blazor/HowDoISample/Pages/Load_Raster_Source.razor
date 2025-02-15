@@ -10,8 +10,22 @@
              Zoom="4"
              MapUnit="@ThinkGeo.Core.GeographyUnit.DecimalDegree">
         <OverlaysSetting>
-            <LayerOverlay Id="JPEGOverlay" Layers="@jpegLayers" IsVisible="@showJpeg"></LayerOverlay>
-            <LayerOverlay Id="ECWOverlay" Layers="@ecwLayers" IsVisible="@showEcw"></LayerOverlay>
+            @{
+                var jpegLayerCollection = new GeoCollection<ThinkGeo.Core.LayerBase>();
+                foreach (var layer in jpegLayers)
+                {
+                    jpegLayerCollection.Add(layer);
+                }
+            }
+            <LayerOverlay Id="JPEGOverlay" Layers="@jpegLayerCollection" IsVisible="@showJpeg"></LayerOverlay>
+            @{
+                var ecwLayerCollection = new GeoCollection<ThinkGeo.Core.LayerBase>();
+                foreach (var layer in ecwLayers)
+                {
+                    ecwLayerCollection.Add(layer);
+                }
+            }
+            <LayerOverlay Id="ECWOverlay" Layers="@ecwLayerCollection" IsVisible="@showEcw"></LayerOverlay>
         </OverlaysSetting>
         <MapToolsSetting>
             <MapTools>

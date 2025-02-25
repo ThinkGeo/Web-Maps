@@ -5,15 +5,15 @@
 
 <div class="map-container" @ref="@mapContainer">
 
-    <MapView Id="map" @ref="@map" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter"
-             Width="100"
-             Height="100"
-             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-             Center="@(new PointShape(-11037792.463030849, 4953010.053845501))"
-             Zoom="5">
+    <MapView Id="map" @ref="@map" MapUnit="@GeographyUnit.Meter"
+    Width="100"
+    Height="100"
+    MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+    Center="@(new PointShape(-11037792, 4953010))"
+    Zoom="5">
         <OverlaysSetting>
-            <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="ThinkGeoCloudRasterMapsMapType.Light"
-                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="ThinkGeoCloudRasterMapsMapType.Light_V2_X1"
+            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
             @{
                 var layerCollection = new GeoCollection<ThinkGeo.Core.LayerBase>();
                 foreach (var layer in layers)
@@ -22,7 +22,7 @@
                 }
             }
             <LayerOverlay Id="DemographicLayerOverlay" TileHeight="512" TileWidth="512"
-                          Layers="layerCollection" />
+            Layers="layerCollection" />
         </OverlaysSetting>
         <AdornmentOverlaySetting>
             <AdornmentOverlay Layers="adornmentLayers" />
@@ -67,25 +67,25 @@
 
         adornmentLayers = new GeoCollection<AdornmentLayer>();
         var legendAdornmentLayer = new LegendAdornmentLayer
-        {
-            Location = AdornmentLocation.LowerLeft,
-            XOffsetInPixel = 10,
-            YOffsetInPixel = -10,
-            Title = new LegendItem
             {
-                ImageJustificationMode = LegendImageJustificationMode.JustifyImageRight,
-                TopPadding = 10,
-                BottomPadding = 10,
-                TextStyle = new TextStyle("Population", new GeoFont("Segoe UI", 12), new GeoSolidBrush(GeoColors.Black))
-            }
-        };
+                Location = AdornmentLocation.LowerLeft,
+                XOffsetInPixel = 10,
+                YOffsetInPixel = -10,
+                Title = new LegendItem
+                {
+                    ImageJustificationMode = LegendImageJustificationMode.JustifyImageRight,
+                    TopPadding = 2,
+                    BottomPadding = 2,
+                    TextStyle = new TextStyle("Population", new GeoFont("Segoe UI", 10), new GeoSolidBrush(GeoColors.Black))
+                }
+            };
 
         adornmentLayers.Add(legendAdornmentLayer);
         ApplyThematicLegendItems(GetDemographicStyleFromLayer(statesLayer), legendAdornmentLayer);
         base.OnInitialized();
     }
 
-    protected async override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
         {
@@ -126,54 +126,6 @@
                 legendItem.TextStyle = new TextStyle(text, new GeoFont("Segoe UI", 10), new GeoSolidBrush(GeoColors.Black));
             }
             legendAdornmentLayer.LegendItems.Add(legendItem);
-        }
-        legendAdornmentLayer.Height = GetLegendHeight(legendAdornmentLayer);
-        legendAdornmentLayer.Width = GetLegendWidth(legendAdornmentLayer);
-    }
-
-    private static float GetLegendWidth(LegendAdornmentLayer legendAdornmentLayer)
-    {
-        using (var bitmap = new GeoImage((int)legendAdornmentLayer.Width, (int)legendAdornmentLayer.Height))
-        {
-            var geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
-            geoCanvas.BeginDrawing(bitmap, MaxExtents.SphericalMercator, GeographyUnit.Meter);
-            LegendItem title = legendAdornmentLayer.Title;
-            float width = geoCanvas.MeasureText(title.TextStyle.TextColumnName, new GeoFont("Segoe UI", 12)).Width
-               + title.ImageWidth + title.ImageRightPadding + title.ImageLeftPadding + title.TextRightPadding + title.TextLeftPadding + title.LeftPadding + title.RightPadding;
-
-            foreach (LegendItem legendItem in legendAdornmentLayer.LegendItems)
-            {
-                float legendItemWidth = geoCanvas.MeasureText(legendItem.TextStyle.TextColumnName, new GeoFont("Segoe UI", 10)).Width
-                    + legendItem.ImageWidth + legendItem.ImageRightPadding + legendItem.ImageLeftPadding + legendItem.TextRightPadding + legendItem.TextLeftPadding + legendItem.LeftPadding + legendItem.RightPadding;
-                if (width < legendItemWidth)
-                {
-                    width = legendItemWidth;
-                }
-            }
-            return width;
-        }
-    }
-
-    private static float GetLegendHeight(LegendAdornmentLayer legendAdornmentLayer)
-    {
-        using (var bitmap = new GeoImage((int)legendAdornmentLayer.Width, (int)legendAdornmentLayer.Height))
-        {
-            var geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
-            geoCanvas.BeginDrawing(bitmap, MaxExtents.SphericalMercator, GeographyUnit.Meter);
-
-            LegendItem title = legendAdornmentLayer.Title;
-            float legendHeight = Math.Max(geoCanvas.MeasureText(title.TextStyle.TextColumnName, new GeoFont("Segoe UI", 12)).Height, title.ImageHeight);
-            legendHeight = Math.Max(legendHeight, title.Height);
-            float height = legendHeight + Math.Max(title.ImageTopPadding, title.TextTopPadding) + title.TopPadding + Math.Max(title.ImageBottomPadding, title.TextBottomPadding) + title.BottomPadding;
-
-            foreach (LegendItem legendItem in legendAdornmentLayer.LegendItems)
-            {
-                float itemLegendHeight = Math.Max(geoCanvas.MeasureText(legendItem.TextStyle.TextColumnName, new GeoFont("Segoe UI", 10)).Height, legendItem.ImageHeight);
-                float itemHeight = itemLegendHeight + Math.Max(legendItem.ImageTopPadding, legendItem.TextTopPadding) + legendItem.TopPadding + Math.Max(legendItem.ImageBottomPadding, legendItem.TextBottomPadding) + legendItem.BottomPadding;
-
-                height += itemHeight;
-            }
-            return height;
         }
     }
 

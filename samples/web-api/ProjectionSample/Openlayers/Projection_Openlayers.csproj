@@ -63,8 +63,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.Core" Version="14.3.0-beta070" />
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.3.0-beta071" />
+    <PackageReference Include="ThinkGeo.Core" Version="14.2.2" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.2.2" />
     <PackageReference Include="ThinkGeo.UnmanagedProj" Version="14.2.1" />
   </ItemGroup>
 

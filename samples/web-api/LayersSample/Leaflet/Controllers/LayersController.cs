@@ -252,14 +252,14 @@ namespace Layers.Controllers
             LayerOverlay layerOverlay = new LayerOverlay();
 
             string projWkt = System.IO.File.ReadAllText(Path.Combine(baseDirectory, "MrSid", "US380AndGeeRoad.prj"));
-            ProjectionConverter feetToGoogleProjectionConverter = new UnmanagedProjectionConverter()
+            ProjectionConverter feetToGoogleProjectionConverter = new GdalProjectionConverter()
             {
                 InternalProjection = new Projection(Projection.ConvertWktToProjString(projWkt)),
                 ExternalProjection = new Projection(Projection.GetGoogleMapProjString())
             };
 
             string mrSidFilePathName = Path.Combine(baseDirectory, "MrSid", "US380AndGeeRoad.sid");
-            MrSidRasterLayer mrsidRasterLayer = new MrSidRasterLayer(mrSidFilePathName);
+            MrSidGdalRasterLayer mrsidRasterLayer = new MrSidGdalRasterLayer(mrSidFilePathName);
             mrsidRasterLayer.Name = "mrsid";
             mrsidRasterLayer.ImageSource.ProjectionConverter = feetToGoogleProjectionConverter;
             layerOverlay.Layers.Add(mrsidRasterLayer);
@@ -314,7 +314,7 @@ namespace Layers.Controllers
         {
             string jpeg2000FilePathName = string.Format(@"{0}/Jpeg2000/World.jp2", baseDirectory);
             string jpeg2000WorldFilePathName = Path.ChangeExtension(jpeg2000FilePathName, ".j2w");
-            Jpeg2000RasterLayer jpeg2000RasterLayer = new Jpeg2000RasterLayer(jpeg2000FilePathName, jpeg2000WorldFilePathName);
+            Jpeg2000GdalRasterLayer jpeg2000RasterLayer = new Jpeg2000GdalRasterLayer(jpeg2000FilePathName, jpeg2000WorldFilePathName);
             jpeg2000RasterLayer.Name = "jpeg2000";
 
             LayerOverlay layerOverlay = new LayerOverlay();
@@ -348,7 +348,7 @@ namespace Layers.Controllers
         [HttpGet]
         public IActionResult LoadNativeImage(int z, int x, int y)
         {
-            NativeImageRasterLayer gdiPlusRasterLayer = new NativeImageRasterLayer($"{baseDirectory}/PNG/m_3309650_sw_14_1_20160911_20161121.png");
+            SkiaRasterLayer gdiPlusRasterLayer = new SkiaRasterLayer($"{baseDirectory}/PNG/m_3309650_sw_14_1_20160911_20161121.png");
             gdiPlusRasterLayer.Name = "nativeImage";
 
             LayerOverlay layerOverlay = new LayerOverlay();

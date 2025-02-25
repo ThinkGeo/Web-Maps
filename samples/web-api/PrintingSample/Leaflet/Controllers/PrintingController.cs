@@ -66,7 +66,7 @@ namespace Printing.Controllers
             RectangleShape extent = UpdateMapExtent(pagePrinterLayer.GetBoundingBox(), printingInfo.Percentage);
 
             LayerOverlay layerOverlay = new LayerOverlay();
-            NativeImageRasterLayer gdiPlusRasterLayer = new NativeImageRasterLayer(imagePath, extent);
+            SkiaRasterLayer gdiPlusRasterLayer = new SkiaRasterLayer(imagePath, extent);
             layerOverlay.Layers.Add(gdiPlusRasterLayer);
 
             return DrawTileImage(layerOverlay, z, x, y);

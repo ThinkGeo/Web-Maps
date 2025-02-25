@@ -98,7 +98,7 @@ namespace Visualization.Controllers
 
                 SaveStyle(accessId, parameters);
             }
-            catch (Exception ex)
+            catch
             {
                 updateSuc = false;
             }

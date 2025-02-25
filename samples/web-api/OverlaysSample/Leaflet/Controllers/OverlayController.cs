@@ -57,7 +57,7 @@ namespace ThinkGeo.MapSuite.Overlays
                 WebRequest request = WebRequest.Create(loginServiceUri);
                 request.GetResponse();
             }
-            catch (Exception ex)
+            catch 
             {
                 validated = false;
             }

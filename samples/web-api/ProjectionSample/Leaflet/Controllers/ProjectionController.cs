@@ -137,7 +137,7 @@ namespace Projection.Controllers
             string tiffFilePath = string.Format(@"{0}/World.tif", baseDirectory);
             GeoTiffRasterLayer geoTiffRasterLayer = new GeoTiffRasterLayer(tiffFilePath);
 
-            UnmanagedProjectionConverter decimalDegreeToEpsg2163 = new UnmanagedProjectionConverter();
+            GdalProjectionConverter decimalDegreeToEpsg2163 = new GdalProjectionConverter();
             decimalDegreeToEpsg2163.InternalProjection = new ThinkGeo.Core.Projection(4326);
             decimalDegreeToEpsg2163.ExternalProjection = new ThinkGeo.Core.Projection(ThinkGeo.Core.Projection.GetProjStringByEpsgSrid(2163));
             geoTiffRasterLayer.ImageSource.ProjectionConverter = decimalDegreeToEpsg2163;

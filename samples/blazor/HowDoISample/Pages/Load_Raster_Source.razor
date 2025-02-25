@@ -52,7 +52,7 @@
 
     protected override void OnInitialized()
     {
-        var jpegLayer = new NativeImageRasterLayer("./Data/World2.jpg");
+        var jpegLayer = new SkiaRasterLayer("./Data/World2.jpg");
         jpegLayers.Add(jpegLayer);
 
         var ecwLayer = new EcwGdalRasterLayer("./Data/World.ecw");

@@ -149,7 +149,6 @@ namespace Adornments
             legendLayer.LegendItems.Add(legendItem1);
             legendLayer.LegendItems.Add(legendItem2);
             legendLayer.LegendItems.Add(legendItem3);
-            legendLayer.Height = 125;
             legendLayer.Title = title;
             legendLayer.Location = AdornmentLocation.LowerLeft;
 

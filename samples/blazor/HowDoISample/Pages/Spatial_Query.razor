@@ -12,10 +12,31 @@
         <OverlaysSetting>
             <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay"
                                             ApiKey="@GlobalSettings.ThinkGeoApiKey"
-                                            MapType="ThinkGeoCloudRasterMapsMapType.Light" />
-            <LayerOverlay Id="SourceOverlay" Layers="@sourceLayers" />
-            <LayerOverlay Id="TrackOverlay" Layers="@trackLayers" />
-            <LayerOverlay Id="SpatialQueryOverlay" Layers="@highlightLayers" />
+                                            MapType="ThinkGeoCloudRasterMapsMapType.Light_V2_X1" />
+            @{
+                var sourceLayerCollection = new GeoCollection<ThinkGeo.Core.LayerBase>();
+                foreach (var layer in sourceLayers)
+                {
+                    sourceLayerCollection.Add(layer);
+                }
+            }
+            <LayerOverlay Id="SourceOverlay" Layers="@sourceLayerCollection" />
+            @{
+                var trackLayerCollection = new GeoCollection<ThinkGeo.Core.LayerBase>();
+                foreach (var layer in trackLayers)
+                {
+                    trackLayerCollection.Add(layer);
+                }
+            }
+            <LayerOverlay Id="TrackOverlay" Layers="@trackLayerCollection" />
+            @{
+                var highlightLayerCollection = new GeoCollection<ThinkGeo.Core.LayerBase>();
+                foreach (var layer in highlightLayers)
+                {
+                    highlightLayerCollection.Add(layer);
+                }
+            }
+            <LayerOverlay Id="SpatialQueryOverlay" Layers="@highlightLayerCollection" />
         </OverlaysSetting>
         <EditOverlaySetting>
             <EditOverlay TrackMode="@trackMode" OnFeatureDrawn="@OnPolygonDrawn" />

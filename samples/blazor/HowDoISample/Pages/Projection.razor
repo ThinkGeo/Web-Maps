@@ -9,7 +9,14 @@
              Zoom="2"
              MapUnit="@ThinkGeo.Core.GeographyUnit.Meter">
         <OverlaysSetting>
-            <LayerOverlay Id="CustomOverlay" Layers="@layers"></LayerOverlay>
+            @{
+                var layerCollection = new GeoCollection<ThinkGeo.Core.LayerBase>();
+                foreach (var layer in layers)
+                {
+                    layerCollection.Add(layer);
+                }
+            }
+            <LayerOverlay Id="CustomOverlay" Layers="@layerCollection"></LayerOverlay>
         </OverlaysSetting>
         <MapToolsSetting>
             <MapTools>

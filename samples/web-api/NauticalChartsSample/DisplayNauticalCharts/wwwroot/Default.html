@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html style="height:100%">
+<head>
+    <title>Nautical Charts</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ol3/4.6.5/ol.css" />
+
+</head>
+<body style="height: 98%">
+    <div id="map" style="height: 100%; width: 100%"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ol3/4.6.5/ol.js"></script>
+    <script>
+        var map = new ol.Map({
+            target: 'map',
+            controls: ol.control.defaults({ attribution: false, rotate: false }).extend(
+                [new ol.control.Attribution({ collapsible: false })]),
+            view: new ol.View({ center: [-9741609.82, 5135424.55], zoom: 11})
+        });
+
+        getRootPath = function () {
+            var pathArray = location.pathname.split('/');
+            var appPath = "/";
+            for (var i = 1; i < pathArray.length - 1; i++) {
+                appPath += pathArray[i] + "/";
+            }
+
+            return appPath === "/" ? "" : appPath;
+        };
+
+        var thinkgeoCloudMapsLayer = new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                url: 'https://cloud{1-6}.thinkgeo.com/api/v1/maps/raster/light/x1/3857/512/{z}/{x}/{y}.png?apikey=PIbGd76RyHKod99KptWTeb-Jg9JUPEPUBFD3SZJYLDE~',
+                maxZoom: 19,
+                tileSize: 512,
+                params:
+                {
+                    'LAYERS': 'ThinkGeoCloudMaps',
+                    'VERSION': '10.4.0',
+                    'STYLE': 'Light'
+                },
+
+                // --------------------------------------------------------------------------------------
+                // Backgrounds for this sample are powered by ThinkGeo Cloud Maps and require
+                // an API Key. The following function is just for reminding you to input the key.
+                // Feel free to remove this function after the key was input.
+                // --------------------------------------------------------------------------------------
+                tileLoadFunction: function (imageTile, src) {
+                    fetch(src).then((response) => {
+                        if (response.status === 401) {
+                            var canvas = document.createElement("canvas");
+                            canvas.width = 512;
+                            canvas.height = 512;
+                            var context = canvas.getContext("2d");
+                            context.font = "14px Arial";
+                            context.strokeText("Backgrounds for this sample are", 256, 100);
+                            context.strokeText("powered by ThinkGeo Cloud Maps and", 256, 120);
+                            context.strokeText("require an API Key. This was sent", 256, 140);
+                            context.strokeText("to you via email when you signed up", 256, 160);
+                            context.strokeText("with ThinkGeo, or you can register", 256, 180);
+                            context.strokeText("now at https://cloud.thinkgeo.com", 256, 200);
+                            var url = canvas.toDataURL("image/png", 1);
+                            imageTile.getImage().src = url;
+                        }
+                        else {
+                            response.blob().then((blob) => {
+                                if (blob) {
+                                    imageTile.getImage().src = URL.createObjectURL(blob);
+                                }
+                                else {
+                                    imageTile.getImage().src = "";
+                                }
+                            });
+                        }
+                    });
+                }
+                // --------------------------------------------------------------------------------------
+
+            })
+        });
+        map.addLayer(thinkgeoCloudMapsLayer);
+
+        var layerDecimalDegreeSource = new ol.source.XYZ({
+            url: getRootPath() + '/DisplayNauticalChart/tile/{z}/{x}/{y}',
+            maxZoom: 19,
+            tileLoadFunction: function (imageTile, src) { imageTile.getImage().src = src + '?t=' + new Date().getTime(); }
+        });
+
+        var countriesLayer = new ol.layer.Tile({ source: layerDecimalDegreeSource });
+
+        map.addLayer(countriesLayer);
+    </script>
+</body>
+
+</html>

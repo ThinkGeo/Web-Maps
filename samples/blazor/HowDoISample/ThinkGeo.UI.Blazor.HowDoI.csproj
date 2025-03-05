@@ -14,8 +14,8 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="ThinkGeo.Ecw" Version="14.0.0" />
-    <PackageReference Include="ThinkGeo.UI.Blazor" Version="14.0.0" />
+    <PackageReference Include="ThinkGeo.Ecw" Version="14.2.1" />
+    <PackageReference Include="ThinkGeo.UI.Blazor" Version="14.2.4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,9 +29,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Pages\Error.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Find_Nearby_Places.razor">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Pages\Vector_Basemaps.razor">

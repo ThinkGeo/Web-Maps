@@ -1,0 +1,52 @@
+﻿@page "/disable-mouse-zoom"
+@using ThinkGeo.UI.Blazor
+@using ThinkGeo.Core
+@inject IJSRuntime JSRuntime
+
+<h3>Disable Mouse Wheel Zoom</h3>
+
+<div class="map-container">
+    <MapView Id="map1" @ref="map1" 
+             MapUnit="@ThinkGeo.Core.GeographyUnit.Meter" ProgressiveZooming="true"
+             Width="100" Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-11037792.463030849, 4953010.053845501))"
+             Zoom="5">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="VectorOverlay"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey"
+                                            MapType="mapType" />
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+    <div id="wrap">
+        <div class="thumb thumb-light" value="light" @onclick="@(() => this.mapType = Core.ThinkGeoCloudVectorMapsMapType.Light)">
+        </div>
+        <div class="thumb thumb-dark" value="dark" @onclick="@(() => this.mapType = Core.ThinkGeoCloudVectorMapsMapType.Dark)">
+        </div>
+    </div>
+</div>
+
+@code {
+    private MapView map1;
+    private PointShape center = new PointShape(-10777032, 3908560); // Adjust to your desired center point
+    private double zoomLevel = 5;
+    ThinkGeoCloudVectorMapsMapType mapType;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            while (!map1.IsLoaded)
+                await Task.Delay(100);
+
+            // Call JS function to remove mouse wheel zoom
+            await JSRuntime.InvokeVoidAsync("DisableMouseWheel", "map1");
+        }
+    }
+}

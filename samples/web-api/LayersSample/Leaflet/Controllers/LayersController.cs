@@ -241,6 +241,31 @@ namespace Layers.Controllers
             return DrawTileImage(layerOverlay, z, x, y);
         }
 
+        /// <summary>
+        /// Load SqlServerFeatureLayer.
+        /// </summary>
+        [Route("VectorLayers/sqlServer/{z}/{x}/{y}")]
+        [HttpGet]
+        public IActionResult LoadSqlServerFeatureLayer(int z, int x, int y)
+        {
+            SqlServerFeatureLayer coyoteSightingsLayer = new SqlServerFeatureLayer("Server=demodb.thinkgeo.com;Database=thinkgeo;User Id=ThinkGeoTest;Password=ThinkGeoTestPassword;", "frisco_coyote_sightings", "id")
+            {
+                FeatureSource =
+                    {
+                        ProjectionConverter = new ProjectionConverter(2276, 3857)
+                    }
+            };
+
+            coyoteSightingsLayer.Name = "coyoteSightings";
+            coyoteSightingsLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = new PointStyle(PointSymbolType.Circle, 12, GeoBrushes.Black, new GeoPen(GeoColors.White, 1));
+            coyoteSightingsLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+            LayerOverlay layerOverlay = new LayerOverlay();
+            layerOverlay.Layers.Add(coyoteSightingsLayer);
+
+            return DrawTileImage(layerOverlay, z, x, y);
+        }
+
 
         /// <summary>
         /// Load MrSidRasterLayer.

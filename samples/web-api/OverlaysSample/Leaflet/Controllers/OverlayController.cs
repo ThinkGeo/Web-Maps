@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text.Json;
 using ThinkGeo.Core;
 using ThinkGeo.UI.WebApi;
 
@@ -17,13 +16,13 @@ namespace ThinkGeo.MapSuite.Overlays
     [Route("Overlays")]
     public class OverlayController : ControllerBase
     {
-        private static Collection<Layer> customLayers = null;
+        private readonly ILogger<OverlayController> _logger;
         private static string baseDirectory = null;
 
-        static OverlayController()
+        public OverlayController(ILogger<OverlayController> logger)
         {
+            _logger = logger;
             baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-            InitializeCustomLayers();
         }
 
         /// <summary>
@@ -33,6 +32,7 @@ namespace ThinkGeo.MapSuite.Overlays
         [HttpGet]
         public IActionResult LoadCustomOverlay(int z, int x, int y)
         {
+            var customLayers = GetCustomLayers();
             LayerOverlay layerOverlay = new LayerOverlay();
             // Get custom overlay.
             layerOverlay.Layers.Add(customLayers.Single(l => l.Name == "schoolLayer"));
@@ -57,7 +57,7 @@ namespace ThinkGeo.MapSuite.Overlays
                 WebRequest request = WebRequest.Create(loginServiceUri);
                 request.GetResponse();
             }
-            catch (Exception ex)
+            catch 
             {
                 validated = false;
             }
@@ -85,11 +85,11 @@ namespace ThinkGeo.MapSuite.Overlays
         }
 
         /// <summary>
-        /// Initializes custom layers.
+        /// Get custom layers.
         /// </summary>
-        private static void InitializeCustomLayers()
+        private Collection<Layer> GetCustomLayers()
         {
-            customLayers = new Collection<Layer>();
+            var customLayers = new Collection<Layer>();
             ShapeFileFeatureLayer schoolsLayer = new ShapeFileFeatureLayer($@"{baseDirectory}\AppData\POIs\Schools.shp");
             schoolsLayer.Name = "schoolLayer";
             schoolsLayer.Transparency = 200f;
@@ -97,6 +97,8 @@ namespace ThinkGeo.MapSuite.Overlays
             schoolsLayer.ZoomLevelSet.ZoomLevel10.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
             schoolsLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(4326, 3857);
             customLayers.Add(schoolsLayer);
+
+            return customLayers;
         }
     }
 }

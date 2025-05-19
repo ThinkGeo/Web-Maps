@@ -61,7 +61,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.UI.Blazor" Version="14.1.0-beta004" />
+    <PackageReference Include="ThinkGeo.UI.Blazor" Version="14.2.1" />
   </ItemGroup>
 
 </Project>

@@ -1,16 +1,20 @@
-﻿using System;
-using System.IO;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using ThinkGeo.Core;
 using ThinkGeo.UI.WebApi;
 
-namespace MvcSample.Areas.Home.Controllers
+namespace MvcSample.Controllers
 {
     public class HomeController : Controller
     {
-        // GET: /Home/Index/
+        private readonly ILogger<HomeController> _logger;
+
+        public HomeController(ILogger<HomeController> logger)
+        {
+            _logger = logger;
+        }
+        
         [HttpGet]
-        public ActionResult Index()
+        public IActionResult Index()
         {
             return View();
         }
@@ -19,11 +23,11 @@ namespace MvcSample.Areas.Home.Controllers
         /// Load ShapeFileFeatureLayer.
         /// </summary>
         [HttpGet]
-        public ActionResult GetShapeFileTile(int z, int x, int y)
+        public IActionResult GetShapeFileTile(int z, int x, int y)
         {
             var baseDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "App_Data");
+            string shpFilePathName = Path.Combine(baseDirectory, "ShapeFile", "USStates.shp");
 
-            string shpFilePathName = string.Format(@"{0}/ShapeFile/USStates.shp", baseDirectory);
             ShapeFileFeatureLayer shapeFileFeatureLayer = new ShapeFileFeatureLayer(shpFilePathName);
             shapeFileFeatureLayer.Name = "shapeFile";
             shapeFileFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillBrush = new GeoSolidBrush(new GeoColor(50, GeoColors.Orange));
@@ -35,7 +39,6 @@ namespace MvcSample.Areas.Home.Controllers
 
             return DrawTileImage(layerOverlay, z, x, y);
         }
-
 
         /// <summary>
         /// Draw the map and return the image back to client in an IActionResult.

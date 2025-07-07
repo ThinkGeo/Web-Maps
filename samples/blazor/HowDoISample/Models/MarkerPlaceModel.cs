@@ -63,7 +63,7 @@ namespace ThinkGeo.UI.Blazor.HowDoI
                 Id = "Portugal",
                 Position = new PointShape(-1010191.765817, 4684061.093316),
                 Style = new PointMarkerStyle("images/country/portugal.png", 0.5, 1.0, 0.4),
-                Description = ", a southern European country on the Iberian Peninsula, bordering Spain. Its location on the Atlantic Ocean has influenced many aspects of its culture: salt cod and grilled sardines are national dishes, the Algarve's beaches are a major destination and much of the nation’s architecture dates to the 1500s–1800s, when Portugal had a powerful maritime empire."
+                Description = ", a southern European country on the Iberian Peninsula, bordering Spain. Its location on the Atlantic Ocean has influenced many aspects of its culture: salt cod and grilled sardines are national dishes, the Algarve's beaches are a major destination and much of the nation's architecture dates to the 1500s–1800s, when Portugal had a powerful maritime empire."
             });
 
             result.Add(new MarkerPlaceModel
@@ -79,7 +79,7 @@ namespace ThinkGeo.UI.Blazor.HowDoI
                 Id = "Spain",
                 Position = new PointShape(-410925.464061, 4928659.583828),
                 Style = new PointMarkerStyle("images/country/spain.png", 0.5, 1.0, 0.4),
-                Description = ", a country on Europe’s Iberian Peninsula, includes 17 autonomous regions with diverse geography and cultures. Capital city Madrid is home to the Royal Palace and Prado museum, housing works by European masters. Segovia has a medieval castle (the Alcázar) and an intact Roman aqueduct. "
+                Description = ", a country on Europe's Iberian Peninsula, includes 17 autonomous regions with diverse geography and cultures. Capital city Madrid is home to the Royal Palace and Prado museum, housing works by European masters. Segovia has a medieval castle (the Alcázar) and an intact Roman aqueduct. "
             });
 
             result.Add(new MarkerPlaceModel
@@ -87,7 +87,7 @@ namespace ThinkGeo.UI.Blazor.HowDoI
                 Id = "UK",
                 Position = new PointShape(-14064.413204,6711782.579665),
                 Style = new PointMarkerStyle("images/country/uk.png", 0.5, 1.0, 0.4),
-                Description = "(United Kingdom), made up of England, Scotland, Wales and Northern Ireland, is an island nation in northwestern Europe. England – birthplace of Shakespeare and The Beatles – is home to the capital, London, a globally influential centre of finance and culture. England is also site of Neolithic Stonehenge, Bath’s Roman spa and centuries-old universities at Oxford and Cambridge."
+                Description = "(United Kingdom), made up of England, Scotland, Wales and Northern Ireland, is an island nation in northwestern Europe. England – birthplace of Shakespeare and The Beatles – is home to the capital, London, a globally influential centre of finance and culture. England is also site of Neolithic Stonehenge, Bath's Roman spa and centuries-old universities at Oxford and Cambridge."
             });
 
             return result;

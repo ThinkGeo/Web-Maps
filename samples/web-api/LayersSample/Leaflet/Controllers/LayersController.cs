@@ -115,7 +115,7 @@ namespace Layers.Controllers
         {
             string fileConnectionStr = string.Format(@"Data Source={0}/Sqlite/USStates.sqlite;", baseDirectory);
 
-            // Please add  the ‘System.Data.SQLite Core (x86/x64)’ NuGet package to remove this build error.
+            // Please add  the ‘System.Data.SQLite Core (x86/x64)' NuGet package to remove this build error.
             SqliteFeatureLayer sqliteFeatureLayer = new SqliteFeatureLayer(fileConnectionStr, "table_name", "id", "geometry");
             sqliteFeatureLayer.Name = "sqlite";
             sqliteFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle.FillBrush = new GeoSolidBrush(new GeoColor(50, GeoColors.Orange));

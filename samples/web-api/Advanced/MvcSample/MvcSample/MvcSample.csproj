@@ -38,9 +38,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNet.Web.Optimization" Version="1.1.3" />
-    <PackageReference Include="ThinkGeo.Core" Version="14.3.1" />
+    <PackageReference Include="ThinkGeo.Core" Version="14.3.2" />
     <PackageReference Include="ThinkGeo.Dependency.MicrosoftVisualCRunTime140" Version="14.0.0" />
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.3.1" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.3.2" />
   </ItemGroup>
 
 </Project>

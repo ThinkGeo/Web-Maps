@@ -117,7 +117,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.3.1" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="14.3.2" />
   </ItemGroup>
 
 </Project>

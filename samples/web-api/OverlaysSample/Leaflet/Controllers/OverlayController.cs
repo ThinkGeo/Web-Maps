@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using ThinkGeo.Core;
 using ThinkGeo.UI.WebApi;
 
@@ -33,7 +33,7 @@ namespace ThinkGeo.MapSuite.Overlays
         public IActionResult LoadCustomOverlay(int z, int x, int y)
         {
             var customLayers = GetCustomLayers();
-            LayerOverlay layerOverlay = new LayerOverlay();
+            LayerOverlay layerOverlay = new();
             // Get custom overlay.
             layerOverlay.Layers.Add(customLayers.Single(l => l.Name == "schoolLayer"));
 
@@ -45,7 +45,7 @@ namespace ThinkGeo.MapSuite.Overlays
         /// </summary>
         [Route("ValidateBingMapsKey")]
         [HttpPost]
-        public bool ValidateBingMapsKey([FromBody] Dictionary<string, string> postData)
+        public async Task<bool> ValidateBingMapsKey([FromBody] Dictionary<string, string> postData)
         {
             bool validated = true;
             try
@@ -54,8 +54,11 @@ namespace ThinkGeo.MapSuite.Overlays
                 string loginServiceTemplate = "http://dev.virtualearth.net/REST/v1/Imagery/Metadata/{0}?&incl=ImageryProviders&o=xml&key={1}";
                 string loginServiceUri = string.Format(CultureInfo.InvariantCulture, loginServiceTemplate, BingMapsMapType.Road, postData["key"]);
 
-                WebRequest request = WebRequest.Create(loginServiceUri);
-                request.GetResponse();
+                using var httpClient = new HttpClient();
+                using var response = await httpClient.GetAsync(loginServiceUri);
+
+                // Successful status code (200 OK) means key is valid
+                return response.IsSuccessStatusCode;
             }
             catch 
             {
@@ -70,18 +73,16 @@ namespace ThinkGeo.MapSuite.Overlays
         /// </summary>
         private IActionResult DrawTileImage(LayerOverlay layerOverlay, int z, int x, int y)
         {
-            using (GeoImage image = new GeoImage(256, 256))
-            {
-                GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
-                RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
-                geoCanvas.BeginDrawing(image, boundingBox, GeographyUnit.Meter);
-                layerOverlay.Draw(geoCanvas);
-                geoCanvas.EndDrawing();
+            using GeoImage image = new(256, 256);
+            GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
+            RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
+            geoCanvas.BeginDrawing(image, boundingBox, GeographyUnit.Meter);
+            layerOverlay.Draw(geoCanvas);
+            geoCanvas.EndDrawing();
 
-                byte[] imageBytes = image.GetImageBytes(GeoImageFormat.Png);
+            byte[] imageBytes = image.GetImageBytes(GeoImageFormat.Png);
 
-                return File(imageBytes, "image/png");
-            }
+            return File(imageBytes, "image/png");
         }
 
         /// <summary>
@@ -90,9 +91,11 @@ namespace ThinkGeo.MapSuite.Overlays
         private Collection<Layer> GetCustomLayers()
         {
             var customLayers = new Collection<Layer>();
-            ShapeFileFeatureLayer schoolsLayer = new ShapeFileFeatureLayer($@"{baseDirectory}\AppData\POIs\Schools.shp");
-            schoolsLayer.Name = "schoolLayer";
-            schoolsLayer.Transparency = 200f;
+            ShapeFileFeatureLayer schoolsLayer = new($@"{baseDirectory}\AppData\POIs\Schools.shp")
+            {
+                Name = "schoolLayer",
+                Transparency = 200f
+            };
             schoolsLayer.ZoomLevelSet.ZoomLevel10.DefaultPointStyle = new PointStyle(new GeoImage($@"{baseDirectory}\AppData\Images\School.png"));
             schoolsLayer.ZoomLevelSet.ZoomLevel10.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
             schoolsLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(4326, 3857);

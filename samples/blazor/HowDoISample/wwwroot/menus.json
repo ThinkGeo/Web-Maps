@@ -120,11 +120,11 @@
     "preicon": "fas fa-chart-bar"
   },
   {
-    "id": "disable-mouse-zoom",
-    "title": "Disable Mouse Zoom",
-    "description": "Shows how to disable the mouse scroll zoom event while retaining the ability to pan the map via click and drag.",
-    "href": "disable-mouse-zoom",
-    "source": "Disable_Mouse_Zoom",
+    "id": "disable-mouse-wheel-zoom",
+    "title": "Disable Mouse Wheel Zoom",
+    "description": "Shows how to disable the mouse wheel scroll zoom event while retaining the ability to pan the map via click and drag.",
+    "href": "disable-mouse-wheel-zoom",
+    "source": "Disable_Mouse_Wheel_Zoom",
     "preicon": "fas fa-mouse-pointer"
   }
 ]

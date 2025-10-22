@@ -199,11 +199,6 @@ FakesAssemblies/
 *.lic
 
 # Ignore temporary GIS data or cache folders
-*.tif
-*.shp
-*.dbf
-*.prj
-*.shx
 *.lock
 
 *.env

@@ -1,6 +1,5 @@
 ﻿@page "/us-demographic"
 @using ThinkGeo.Core
-@inject IJSRuntime JSRuntime
 @inject DemographicMapService DemographicMapService
 
 <div class="map-container" @ref="@mapContainer">
@@ -92,7 +91,6 @@
             await ChangeCategoryAsync(currentCategory);
             await map.Overlays[1].RedrawAsync();
             await map.AdornmentOverlay.RedrawAsync();
-            await JSRuntime.InvokeAsync<object>("hideLoadingBackdrop");
         }
         await base.OnAfterRenderAsync(firstRender);
     }
@@ -132,8 +130,6 @@
     private async Task ChangeCategoryAsync(DemographicCategoryModel category)
     {
         if (currentCategory == category) return;
-
-        await JSRuntime.InvokeVoidAsync("showLoadingBackdrop", mapContainer);
 
         currentCategory = category;
         var selectedStyle = new ThematicDemographicStyleBuilder(currentCategory.Legends.Select(l => l.ColumnName));

@@ -1,6 +1,5 @@
 ﻿@page "/basic-styling"
 @using ThinkGeo.Core
-@inject IJSRuntime jsRuntime
 
 <div class="map-container" @ref="@mapContainer">
 
@@ -152,7 +151,6 @@
         {
             await ChangeStyleAsync(currentStyle);
             await map.Overlays[currentStyle.Id].RedrawAsync();
-            await jsRuntime.InvokeAsync<object>("hideLoadingBackdrop");
         }
         await base.OnAfterRenderAsync(firstRender);
     }
@@ -160,9 +158,6 @@
     private async Task ChangeStyleAsync(StylingModel styling)
     {
         if (currentStyle == styling) return;
-
-        await jsRuntime.InvokeAsync<object>("showLoadingBackdrop", mapContainer);
-
 
         bool baseLayerVisible = true;
         if (styling.Id == "PredefinedStyles")

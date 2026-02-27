@@ -1,6 +1,5 @@
 ﻿@inherits LayoutComponentBase
 @inject SourceCodeLoader SourceCodeLoader
-@inject Microsoft.JSInterop.IJSRuntime JSRuntime
 
 <nav class="navbar bg-dark fixed-top">
     <a class="navbar-brand" href="https://thinkgeo.com/"> </a>
@@ -85,9 +84,6 @@
         {
             currentMenu = menu;
             razorCode = await SourceCodeLoader.LoadRazorCodeAsync(menu.Source);
-            razorCode = razorCode.Replace("<", "&lt").Replace(">", "&gt");
-            await JSRuntime.InvokeVoidAsync("formatCode", razorCode);
-            await JSRuntime.InvokeVoidAsync("closeRazor");
         }
     }
 

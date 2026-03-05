@@ -441,8 +441,7 @@
 
         if (map != null)
         {
-            map.PanToAsync(center);
-            map.Overlays[1].RedrawAsync();
+            _ = map.PanToAsync(center);
         }
     }
 }

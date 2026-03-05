@@ -17,9 +17,9 @@
                                             ApiKey="@GlobalSettings.ThinkGeoApiKey" />
             @{
                 var spatialFenceLayerCollection = new GeoCollection<ThinkGeo.Core.LayerBase>();
-                foreach (var layer in spatialFenceLayers)
+                foreach (var key in spatialFenceLayers.GetKeys())
                 {
-                    spatialFenceLayerCollection.Add(layer);
+                    spatialFenceLayerCollection.Add(key, spatialFenceLayers[key]);
                 }
             }
             <LayerOverlay Id="SpatialFenceOverlay" TileWidth="512" TileHeight="512"
@@ -27,6 +27,7 @@
         </OverlaysSetting>
         <EditOverlaySetting>
             <EditOverlay TrackMode="@trackMode"
+                         FeatureStyle="@editOverlayFeatureStyle"
                          OnFeatureClick="RemoveDrwanFeature"></EditOverlay>
         </EditOverlaySetting>
         <MarkerOverlaySetting>
@@ -126,6 +127,10 @@
     private BlazorTrackMode trackMode;
     private List<Vehicle> vehicles;
     private MarkerZoomLevelSet zoomLevelSet;
+    private readonly EditOverlayFeatureStyle editOverlayFeatureStyle = new EditOverlayFeatureStyle(
+        GeoColor.FromArgb(127, 66, 133, 244),
+        GeoColor.FromArgb(204, 66, 133, 244),
+        2);
 
     protected override void OnInitialized()
     {
@@ -311,7 +316,9 @@
 
         var spatialFenceOverlay = map.Overlays["SpatialFenceOverlay"] as LayerOverlay;
 
-        var spatialFenceLayer = spatialFenceOverlay.Layers["SpatialFenceLayer"] as InMemoryFeatureLayer;
+        var spatialFenceLayer = spatialFenceOverlay.Layers.OfType<InMemoryFeatureLayer>().FirstOrDefault(layer => layer.Name == "SpatialFenceLayer");
+        spatialFenceLayer ??= spatialFenceOverlay.Layers.OfType<InMemoryFeatureLayer>().FirstOrDefault();
+        if (spatialFenceLayer == null) return;
         spatialFenceLayer.InternalFeatures.Clear();
 
         List<Feature> spatialFences = GetSpatialFences();
@@ -320,7 +327,7 @@
             spatialFence.ColumnValues["Restricted"] = "Restricted";
             spatialFenceLayer.InternalFeatures.Add(spatialFence);
         }
-        spatialFenceOverlay.RedrawAsync();
+        _ = spatialFenceOverlay.RedrawAsync();
         map.EditOverlay.Features.Clear();
     }
 

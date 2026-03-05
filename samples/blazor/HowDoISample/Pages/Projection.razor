@@ -79,6 +79,6 @@
         (layers[0] as ShapeFileFeatureLayer).FeatureSource.ProjectionConverter = projectionConverters[selectedProjection];
 
         if (map != null)
-            map.Overlays[0].RedrawAsync();
+            _ = map.Overlays[0].RedrawAsync();
     }
 }

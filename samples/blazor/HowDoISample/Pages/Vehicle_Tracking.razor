@@ -87,7 +87,8 @@
     </div>
     <div class="vehicle-left-panel">
         <div class="measure-tool-bar">
-            <MeasureTool OnTrackModeChanged="@(trackMode => this.trackMode = trackMode)"
+            <MeasureTool OnTrackModeChanged="HandleTrackModeChanged"
+                         OnDeleteModeChanged="HandleDeleteModeChanged"
                          OnMeasureTypeChanged="@(measureType => this.measureType = measureType)"
                          OnCancelMeasureAction="CancelMeasureAction"
                          OnCancelDrawAction="CancelDrawAction"
@@ -125,6 +126,8 @@
     private GeoCollection<Layer> spatialFenceLayers;
     private DateTime? startTime;
     private BlazorTrackMode trackMode;
+    private bool isDeleteMode;
+    private bool editingSpatialFences;
     private List<Vehicle> vehicles;
     private MarkerZoomLevelSet zoomLevelSet;
     private readonly EditOverlayFeatureStyle editOverlayFeatureStyle = new EditOverlayFeatureStyle(
@@ -191,9 +194,13 @@
         return valueStyle;
     }
 
-    private void CancelDrawAction()
+    private async Task CancelDrawAction()
     {
         map.EditOverlay.Features.Clear();
+        if (editingSpatialFences)
+        {
+            await ExitSpatialFenceEditingSessionAsync();
+        }
     }
 
     private void CancelMeasureAction()
@@ -298,27 +305,93 @@
         popupPosition = position;
     }
 
+    private async Task HandleTrackModeChanged(BlazorTrackMode trackMode)
+    {
+        this.trackMode = trackMode;
+
+        if (trackMode == BlazorTrackMode.Polygon)
+        {
+            isDeleteMode = false;
+            if (editingSpatialFences)
+            {
+                await ExitSpatialFenceEditingSessionAsync();
+            }
+            return;
+        }
+
+        if (trackMode == BlazorTrackMode.Modify)
+        {
+            isDeleteMode = false;
+            await BeginSpatialFenceEditingSessionAsync();
+        }
+    }
+
+    private async Task HandleDeleteModeChanged(bool isDeleteMode)
+    {
+        this.isDeleteMode = isDeleteMode;
+
+        if (isDeleteMode)
+        {
+            await BeginSpatialFenceEditingSessionAsync();
+        }
+        else if (trackMode == BlazorTrackMode.None && editingSpatialFences)
+        {
+            await ExitSpatialFenceEditingSessionAsync();
+        }
+    }
+
     private void RemoveDrwanFeature(FeatureClickedEditOverlayEventArgs e)
     {
-        if (trackMode == BlazorTrackMode.None)
+        if (isDeleteMode)
             map.EditOverlay.Features.Remove(e.ClickedFeature);
     }
 
-    private void SaveDrawnFeatureAction()
+    private async Task SaveDrawnFeatureAction()
     {
         // Get the spatial fences from the database
         var vehicleProvider = new TrackingAccessProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "appdata"));
 
-        foreach (var item in map.EditOverlay.Features)
+        if (editingSpatialFences)
         {
-            vehicleProvider.InsertSpatialFence(item);
+            SaveEditedSpatialFences(vehicleProvider);
+        }
+        else
+        {
+            foreach (var item in map.EditOverlay.Features)
+            {
+                vehicleProvider.InsertSpatialFence(item);
+            }
         }
 
-        var spatialFenceOverlay = map.Overlays["SpatialFenceOverlay"] as LayerOverlay;
+        await ReloadSpatialFenceLayerAsync();
+        map.EditOverlay.Features.Clear();
+        await map.EditOverlay.RedrawAsync();
+        editingSpatialFences = false;
+        isDeleteMode = false;
+        trackMode = BlazorTrackMode.None;
+    }
+
+    private InMemoryFeatureLayer TryGetSpatialFenceLayer(out LayerOverlay spatialFenceOverlay)
+    {
+        spatialFenceOverlay = map?.Overlays["SpatialFenceOverlay"] as LayerOverlay;
+        if (spatialFenceOverlay == null)
+        {
+            return null;
+        }
 
         var spatialFenceLayer = spatialFenceOverlay.Layers.OfType<InMemoryFeatureLayer>().FirstOrDefault(layer => layer.Name == "SpatialFenceLayer");
-        spatialFenceLayer ??= spatialFenceOverlay.Layers.OfType<InMemoryFeatureLayer>().FirstOrDefault();
-        if (spatialFenceLayer == null) return;
+        return spatialFenceLayer ?? spatialFenceOverlay.Layers.OfType<InMemoryFeatureLayer>().FirstOrDefault();
+    }
+
+    private async Task ReloadSpatialFenceLayerAsync()
+    {
+        var spatialFenceLayer = TryGetSpatialFenceLayer(out var spatialFenceOverlay);
+        if (spatialFenceLayer == null || spatialFenceOverlay == null)
+        {
+            return;
+        }
+
+        spatialFenceLayer.IsVisible = true;
         spatialFenceLayer.InternalFeatures.Clear();
 
         List<Feature> spatialFences = GetSpatialFences();
@@ -327,8 +400,82 @@
             spatialFence.ColumnValues["Restricted"] = "Restricted";
             spatialFenceLayer.InternalFeatures.Add(spatialFence);
         }
-        _ = spatialFenceOverlay.RedrawAsync();
+
+        await spatialFenceOverlay.RedrawAsync();
+    }
+
+    private async Task BeginSpatialFenceEditingSessionAsync()
+    {
+        if (editingSpatialFences || map == null || !map.IsLoaded)
+        {
+            return;
+        }
+
+        var spatialFenceLayer = TryGetSpatialFenceLayer(out var spatialFenceOverlay);
+        if (spatialFenceLayer == null || spatialFenceOverlay == null)
+        {
+            return;
+        }
+
         map.EditOverlay.Features.Clear();
+
+        List<Feature> spatialFences = GetSpatialFences();
+        foreach (Feature spatialFence in spatialFences)
+        {
+            map.EditOverlay.Features.Add(spatialFence);
+        }
+
+        spatialFenceLayer.IsVisible = false;
+        await spatialFenceOverlay.RedrawAsync();
+        await map.EditOverlay.RedrawAsync();
+        editingSpatialFences = true;
+    }
+
+    private async Task ExitSpatialFenceEditingSessionAsync()
+    {
+        if (!editingSpatialFences)
+        {
+            return;
+        }
+
+        map.EditOverlay.Features.Clear();
+        await map.EditOverlay.RedrawAsync();
+
+        var spatialFenceLayer = TryGetSpatialFenceLayer(out var spatialFenceOverlay);
+        if (spatialFenceLayer != null && spatialFenceOverlay != null)
+        {
+            spatialFenceLayer.IsVisible = true;
+            await spatialFenceOverlay.RedrawAsync();
+        }
+
+        editingSpatialFences = false;
+    }
+
+    private void SaveEditedSpatialFences(TrackingAccessProvider vehicleProvider)
+    {
+        var savedSpatialFences = vehicleProvider.GetSpatialFences();
+        var editingFeatures = map.EditOverlay.Features.ToList();
+
+        var savedFenceIds = new HashSet<string>(savedSpatialFences.Select(f => f.Id));
+        var editingFeatureIds = new HashSet<string>(editingFeatures.Select(f => f.Id));
+
+        var removedFeatures = savedSpatialFences.Where(f => !editingFeatureIds.Contains(f.Id)).ToList();
+        if (removedFeatures.Count > 0)
+        {
+            vehicleProvider.DeleteSpatialFences(removedFeatures);
+        }
+
+        foreach (var feature in editingFeatures)
+        {
+            if (savedFenceIds.Contains(feature.Id))
+            {
+                vehicleProvider.UpdateSpatialFenceByFeature(feature);
+            }
+            else
+            {
+                vehicleProvider.InsertSpatialFence(feature);
+            }
+        }
     }
 
     private void UpdateVehiclesFeatures()

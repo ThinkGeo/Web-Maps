@@ -49,20 +49,39 @@
             <nav class="embed-nav group" id="embed-nav">
                 <ul class="code-types">
                     <li id="code-type" class="code-type">
-                        <a id="html-link" href="javascript:void(0);" aria-pressed="true" role="button">
+                        <a id="html-link"
+                           href="#"
+                           class="@(showRazorCode ? "active" : string.Empty)"
+                           aria-pressed="@showRazorCode"
+                           role="button"
+                           @onclick="ShowRazorCode"
+                           @onclick:preventDefault>
                             Razor
+                        </a>
+                    </li>
+                </ul>
+                <ul class="result-button-list">
+                    <li class="result-button">
+                        <a id="result-link"
+                           href="#"
+                           class="@(showRazorCode ? string.Empty : "active")"
+                           aria-pressed="@(!showRazorCode)"
+                           role="button"
+                           @onclick="ShowResult"
+                           @onclick:preventDefault>
+                            Result
                         </a>
                     </li>
                 </ul>
             </nav>
 
             <div id="output" data-border-style="thin" data-header="true">
-                <div id="razor-box" class="code-wrap code-box box" role="region" aria-label="Razor">
+                <div id="razor-box" class="code-wrap code-box box @(showRazorCode ? "active" : string.Empty)" role="region" aria-label="Razor">
                     <pre><code class="cs cshtml razor razor-cshtml">
                         @razorCode
                     </code></pre>
                 </div>
-                <div id="result-box" class="code-box active" role="region" aria-label="Result">
+                <div id="result-box" class="code-box @(!showRazorCode ? "active" : string.Empty)" role="region" aria-label="Result">
                     @Body
                 </div>
             </div>
@@ -77,6 +96,7 @@
     MenuModel currentMenu;
     string razorCode;
     string collapsedCss = "collapse";
+    bool showRazorCode;
 
     async Task OnMenuClick(MenuModel menu)
     {
@@ -90,5 +110,15 @@
     void SwithToggleMenu()
     {
         collapsedCss = string.IsNullOrEmpty(collapsedCss) ? "collapse" : string.Empty;
+    }
+
+    void ShowRazorCode()
+    {
+        showRazorCode = true;
+    }
+
+    void ShowResult()
+    {
+        showRazorCode = false;
     }
 }

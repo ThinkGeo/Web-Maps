@@ -77,9 +77,7 @@
 
             <div id="output" data-border-style="thin" data-header="true">
                 <div id="razor-box" class="code-wrap code-box box @(showRazorCode ? "active" : string.Empty)" role="region" aria-label="Razor">
-                    <pre><code class="cs cshtml razor razor-cshtml">
-                        @razorCode
-                    </code></pre>
+                    <pre><code class="language-cshtml-razor">@razorCode</code></pre>
                 </div>
                 <div id="result-box" class="code-box @(!showRazorCode ? "active" : string.Empty)" role="region" aria-label="Result">
                     @Body

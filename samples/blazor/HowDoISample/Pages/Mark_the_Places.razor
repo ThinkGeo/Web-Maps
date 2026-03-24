@@ -82,6 +82,10 @@
     void HandleOnMarkerClick(ClickedMarkerEventArgs args)
     {
         var marker = args.ClickedMarker;
+
+        clickedMarker = null;
+        StateHasChanged();
+
         clickedMarker = markerPlaces.First(p => p.Id == marker.Id);
     }
 }

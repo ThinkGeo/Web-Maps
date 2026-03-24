@@ -139,7 +139,17 @@
         statesLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(selectedStyle.GetStyle(statesLayer.FeatureSource));
 
         var legendAdornmentLayer = adornmentLayers[0] as LegendAdornmentLayer;
+
+        legendAdornmentLayer.Title.TextStyle = new TextStyle(
+        currentCategory.Name,
+        new GeoFont("Segoe UI", 10),
+        new GeoSolidBrush(GeoColors.Black)
+        );
+
         ApplyThematicLegendItems(GetDemographicStyleFromLayer(statesLayer), legendAdornmentLayer);
+
+        await map.Overlays["DemographicLayerOverlay"].RedrawAsync();
+        await map.AdornmentOverlay.RedrawAsync();
     }
 
     private static ClassBreakStyle GetDemographicStyleFromLayer(FeatureLayer layer)

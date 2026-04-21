@@ -34,7 +34,7 @@
 
         <div class="setting-row">
             <span>GeoFunction</span>
-            <select id="geofunction-type" @onchange="HandleOnGeoFunctionChange">
+            <select id="geofunction-type" @onchange="HandleOnGeoFunctionChangeAsync">
                 @foreach (var item in geoFuncs)
                 {
                     <option value="@item.Name">@item.Text</option>
@@ -54,7 +54,7 @@
 
     protected override void OnInitialized()
     {
-        HandleOnGeoFunctionChange(new ChangeEventArgs { Value = "Union" });
+        _ = HandleOnGeoFunctionChangeAsync(new ChangeEventArgs { Value = "Union" });
     }
 
     private Feature Union(IEnumerable<Feature> features)
@@ -361,7 +361,7 @@
         return envelope;
     }
 
-    private void HandleOnGeoFunctionChange(ChangeEventArgs e)
+    private async Task HandleOnGeoFunctionChangeAsync(ChangeEventArgs e)
     {
         var selectedGeoFunc = e.Value.ToString();
         var geoFuncConfig = geoFuncs.First(p => p.Name == selectedGeoFunc);
@@ -441,8 +441,8 @@
 
         if (map != null)
         {
-            map.PanToAsync(center);
-            map.Overlays[1].RedrawAsync();
+            await map.PanToAsync(center);
+            await map.Overlays[1].RedrawAsync();
         }
     }
 }

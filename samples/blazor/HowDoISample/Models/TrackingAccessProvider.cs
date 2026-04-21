@@ -88,77 +88,151 @@ namespace ThinkGeo.UI.Blazor.HowDoI
         {
             List<Feature> spatialFences = new List<Feature>();
             var path = Path.Combine(dataRootPath, "SpatialFence.txt");
-            var records = ParseCsv(path);
+            var records = ParseSpatialFenceRecords(path);
             foreach (var record in records)
             {
-                string wkt = record[1];
-                string id = record[2];
-                spatialFences.Add(new Feature(wkt, id));
+                spatialFences.Add(new Feature(record.Wkt, record.FeatureId));
             }
             return spatialFences;
         }
 
         public void DeleteSpatialFences(IEnumerable<Feature> features)
         {
-            List<string> resultRecords = new List<string>();
             var path = Path.Combine(dataRootPath, "SpatialFence.txt");
-            var records = ParseCsv(path);
-            foreach (var record in records)
-            {
-                bool needDelete = false;
-                foreach (Feature feature in features)
-                {
-                    if (feature.Id == record[2])
-                    {
-                        needDelete = true;
-                        break;
-                    }
-                }
-
-                if (!needDelete)
-                {
-                    resultRecords.Add(string.Join(",", record));
-                }
-            }
-
-            File.WriteAllLines(path, resultRecords);
+            var targetIds = new HashSet<string>((features ?? Enumerable.Empty<Feature>()).Where(f => f != null).Select(f => f.Id));
+            var records = ParseSpatialFenceRecords(path);
+            var result = records.Where(record => !targetIds.Contains(record.FeatureId)).ToList();
+            WriteSpatialFenceRecords(path, result);
         }
 
         public void UpdateSpatialFenceByFeature(Feature feature)
         {
-            var path = Path.Combine(dataRootPath, "SpatialFence.txt");
-            var records = ParseCsv(path);
-            List<string> result = new List<string>();
-            foreach (var record in records)
+            if (feature == null || string.IsNullOrEmpty(feature.Id))
             {
-                if (record[2] == feature.Id)
-                {
-                    record[1] = $"\"{feature.GetWellKnownText()}\"";
-                    result.Add(string.Join(",", record));
-                }
-                else
-                    result.Add(string.Join(",", record));
+                return;
             }
 
-            File.WriteAllLines(path, result);
+            var path = Path.Combine(dataRootPath, "SpatialFence.txt");
+            var records = ParseSpatialFenceRecords(path);
+            var recordToUpdate = records.FirstOrDefault(record => record.FeatureId == feature.Id);
+            if (recordToUpdate != null)
+            {
+                recordToUpdate.Wkt = feature.GetWellKnownText();
+                WriteSpatialFenceRecords(path, records);
+            }
         }
 
         public void InsertSpatialFence(Feature feature)
         {
-            var path = Path.Combine(dataRootPath, "SpatialFence.txt");
-            var records = ParseCsv(path);
-            Dictionary<int, string> result = new Dictionary<int, string>();
-            foreach (var record in records)
+            if (feature == null || string.IsNullOrEmpty(feature.Id))
             {
-                result.Add(int.Parse(record[0]), $"{record[0]},\"{record[1]}\",{record[2]}");
+                return;
             }
 
-            result = result.OrderBy(o => o.Key).ToDictionary(o => o.Key, p => p.Value);
-            var latestId = result.ElementAt(result.Count - 1).Key;
-            latestId += 1;
-            result.Add(latestId, $"{latestId},\"{feature.GetWellKnownText()}\",{feature.Id}");
+            var path = Path.Combine(dataRootPath, "SpatialFence.txt");
+            var records = ParseSpatialFenceRecords(path);
+            var existing = records.FirstOrDefault(record => record.FeatureId == feature.Id);
+            if (existing != null)
+            {
+                existing.Wkt = feature.GetWellKnownText();
+                WriteSpatialFenceRecords(path, records);
+                return;
+            }
 
-            File.WriteAllLines(path, result.Values);
+            int latestId = records.Count > 0 ? records.Max(record => record.Sequence) : 0;
+            records.Add(new SpatialFenceRecord
+            {
+                Sequence = latestId + 1,
+                Wkt = feature.GetWellKnownText(),
+                FeatureId = feature.Id
+            });
+
+            WriteSpatialFenceRecords(path, records);
+        }
+
+        private static List<SpatialFenceRecord> ParseSpatialFenceRecords(string filePath)
+        {
+            List<SpatialFenceRecord> result = new List<SpatialFenceRecord>();
+            if (!File.Exists(filePath))
+            {
+                return result;
+            }
+
+            foreach (var line in File.ReadLines(filePath))
+            {
+                if (TryParseSpatialFenceRecord(line, out var record))
+                {
+                    result.Add(record);
+                }
+            }
+
+            return result;
+        }
+
+        private static bool TryParseSpatialFenceRecord(string line, out SpatialFenceRecord record)
+        {
+            record = null;
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                return false;
+            }
+
+            int firstComma = line.IndexOf(',');
+            int lastComma = line.LastIndexOf(',');
+            if (firstComma <= 0 || lastComma <= firstComma + 1 || lastComma >= line.Length - 1)
+            {
+                return false;
+            }
+
+            string sequenceText = line.Substring(0, firstComma).Trim();
+            string wktText = line.Substring(firstComma + 1, lastComma - firstComma - 1).Trim();
+            string featureId = line.Substring(lastComma + 1).Trim();
+
+            if (!int.TryParse(sequenceText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int sequence))
+            {
+                return false;
+            }
+
+            if (wktText.Length >= 2 && wktText.StartsWith("\"") && wktText.EndsWith("\""))
+            {
+                wktText = wktText.Substring(1, wktText.Length - 2).Replace("\"\"", "\"");
+            }
+
+            if (string.IsNullOrWhiteSpace(wktText) || string.IsNullOrWhiteSpace(featureId))
+            {
+                return false;
+            }
+
+            record = new SpatialFenceRecord
+            {
+                Sequence = sequence,
+                Wkt = wktText,
+                FeatureId = featureId
+            };
+            return true;
+        }
+
+        private static void WriteSpatialFenceRecords(string filePath, IEnumerable<SpatialFenceRecord> records)
+        {
+            var lines = (records ?? Enumerable.Empty<SpatialFenceRecord>())
+                .OrderBy(record => record.Sequence)
+                .Select(record => $"{record.Sequence},\"{EscapeCsvValue(record.Wkt)}\",{record.FeatureId}")
+                .ToList();
+            File.WriteAllLines(filePath, lines);
+        }
+
+        private static string EscapeCsvValue(string value)
+        {
+            return (value ?? string.Empty).Replace("\"", "\"\"");
+        }
+
+        private sealed class SpatialFenceRecord
+        {
+            public int Sequence { get; set; }
+
+            public string Wkt { get; set; }
+
+            public string FeatureId { get; set; }
         }
 
         private static List<List<string>> ParseCsv(string filePath)

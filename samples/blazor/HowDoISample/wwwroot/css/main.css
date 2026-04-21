@@ -370,9 +370,15 @@ child pages
     }
 
 
-pre, pre .hljs {
+pre, pre code, pre .hljs {
     background-color: #212529;
+    color: #c5c8c6;
     font-size: 12px;
+}
+
+#razor-box pre code {
+    display: block;
+    white-space: pre;
 }
 
 .hljs-ln-n:before {

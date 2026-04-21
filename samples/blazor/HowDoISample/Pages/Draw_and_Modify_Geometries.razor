@@ -1,8 +1,6 @@
 ﻿@page "/draw-and-modify-geometries"
 @using ThinkGeo.Core
 @using System.Xml.Linq
-@using Newtonsoft.Json;
-@using Newtonsoft.Json.Linq;
 
 <Modal @ref="modal">
     <Title>Description of drawn shape</Title>
@@ -21,7 +19,7 @@
              MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
              Zoom="15" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter">
         <EditOverlaySetting>
-            <EditOverlay TrackMode="@trackMode" OnFeatureDrawn="@OnFeatureDrawn" />
+            <EditOverlay TrackMode="@trackMode" OnFeatureDrawn="@OnFeatureDrawn" OnFeatureClick="@OnEditFeatureClick" />
         </EditOverlaySetting>
         <OverlaysSetting>
             <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay"
@@ -45,27 +43,27 @@
     </MapView>
 
     <nav class="icon-group draw-edit-tool-bar">
-        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.None)" title="None" @onclick="@(e => trackMode = BlazorTrackMode.None)">
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.None)" title="None" @onclick="@(e => SetTrackMode(BlazorTrackMode.None))">
             <span>
                 <img src="images/mouse-pointer.svg" alt="None">
             </span>
         </a>
-        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.Point)" title="Point" @onclick="@(e => trackMode = BlazorTrackMode.Point)">
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.Point)" title="Point" @onclick="@(e => SetTrackMode(BlazorTrackMode.Point))">
             <span>
                 <img src="images/map-pin.svg" alt="Point">
             </span>
         </a>
-        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.LineString)" title="Line" @onclick="@(e => trackMode = BlazorTrackMode.LineString)">
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.LineString)" title="Line" @onclick="@(e => SetTrackMode(BlazorTrackMode.LineString))">
             <span>
                 <img src="images/Line-Tool.svg" alt="Line">
             </span>
         </a>
-        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.Polygon)" title="Polygon" @onclick="@(e => trackMode = BlazorTrackMode.Polygon)">
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.Polygon)" title="Polygon" @onclick="@(e => SetTrackMode(BlazorTrackMode.Polygon))">
             <span>
                 <img src="images/vector-polygon.svg" alt="Polygon">
             </span>
         </a>
-        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.Circle)" title="Circle" @onclick="@(e => trackMode = BlazorTrackMode.Circle)">
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.Circle)" title="Circle" @onclick="@(e => SetTrackMode(BlazorTrackMode.Circle))">
             <span>
                 <img src="images/big-circle.svg" alt="Circle">
             </span>
@@ -75,9 +73,9 @@
                 <img src="images/edit.svg" alt="Modify">
             </span>
         </a>
-        <a href="javascript:void(0);" title="Clear" @onclick="@(e => map.EditOverlay.Features.Clear())">
+        <a href="javascript:void(0);" class="@(isDeletingFeature ? "active" : string.Empty)" title="Delete" @onclick="@HandleDelete">
             <span>
-                <img src="images/close.svg" alt="Clear">
+                <img src="images/close.svg" alt="Delete">
             </span>
         </a>
 
@@ -97,10 +95,11 @@
     private GeoCollection<Layer> editingLayers;
     MapView map;
     BlazorTrackMode trackMode = BlazorTrackMode.None;
+    bool isDeletingFeature;
 
     string accessId = Guid.NewGuid().ToString();
 
-    string GetCss(BlazorTrackMode mode) => mode == trackMode ? "active" : string.Empty;
+    string GetCss(BlazorTrackMode mode) => mode == trackMode && !isDeletingFeature ? "active" : string.Empty;
 
     protected override void OnInitialized()
     {
@@ -167,6 +166,8 @@
         // Clear the EditOverlay.
         map.EditOverlay.Features.Clear();
         await map.EditOverlay.RedrawAsync();
+        isDeletingFeature = false;
+        trackMode = BlazorTrackMode.None;
     }
 
     private Collection<Feature> GetFeatures()
@@ -184,17 +185,32 @@
         return features;
     }
 
-    async void HandleModify()
+    async Task HandleModify()
     {
-        var editingLayer = (InMemoryFeatureLayer)editingLayers[0];
-        for (int i = 0; i < editingLayer.InternalFeatures.Count; i++)
-        {
-            map.EditOverlay.Features.Add(editingLayer.InternalFeatures[i]);
-        }
-        editingLayer.InternalFeatures.Clear();
+        await MoveExistingFeaturesToEditOverlayAsync();
+        isDeletingFeature = false;
         trackMode = BlazorTrackMode.Modify;
-        await map.Overlays["ExistingLayerOverlay"].RedrawAsync();
-        await map.EditOverlay.RedrawAsync();
+    }
+
+    async Task HandleDelete()
+    {
+        await MoveExistingFeaturesToEditOverlayAsync();
+        isDeletingFeature = true;
+        trackMode = BlazorTrackMode.None;
+    }
+
+    void OnEditFeatureClick(FeatureClickedEditOverlayEventArgs e)
+    {
+        if (isDeletingFeature)
+        {
+            map.EditOverlay.Features.Remove(e.ClickedFeature);
+        }
+    }
+
+    void SetTrackMode(BlazorTrackMode mode)
+    {
+        isDeletingFeature = false;
+        trackMode = mode;
     }
 
     private void HandleSaveFeatures()
@@ -224,6 +240,18 @@
         {
             Console.WriteLine(ex.ToString());
         }
+    }
+
+    async Task MoveExistingFeaturesToEditOverlayAsync()
+    {
+        var editingLayer = (InMemoryFeatureLayer)editingLayers[0];
+        for (int i = 0; i < editingLayer.InternalFeatures.Count; i++)
+        {
+            map.EditOverlay.Features.Add(editingLayer.InternalFeatures[i]);
+        }
+        editingLayer.InternalFeatures.Clear();
+        await map.Overlays["ExistingLayerOverlay"].RedrawAsync();
+        await map.EditOverlay.RedrawAsync();
     }
 
     private void SaveFeatures(Collection<Feature> features)

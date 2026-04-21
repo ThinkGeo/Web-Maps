@@ -71,11 +71,8 @@
                     <option value="Within">Within</option>
                     <option value="Contains">Contains</option>
                     <option value="Intersects">Intersects</option>
-                    <option value="Crosses">Crosses</option>
                     <option value="Overlaps">Overlaps</option>
                     <option value="Disjoint">Disjoint</option>
-                    <option value="TopologicalEqual">TopologicalEqual</option>
-                    <option value="Touches">Touches</option>
                 </select>
             </div>
         </div>
@@ -121,63 +118,82 @@
 
     }
 
-    IEnumerable<Feature> ExecuteSptialQuery(BaseShape targetShape, QueryType queryType)
+    Collection<Feature> ExecuteSptialQuery(BaseShape targetShape, QueryType queryType)
     {
-        var sourceLayer = ((FeatureLayer)sourceLayers[0]);
+        var sourceLayer = (FeatureLayer)sourceLayers[0];
         if (!sourceLayer.IsOpen)
+        {
             sourceLayer.Open();
-        return sourceLayer.FeatureSource.SpatialQuery(targetShape, queryType, ReturningColumnsType.AllColumns);
+        }
+
+        return queryType switch
+        {
+            QueryType.Within => sourceLayer.QueryTools.GetFeaturesWithin(targetShape, ReturningColumnsType.AllColumns),
+            QueryType.Contains => sourceLayer.QueryTools.GetFeaturesContaining(targetShape, ReturningColumnsType.AllColumns),
+            QueryType.Intersects => sourceLayer.QueryTools.GetFeaturesIntersecting(targetShape, ReturningColumnsType.AllColumns),
+            QueryType.Crosses => sourceLayer.QueryTools.GetFeaturesCrossing(targetShape, ReturningColumnsType.AllColumns),
+            QueryType.Overlaps => sourceLayer.QueryTools.GetFeaturesOverlapping(targetShape, ReturningColumnsType.AllColumns),
+            QueryType.Disjoint => sourceLayer.QueryTools.GetFeaturesDisjointed(targetShape, ReturningColumnsType.AllColumns),
+            QueryType.TopologicalEqual => sourceLayer.QueryTools.GetFeaturesTopologicalEqual(targetShape, ReturningColumnsType.AllColumns),
+            QueryType.Touches => sourceLayer.QueryTools.GetFeaturesTouching(targetShape, ReturningColumnsType.AllColumns),
+            _ => new Collection<Feature>()
+        };
     }
 
-    void OnMapClick(ClickedMapViewEventArgs args)
+    async Task OnMapClick(ClickedMapViewEventArgs args)
     {
         if (IsPolygonQuery()) return;
 
         var location = new PointShape(args.WorldX, args.WorldY);
         var features = ExecuteSptialQuery(location, QueryType.Contains);
-        HighlightSpaticalQueryFeatures(features);
+        await HighlightSpaticalQueryFeatures(features);
     }
 
-    void OnPolygonDrawn(FeatureDrawnEditOverlayEventArgs args)
+    async Task OnPolygonDrawn(FeatureDrawnEditOverlayEventArgs args)
     {
         map.EditOverlay.Features.Clear();
         trackFeature = args.DrawnFeature;
         var features = ExecuteSptialQuery(trackFeature.GetShape(), queryType);
-        HighlightSpaticalQueryFeatures(features);
-        HighlightTrackFeature(trackFeature);
+        await HighlightSpaticalQueryFeatures(features);
+        await HighlightTrackFeature(trackFeature);
     }
 
-    void OnQueryTypeChange(ChangeEventArgs args)
+    async Task OnQueryTypeChange(ChangeEventArgs args)
     {
-        queryType = (QueryType)Enum.Parse(typeof(QueryType), args.Value.ToString());
+        if (!Enum.TryParse<QueryType>(args.Value?.ToString(), out var parsedQueryType))
+        {
+            return;
+        }
+
+        queryType = parsedQueryType;
         if (trackFeature != null)
         {
             var features = ExecuteSptialQuery(trackFeature.GetShape(), queryType);
-            HighlightSpaticalQueryFeatures(features);
-            HighlightTrackFeature(trackFeature);
+            await HighlightSpaticalQueryFeatures(features);
+            await HighlightTrackFeature(trackFeature);
         }
     }
 
-    void OnQueryModeChange(string queryMode)
+    async Task OnQueryModeChange(string queryMode)
     {
         spatialQueryMode = queryMode;
         trackMode = spatialQueryMode == "Polygon" ? BlazorTrackMode.Polygon : BlazorTrackMode.None;
         map.EditOverlay.Features.Clear();
-        HighlightSpaticalQueryFeatures(new Feature[0]);
-        HighlightTrackFeature(null);
+        await HighlightSpaticalQueryFeatures(Array.Empty<Feature>());
+        await HighlightTrackFeature(null);
     }
 
-    void HighlightSpaticalQueryFeatures(IEnumerable<Feature> features)
+    async Task HighlightSpaticalQueryFeatures(IEnumerable<Feature> features)
     {
         ((InMemoryFeatureLayer)highlightLayers[0]).InternalFeatures.Clear();
         foreach (var feature in features)
         {
             ((InMemoryFeatureLayer)highlightLayers[0]).InternalFeatures.Add(feature);
         }
-        map.Overlays["SpatialQueryOverlay"].RedrawAsync();
+        await map.Overlays["SpatialQueryOverlay"].RedrawAsync();
     }
 
-    void HighlightTrackFeature(Feature feature)
+    async Task HighlightTrackFeature(Feature feature)
     {
         var trackLayer = ((InMemoryFeatureLayer)trackLayers[0]);
         trackLayer.InternalFeatures.Clear();
@@ -185,7 +201,7 @@
         if (feature != null)
             trackLayer.InternalFeatures.Add(feature);
 
-        map.Overlays["TrackOverlay"].RedrawAsync();
+        await map.Overlays["TrackOverlay"].RedrawAsync();
     }
 
     string GetCss(string type) => type == spatialQueryMode ? "active" : string.Empty;

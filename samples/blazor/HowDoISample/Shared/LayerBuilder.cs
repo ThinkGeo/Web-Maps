@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.IO;
+using System.Text.Json;
 using ThinkGeo.Core;
 
 namespace ThinkGeo.UI.Blazor.HowDoI
@@ -8,6 +8,11 @@ namespace ThinkGeo.UI.Blazor.HowDoI
     public static class LayerBuilder
     {
         private static readonly string baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Data");
+        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            WriteIndented = true
+        };
 
         /// <summary>
         /// Gets area style options by style id and access id.
@@ -109,7 +114,7 @@ namespace ThinkGeo.UI.Blazor.HowDoI
 
             using (StreamWriter streamWriter = new StreamWriter(styleFilePath, false))
             {
-                streamWriter.WriteLine(JsonConvert.SerializeObject(style));
+                streamWriter.WriteLine(JsonSerializer.Serialize(style, JsonOptions));
             }
         }
 
@@ -424,7 +429,7 @@ namespace ThinkGeo.UI.Blazor.HowDoI
             if (File.Exists(styleFilePath))
             {
                 string content = File.ReadAllText(styleFilePath);
-                return JsonConvert.DeserializeObject<T>(content);
+                return JsonSerializer.Deserialize<T>(content, JsonOptions);
             }
 
             return default(T);

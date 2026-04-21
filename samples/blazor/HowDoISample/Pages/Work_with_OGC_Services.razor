@@ -23,11 +23,11 @@
 
 @code {
     MapView map;
-    Collection<Uri> serverUris = new Collection<Uri> { new Uri("https://ows.mundialis.de/services/service") };
+    Collection<Uri> serverUris = new Collection<Uri> { new Uri("https://ows.mundialis.de/osm/service") };
     Dictionary<string, string> parameters = new Dictionary<string, string>
 {
         { "layers", "OSM-WMS"},
         { "STYLE", "default"},
-        { "CRS","3857"}
+        { "CRS","EPSG:3857"}
     };
 }

@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Xml.Linq;
 using ThinkGeo.Core;
 
@@ -11,6 +11,11 @@ namespace ThinkGeo.UI.Blazor.HowDoI
 {
     internal class GeometricFunctionHelper
     {
+        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         public static GeoCollection<Feature> LoadInputFeatures()
         {
             GeoCollection<Feature> features = new GeoCollection<Feature>();
@@ -108,7 +113,7 @@ namespace ThinkGeo.UI.Blazor.HowDoI
         public static IEnumerable<GeometricFunctionModel> GetGeometricFunctions()
         {
             var menusFile = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "appdata", "geometricfunctions.json");
-            return JsonConvert.DeserializeObject<List<GeometricFunctionModel>>(File.ReadAllText(menusFile));
+            return JsonSerializer.Deserialize<List<GeometricFunctionModel>>(File.ReadAllText(menusFile), JsonOptions);
         }
 
         public static IEnumerable<Feature> GetSnappingBufferFeatures(IEnumerable<Feature> features)

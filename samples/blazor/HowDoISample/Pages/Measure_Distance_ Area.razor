@@ -7,7 +7,8 @@
              Height="100"
              MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
              Zoom="15"
-             Center="@(new PointShape(-10770581.83051296, 3865538.8613018664))">
+             Center="@(new PointShape(-10770581.83051296, 3865538.8613018664))"
+             OnClick="@OnMapClick">
         <OverlaysSetting>
             <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay"
                                             ApiKey="@GlobalSettings.ThinkGeoApiKey"
@@ -22,25 +23,25 @@
     </MapView>
 
     <nav class="icon-group draw-edit-tool-bar">
-        <a href="javascript:void(0);" class="@GetCss(MeasureType.None)" title="None" @onclick="@(e => measureType = MeasureType.None)">
+        <a href="javascript:void(0);" class="@GetCss(MeasureType.None)" title="None" @onclick="@(e => SetMeasureType(MeasureType.None))">
             <span>
                 <img src="images/mouse-pointer.svg" alt="None">
             </span>
         </a>
-        <a href="javascript:void(0);" class="@GetCss(MeasureType.Line)" title="Measure Distance" @onclick="@(e => measureType = MeasureType.Line)">
+        <a href="javascript:void(0);" class="@GetCss(MeasureType.Line)" title="Measure Distance" @onclick="@(e => SetMeasureType(MeasureType.Line))">
             <span>
                 <img src="images/distance.png" alt="Measure Distance">
             </span>
         </a>
-        <a href="javascript:void(0);" class="@GetCss(MeasureType.Area)" title="Measure Area" @onclick="@(e => measureType = MeasureType.Area)">
+        <a href="javascript:void(0);" class="@GetCss(MeasureType.Area)" title="Measure Area" @onclick="@(e => SetMeasureType(MeasureType.Area))">
             <span>
                 <img src="images/area.png" alt="Measure Area">
             </span>
         </a>
 
-        <a href="javascript:void(0);" title="Clear" @onclick="@(e => map.MapTools.MeasureMapTool.MeasuredFeatures.Clear())">
+        <a href="javascript:void(0);" class="@(isDeletingMeasuredFeature ? "active" : string.Empty)" title="Delete" @onclick="@EnableDeleteMode">
             <span>
-                <img src="images/close.svg" alt="Clear">
+                <img src="images/close.svg" alt="Delete">
             </span>
         </a>
     </nav>
@@ -48,8 +49,45 @@
 </div>
 
 @code{
+    const double DeleteToleranceInMeters = 40;
     MapView map;
     MeasureType measureType = MeasureType.None;
+    bool isDeletingMeasuredFeature;
 
-    string GetCss(MeasureType type) => type == measureType ? "active" : string.Empty;
+    string GetCss(MeasureType type) => type == measureType && !isDeletingMeasuredFeature ? "active" : string.Empty;
+
+    void SetMeasureType(MeasureType type)
+    {
+        isDeletingMeasuredFeature = false;
+        measureType = type;
+    }
+
+    void EnableDeleteMode()
+    {
+        measureType = MeasureType.None;
+        isDeletingMeasuredFeature = true;
+    }
+
+    void OnMapClick(ClickedMapViewEventArgs args)
+    {
+        if (!isDeletingMeasuredFeature || map?.MapTools?.MeasureMapTool == null) return;
+
+        Feature targetFeature = null;
+        double minDistanceInMeters = double.MaxValue;
+        PointShape clickedPoint = new PointShape(args.WorldX, args.WorldY);
+        foreach (Feature feature in map.MapTools.MeasureMapTool.MeasuredFeatures)
+        {
+            double distance = feature.GetShape().GetDistanceTo(clickedPoint, map.MapUnit, DistanceUnit.Meter);
+            if (distance < minDistanceInMeters)
+            {
+                minDistanceInMeters = distance;
+                targetFeature = feature;
+            }
+        }
+
+        if (targetFeature != null && minDistanceInMeters <= DeleteToleranceInMeters)
+        {
+            map.MapTools.MeasureMapTool.MeasuredFeatures.Remove(targetFeature);
+        }
+    }
 }

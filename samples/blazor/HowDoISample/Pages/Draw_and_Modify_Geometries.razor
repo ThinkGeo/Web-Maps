@@ -2,29 +2,18 @@
 @using ThinkGeo.Core
 @using System.Xml.Linq
 
-<Modal @ref="modal">
-    <Title>Description of drawn shape</Title>
-    <Body>
-        <input class="form-control" @bind="@featureName" />
-    </Body>
-    <Footer>
-        <button type="button" class="btn btn-primary" data-dismiss="modal" @onclick="@CloseModal">Ok</button>
-    </Footer>
-</Modal>
-
 <div class="map-container">
-    <MapView Id="map" @ref="map" Center="@(new PointShape(-10777396.5012, 3914579.4368))"
+    <MapView Id="map" @ref="map" Center="@(new PointShape(0, 0))"
              Width="100"
              Height="100"
              MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-             Zoom="15" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter">
+             Zoom="2" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter">
         <EditOverlaySetting>
             <EditOverlay TrackMode="@trackMode" OnFeatureDrawn="@OnFeatureDrawn" OnFeatureClick="@OnEditFeatureClick" />
         </EditOverlaySetting>
         <OverlaysSetting>
-            <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay"
-                                            ApiKey="@GlobalSettings.ThinkGeoApiKey"
-                                            MapType="ThinkGeoCloudRasterMapsMapType.Hybrid2_V2_X1" />
+            <ThinkGeoCloudVectorMapsOverlay Id="VectorOverlay"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
             @{
                 var layerCollection = new GeoCollection<ThinkGeo.Core.LayerBase>();
                 foreach (var layer in editingLayers)
@@ -33,6 +22,7 @@
                 }
             }
             <LayerOverlay Id="ExistingLayerOverlay" TileWidth="512" TileHeight="512"
+                          WrappingMode="WrappingMode.WrapDateline"
                           Layers="@layerCollection"></LayerOverlay>
         </OverlaysSetting>
         <MapToolsSetting>
@@ -88,10 +78,6 @@
 </div>
 
 @code{
-    private Modal modal { get; set; }
-    Feature AddedFeature;
-    public string featureName { get; set; }
-
     private GeoCollection<Layer> editingLayers;
     MapView map;
     BlazorTrackMode trackMode = BlazorTrackMode.None;
@@ -108,17 +94,23 @@
         editingLayers.Add(drawnShapesFeatureLayer);
     }
 
-    void OnFeatureDrawn(FeatureDrawnEditOverlayEventArgs args)
+    async Task OnFeatureDrawn(FeatureDrawnEditOverlayEventArgs args)
     {
-        AddedFeature = args.DrawnFeature;
-        modal.Open();
+        args.DrawnFeature.ColumnValues["Name"] = GetDefaultFeatureName();
+        trackMode = BlazorTrackMode.None;
+        await InvokeAsync(StateHasChanged);
     }
 
-    void CloseModal()
+    string GetDefaultFeatureName()
     {
-        AddedFeature.ColumnValues.Add("Name", featureName);
-        featureName = "";
-        modal.Close();
+        int existingLayerFeatureCount = 0;
+        if (editingLayers?.Count > 0 && editingLayers[0] is InMemoryFeatureLayer editingLayer)
+        {
+            existingLayerFeatureCount = editingLayer.InternalFeatures.Count;
+        }
+
+        int editOverlayFeatureCount = map?.EditOverlay?.Features?.Count ?? 0;
+        return $"Shape {existingLayerFeatureCount + editOverlayFeatureCount}";
     }
 
     private InMemoryFeatureLayer GetDrawnShapesFeatureLayer()

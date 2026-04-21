@@ -12,9 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.Core" Version="14.5.1" />
-    <PackageReference Include="ThinkGeo.Gdal" Version="14.5.1" />
-    <PackageReference Include="ThinkGeo.UI.Blazor" Version="14.5.1" />
+    <PackageReference Include="ThinkGeo.Core" Version="15.0.0-beta017" />
+    <PackageReference Include="ThinkGeo.Gdal" Version="15.0.0-beta017" />
+    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.0.0-beta017" />
   </ItemGroup>
 
   <ItemGroup>

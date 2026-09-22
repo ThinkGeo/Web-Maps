@@ -84,7 +84,7 @@
         sources = CustomerData.BuildSources(classicLayers);
         iconsPath = Path.Combine(Environment.WebRootPath, MapConstants.IconsDirectoryName);
         iconNames = CustomerData.IconNames(classicLayers);
-        style = CustomerData.BuildStyle(iconsPath, iconNames);
+        style = CustomerData.BuildStyle(iconsPath, iconNames, CustomerData.GradientDiscs(classicLayers));
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -122,7 +122,7 @@
         }
         await classicOverlay.RedrawAsync();
 
-        style = CustomerData.BuildStyle(iconsPath, iconNames, "Shape 11");
+        style = CustomerData.BuildStyle(iconsPath, iconNames, CustomerData.GradientDiscs(classicLayers, "Shape 11"), "Shape 11");
     }
 
     private async Task ShowAll()
@@ -130,6 +130,6 @@
         drawn.FeatureIdsToExclude.Clear();
         await classicOverlay.RedrawAsync();
 
-        style = CustomerData.BuildStyle(iconsPath, iconNames);
+        style = CustomerData.BuildStyle(iconsPath, iconNames, CustomerData.GradientDiscs(classicLayers));
     }
 }

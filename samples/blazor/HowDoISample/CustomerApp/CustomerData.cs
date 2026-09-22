@@ -95,6 +95,67 @@ namespace ThinkGeo.UI.Blazor.HowDoI.CustomerApp
             };
         }
 
+        /// <summary>A circle that carries a gradient: its ramp painted, and the ground it covers.</summary>
+        public sealed class GradientDisc
+        {
+            public string Id { get; set; }
+            public GeoImage Image { get; set; }
+            public RectangleShape Extent { get; set; }
+        }
+
+        /// <summary>
+        /// The drawn circles, each with the application's own radial brush painted into a picture
+        /// the size of its bounding square. The brush is the one the application's value style
+        /// gives a circle; it is drawn by the classic canvas, so the ramp is exactly the one the
+        /// classic map shows. A circle left out by name gets no ramp.
+        /// </summary>
+        public static IEnumerable<GradientDisc> GradientDiscs(GeoCollection<LayerBase> classicLayers, string hiddenShapeName = null)
+        {
+            var drawn = (InMemoryFeatureLayer)classicLayers["drawn"];
+            var brush = CircleBrush(drawn);
+            var discs = new List<GradientDisc>();
+            if (brush == null) return discs;
+
+            foreach (var feature in drawn.InternalFeatures)
+            {
+                if (!feature.ColumnValues.TryGetValue(MapConstants.IsCircleColumn, out var isCircle) || isCircle != "1") continue;
+                if (hiddenShapeName != null && feature.ColumnValues.TryGetValue("Name", out var name) && name == hiddenShapeName) continue;
+
+                var bounds = feature.GetBoundingBox();
+                var side = System.Math.Max(bounds.Width, bounds.Height);
+                var centre = bounds.GetCenterPoint();
+                var square = new RectangleShape(centre.X - side / 2, centre.Y + side / 2, centre.X + side / 2, centre.Y - side / 2);
+
+                // The ramp, painted by the brush the application paints it with: a disc filling
+                // the square, transparent around it.
+                const int pixels = 256;
+                var image = new GeoImage(pixels, pixels);
+                var canvas = GeoCanvas.CreateDefaultGeoCanvas();
+                canvas.BeginDrawing(image, square, GeographyUnit.Meter);
+                var disc = new Feature(new EllipseShape(centre, side / 2, side / 2, GeographyUnit.Meter, DistanceUnit.Meter));
+                new AreaStyle(brush).Draw(new[] { disc }, canvas, new Collection<SimpleCandidate>(), new Collection<SimpleCandidate>());
+                canvas.EndDrawing();
+
+                discs.Add(new GradientDisc { Id = feature.Id, Image = image, Extent = square });
+            }
+
+            return discs;
+        }
+
+        /// <summary>The brush the application's value style gives a circle, when it is a gradient.</summary>
+        private static GeoBrush CircleBrush(InMemoryFeatureLayer drawn)
+        {
+            foreach (var style in drawn.ZoomLevelSet.ZoomLevel01.CustomStyles)
+            {
+                if (!(style is ValueStyle value) || value.ColumnName != MapConstants.IsCircleColumn) continue;
+                foreach (var item in value.ValueItems)
+                {
+                    if (item.Value == "1" && item.DefaultAreaStyle?.FillBrush is GeoRadialGradientBrush radial) return radial;
+                }
+            }
+            return null;
+        }
+
         /// <summary>The picture names the placed features use, each once.</summary>
         public static IEnumerable<string> IconNames(GeoCollection<LayerBase> classicLayers)
         {
@@ -117,12 +178,15 @@ namespace ThinkGeo.UI.Blazor.HowDoI.CustomerApp
         /// <param name="iconsPath">The application's icons folder; each placed feature names its picture by file name.</param>
         /// <param name="iconNames">The picture names the placed features use.</param>
         /// <param name="hiddenShapeName">A drawn shape to leave out, by name; null for none.</param>
-        public static StyleDocument BuildStyle(string iconsPath, IEnumerable<string> iconNames, string hiddenShapeName = null)
+        /// <param name="discs">The circles that carry a gradient, each with its ramp painted; see <see cref="GradientDiscs"/>.</param>
+        public static StyleDocument BuildStyle(string iconsPath, IEnumerable<string> iconNames, IEnumerable<GradientDisc> discs, string hiddenShapeName = null)
         {
             var polygons = StyleExpressions.GeometryType("Polygon");
             var lines = StyleExpressions.GeometryType("LineString");
             JsonNode keep = hiddenShapeName == null ? null : new JsonArray("!=", StyleExpressions.Get("Name"), hiddenShapeName);
             var drawnPolygons = keep == null ? polygons : StyleExpressions.All(polygons, keep);
+            var notACircle = new JsonArray("!=", StyleExpressions.Text("IsCircle"), "1");
+            var flatFilled = StyleExpressions.All(drawnPolygons, notACircle);
 
             var white = GeoColor.FromArgb(255, 255, 255, 255);
             var shadow = GeoColor.FromArgb(153, 0, 0, 0);
@@ -136,7 +200,7 @@ namespace ThinkGeo.UI.Blazor.HowDoI.CustomerApp
             var style = new StyleDocument()
                 .SetGlyphs("https://cdn.thinkgeo.com/glyphs/1.0.0/{fontstack}/{range}.pbf")
                 .AddSource("app", new JsonObject { ["type"] = "vector" })
-                .AddFillLayer("drawn-fill", "app", "drawn", GeoColor.FromArgb(77, 60, 90, 220), filter: drawnPolygons,
+                .AddFillLayer("drawn-fill", "app", "drawn", GeoColor.FromArgb(77, 60, 90, 220), filter: flatFilled,
                     paint: new JsonObject { ["fill-color"] = circleOrBox })
                 .AddLineLayer("drawn-outline", "app", "drawn", GeoColor.FromArgb(255, 96, 64, 224), 1.5f, filter: drawnPolygons,
                     paint: new JsonObject { ["line-color"] = circleOrBoxEdge })
@@ -155,6 +219,15 @@ namespace ThinkGeo.UI.Blazor.HowDoI.CustomerApp
                         ["icon-image"] = StyleExpressions.Get("IconName"),
                         ["text-field"] = StyleExpressions.FirstOf("LabelName", "Name")
                     });
+
+            // The circles carry a radial gradient the way the application draws them, and the
+            // style specification has no gradient fill: each circle gets its ramp as a picture
+            // pinned to its ground, painted by the application's own brush, and the flat fill
+            // steps aside where the picture lies.
+            foreach (var disc in discs ?? System.Array.Empty<GradientDisc>())
+            {
+                style.AddImageLayer("ramp-" + disc.Id, disc.Image, disc.Extent, slot: StyleLayerSlot.AboveFills);
+            }
 
             foreach (var name in iconNames ?? System.Array.Empty<string>())
             {

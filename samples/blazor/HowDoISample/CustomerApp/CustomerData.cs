@@ -200,14 +200,15 @@ namespace ThinkGeo.UI.Blazor.HowDoI.CustomerApp
             var style = new StyleDocument()
                 .SetGlyphs("https://cdn.thinkgeo.com/glyphs/1.0.0/{fontstack}/{range}.pbf")
                 .AddSource("app", new JsonObject { ["type"] = "vector" })
-                // A polygon's edge is the fill's own outline, not a line layer over it. The data
-                // is cut into tiles, and a line layer strokes where the cut fell as if it were an
-                // edge of the shape - a line across every polygon that spans two tiles - where the
-                // fill's outline is drawn only on the shape's real edges.
+                // The edge of a polygon is a line layer over the fill, from the same tiles. A
+                // fill's own outline strokes every edge of the piece a tile holds, the cut
+                // included - a line across every polygon spanning two tiles - where a line
+                // layer keeps to the shape's real edges: the tiles are cut with a margin past
+                // their border, and a line is clipped at the margin, off the map.
                 .AddFillLayer("drawn-fill", "app", "drawn", GeoColor.FromArgb(77, 60, 90, 220), filter: flatFilled,
-                    paint: new JsonObject { ["fill-color"] = circleOrBox, ["fill-outline-color"] = circleOrBoxEdge })
-                .AddFillLayer("drawn-circle-edge", "app", "drawn", GeoColor.FromArgb(0, 0, 0, 0), filter: StyleExpressions.All(drawnPolygons, new JsonArray("==", StyleExpressions.Text("IsCircle"), "1")),
-                    paint: new JsonObject { ["fill-outline-color"] = circleOrBoxEdge.DeepClone() }, slot: StyleLayerSlot.Top)
+                    paint: new JsonObject { ["fill-color"] = circleOrBox })
+                .AddLineLayer("drawn-outline", "app", "drawn", GeoColor.FromArgb(255, 96, 64, 224), 1.5f, filter: drawnPolygons,
+                    paint: new JsonObject { ["line-color"] = circleOrBoxEdge }, slot: StyleLayerSlot.Top)
                 .AddLineLayer("drawn-line", "app", "drawn", white, 1.2f, filter: lines)
                 .AddSymbolLayer("drawn-line-label", "app", "drawn", "LineLabelName", font: new GeoFont("Noto Sans", 11),
                     textColor: white, haloColor: shadow, haloWidth: 1f, alongLine: true, filter: lines,

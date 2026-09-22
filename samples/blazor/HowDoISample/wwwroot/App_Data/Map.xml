@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Map xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<MapCenterPoint>
+		<Id>c9851ffa-48e3-4d17-a912-6233bffbcbfe</Id>
+		<X>-147.30469</X>
+		<Y>53.4357192066942</Y>
+		<Z>0</Z>
+		<HasZ>false</HasZ>
+	</MapCenterPoint>
+	<MapZoomLevel>3</MapZoomLevel>
+	<MapPlacedFeatures>
+		<MapPlacedFeature>
+			<Id>fe9074ec-4f9f-43cf-ac28-273b833d5bf6</Id>
+			<Name>Air Node-1</Name>
+			<IconType>3</IconType>
+			<IconName>Air Node</IconName>
+			<FeatureCenter>
+				<Latitude>39.605688178320804</Latitude>
+				<Longitude>-107.22656</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>da4aab66-9343-4ca5-8e6e-34d7bd1b8016</Id>
+			<Name>Role 3 Ashore-1</Name>
+			<IconType>36</IconType>
+			<IconName>Role 3 Ashore</IconName>
+			<FeatureCenter>
+				<Latitude>33.8339199536547</Latitude>
+				<Longitude>120.41016</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>def8235d-9a0d-48ac-bf7c-c5d6db397e33</Id>
+			<Name>Role 3 Ashore-2</Name>
+			<IconType>36</IconType>
+			<IconName>Role 3 Ashore</IconName>
+			<FeatureCenter>
+				<Latitude>0.4094129782203956</Latitude>
+				<Longitude>-58.20158</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>ac2f2f29-db96-4345-9a36-7ede4fbd8e88</Id>
+			<Name>Role 3 Afloat-1</Name>
+			<IconType>35</IconType>
+			<IconName>Role 3 Afloat</IconName>
+			<FeatureCenter>
+				<Latitude>33.03541891621046</Latitude>
+				<Longitude>-35.50821</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>4a0452d5-f2de-48c1-b2fd-cd6adb54b866</Id>
+			<Name>Connector-1</Name>
+			<IconType>11</IconType>
+			<IconName>Connector</IconName>
+			<FeatureCenter>
+				<Latitude>24.857634210637897</Latitude>
+				<Longitude>171.48701</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>3192f009-c4f2-460d-a1c2-5664b593e29f</Id>
+			<Name>Ship Attack-1</Name>
+			<IconType>39</IconType>
+			<IconName>Ship Attack</IconName>
+			<FeatureCenter>
+				<Latitude>25.914421494810306</Latitude>
+				<Longitude>-139.85092</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>89486dbd-2a09-4474-b2d7-8105bf8e7be0</Id>
+			<Name>Connector-2</Name>
+			<IconType>11</IconType>
+			<IconName>Connector</IconName>
+			<FeatureCenter>
+				<Latitude>15.20083549872478</Latitude>
+				<Longitude>178.73953</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>18d51682-590c-44c9-a068-3903609ec58e</Id>
+			<Name>Ship Attack-2</Name>
+			<IconType>39</IconType>
+			<IconName>Ship Attack</IconName>
+			<FeatureCenter>
+				<Latitude>12.703507074388733</Latitude>
+				<Longitude>154.64245</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>f0f0e600-a79b-4586-8ce4-651d47ee4c52</Id>
+			<Name>Connector-3</Name>
+			<IconType>11</IconType>
+			<IconName>Connector</IconName>
+			<FeatureCenter>
+				<Latitude>25.069729425780896</Latitude>
+				<Longitude>-31.76497</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>c301dab9-9096-4e0a-8d1d-33130c8b1364</Id>
+			<Name>Ship Attack-3</Name>
+			<IconType>39</IconType>
+			<IconName>Ship Attack</IconName>
+			<FeatureCenter>
+				<Latitude>16.998961991131942</Latitude>
+				<Longitude>-35.74216</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>a6cf06c2-1442-4fbd-87ac-11ca37d1e4fa</Id>
+			<Name>Connector-4</Name>
+			<IconType>11</IconType>
+			<IconName>Connector</IconName>
+			<FeatureCenter>
+				<Latitude>36.98500309285596</Latitude>
+				<Longitude>149.94141</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>74eea2ed-6c90-4570-bb33-29750ab69461</Id>
+			<Name>Ship Attack-4</Name>
+			<IconType>39</IconType>
+			<IconName>Ship Attack</IconName>
+			<FeatureCenter>
+				<Latitude>30.86451022625836</Latitude>
+				<Longitude>144.31641</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>3d9d06c6-38af-4269-8654-d139fd1b756d</Id>
+			<Name>Role 3 Afloat-2</Name>
+			<IconType>35</IconType>
+			<IconName>Role 3 Afloat</IconName>
+			<FeatureCenter>
+				<Latitude>6.795535025719517</Latitude>
+				<Longitude>-121.11328</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>5eeef5e1-7344-4506-baf4-718d76941ec4</Id>
+			<Name>Connector-5</Name>
+			<IconType>11</IconType>
+			<IconName>Connector</IconName>
+			<FeatureCenter>
+				<Latitude>-6.780534715846372</Latitude>
+				<Longitude>158.13721</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>4622a0c6-b54d-4e7b-bdfd-f616f53f92c9</Id>
+			<Name>Ship Attack-5</Name>
+			<IconType>39</IconType>
+			<IconName>Ship Attack</IconName>
+			<FeatureCenter>
+				<Latitude>-9.342027261553337</Latitude>
+				<Longitude>152.16064</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+		<MapPlacedFeature>
+			<Id>696882e3-db9c-47c3-91e7-1bb6dcf75a07</Id>
+			<Name>Role 3 Ashore-3</Name>
+			<IconType>36</IconType>
+			<IconName>Role 3 Ashore</IconName>
+			<FeatureCenter>
+				<Latitude>39.68451981358554</Latitude>
+				<Longitude>93.36716</Longitude>
+			</FeatureCenter>
+		</MapPlacedFeature>
+	</MapPlacedFeatures>
+	<MapDrawnFeatures>
+		<MapDrawnFeature>
+			<Id>ee9234a4-aa09-4b27-b52b-3ece39ccbee4</Id>
+			<Name>Air Node-1 to Role 3 Ashore-1</Name>
+			<IsLine>true</IsLine>
+			<LineDistance>10505.773979735239</LineDistance>
+			<FromFeature>Air Node-1</FromFeature>
+			<ToFeature>Role 3 Ashore-1</ToFeature>
+			<LineVertices>
+				<MapCoordinate>
+					<Latitude>39.605688178320804</Latitude>
+					<Longitude>-107.22656</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>33.8339199536547</Latitude>
+					<Longitude>120.41016000000002</Longitude>
+				</MapCoordinate>
+			</LineVertices>
+			<IsCircle>false</IsCircle>
+			<CircleRadius>0</CircleRadius>
+			<ShapeArea>0</ShapeArea>
+			<CircleCenter>
+				<Latitude>0</Latitude>
+				<Longitude>0</Longitude>
+			</CircleCenter>
+			<PolygonVertices />
+		</MapDrawnFeature>
+		<MapDrawnFeature>
+			<Id>8b1feaca-948f-494a-b08f-32e8ae4327d9</Id>
+			<Name>Connector-4 to Ship Attack-4</Name>
+			<IsLine>true</IsLine>
+			<LineDistance>856.4464959591943</LineDistance>
+			<FromFeature>Connector-4</FromFeature>
+			<ToFeature>Ship Attack-4</ToFeature>
+			<LineVertices>
+				<MapCoordinate>
+					<Latitude>36.98500309285596</Latitude>
+					<Longitude>149.94141</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>30.86451022625836</Latitude>
+					<Longitude>144.31641</Longitude>
+				</MapCoordinate>
+			</LineVertices>
+			<IsCircle>false</IsCircle>
+			<CircleRadius>0</CircleRadius>
+			<ShapeArea>0</ShapeArea>
+			<CircleCenter>
+				<Latitude>0</Latitude>
+				<Longitude>0</Longitude>
+			</CircleCenter>
+			<PolygonVertices />
+		</MapDrawnFeature>
+		<MapDrawnFeature>
+			<Id>b9348c8a-03d2-4e40-bac5-b55911a21156</Id>
+			<Name>Air Node-1 to Role 3 Afloat-1</Name>
+			<IsLine>true</IsLine>
+			<LineDistance>6303.2281220512705</LineDistance>
+			<FromFeature>Air Node-1</FromFeature>
+			<ToFeature>Role 3 Afloat-1</ToFeature>
+			<LineVertices>
+				<MapCoordinate>
+					<Latitude>39.605688178320804</Latitude>
+					<Longitude>-107.22656</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>33.03541891621046</Latitude>
+					<Longitude>-35.50821</Longitude>
+				</MapCoordinate>
+			</LineVertices>
+			<IsCircle>false</IsCircle>
+			<CircleRadius>0</CircleRadius>
+			<ShapeArea>0</ShapeArea>
+			<CircleCenter>
+				<Latitude>0</Latitude>
+				<Longitude>0</Longitude>
+			</CircleCenter>
+			<PolygonVertices />
+		</MapDrawnFeature>
+		<MapDrawnFeature>
+			<Id>2bc02583-1ab0-4058-87d8-c8b999be503a</Id>
+			<Name>Connector-3 to Ship Attack-3</Name>
+			<IsLine>true</IsLine>
+			<LineDistance>988.7017824084667</LineDistance>
+			<FromFeature>Connector-3</FromFeature>
+			<ToFeature>Ship Attack-3</ToFeature>
+			<LineVertices>
+				<MapCoordinate>
+					<Latitude>25.069729425780896</Latitude>
+					<Longitude>-31.76497</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>16.998961991131942</Latitude>
+					<Longitude>-35.74216</Longitude>
+				</MapCoordinate>
+			</LineVertices>
+			<IsCircle>false</IsCircle>
+			<CircleRadius>0</CircleRadius>
+			<ShapeArea>0</ShapeArea>
+			<CircleCenter>
+				<Latitude>0</Latitude>
+				<Longitude>0</Longitude>
+			</CircleCenter>
+			<PolygonVertices />
+		</MapDrawnFeature>
+		<MapDrawnFeature>
+			<Id>56cecd4a-e41a-4a37-834d-9fa391b1175f</Id>
+			<Name>Connector-1 to Ship Attack-1</Name>
+			<IsLine>true</IsLine>
+			<LineDistance>4866.603948832192</LineDistance>
+			<FromFeature>Connector-1</FromFeature>
+			<ToFeature>Ship Attack-1</ToFeature>
+			<LineVertices>
+				<MapCoordinate>
+					<Latitude>24.857634210637897</Latitude>
+					<Longitude>171.48701</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>25.914421494810306</Latitude>
+					<Longitude>-139.85092</Longitude>
+				</MapCoordinate>
+			</LineVertices>
+			<IsCircle>false</IsCircle>
+			<CircleRadius>0</CircleRadius>
+			<ShapeArea>0</ShapeArea>
+			<CircleCenter>
+				<Latitude>0</Latitude>
+				<Longitude>0</Longitude>
+			</CircleCenter>
+			<PolygonVertices />
+		</MapDrawnFeature>
+		<MapDrawnFeature>
+			<Id>6ae40788-b6fe-4699-a57f-7bb2a18b0708</Id>
+			<Name>Air Node-1 to Role 3 Ashore-2</Name>
+			<IsLine>true</IsLine>
+			<LineDistance>6607.12966517136</LineDistance>
+			<FromFeature>Air Node-1</FromFeature>
+			<ToFeature>Role 3 Ashore-2</ToFeature>
+			<LineVertices>
+				<MapCoordinate>
+					<Latitude>39.605688178320804</Latitude>
+					<Longitude>-107.22656</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>0.4094129782203956</Latitude>
+					<Longitude>-58.20158</Longitude>
+				</MapCoordinate>
+			</LineVertices>
+			<IsCircle>false</IsCircle>
+			<CircleRadius>0</CircleRadius>
+			<ShapeArea>0</ShapeArea>
+			<CircleCenter>
+				<Latitude>0</Latitude>
+				<Longitude>0</Longitude>
+			</CircleCenter>
+			<PolygonVertices />
+		</MapDrawnFeature>
+		<MapDrawnFeature>
+			<Id>b55e6a79-69fc-4a41-a1b5-e30739644572</Id>
+			<Name>Connector-2 to Ship Attack-2</Name>
+			<IsLine>true</IsLine>
+			<LineDistance>2616.764236995076</LineDistance>
+			<FromFeature>Connector-2</FromFeature>
+			<ToFeature>Ship Attack-2</ToFeature>
+			<LineVertices>
+				<MapCoordinate>
+					<Latitude>15.20083549872478</Latitude>
+					<Longitude>178.73953</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>12.703507074388733</Latitude>
+					<Longitude>154.64245</Longitude>
+				</MapCoordinate>
+			</LineVertices>
+			<IsCircle>false</IsCircle>
+			<CircleRadius>0</CircleRadius>
+			<ShapeArea>0</ShapeArea>
+			<CircleCenter>
+				<Latitude>0</Latitude>
+				<Longitude>0</Longitude>
+			</CircleCenter>
+			<PolygonVertices />
+		</MapDrawnFeature>
+		<MapDrawnFeature>
+			<Id>2fb84f5f-fe4c-4865-a2bb-8677ccab51d2</Id>
+			<Name>Air Node-1 to Role 3 Afloat-2</Name>
+			<IsLine>true</IsLine>
+			<LineDistance>3907.7525706061474</LineDistance>
+			<FromFeature>Air Node-1</FromFeature>
+			<ToFeature>Role 3 Afloat-2</ToFeature>
+			<LineVertices>
+				<MapCoordinate>
+					<Latitude>39.605688178320804</Latitude>
+					<Longitude>-107.22656</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>6.795535025719517</Latitude>
+					<Longitude>-121.11328</Longitude>
+				</MapCoordinate>
+			</LineVertices>
+			<IsCircle>false</IsCircle>
+			<CircleRadius>0</CircleRadius>
+			<ShapeArea>0</ShapeArea>
+			<CircleCenter>
+				<Latitude>0</Latitude>
+				<Longitude>0</Longitude>
+			</CircleCenter>
+			<PolygonVertices />
+		</MapDrawnFeature>
+		<MapDrawnFeature>
+			<Id>e070e8f6-67f9-469a-9b3f-fa0cf4b43f5f</Id>
+			<Name>Connector-5 to Ship Attack-5</Name>
+			<IsLine>true</IsLine>
+			<LineDistance>1033.3562780249304</LineDistance>
+			<FromFeature>Connector-5</FromFeature>
+			<ToFeature>Ship Attack-5</ToFeature>
+			<LineVertices>
+				<MapCoordinate>
+					<Latitude>-6.780534715846372</Latitude>
+					<Longitude>158.13721</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>-6.46951556032989</Latitude>
+					<Longitude>156.31348</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>-6.856895045905728</Latitude>
+					<Longitude>156.23108</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>-7.151311940328428</Latitude>
+					<Longitude>156.62109</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>-7.793996737374299</Latitude>
+					<Longitude>156.94519</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>-8.017075869362253</Latitude>
+					<Longitude>156.698</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>-8.343311834458408</Latitude>
+					<Longitude>156.70349</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>-8.848435918660897</Latitude>
+					<Longitude>155.83008</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>-8.87014643084725</Latitude>
+					<Longitude>152.79236</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>-8.631260858714922</Latitude>
+					<Longitude>152.4408</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>-9.342027261553337</Latitude>
+					<Longitude>152.16064</Longitude>
+				</MapCoordinate>
+			</LineVertices>
+			<IsCircle>false</IsCircle>
+			<CircleRadius>0</CircleRadius>
+			<ShapeArea>0</ShapeArea>
+			<CircleCenter>
+				<Latitude>0</Latitude>
+				<Longitude>0</Longitude>
+			</CircleCenter>
+			<PolygonVertices />
+		</MapDrawnFeature>
+		<MapDrawnFeature>
+			<Id>5f7e0b3a-e7b3-40a3-ad01-b1f2e4508ba3</Id>
+			<Name>Air Node-1 to Role 3 Ashore-3</Name>
+			<IsLine>true</IsLine>
+			<LineDistance>10965.850907438968</LineDistance>
+			<FromFeature>Air Node-1</FromFeature>
+			<ToFeature>Role 3 Ashore-3</ToFeature>
+			<LineVertices>
+				<MapCoordinate>
+					<Latitude>39.605688178320804</Latitude>
+					<Longitude>-107.22656</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>39.68451981358554</Latitude>
+					<Longitude>93.36716000000001</Longitude>
+				</MapCoordinate>
+			</LineVertices>
+			<IsCircle>false</IsCircle>
+			<CircleRadius>0</CircleRadius>
+			<ShapeArea>0</ShapeArea>
+			<CircleCenter>
+				<Latitude>0</Latitude>
+				<Longitude>0</Longitude>
+			</CircleCenter>
+			<PolygonVertices />
+		</MapDrawnFeature>
+		<MapDrawnFeature>
+			<Id>11cfc946-60b7-4d71-bd15-fe12935e5ea4</Id>
+			<Name>Shape 11</Name>
+			<IsLine>false</IsLine>
+			<LineDistance>0</LineDistance>
+			<FromFeature />
+			<ToFeature />
+			<LineVertices />
+			<IsCircle>false</IsCircle>
+			<CircleRadius>0</CircleRadius>
+			<ShapeArea>30309160.587559987</ShapeArea>
+			<CircleCenter>
+				<Latitude>0</Latitude>
+				<Longitude>0</Longitude>
+			</CircleCenter>
+			<PolygonVertices>
+				<MapCoordinate>
+					<Latitude>63.213829705155625</Latitude>
+					<Longitude>148.00781</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>63.607216680330765</Latitude>
+					<Longitude>-140.09766</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>22.87744046489713</Latitude>
+					<Longitude>-127.26562000000001</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>20.756113874762082</Latitude>
+					<Longitude>141.50391</Longitude>
+				</MapCoordinate>
+				<MapCoordinate>
+					<Latitude>63.213829705155625</Latitude>
+					<Longitude>148.00781</Longitude>
+				</MapCoordinate>
+			</PolygonVertices>
+		</MapDrawnFeature>
+		<MapDrawnFeature>
+			<Id>00122f64-7957-4a85-8286-22855e30b4e8</Id>
+			<Name>Shape 12</Name>
+			<IsLine>false</IsLine>
+			<LineDistance>0</LineDistance>
+			<FromFeature />
+			<ToFeature />
+			<LineVertices />
+			<IsCircle>true</IsCircle>
+			<CircleRadius>5682270.897102134</CircleRadius>
+			<ShapeArea>101436379.92258534</ShapeArea>
+			<CircleCenter>
+				<Latitude>55.94919982336744</Latitude>
+				<Longitude>168.39844</Longitude>
+			</CircleCenter>
+			<PolygonVertices />
+		</MapDrawnFeature>
+	</MapDrawnFeatures>
+</Map>

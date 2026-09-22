@@ -8,5 +8,8 @@
         public string Description { get; set; }
         public string Source { get; set; }
         public string Preicon { get; set; }
+
+        /// <summary>The section of the menu this sample sits under; null for the top.</summary>
+        public string Group { get; set; }
     }
 }

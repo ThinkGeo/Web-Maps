@@ -1,0 +1,135 @@
+﻿@page "/customer-features"
+@using ThinkGeo.Core
+@using ThinkGeo.UI.Blazor.HowDoI.CustomerApp
+@using ThinkGeo.UI.Blazor.HowDoI.CustomerApp.SharedProperties
+@using Microsoft.AspNetCore.Hosting
+@inject IWebHostEnvironment Environment
+
+<div class="map-container" style="display:flex;flex-direction:column">
+
+    <div style="display:flex;gap:8px;align-items:center;padding:6px 8px;font:13px system-ui;background:#1b1b1b;color:#ddd">
+        <span>@summary</span>
+        <button class="btn btn-sm btn-light" @onclick="HideOne">Hide "Shape 11"</button>
+        <button class="btn btn-sm btn-light" @onclick="ShowAll">Show all</button>
+        <span style="margin-left:auto;color:#aaa">Both maps show the same Map.xml. Hide a shape on each and compare what travels.</span>
+    </div>
+
+    <div style="display:flex;flex:1;min-height:0">
+
+        <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+            <div style="padding:4px 8px;font:12px system-ui;background:#2a2a2a;color:#f88">
+                Classic: LayerOverlay, drawn on the server - what shipped last version
+            </div>
+            <div style="flex:1;min-height:0">
+                <MapView Id="classicMap" @ref="classicMap"
+                         MapUnit="@GeographyUnit.Meter"
+                         MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                         Width="100" Height="100">
+                    <OverlaysSetting>
+                        <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="ThinkGeoCloudRasterMapsMapType.Light_V2_X1"
+                                                        ApiKey="@GlobalSettings.ThinkGeoApiKey"
+                                                        WrappingMode="WrappingMode.WrapDateline" />
+                        <LayerOverlay Id="Features" @ref="classicOverlay" Layers="@classicLayers"
+                                      WrappingMode="WrappingMode.WrapDateline" />
+                    </OverlaysSetting>
+                </MapView>
+            </div>
+        </div>
+
+        <div style="flex:1;display:flex;flex-direction:column;min-width:0;border-left:2px solid #444">
+            <div style="padding:4px 8px;font:12px system-ui;background:#2a2a2a;color:#8f8">
+                New: StyleDocument, drawn in the browser - the same data as vector tiles
+            </div>
+            <div style="flex:1;min-height:0">
+                <MapView Id="newMap" @ref="newMap"
+                         MapUnit="@GeographyUnit.Meter"
+                         MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                         Width="100" Height="100">
+                    <OverlaysSetting>
+                        <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="ThinkGeoCloudRasterMapsMapType.Light_V2_X1"
+                                                        ApiKey="@GlobalSettings.ThinkGeoApiKey"
+                                                        WrappingMode="WrappingMode.WrapDateline" />
+                        @if (style != null)
+                        {
+                            <VectorTileOverlay Id="Features" Style="@style" FeatureSources="@sources" SourceId="app" />
+                        }
+                    </OverlaysSetting>
+                </MapView>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    private MapView classicMap;
+    private MapView newMap;
+    private LayerOverlay classicOverlay;
+    private GeoCollection<LayerBase> classicLayers;
+    private GeoCollection<FeatureSource> sources;
+    private StyleDocument style;
+    private InMemoryFeatureLayer drawn;
+    private string summary = "";
+    private string iconsPath;
+    private IEnumerable<string> iconNames;
+    private bool zoomed;
+
+    protected override void OnInitialized()
+    {
+        // The application's own layers, built its own way. The new map reads the same
+        // features, as sources.
+        var probe = new MapView { MapUnit = GeographyUnit.Meter };
+        classicLayers = CustomerData.BuildClassicLayers(probe, Environment.WebRootPath, out summary);
+        drawn = (InMemoryFeatureLayer)classicLayers["drawn"];
+        sources = CustomerData.BuildSources(classicLayers);
+        iconsPath = Path.Combine(Environment.WebRootPath, MapConstants.IconsDirectoryName);
+        iconNames = CustomerData.IconNames(classicLayers);
+        style = CustomerData.BuildStyle(iconsPath, iconNames);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) _ = ZoomBothWhenReadyAsync();
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task ZoomBothWhenReadyAsync()
+    {
+        for (var attempt = 0; attempt < 80 && !zoomed; attempt++)
+        {
+            await Task.Delay(250);
+            if (classicMap?.IsLoaded != true || newMap?.IsLoaded != true) continue;
+            zoomed = true;
+            await InvokeAsync(async () =>
+            {
+                await classicMap.ZoomToCenterAsync(CustomerData.Zoom, CustomerData.Center);
+                await newMap.ZoomToCenterAsync(CustomerData.Zoom, CustomerData.Center);
+            });
+        }
+    }
+
+    // Classic: hiding a shape excludes it from the layer and redraws the overlay - every tile
+    // on screen is rendered again on the server and fetched again.
+    // New: hiding a shape is a filter in the style - the browser re-reads the tiles it holds.
+    private async Task HideOne()
+    {
+        foreach (var feature in drawn.InternalFeatures)
+        {
+            if (feature.ColumnValues.TryGetValue("Name", out var name) && name == "Shape 11" && !drawn.FeatureIdsToExclude.Contains(feature.Id))
+            {
+                drawn.FeatureIdsToExclude.Add(feature.Id);
+            }
+        }
+        await classicOverlay.RedrawAsync();
+
+        style = CustomerData.BuildStyle(iconsPath, iconNames, "Shape 11");
+    }
+
+    private async Task ShowAll()
+    {
+        drawn.FeatureIdsToExclude.Clear();
+        await classicOverlay.RedrawAsync();
+
+        style = CustomerData.BuildStyle(iconsPath, iconNames);
+    }
+}

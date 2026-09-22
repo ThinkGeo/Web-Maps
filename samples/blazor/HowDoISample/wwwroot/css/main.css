@@ -494,23 +494,35 @@ pre {
 #output {
     height: calc(100% - 80px - 50px);
     border: 1px solid #555555;
+    display: flex;
+    flex-direction: row;
+    --code-width: 45%;
 }
 
-    #output > div {
-        display: none;
+    /* The sample has the whole width; the code, when shown, takes its share beside it. */
+    #output > #result-box {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 100%;
     }
 
-        #output > div.active {
-            display: block;
-            height: 100%;
-        }
+    #output > #razor-box {
+        flex: 0 0 var(--code-width);
+        min-width: 0;
+        height: 100%;
+        overflow: auto;
+    }
 
-main.split-output #output > div.active {
-    display: block;
-    float: left;
-    height: 100%;
-    width: 50%;
-}
+    #output > .splitter {
+        flex: 0 0 6px;
+        cursor: col-resize;
+        background: #444;
+        touch-action: none;
+    }
+
+        #output > .splitter:hover {
+            background: #888;
+        }
 
 #event-list {
     width: 40%;

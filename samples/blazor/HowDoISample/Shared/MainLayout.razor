@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @inject SourceCodeLoader SourceCodeLoader
+@inject IJSRuntime JS
 
 <nav class="navbar bg-dark fixed-top">
     <a class="navbar-brand" href="https://thinkgeo.com/"> </a>
@@ -54,32 +55,24 @@
                            class="@(showRazorCode ? "active" : string.Empty)"
                            aria-pressed="@showRazorCode"
                            role="button"
-                           @onclick="ShowRazorCode"
+                           title="Show the sample's Razor beside it"
+                           @onclick="ToggleRazorCode"
                            @onclick:preventDefault>
                             Razor
                         </a>
                     </li>
                 </ul>
-                <ul class="result-button-list">
-                    <li class="result-button">
-                        <a id="result-link"
-                           href="#"
-                           class="@(showRazorCode ? string.Empty : "active")"
-                           aria-pressed="@(!showRazorCode)"
-                           role="button"
-                           @onclick="ShowResult"
-                           @onclick:preventDefault>
-                            Result
-                        </a>
-                    </li>
-                </ul>
             </nav>
-
-            <div id="output" data-border-style="thin" data-header="true">
-                <div id="razor-box" class="code-wrap code-box box @(showRazorCode ? "active" : string.Empty)" role="region" aria-label="Razor">
-                    <pre><code class="language-cshtml-razor">@razorCode</code></pre>
-                </div>
-                <div id="result-box" class="code-box @(!showRazorCode ? "active" : string.Empty)" role="region" aria-label="Result">
+            <div id="output" class="@(showRazorCode ? "split" : string.Empty)" style="--code-width:@(codeWidthPercent.ToString(System.Globalization.CultureInfo.InvariantCulture))%" data-border-style="thin" data-header="true">
+                @if (showRazorCode)
+                {
+                    <div id="razor-box" class="code-wrap code-box box" role="region" aria-label="Razor">
+                        <pre><code class="language-cshtml-razor">@razorCode</code></pre>
+                    </div>
+                    <div id="splitter" class="splitter" role="separator" aria-orientation="vertical"
+                         @onpointerdown="SplitterDown" @onpointermove="SplitterMove" @onpointerup="SplitterUp" @onpointercancel="SplitterUp"></div>
+                }
+                <div id="result-box" class="code-box active" role="region" aria-label="Result">
                     @Body
                 </div>
             </div>
@@ -110,13 +103,42 @@
         collapsedCss = string.IsNullOrEmpty(collapsedCss) ? "collapse" : string.Empty;
     }
 
-    void ShowRazorCode()
+    // The code sits beside the sample, the way the desktop gallery lays it out: the sample
+    // has the whole width until the code is asked for, and the two share it after, split
+    // where the divider is dragged to.
+    void ToggleRazorCode()
     {
-        showRazorCode = true;
+        showRazorCode = !showRazorCode;
     }
 
-    void ShowResult()
+    double codeWidthPercent = 45;
+    bool dragging;
+    double dragStartX;
+    double dragStartPercent;
+    ElementReference outputElement;
+
+    async Task SplitterDown(PointerEventArgs e)
     {
-        showRazorCode = false;
+        dragging = true;
+        dragStartX = e.ClientX;
+        dragStartPercent = codeWidthPercent;
+        // The output's width as the browser laid it out, so a pixel of drag is the right fraction.
+        outputWidth = await JS.InvokeAsync<double>("eval", "document.getElementById('output').getBoundingClientRect().width");
     }
+
+    void SplitterMove(PointerEventArgs e)
+    {
+        if (!dragging) return;
+        // The layout is a percentage of the output's width, which the browser lays out at
+        // the window's; a pixel of drag is a fraction of that.
+        var deltaPercent = (e.ClientX - dragStartX) / Math.Max(1, outputWidth) * 100;
+        codeWidthPercent = Math.Clamp(dragStartPercent + deltaPercent, 15, 85);
+    }
+
+    void SplitterUp(PointerEventArgs e)
+    {
+        dragging = false;
+    }
+
+    double outputWidth = 1200;
 }

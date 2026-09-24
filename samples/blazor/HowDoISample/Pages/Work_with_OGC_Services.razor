@@ -13,6 +13,13 @@
         <WmsTileOverlay Id="WmsOverlay" Parameters="@parameters"
                         ServerUris="@serverUris"
                         TileHeight="512" TileWidth="512"></WmsTileOverlay>
+        <WmtsTileOverlay Id="WmtsOverlay"
+                         ServerUri="@wmtsUri"
+                         ActiveLayerName="ch.swisstopo.pixelkarte-farbe-pk25.noscale"
+                         ActiveStyleName="ch.swisstopo.pixelkarte-farbe-pk25.noscale"
+                         TileMatrixSetName="3857_18"
+                         OutputFormat="image/jpeg"
+                         TileHeight="256" TileWidth="256"></WmtsTileOverlay>
     </OverlaysSetting>
     <MapToolsSetting>
         <MapTools>
@@ -23,6 +30,7 @@
 
 @code {
     MapView map;
+    Uri wmtsUri = new Uri("https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml");
     Collection<Uri> serverUris = new Collection<Uri> { new Uri("https://ows.mundialis.de/osm/service") };
     Dictionary<string, string> parameters = new Dictionary<string, string>
 {

@@ -1,0 +1,81 @@
+@page "/restrict-map-extent"
+@using System.Collections.ObjectModel
+@using ThinkGeo.Core
+
+<div class="map-container">
+    @* The limits are given to the map as it is created - RestrictExtent, MinimumScale and
+       MaximumScale - so they hold from the first frame. Turning a checkbox sets the same limit
+       again while the map runs, through SetNavigationLimitsAsync. *@
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-10778000, 3870000))" Zoom="8"
+             RestrictExtent="@(restrictOn ? Box : null)"
+             MinimumScale="@(minScaleOn ? MinScale : 0)"
+             MaximumScale="@(maxScaleOn ? MaxScale : double.MaxValue)">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            <VectorTileOverlay Id="Boundary" StyleJson="@BoundaryStyle" FeatureSources="@boundary" SourceId="box" />
+        </OverlaysSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;left:12px;width:255px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+        <div style="font-weight:600;margin-bottom:6px">Restrict the map</div>
+        <div style="color:#555;margin-bottom:8px">
+            All three limits are on. Try to pan out of the red box, or to zoom past either scale -
+            the map will not let you. Turn one off and it lets go.
+        </div>
+
+        <label style="display:block;margin:3px 0;cursor:pointer">
+            <input type="checkbox" checked="@restrictOn" @onchange="@(e => Toggle(() => restrictOn = (bool)e.Value))" />
+            Keep panning inside the box
+        </label>
+        <label style="display:block;margin:3px 0;cursor:pointer">
+            <input type="checkbox" checked="@maxScaleOn" @onchange="@(e => Toggle(() => maxScaleOn = (bool)e.Value))" />
+            Stop zooming out past 1:5,000,000
+        </label>
+        <label style="display:block;margin:3px 0;cursor:pointer">
+            <input type="checkbox" checked="@minScaleOn" @onchange="@(e => Toggle(() => minScaleOn = (bool)e.Value))" />
+            Stop zooming in past 1:20,000
+        </label>
+    </div>
+</div>
+
+@code {
+    // A red outline of the restricted extent, drawn with the map so it stays sharp as it zooms.
+    private const string BoundaryStyle = @"{
+  ""layers"": [
+    { ""type"": ""line"", ""source-layer"": ""box"",
+      ""paint"": { ""line-color"": ""rgba(200,0,0,0.85)"", ""line-width"": 2 } }
+  ]
+}";
+
+    // Dallas / Frisco, TX, in web mercator metres (upper-left x,y then lower-right x,y).
+    private static readonly RectangleShape Box = new RectangleShape(-10809000, 3900000, -10747000, 3840000);
+    private const double MaxScale = 5_000_000;
+    private const double MinScale = 20_000;
+
+    private MapView map;
+    private GeoCollection<FeatureSource> boundary;
+    private bool restrictOn = true, maxScaleOn = true, minScaleOn = true;
+
+    protected override void OnInitialized()
+    {
+        var box = new InMemoryFeatureSource(
+            Array.Empty<FeatureSourceColumn>(),
+            new Collection<Feature> { new Feature(Box.GetWellKnownBinary(), "box") });
+        boundary = new GeoCollection<FeatureSource> { { "box", box } };
+    }
+
+    // The limits are on from creation through the bound parameters; a toggle re-applies them
+    // while the map runs.
+    private async Task Toggle(Action set)
+    {
+        set();
+        if (map?.IsLoaded != true) return;
+        await map.SetNavigationLimitsAsync(
+            restrictOn ? Box : null,
+            minScaleOn ? MinScale : 0,
+            maxScaleOn ? MaxScale : 0);
+    }
+}

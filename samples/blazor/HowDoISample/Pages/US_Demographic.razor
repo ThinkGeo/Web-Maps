@@ -1,161 +1,136 @@
-﻿@page "/us-demographic"
+@page "/us-demographic"
+@using System.Globalization
+@using System.Linq
+@using System.Text
 @using ThinkGeo.Core
-@inject DemographicMapService DemographicMapService
 
-<div class="map-container" @ref="@mapContainer">
-
-    <MapView Id="map" @ref="@map" MapUnit="@GeographyUnit.Meter"
-    Width="100"
-    Height="100"
-    MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-    Center="@(new PointShape(-11037792, 4953010))"
-    Zoom="5">
-        <OverlaysSetting>
-            <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="ThinkGeoCloudRasterMapsMapType.Light_V2_X1"
-            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
-            @{
-                var layerCollection = new GeoCollection<ThinkGeo.Core.LayerBase>();
-                foreach (var layer in layers)
-                {
-                    layerCollection.Add(layer);
-                }
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        @* A choropleth the browser draws: the states are handed over once, and a step expression
+           on the chosen column paints each by the class its value falls in. Switching the column
+           or the classing is a new document over the same data - no tile is fetched again. *@
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-11037792, 4953010))" Zoom="4">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="States" StyleJson="@style" FeatureSources="@states" SourceId="states" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:250px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12.5px system-ui">
+        <div style="padding:9px 11px;font-weight:600;border-bottom:1px solid #ddd">US census, 2010</div>
+        <div style="padding:7px 11px 3px;color:#555">Colour the states by</div>
+        <div style="padding:0 11px 6px;display:flex;flex-direction:column;gap:2px">
+            @foreach (var c in Categories)
+            {
+                <label style="cursor:pointer"><input type="radio" name="cat" checked="@(category == c)" @onchange="@(() => Pick(c))" /> @c.Name</label>
             }
-            <LayerOverlay Id="DemographicLayerOverlay" TileHeight="512" TileWidth="512"
-            Layers="layerCollection" />
-        </OverlaysSetting>
-        <AdornmentOverlaySetting>
-            <AdornmentOverlay Layers="adornmentLayers" />
-        </AdornmentOverlaySetting>
-        <MapToolsSetting>
-            <MapTools>
-                <ZoomBarMapTool />
-            </MapTools>
-        </MapToolsSetting>
-    </MapView>
-
-    <ul id="demographic-categories" class="list-unstyled">
-        @foreach (var item in categories)
-        {
-            <li id="@item.Name" @onclick="@(e => ChangeCategoryAsync(item))" @key="item" class="unselected position-relative @(IsActive(item) ? "selected":"")">
-                <span class="title">@item.Name</span>
-            </li>
-        }
-    </ul>
+        </div>
+        <div style="padding:7px 11px;border-top:1px solid #ddd">
+            <div style="font-weight:600;margin-bottom:5px">@category.Name<span style="color:#888;font-weight:400"> (@category.Unit)</span></div>
+            @for (var i = Colors.Length - 1; i >= 0; i--)
+            {
+                <div style="display:flex;align-items:center;gap:7px;margin:2px 0">
+                    <span style="width:16px;height:16px;background:@Colors[i];border:1px solid #999;flex:none"></span>
+                    <span>@legend[i]</span>
+                </div>
+            }
+        </div>
+    </div>
 </div>
 
 @code {
+    private sealed record Category(string Name, string Column, string Unit, double Divisor);
+
+    // Single-value columns that make a clean choropleth. Area is stored in square metres, shown
+    // as square kilometres.
+    private static readonly Category[] Categories =
+    {
+        new("Population", "Population", "people", 1),
+        new("Population density", "PopDensity", "per sq mi", 1),
+        new("Land area", "AREALAND", "sq km", 1_000_000),
+        new("Water area", "AREAWATR", "sq km", 1_000_000),
+    };
+
+    // A five-class sequential blue ramp, lightest for the lowest class.
+    private static readonly string[] Colors = { "#eff3ff", "#bdd7e7", "#6baed6", "#3182bd", "#08519c" };
+
+    private const string CensusPath = "./Data/usStatesCensus2010.shp";
+
     private MapView map;
-    private List<DemographicCategoryModel> categories;
-    private ElementReference mapContainer;
-    private DemographicCategoryModel currentCategory;
-    private GeoCollection<Layer> layers;
-    private GeoCollection<AdornmentLayer> adornmentLayers;
+    private GeoCollection<FeatureSource> states;
+    private Category category = Categories[0];
+    private Dictionary<string, double[]> valuesByColumn;
+    private string style;
+    private string[] legend = new string[5];
 
     protected override void OnInitialized()
     {
-        categories = DemographicMapService.GetDemographicCategories();
-        currentCategory = categories[0];
+        states = new GeoCollection<FeatureSource> { { "states", new ShapeFileFeatureSource(CensusPath) } };
 
-        layers = new GeoCollection<Layer>();
+        // Read every state's columns once, so the class breaks can be computed from the data
+        // rather than guessed. 51 rows - a synchronous read is instant.
+        var reader = new ShapeFileFeatureSource(CensusPath);
+        reader.Open();
+        var features = reader.GetAllFeatures(ReturningColumnsType.AllColumns);
+        reader.Close();
 
-        var statesLayer = new ShapeFileFeatureLayer("./Data/usStatesCensus2010.shp");
-        var selectedStyle = new ThematicDemographicStyleBuilder(currentCategory.Legends.Select(l => l.ColumnName));
-        statesLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(selectedStyle.GetStyle(statesLayer.FeatureSource));
-        statesLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
-        layers.Add("usStatesLayer", statesLayer);
-
-        adornmentLayers = new GeoCollection<AdornmentLayer>();
-        var legendAdornmentLayer = new LegendAdornmentLayer
-            {
-                Location = AdornmentLocation.LowerLeft,
-                XOffsetInPixel = 10,
-                YOffsetInPixel = -10,
-                Title = new LegendItem
-                {
-                    ImageJustificationMode = LegendImageJustificationMode.JustifyImageRight,
-                    TopPadding = 2,
-                    BottomPadding = 2,
-                    TextStyle = new TextStyle("Population", new GeoFont("Segoe UI", 10), new GeoSolidBrush(GeoColors.Black))
-                }
-            };
-
-        adornmentLayers.Add(legendAdornmentLayer);
-        ApplyThematicLegendItems(GetDemographicStyleFromLayer(statesLayer), legendAdornmentLayer);
-        base.OnInitialized();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
+        valuesByColumn = new Dictionary<string, double[]>();
+        foreach (var c in Categories)
         {
-            await ChangeCategoryAsync(currentCategory);
-            await map.Overlays[1].RedrawAsync();
-            await map.AdornmentOverlay.RedrawAsync();
+            valuesByColumn[c.Column] = features
+                .Select(f => f.ColumnValues.TryGetValue(c.Column, out var v) &&
+                             double.TryParse(v, NumberStyles.Any, CultureInfo.InvariantCulture, out var d) ? d : 0)
+                .OrderBy(v => v)
+                .ToArray();
         }
-        await base.OnAfterRenderAsync(firstRender);
+
+        Compose();
     }
 
-    private static void ApplyThematicLegendItems(ClassBreakStyle thematicStyle, LegendAdornmentLayer legendAdornmentLayer)
+    private void Pick(Category chosen)
     {
-        legendAdornmentLayer.LegendItems.Clear();
-        for (int i = 0; i < thematicStyle.ClassBreaks.Count; i++)
+        category = chosen;
+        Compose();
+    }
+
+    // The four class breaks are the data's own quintiles, so each class holds about a fifth of
+    // the states however the values are spread. The step expression and the legend read from the
+    // same breaks.
+    private void Compose()
+    {
+        var sorted = valuesByColumn[category.Column];
+        var breaks = new[] { 0.2, 0.4, 0.6, 0.8 }
+            .Select(q => sorted[(int)Math.Round(q * (sorted.Length - 1))])
+            .ToArray();
+
+        var expression = new StringBuilder();
+        expression.Append("[\"step\", [\"to-number\", [\"get\", \"").Append(category.Column).Append("\"]], \"").Append(Colors[0]).Append('"');
+        for (var i = 0; i < breaks.Length; i++)
         {
-            var legendItem = new LegendItem();
-
-            if (i < thematicStyle.ClassBreaks.Count)
-            {
-                legendItem.ImageStyle = thematicStyle.ClassBreaks[i].DefaultAreaStyle;
-                legendItem.ImageWidth = 20;
-                legendItem.TextRightPadding = 5;
-                legendItem.RightPadding = 10;
-
-                string text = string.Empty;
-                if (i != thematicStyle.ClassBreaks.Count - 1)
-                {
-                    text = string.Format("{0:#,0.####} ~ {1:#,0.####}",
-                        DemographicStyleTextFormatter.GetFormatedStringForLegendItem(thematicStyle.ColumnName, thematicStyle.ClassBreaks[i].Value),
-                        DemographicStyleTextFormatter.GetFormatedStringForLegendItem(thematicStyle.ColumnName, thematicStyle.ClassBreaks[i + 1].Value));
-                }
-                else
-                {
-                    text = string.Format("> {0:#,0.####}",
-                        DemographicStyleTextFormatter.GetFormatedStringForLegendItem(thematicStyle.ColumnName, thematicStyle.ClassBreaks[i].Value));
-                }
-                legendItem.TextStyle = new TextStyle(text, new GeoFont("Segoe UI", 10), new GeoSolidBrush(GeoColors.Black));
-            }
-            legendAdornmentLayer.LegendItems.Add(legendItem);
+            expression.Append(", ").Append(breaks[i].ToString(CultureInfo.InvariantCulture)).Append(", \"").Append(Colors[i + 1]).Append('"');
         }
+        expression.Append(']');
+
+        style = "{ \"layers\": [" +
+            "{ \"type\": \"fill\", \"source-layer\": \"states\", \"paint\": { \"fill-color\": " + expression +
+            ", \"fill-opacity\": 0.8, \"fill-outline-color\": \"#FFFFFF\" } }," +
+            "{ \"type\": \"line\", \"source-layer\": \"states\", \"paint\": { \"line-color\": \"#FFFFFF\", \"line-width\": 0.6 } }" +
+            "] }";
+
+        legend[0] = "< " + Fmt(breaks[0]);
+        for (var i = 0; i < breaks.Length - 1; i++)
+        {
+            legend[i + 1] = Fmt(breaks[i]) + " – " + Fmt(breaks[i + 1]);
+        }
+        legend[4] = "≥ " + Fmt(breaks[3]);
     }
 
-    private async Task ChangeCategoryAsync(DemographicCategoryModel category)
+    private string Fmt(double raw)
     {
-        if (currentCategory == category) return;
-
-        currentCategory = category;
-        var selectedStyle = new ThematicDemographicStyleBuilder(currentCategory.Legends.Select(l => l.ColumnName));
-
-        var statesLayer = ((ShapeFileFeatureLayer)layers[0]);
-        statesLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Clear();
-        statesLayer.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(selectedStyle.GetStyle(statesLayer.FeatureSource));
-
-        var legendAdornmentLayer = adornmentLayers[0] as LegendAdornmentLayer;
-
-        legendAdornmentLayer.Title.TextStyle = new TextStyle(
-        currentCategory.Name,
-        new GeoFont("Segoe UI", 10),
-        new GeoSolidBrush(GeoColors.Black)
-        );
-
-        ApplyThematicLegendItems(GetDemographicStyleFromLayer(statesLayer), legendAdornmentLayer);
-
-        await map.Overlays["DemographicLayerOverlay"].RedrawAsync();
-        await map.AdornmentOverlay.RedrawAsync();
+        var v = raw / category.Divisor;
+        return v >= 1000 ? v.ToString("#,##0", CultureInfo.InvariantCulture) : v.ToString("0.#", CultureInfo.InvariantCulture);
     }
-
-    private static ClassBreakStyle GetDemographicStyleFromLayer(FeatureLayer layer)
-    {
-        return layer.ZoomLevelSet.ZoomLevel01.CustomStyles[0] as ClassBreakStyle;
-    }
-
-    private bool IsActive(DemographicCategoryModel category) => currentCategory == category;
 }

@@ -922,3 +922,35 @@ pre {
 .input-lg {
     font-size: 14px;
 }
+
+
+/*
+ * Sidebar groups: the group header and the samples under it used to share one colour,
+ * so a header read as just another sample. The header is now a quiet uppercase section
+ * label on a darker band, and the samples are indented under it.
+ */
+.menu-group-title {
+    cursor: pointer;
+    background-color: #333334;
+}
+
+    .menu-group-title .sub-arrow {
+        color: #9A9AA0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .menu-group-title .sub-arrow::before {
+        font-size: 1.4rem;
+        color: #9A9AA0;
+    }
+
+.menu-group.open > .menu-group-title {
+    background-color: #2E2E2F;
+}
+
+.menu-group-item > a {
+    padding-left: 2.5rem;
+}

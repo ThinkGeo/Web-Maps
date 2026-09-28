@@ -36,6 +36,24 @@
     "group": "Map Navigation"
   },
   {
+    "id": "zoom-to-extents",
+    "title": "Zoom to Extents",
+    "description": "Every way the map can be told where to look - a step, a scale, a layer's bounds, a point, a bearing - with what it looks at read back.",
+    "href": "zoom-to-extents",
+    "source": "Zoom_To_Extents",
+    "preicon": "fas fa-expand",
+    "group": "Map Navigation"
+  },
+  {
+    "id": "overview-map",
+    "title": "Overview Map",
+    "description": "A small map in the corner shows where the big one is looking and takes it somewhere else with a click.",
+    "href": "overview-map",
+    "source": "Overview_Map",
+    "preicon": "far fa-map",
+    "group": "Map Navigation"
+  },
+  {
     "id": "3d-terrain",
     "title": "3D Terrain",
     "description": "Raises the Grand Canyon from open elevation tiles and drapes aerial imagery over it, with a relief layer whose style you can edit as the map follows.",
@@ -493,6 +511,69 @@
     "source": "Dynamic_Rendering",
     "preicon": "fas fa-chart-line",
     "group": "Dynamic Data"
+  },
+  {
+    "id": "legend",
+    "title": "Legend",
+    "description": "A classic LegendAdornmentLayer, one item per class of the style, drawn on the server by the AdornmentOverlay and laid over the map.",
+    "href": "legend",
+    "source": "Legend",
+    "preicon": "fas fa-list-ul",
+    "group": "Map Tools & Adornments"
+  },
+  {
+    "id": "scale-line-and-scale-bar",
+    "title": "Scale Line and Scale Bar",
+    "description": "The classic scale line and scale bar adornments, drawn again each time the map stops moving.",
+    "href": "scale-line-and-scale-bar",
+    "source": "Scale_Line_And_Scale_Bar",
+    "preicon": "fas fa-ruler-horizontal",
+    "group": "Map Tools & Adornments"
+  },
+  {
+    "id": "magnetic-north",
+    "title": "Magnetic North",
+    "description": "True north, magnetic north and the declination between them for the middle of the map, from the MagneticDeclinationAdornmentLayer.",
+    "href": "magnetic-north",
+    "source": "Magnetic_North",
+    "preicon": "fas fa-compass",
+    "group": "Map Tools & Adornments"
+  },
+  {
+    "id": "map-tool-controls",
+    "title": "Map Tool Controls",
+    "description": "The zoom bar map tool, scale line and logo adornments, and the pointer's coordinates from OnMouseMove in the form you pick.",
+    "href": "map-tool-controls",
+    "source": "Map_Tool_Controls",
+    "preicon": "fas fa-mouse-pointer",
+    "group": "Map Tools & Adornments"
+  },
+  {
+    "id": "markers",
+    "title": "Markers",
+    "description": "Images the browser keeps pinned to places, from a SimpleMarkerOverlay: click the map to drop one, click a marker for its details.",
+    "href": "markers",
+    "source": "Markers",
+    "preicon": "fas fa-map-marker-alt",
+    "group": "Markers & Popups"
+  },
+  {
+    "id": "popups",
+    "title": "Popups",
+    "description": "A popup per hotel from a shapefile, each a piece of the page the browser keeps anchored to its place.",
+    "href": "popups",
+    "source": "Popups",
+    "preicon": "far fa-comment-alt",
+    "group": "Markers & Popups"
+  },
+  {
+    "id": "animated-marker",
+    "title": "Animated Marker",
+    "description": "A marker whose SVG image animates itself in the browser; a button swaps it for a still one.",
+    "href": "animated-marker",
+    "source": "Animated_Marker",
+    "preicon": "fas fa-broadcast-tower",
+    "group": "Markers & Popups"
   },
   {
     "id": "custom-feature-sources",

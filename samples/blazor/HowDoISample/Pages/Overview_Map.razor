@@ -1,0 +1,68 @@
+@page "/overview-map"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="main" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-9338030, 3300450))" Zoom="6"
+                 OnCurrentExtentChanged="@MainMoved">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            </OverlaysSetting>
+        </MapView>
+        <div style="position:absolute;right:12px;bottom:12px;width:260px;height:180px;border:2px solid #444;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.35)">
+            <MapView Id="overview" @ref="overview" MapUnit="GeographyUnit.Meter"
+                     Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                     Center="@(new PointShape(-9338030, 3300450))" Zoom="2" OnClick="@OverviewClicked">
+                <OverlaysSetting>
+                    <ThinkGeoCloudVectorMapsOverlay Id="OverviewBasemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                    ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                    <VectorTileOverlay Id="Frame" @ref="frameOverlay" StyleJson="@FrameStyle" FeatureSources="@sources" SourceId="frame" />
+                </OverlaysSetting>
+            </MapView>
+        </div>
+    </div>
+    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Overview map</div>
+        <div style="color:#555">A second, small map in the corner shows where the big one is looking: the big map's extent, from its OnCurrentExtentChanged event, is drawn on the small one as a rectangle. Click the small map and the big one goes there.</div>
+    </div>
+</div>
+
+@code {
+    private const string FrameStyle = @"{
+  ""layers"": [
+    { ""type"": ""fill"", ""source-layer"": ""frame"", ""paint"": { ""fill-color"": ""rgba(215,48,31,0.15)"" } },
+    { ""type"": ""line"", ""source-layer"": ""frame"", ""paint"": { ""line-color"": ""#D7301F"", ""line-width"": 2 } }
+  ]
+}";
+
+    private MapView map;
+    private MapView overview;
+    private VectorTileOverlay frameOverlay;
+    private GeoCollection<FeatureSource> sources;
+    private readonly InMemoryFeatureSource frame = new InMemoryFeatureSource();
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "frame", frame } };
+    }
+
+    private async Task MainMoved(CurrentExtentChangedMapViewEventArgs args)
+    {
+        if (frameOverlay == null || overview?.IsLoaded != true) return;
+        frame.InternalFeatures.Clear();
+        frame.InternalFeatures.Add(new Feature(args.CurrentExtent));
+        await frameOverlay.RedrawAsync();
+
+        // The small map follows when the frame would leave it.
+        var seen = await overview.GetCurrentExtentAsync();
+        if (seen != null && !seen.Contains(args.CurrentExtent.GetCenterPoint()))
+        {
+            await overview.SetCenterAsync(args.CurrentExtent.GetCenterPoint());
+        }
+    }
+
+    private Task OverviewClicked(ClickedMapViewEventArgs args) => map.SetCenterAsync(new PointShape(args.WorldX, args.WorldY));
+}

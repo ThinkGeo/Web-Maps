@@ -4,21 +4,29 @@
 <ul id="menu-bar" class="nav nav-sidebar">
     @if (menus != null)
     {
-        @foreach (var menu in menus.Where(m => string.IsNullOrEmpty(m.Group)))
+        <li class="sidebar-search">
+            <input id="sidebar-search" type="search" placeholder="Search samples" @bind="Filter" @bind:event="oninput" />
+            @if (terms.Length > 0)
+            {
+                <span class="hits">@Shown.Count() of @menus.Count</span>
+            }
+        </li>
+
+        @foreach (var menu in Shown.Where(m => string.IsNullOrEmpty(m.Group)))
         {
             <li class="@(GetCss(menu.Id))">
                 <NavLink @key="menu" href="@menu.Href" @onclick="@(e => HandleOnMenuClick(menu))" Match="NavLinkMatch.All"><span class="sub-arrow @menu.Preicon">@menu.Title</span></NavLink>
             </li>
         }
 
-        @foreach (var group in menus.Where(m => !string.IsNullOrEmpty(m.Group)).GroupBy(m => m.Group))
+        @foreach (var group in Shown.Where(m => !string.IsNullOrEmpty(m.Group)).GroupBy(m => m.Group))
         {
             <li class="menu-group @(IsOpen(group.Key) ? "open" : "")">
                 <a class="menu-group-title" @onclick="@(e => Toggle(group.Key))">
                     <span class="sub-arrow @(IsOpen(group.Key) ? "fas fa-chevron-down" : "fas fa-chevron-right")">@group.Key</span>
                 </a>
             </li>
-            @if (IsOpen(group.Key))
+            @if (IsOpen(group.Key) || terms.Length > 0)
             {
                 @foreach (var menu in group)
                 {
@@ -36,6 +44,26 @@
     private bool isLoaded;
     private MenuModel currentMenu;
     private readonly HashSet<string> openGroups = new HashSet<string>();
+    private string filter = "";
+    private string[] terms = Array.Empty<string>();
+
+    private string Filter
+    {
+        get => filter;
+        set
+        {
+            filter = value ?? "";
+            terms = filter.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        }
+    }
+
+    // Every word typed has to appear somewhere in a sample's title, description or group;
+    // while a search is on, the groups that still have samples show them all.
+    private IEnumerable<MenuModel> Shown => terms.Length == 0
+        ? menus
+        : menus.Where(menu => terms.All(term => Has(menu.Title, term) || Has(menu.Description, term) || Has(menu.Group, term)));
+
+    private static bool Has(string text, string term) => !string.IsNullOrEmpty(text) && text.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0;
 
     [Parameter]
     public EventCallback<MenuModel> OnMenuClick { get; set; }

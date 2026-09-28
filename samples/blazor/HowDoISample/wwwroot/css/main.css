@@ -954,3 +954,41 @@ pre {
 .menu-group-item > a {
     padding-left: 2.5rem;
 }
+
+/*
+ * The search box at the top of the sidebar: every word typed has to appear in a sample's
+ * title, description or group, and the groups that still have samples open to show them.
+ */
+.sidebar-search {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+}
+
+    .sidebar-search input {
+        flex: 1;
+        min-width: 0;
+        height: 3rem;
+        padding: 0 0.75rem;
+        font-size: 1.3rem;
+        color: #E6E6E6;
+        background: #1F2124;
+        border: 1px solid #4A4D52;
+        border-radius: 3px;
+    }
+
+        .sidebar-search input::placeholder {
+            color: #7C7F85;
+        }
+
+        .sidebar-search input:focus {
+            outline: none;
+            border-color: #60B9E2;
+        }
+
+    .sidebar-search .hits {
+        color: #9A9AA0;
+        font-size: 1.15rem;
+        white-space: nowrap;
+    }

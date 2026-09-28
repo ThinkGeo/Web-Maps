@@ -1,0 +1,96 @@
+﻿@page "/project-features"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10779580, 3915255))" Zoom="18">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Reprojected" @ref="overlay" Style="@style" FeatureSources="@sources" SourceId="app" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:320px;padding:10px;display:flex;flex-direction:column;gap:8px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Reprojecting Features and Coordinates</div>
+        <button class="btn btn-primary btn-sm" @onclick="ReprojectFeature">Reproject and Display a Feature</button>
+        <textarea @bind="wkt" rows="9" spellcheck="false" style="font:12px Consolas,monospace;white-space:pre;resize:vertical"></textarea>
+        <button class="btn btn-primary btn-sm" @onclick="ReprojectMultipleFeatures">Reproject and Display Multiple Features</button>
+        <div style="color:firebrick">@error</div>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private VectorTileOverlay overlay;
+    private readonly InMemoryFeatureSource reprojected = new InMemoryFeatureSource();
+    private GeoCollection<FeatureSource> sources;
+    private MapStyle style;
+    private string error = "";
+    private string wkt = "POINT(-96.834516 33.150083)\n"
+        + "LINESTRING(-96.83559 33.149,-96.835866046134 33.1508413556856,-96.835793626491 33.1508974965687,-96.8336008970734 33.1511063402186,-96.83356 33.15109,-96.83328 33.14922)\n"
+        + "POLYGON((-96.83582 33.1508,-96.83578 33.15046,-96.83353 33.15068,-96.83358 33.15102,-96.83582 33.1508))";
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "shapes", reprojected } };
+
+        // A point is drawn from a named picture; a star has no shape of its own in the style
+        // specification, so the point style is drawn once and registered under that name.
+        style = new MapStyle()
+            .AddFillLayer("areas", "app", "shapes", new GeoColor(80, GeoColors.MediumPurple), GeoColors.MediumPurple)
+            .AddLineLayer("lines", "app", "shapes", GeoColors.MediumPurple, 6f, filter: StyleExpressions.GeometryType("LineString"))
+            .AddSymbolLayer("points", "app", "shapes", imageName: "star", allowOverlap: true, filter: StyleExpressions.GeometryType("Point"));
+        style.Images.Add("star", new PointStyle(PointSymbolType.Star, 24, GeoBrushes.MediumPurple, GeoPens.Purple));
+    }
+
+    // Decimal degrees (4326) to the Spherical Mercator (3857) the map is in.
+    private static Collection<Feature> Reproject(IEnumerable<Feature> decimalDegreeFeatures)
+    {
+        var converter = new ProjectionConverter(4326, 3857);
+        converter.Open();
+        var sphericalMercatorFeatures = converter.ConvertToExternalProjection(decimalDegreeFeatures);
+        converter.Close();
+        return sphericalMercatorFeatures;
+    }
+
+    private Task ReprojectFeature()
+    {
+        var decimalDegreeFeature = new Feature(-96.834516, 33.150083);
+        return ShowAsync(Reproject(new[] { decimalDegreeFeature }));
+    }
+
+    private Task ReprojectMultipleFeatures()
+    {
+        var decimalDegreeFeatures = new Collection<Feature>();
+        foreach (var line in wkt.Split('\n'))
+        {
+            try
+            {
+                decimalDegreeFeatures.Add(new Feature(line.Trim()));
+            }
+            catch (Exception exception)
+            {
+                error = exception.Message;
+                return Task.CompletedTask;
+            }
+        }
+        error = "";
+        return ShowAsync(Reproject(decimalDegreeFeatures));
+    }
+
+    private async Task ShowAsync(Collection<Feature> features)
+    {
+        reprojected.InternalFeatures.Clear();
+        foreach (var feature in features)
+        {
+            reprojected.InternalFeatures.Add(feature);
+        }
+        await overlay.RedrawAsync();
+
+        var bounds = MapUtil.GetBoundingBoxOfItems(features);
+        await map.ZoomToAsync(bounds.GetCenterPoint(), new ZoomLevelSet().ZoomLevel18.Scale);
+    }
+}

@@ -1,0 +1,101 @@
+@page "/"
+@page "/map-navigation"
+@using System.Collections.ObjectModel
+@using System.Globalization
+@using ThinkGeo.Core
+
+<div class="map-container">
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-10778000, 3912000))" Zoom="9"
+             RestrictExtent="@restrict" MinimumScale="@minScale" MaximumScale="@maxScale"
+             OnCurrentExtentChanged="ExtentChanged">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            <VectorTileOverlay Id="Boundary" StyleJson="@BoundaryStyle" FeatureSources="@boundary" SourceId="box" />
+        </OverlaysSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;left:12px;width:250px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+        <div style="font-weight:600;margin-bottom:8px">Map navigation</div>
+
+        <div style="color:#555;margin-bottom:4px">Zoom to</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px">
+            <button style="padding:2px 8px;cursor:pointer" @onclick="@(() => ZoomTo(0, 0, 295000000))">World</button>
+            <button style="padding:2px 8px;cursor:pointer" @onclick="@(() => ZoomTo(-10870000, 4720000, 24000000))">United States</button>
+            <button style="padding:2px 8px;cursor:pointer" @onclick="@(() => ZoomTo(-8235000, 4970000, 140000))">New York</button>
+            <button style="padding:2px 8px;cursor:pointer" @onclick="@(() => ZoomTo(-13627000, 4547000, 140000))">San Francisco</button>
+            <button style="padding:2px 8px;cursor:pointer" @onclick="@(() => ZoomTo(-10778000, 3912000, 180000))">Frisco, TX</button>
+        </div>
+
+        <div style="color:#555;margin:12px 0 4px">Keep the map inside limits</div>
+        <label style="display:block;margin:2px 0;cursor:pointer">
+            <input type="checkbox" checked="@restrictOn" @onchange="@(e => { restrictOn = (bool)e.Value; ApplyLimits(); })" />
+            Restrict panning to the box
+        </label>
+        <label style="display:block;margin:2px 0;cursor:pointer">
+            <input type="checkbox" checked="@maxScaleOn" @onchange="@(e => { maxScaleOn = (bool)e.Value; ApplyLimits(); })" />
+            Stop zooming out past 1:500k
+        </label>
+        <label style="display:block;margin:2px 0;cursor:pointer">
+            <input type="checkbox" checked="@minScaleOn" @onchange="@(e => { minScaleOn = (bool)e.Value; ApplyLimits(); })" />
+            Stop zooming in past 1:10k
+        </label>
+
+        <div style="margin-top:10px;padding-top:8px;border-top:1px solid #ddd;color:#333">@readout</div>
+    </div>
+</div>
+
+@code {
+    // The red box is the restricted extent, drawn with the map so it stays sharp as the map
+    // zooms. Turn a limit on and the map will not leave the box, or zoom past the two scales.
+    private const string BoundaryStyle = @"{
+  ""layers"": [
+    { ""type"": ""line"",
+      ""source-layer"": ""box"",
+      ""paint"": { ""line-color"": ""rgba(200,0,0,0.8)"", ""line-width"": 2 } }
+  ]
+}";
+
+    // Dallas / Frisco, TX, in web mercator meters (upper-left x,y then lower-right x,y).
+    private static readonly RectangleShape Box = new RectangleShape(-10809000, 3900000, -10747000, 3840000);
+
+    private MapView map;
+    private GeoCollection<FeatureSource> boundary;
+    private RectangleShape restrict;
+    private double minScale;
+    private double maxScale = double.MaxValue;
+    private bool restrictOn, minScaleOn, maxScaleOn;
+    private string readout = "";
+
+    protected override void OnInitialized()
+    {
+        var box = new InMemoryFeatureSource(
+            Array.Empty<FeatureSourceColumn>(),
+            new Collection<Feature> { new Feature(Box.GetWellKnownBinary(), "box") });
+        boundary = new GeoCollection<FeatureSource> { { "box", box } };
+    }
+
+    private void ApplyLimits()
+    {
+        restrict = restrictOn ? Box : null;
+        maxScale = maxScaleOn ? 500000 : double.MaxValue;
+        minScale = minScaleOn ? 10000 : 0;
+    }
+
+    private async Task ZoomTo(double x, double y, double scale)
+    {
+        if (map?.IsLoaded == true)
+        {
+            await map.ZoomToAsync(new PointShape(x, y), scale);
+        }
+    }
+
+    private void ExtentChanged(CurrentExtentChangedMapViewEventArgs e)
+    {
+        var center = e.CurrentExtent.GetCenterPoint();
+        var lonLat = ProjectionConverter.Convert(3857, 4326, center);
+        readout = string.Format(CultureInfo.InvariantCulture, "Center  lat {0:N4}, lon {1:N4}", lonLat.Y, lonLat.X);
+    }
+}

@@ -1,0 +1,67 @@
+﻿@page "/vector-map-providers"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10779700, 3912000))" Zoom="15" Pitch="45">
+            <OverlaysSetting>
+                @if (styleUri == null)
+                {
+                    <ThinkGeoCloudVectorMapsOverlay Id="ThinkGeo" MapType="@mapType" ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                }
+                else
+                {
+                    <VectorTileOverlay Id="Styled" StyleJson="@styleUri" />
+                }
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:300px;padding:10px;display:flex;flex-direction:column;gap:6px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Vector maps from a service</div>
+        <label><input type="radio" name="provider" checked="@(styleUri == null && mapType == ThinkGeoCloudVectorMapsMapType.Light)" @onchange="@(() => ShowThinkGeo(ThinkGeoCloudVectorMapsMapType.Light))" /> ThinkGeo Maps - Light</label>
+        <label><input type="radio" name="provider" checked="@(styleUri == null && mapType == ThinkGeoCloudVectorMapsMapType.Dark)" @onchange="@(() => ShowThinkGeo(ThinkGeoCloudVectorMapsMapType.Dark))" /> ThinkGeo Maps - Dark</label>
+        <label><input type="radio" name="provider" checked="@(styleUri == OpenFreeMapLiberty)" @onchange="@(() => Show(OpenFreeMapLiberty))" /> OpenFreeMap - Liberty</label>
+        <label><input type="radio" name="provider" checked="@(styleUri == OpenFreeMapPositron)" @onchange="@(() => Show(OpenFreeMapPositron))" /> OpenFreeMap - Positron</label>
+        <label><input type="radio" name="provider" checked="@(styleUri == OpenFreeMapDark)" @onchange="@(() => Show(OpenFreeMapDark))" /> OpenFreeMap - Dark</label>
+        <label><input type="radio" name="provider" checked="@custom" @onchange="@(() => custom = true)" /> Custom map server</label>
+        @if (custom)
+        {
+            <textarea @bind="customUri" rows="3" spellcheck="false" style="font:12px Consolas,monospace"></textarea>
+            <button class="btn btn-primary btn-sm" @onclick="@(() => Show(customUri.Trim()))">Load</button>
+        }
+        <div style="margin-top:6px;color:#555">Mapbox, Esri, TomTom and the other keyed providers are the same line: their style URL, with your key, in the box above.</div>
+        <div style="margin-top:auto;font:11px Consolas,monospace;color:#444;word-break:break-all">@status</div>
+    </div>
+</div>
+
+@code {
+    private const string OpenFreeMapLiberty = "https://tiles.openfreemap.org/styles/liberty";
+    private const string OpenFreeMapPositron = "https://tiles.openfreemap.org/styles/positron";
+    private const string OpenFreeMapDark = "https://tiles.openfreemap.org/styles/dark";
+
+    private MapView map;
+    private ThinkGeoCloudVectorMapsMapType mapType = ThinkGeoCloudVectorMapsMapType.Light;
+    private string styleUri;
+    private string customUri = "https://demotiles.maplibre.org/style.json";
+    private bool custom;
+    private string status = nameof(ThinkGeoCloudVectorMapsOverlay);
+
+    // ThinkGeo Maps binds its keyed tiles to a published style: light and dark are two
+    // documents over the same tiles. Any other server is a style URL alone.
+    private void ShowThinkGeo(ThinkGeoCloudVectorMapsMapType type)
+    {
+        custom = false;
+        styleUri = null;
+        mapType = type;
+        status = nameof(ThinkGeoCloudVectorMapsOverlay) + " - " + type;
+    }
+
+    private void Show(string uri)
+    {
+        custom = uri == customUri.Trim();
+        styleUri = uri;
+        status = uri;
+    }
+}

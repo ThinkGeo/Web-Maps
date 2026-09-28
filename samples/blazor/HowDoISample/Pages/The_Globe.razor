@@ -1,0 +1,43 @@
+﻿@page "/the-globe"
+@using ThinkGeo.Core
+
+<div class="map-container">
+    @* The projection is the map's own, so the same vector tiles are drawn as a ball. *@
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(0, 2000000))" Zoom="2"
+             Projection="@projection">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+        </OverlaysSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;left:12px;padding:10px 12px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25);max-width:300px">
+        <div style="font-weight:600;margin-bottom:8px">The globe</div>
+
+        <label style="display:block;margin:4px 0;cursor:pointer">
+            <input type="radio" name="projection" checked="@(projection == MapViewProjection.VerticalPerspective)"
+                   @onchange="@(() => projection = MapViewProjection.VerticalPerspective)" />
+            A ball
+        </label>
+        <label style="display:block;margin:4px 0;cursor:pointer">
+            <input type="radio" name="projection" checked="@(projection == MapViewProjection.WebMercator)"
+                   @onchange="@(() => projection = MapViewProjection.WebMercator)" />
+            Flat - web mercator, what it unrolls into
+        </label>
+
+
+        <div style="margin-top:10px;color:#555">
+            The tiles never leave web mercator. A projection changes only how that plane
+            reaches the screen, so nothing is fetched again when it changes, and zooming in
+            works the same either way. The change is animated by the browser's renderer, over
+            a time of its own.
+        </div>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private MapViewProjection projection = MapViewProjection.VerticalPerspective;
+}

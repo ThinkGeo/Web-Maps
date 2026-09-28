@@ -1,0 +1,129 @@
+﻿@page "/render-points-lines-and-polygons"
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10777290, 3908740))" Zoom="16">
+            <OverlaysSetting>
+                <VectorTileOverlay Id="Frisco" StyleJson="@applied" FeatureSources="@sources" SourceId="features" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:420px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
+        <div style="padding:6px 8px 4px;font-weight:600">style.json - edit it; the map follows</div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                  style="flex:1;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre"></textarea>
+        <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>
+    </div>
+</div>
+
+@code {
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""background"",
+      ""paint"": { ""background-color"": ""#EAE8E2"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""Parks"",
+      ""paint"": {
+          ""fill-color"": ""#B4E0B6"",
+          ""fill-outline-color"": ""#696969"" }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""Streets"",
+      ""paint"": {
+          ""line-color"": ""#696969"",
+          ""line-width"": 6 }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""Streets"",
+      ""paint"": {
+          ""line-color"": ""#F5F5F5"",
+          ""line-width"": 4 }
+    },
+
+    { ""type"": ""circle"",
+      ""source-layer"": ""Hotels"",
+      ""paint"": {
+          ""circle-radius"": 4,
+          ""circle-color"": ""#A52A2A"" }
+    },
+
+    { ""type"": ""symbol"",
+      ""source-layer"": ""Streets"",
+      ""layout"": {
+          ""symbol-placement"": ""line"",
+          ""text-field"": [""get"", ""FULL_NAME""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 11 },
+      ""paint"": { ""text-color"": ""#191970"" }
+    },
+
+    { ""type"": ""symbol"",
+      ""source-layer"": ""Parks"",
+      ""layout"": {
+          ""text-field"": [""get"", ""NAME""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 11 },
+      ""paint"": { ""text-color"": ""#006400"" }
+    },
+
+    { ""type"": ""symbol"",
+      ""source-layer"": ""Hotels"",
+      ""layout"": {
+          ""text-field"": [""get"", ""NAME""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 11,
+          ""text-offset"": [0, 0.5],
+          ""text-anchor"": ""top"" },
+      ""paint"": { ""text-color"": ""#8B0000"" }
+    }
+  ]
+}";
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private string styleJson = StyleJson;
+    private string applied = StyleJson;
+    private string status = "";
+    private bool ok = true;
+    private int edit;
+
+    // The shapefiles are in Texas North Central feet (EPSG:2276); reprojected to the map's 3857
+    // as they are cut into tiles. Each is the source-layer the style names.
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource>
+        {
+            { "Parks", new ShapeFileFeatureSource("./Data/Shapefile/Parks.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } },
+            { "Streets", new ShapeFileFeatureSource("./Data/Shapefile/Streets.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } },
+            { "Hotels", new ShapeFileFeatureSource("./Data/Shapefile/Hotels.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } },
+        };
+    }
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit) return;
+
+        try
+        {
+            JsonNode.Parse(styleJson);
+            applied = styleJson;
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+}

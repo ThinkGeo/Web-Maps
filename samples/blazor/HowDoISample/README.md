@@ -13,11 +13,13 @@ This sample makes use of the following NuGet packages:
 
 [ThinkGeo UI for Blazor](https://www.nuget.org/packages/ThinkGeo.UI.Blazor)
 
+The project references the 15.0 prerelease packages. The basemaps need a ThinkGeo Cloud key: the one in `Shared/GlobalSettings.cs` is a demo key limited to basemap tiles, so get a free key of your own at https://cloud.thinkgeo.com and put it there.
+
 ### ThinkGeo Blazor Resources
 
 [ThinkGeo Blazor - Quickstart and API Docs](https://docs.thinkgeo.com/products/web-maps/v12.0/quickstart/#quick-start-display-a-simple-map-on-blazor)
 
-[ThinkGeo Blazor - Additional Wiki Resources](https://wiki.thinkgeo.com/wiki/thinkgeo_web_for_blazor)
+[ThinkGeo Documentation](https://docs.thinkgeo.com/)
 
 [ThinkGeo Blazor - Product Page](https://www.thinkgeo.com/web-maps)
 

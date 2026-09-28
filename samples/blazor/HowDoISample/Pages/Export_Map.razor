@@ -1,0 +1,48 @@
+@page "/export-map"
+@using ThinkGeo.Core
+@using ThinkGeo.UI.Blazor
+
+<div class="map-container">
+    @* The picture is the map's own canvas, read back and handed to the browser to save. The
+       drawing buffer is kept so the canvas still holds the frame when the button asks for it;
+       what downloads is exactly what is on screen - pan, zoom or tilt first and the file follows. *@
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-8575000, 4707000))" Zoom="12" Pitch="45">
+        <OverlaysSetting>
+            @if (style != null)
+            {
+                <VectorTileOverlay Id="Basemap" Style="@style" />
+            }
+        </OverlaysSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;left:12px;width:250px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+        <div style="font-weight:600;margin-bottom:6px">Export the map as an image</div>
+        <div style="color:#555;margin-bottom:9px">
+            Move the map to the view you want, then save it. The PNG is the map's own canvas,
+            read back at screen resolution.
+        </div>
+        <button style="padding:4px 14px;cursor:pointer" @onclick="Download">Download PNG</button>
+        <div style="margin-top:8px;color:#2e7d32">@status</div>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private MapStyle style;
+    private string status = "";
+
+    protected override void OnInitialized()
+    {
+        style = new MapStyle(ThinkGeoVectorStyles.Light,
+            new ThinkGeoVectorTileSource(GlobalSettings.ThinkGeoApiKey));
+    }
+
+    private async Task Download()
+    {
+        if (map?.IsLoaded != true) return;
+        await map.ExportImageAsync("thinkgeo-map.png");
+        status = $"saved thinkgeo-map.png at {DateTime.Now:HH:mm:ss}";
+    }
+}

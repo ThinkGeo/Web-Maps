@@ -23,5 +23,8 @@
     </app>
 
     <script src="_framework/blazor.server.js"></script>
+    <script>
+        window.howDoI = { outputWidth: () => document.getElementById('output').getBoundingClientRect().width };
+    </script>
 </body>
 </html>

@@ -8,8 +8,6 @@
         <h4>ThinkGeo Web UI for Blazor Samples</h4>
         <h6>Explore the features of ThinkGeo web mapping UI controls for Blazor</h6>
     </span>
-    <!-- <button type="button" class="btn fa fa-bars collapsed mr-4" data-toggle="collapse" data-target="" aria-expanded="false">
-    </button> -->
     <button class="navbar-toggler collapsed mr-4" type="button" data-toggle="collapse" @onclick="SwithToggleMenu"
             aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="fa fa-bars"></span>
@@ -103,9 +101,8 @@
         collapsedCss = string.IsNullOrEmpty(collapsedCss) ? "collapse" : string.Empty;
     }
 
-    // The code sits beside the sample, the way the desktop gallery lays it out: the sample
-    // has the whole width until the code is asked for, and the two share it after, split
-    // where the divider is dragged to.
+    // The code sits beside the sample: the sample has the whole width until the code is asked
+    // for, and the two share it after, split where the divider is dragged to.
     void ToggleRazorCode()
     {
         showRazorCode = !showRazorCode;
@@ -115,7 +112,6 @@
     bool dragging;
     double dragStartX;
     double dragStartPercent;
-    ElementReference outputElement;
 
     async Task SplitterDown(PointerEventArgs e)
     {
@@ -123,7 +119,7 @@
         dragStartX = e.ClientX;
         dragStartPercent = codeWidthPercent;
         // The output's width as the browser laid it out, so a pixel of drag is the right fraction.
-        outputWidth = await JS.InvokeAsync<double>("eval", "document.getElementById('output').getBoundingClientRect().width");
+        outputWidth = await JS.InvokeAsync<double>("howDoI.outputWidth");
     }
 
     void SplitterMove(PointerEventArgs e)

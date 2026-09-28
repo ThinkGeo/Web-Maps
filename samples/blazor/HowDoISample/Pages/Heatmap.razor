@@ -1,0 +1,207 @@
+﻿@page "/heatmap"
+@using ThinkGeo.Core
+@using System.Globalization
+@using System.Text.Json.Nodes
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10778000, 3912500))" Zoom="13">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light" ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Coyotes" Style="@style" FeatureSources="@sources" SourceId="features" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:440px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
+        <div style="padding:6px 8px 4px;font-weight:600">style.json - pick a weight, or edit it; the map follows</div>
+        <div style="padding:0 8px 6px;display:flex;flex-direction:column;gap:2px">
+            <label><input type="radio" name="weight" checked="@(weight == HeatEven)" @onchange="@(() => Pick(HeatEven))" /> Every sighting counts one</label>
+            <label><input type="radio" name="weight" checked="@(weight == HeatByCount)" @onchange="@(() => Pick(HeatByCount))" /> Weighted by coyotes seen - heatmap-weight</label>
+        </div>
+        <div style="padding:6px 8px 2px;font-weight:600">paint - changed in place, nothing fetched again</div>
+        <div style="padding:0 8px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 8px;align-items:center">
+            <span>heatmap-radius</span><input type="range" min="4" max="60" step="1" value="@radius" @oninput="@(e => { radius = Number(e); Apply(); })" /><span>@radius.ToString("0", CultureInfo.InvariantCulture)px</span>
+            <span>heatmap-intensity</span><input type="range" min="0.1" max="3" step="0.05" value="@intensity" @oninput="@(e => { intensity = Number(e); Apply(); })" /><span>@intensity.ToString("0.00", CultureInfo.InvariantCulture)</span>
+            <span>heatmap-opacity</span><input type="range" min="0.1" max="1" step="0.05" value="@opacity" @oninput="@(e => { opacity = Number(e); Apply(); })" /><span>@opacity.ToString("0.00", CultureInfo.InvariantCulture)</span>
+        </div>
+        <div style="padding:4px 8px 6px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+            <span>heatmap-color</span>
+            @foreach (var ramp in ColorRamps)
+            {
+                <label><input type="radio" name="ramp" checked="@(rampName == ramp.Key)" @onchange="@(() => { rampName = ramp.Key; Apply(); })" /> @ramp.Key</label>
+            }
+        </div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                  style="flex:1;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre"></textarea>
+        <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>
+    </div>
+</div>
+
+@code {
+    // The heatmap layer keeps an id: the paint controls name it.
+    private const string HeatLayerId = "coyote-heat";
+
+    private const string HeatEven = @"{
+  ""layers"": [
+    { ""id"": ""coyote-heat"",
+      ""type"": ""heatmap"",
+      ""source-layer"": ""Frisco_Coyote_Sightings"",
+      ""paint"": {
+          ""heatmap-radius"": 22,
+          ""heatmap-intensity"": 0.55,
+          ""heatmap-opacity"": 0.85 }
+    },
+
+    { ""type"": ""circle"",
+      ""source-layer"": ""Frisco_Coyote_Sightings"",
+      ""minzoom"": 13,
+      ""paint"": {
+          ""circle-radius"": 4,
+          ""circle-color"": ""#A0522D"" }
+    }
+  ]
+}";
+
+    private const string HeatByCount = @"{
+  ""layers"": [
+    { ""id"": ""coyote-heat"",
+      ""type"": ""heatmap"",
+      ""source-layer"": ""Frisco_Coyote_Sightings"",
+      ""paint"": {
+          ""heatmap-weight"": [""match"", [""get"", ""CoyoteCoun""], ""1"", 1, ""2"", 2, ""3"", 3, ""More than 3"", 5, 1],
+          ""heatmap-radius"": 22,
+          ""heatmap-intensity"": 0.55,
+          ""heatmap-opacity"": 0.85 }
+    },
+
+    { ""type"": ""circle"",
+      ""source-layer"": ""Frisco_Coyote_Sightings"",
+      ""minzoom"": 13,
+      ""paint"": {
+          ""circle-radius"": 4,
+          ""circle-color"": ""#A0522D"" }
+    }
+  ]
+}";
+
+    // heatmap-color as density stops, 0 (no data) to 1 (densest). Stop 0 is transparent in
+    // every ramp - it leaves the basemap visible where nothing was seen.
+    private static readonly Dictionary<string, (double Density, GeoColor Color)[]> ColorRamps = new Dictionary<string, (double, GeoColor)[]>
+    {
+        ["MapLibre default"] = new[]
+        {
+            (0.0, GeoColor.FromArgb(0, 0, 0, 255)),
+            (0.1, GeoColor.FromArgb(255, 65, 105, 225)),
+            (0.3, GeoColor.FromArgb(255, 0, 255, 255)),
+            (0.5, GeoColor.FromArgb(255, 0, 255, 0)),
+            (0.7, GeoColor.FromArgb(255, 255, 255, 0)),
+            (1.0, GeoColor.FromArgb(255, 255, 0, 0)),
+        },
+        ["Warm"] = new[]
+        {
+            (0.0, GeoColor.FromArgb(0, 255, 255, 178)),
+            (0.15, GeoColor.FromArgb(180, 255, 255, 178)),
+            (0.4, GeoColor.FromArgb(255, 254, 204, 92)),
+            (0.7, GeoColor.FromArgb(255, 253, 141, 60)),
+            (1.0, GeoColor.FromArgb(255, 189, 0, 38)),
+        },
+        ["Viridis"] = new[]
+        {
+            (0.0, GeoColor.FromArgb(0, 68, 1, 84)),
+            (0.25, GeoColor.FromArgb(255, 59, 82, 139)),
+            (0.5, GeoColor.FromArgb(255, 33, 145, 140)),
+            (0.75, GeoColor.FromArgb(255, 94, 201, 98)),
+            (1.0, GeoColor.FromArgb(255, 253, 231, 37)),
+        },
+        ["Blue to red"] = new[]
+        {
+            (0.0, GeoColor.FromArgb(0, 33, 102, 172)),
+            (0.2, GeoColor.FromArgb(255, 103, 169, 207)),
+            (0.4, GeoColor.FromArgb(255, 209, 229, 240)),
+            (0.6, GeoColor.FromArgb(255, 253, 219, 199)),
+            (0.8, GeoColor.FromArgb(255, 239, 138, 98)),
+            (1.0, GeoColor.FromArgb(255, 178, 24, 43)),
+        },
+    };
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private MapStyle style;
+    private string weight = HeatEven;
+    private string styleJson = HeatEven;
+    private string rampName = "MapLibre default";
+    private double radius = 22;
+    private double intensity = 0.55;
+    private double opacity = 0.85;
+    private string status = "";
+    private bool ok = true;
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource>
+        {
+            { "Frisco_Coyote_Sightings", new ShapeFileFeatureSource("./Data/Shapefile/Frisco_Coyote_Sightings.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } },
+        };
+        Apply();
+    }
+
+    private void Pick(string chosen)
+    {
+        weight = chosen;
+        styleJson = chosen;
+        Apply();
+    }
+
+    // The editor's document, with the heat layer's paint set from the controls. A new
+    // document with the same layers is changed property by property in the browser.
+    private void Apply()
+    {
+        try
+        {
+            var document = JsonNode.Parse(styleJson).AsObject();
+            foreach (var layer in document["layers"].AsArray())
+            {
+                if (layer["id"]?.GetValue<string>() != HeatLayerId) continue;
+                var paint = layer["paint"]?.AsObject() ?? new JsonObject();
+                paint["heatmap-radius"] = radius;
+                paint["heatmap-intensity"] = intensity;
+                paint["heatmap-opacity"] = opacity;
+                paint["heatmap-color"] = ColorRamp(ColorRamps[rampName]);
+                layer["paint"] = paint;
+            }
+            style = new MapStyle().AddStyle(document.ToJsonString());
+            ok = true;
+            status = string.Format(CultureInfo.InvariantCulture, "\"{0}\": radius {1:0}, intensity {2:0.00}, opacity {3:0.00}, color {4} - applied at {5:HH:mm:ss}",
+                HeatLayerId, radius, intensity, opacity, rampName, DateTime.Now);
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+
+    private static JsonNode ColorRamp((double Density, GeoColor Color)[] stops)
+    {
+        var expression = new JsonArray("interpolate", new JsonArray("linear"), new JsonArray("heatmap-density"));
+        foreach (var stop in stops)
+        {
+            expression.Add(stop.Density);
+            expression.Add(StyleExpressions.Css(stop.Color));
+        }
+        return expression;
+    }
+
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit) return;
+        Apply();
+    }
+
+    private static double Number(ChangeEventArgs e) => double.Parse((string)e.Value, CultureInfo.InvariantCulture);
+}

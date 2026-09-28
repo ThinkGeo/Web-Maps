@@ -1,0 +1,95 @@
+@page "/nexrad-radar"
+@using System.Globalization
+@using ThinkGeo.Core
+@implements IDisposable
+
+<div class="map-container">
+    @* The radar is a raster source named in the style: a {z}/{x}/{y} tile server the browser
+       reads directly, drawn over the basemap at whatever opacity the layer asks for. Stepping
+       the frame changes the source's address, and the browser fetches the new one. *@
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-10400000, 4800000))" Zoom="4">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Dark"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            <VectorTileOverlay Id="Radar" StyleJson="@RadarStyle()" />
+        </OverlaysSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;left:12px;width:250px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+        <div style="font-weight:600;margin-bottom:6px">NEXRAD weather radar</div>
+        <div style="color:#555;margin-bottom:8px">
+            Live base reflectivity over the United States, from the Iowa Environmental Mesonet.
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px">
+            <button style="padding:2px 12px;cursor:pointer" @onclick="TogglePlay">@(playing ? "Pause" : "Play")</button>
+            <span>@FrameLabel</span>
+        </div>
+
+        <label style="display:block;margin:10px 0 2px">Opacity - @opacity.ToString("P0")</label>
+        <input type="range" min="20" max="100" step="5" value="@(opacity * 100)" style="width:100%"
+               @oninput="@(e => opacity = Convert.ToDouble(e.Value) / 100)" />
+    </div>
+</div>
+
+@code {
+    // The Iowa Environmental Mesonet serves the national N0Q mosaic, current and every five
+    // minutes back for an hour, each as its own {z}/{x}/{y} tile set.
+    private static readonly int[] MinutesAgo = { 55, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 0 };
+
+    private MapView map;
+    private int frame = MinutesAgo.Length - 1; // start on the newest
+    private bool playing = true;
+    private double opacity = 0.7;
+    private CancellationTokenSource loop;
+
+    private string FrameLabel => MinutesAgo[frame] == 0
+        ? "now"
+        : MinutesAgo[frame].ToString(CultureInfo.InvariantCulture) + " min ago";
+
+    private string Product => MinutesAgo[frame] == 0
+        ? "nexrad-n0q-900913"
+        : "nexrad-n0q-900913-m" + MinutesAgo[frame].ToString("00", CultureInfo.InvariantCulture) + "m";
+
+    private string RadarStyle()
+    {
+        var url = "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/" + Product + "/{z}/{x}/{y}.png";
+        return
+            "{ \"sources\": { \"radar\": { \"type\": \"raster\", \"tiles\": [\"" + url + "\"], \"tileSize\": 256 } }," +
+            " \"layers\": [ { \"id\": \"radar\", \"type\": \"raster\", \"source\": \"radar\"," +
+            " \"paint\": { \"raster-opacity\": " + opacity.ToString("0.00", CultureInfo.InvariantCulture) + " } } ] }";
+    }
+
+    protected override void OnInitialized() => Start();
+
+    private void TogglePlay()
+    {
+        playing = !playing;
+        if (playing) Start(); else loop?.Cancel();
+    }
+
+    private void Start()
+    {
+        loop?.Cancel();
+        loop = new CancellationTokenSource();
+        _ = RunAsync(loop.Token);
+    }
+
+    private async Task RunAsync(CancellationToken token)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                await Task.Delay(700, token);
+                frame = (frame + 1) % MinutesAgo.Length;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (TaskCanceledException) { }
+    }
+
+    public void Dispose() => loop?.Cancel();
+}

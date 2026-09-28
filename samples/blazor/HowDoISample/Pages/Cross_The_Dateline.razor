@@ -1,0 +1,204 @@
+@page "/cross-the-dateline"
+@using System.Collections.ObjectModel
+@using ThinkGeo.Core
+
+<div class="map-container">
+    @* The route is stored the way a navigator writes it - continuous longitudes running
+       from -118 at Los Angeles, past -180 at the seam, to -238 (= 122 E) at Shanghai - and
+       handed to the map as is. The globe has no seam; Web Mercator has one at 180, and the
+       tile cut folds the far-side geometry back into the world so it draws whole either way. *@
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Center="@(new PointShape(-20037508, 4900000))" Zoom="3"
+             Projection="@projection">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            <VectorTileOverlay Id="Flight" Style="@style" FeatureSources="@flight" SourceId="flight" />
+        </OverlaysSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;left:12px;width:270px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+        <div style="font-weight:600;margin-bottom:8px">Cross the dateline</div>
+        <div style="color:#333">Los Angeles &rarr; Shanghai, a great-circle route through the antimeridian, with its 100-nautical-mile corridor.</div>
+
+        <label style="display:block;margin:8px 0 2px;cursor:pointer">
+            <input type="radio" name="proj" checked="@(projection == MapViewProjection.WebMercator)"
+                   @onchange="@(() => projection = MapViewProjection.WebMercator)" />
+            Web Mercator - the seam is at 180&deg;
+        </label>
+        <label style="display:block;margin:2px 0;cursor:pointer">
+            <input type="radio" name="proj" checked="@(projection == MapViewProjection.VerticalPerspective)"
+                   @onchange="@(() => projection = MapViewProjection.VerticalPerspective)" />
+            On a globe - no seam
+        </label>
+
+        <div style="margin-top:10px;color:#555">
+            The line is stored with longitudes past -180 and never split by hand. It draws whole
+            on both sides of the seam because the tile cut folds it back into the world.
+        </div>
+    </div>
+</div>
+
+@code {
+    private const double HalfWorld = 20037508.342789244;
+    private const double EarthRadius = 6378137.0;
+    private const double CorridorHalfWidthMeters = 100 * 1852.0;
+    private const int RouteSamples = 360;
+
+    private static readonly (string Code, string Name, double Lon, double Lat) Origin = ("LAX", "Los Angeles", -118.408, 33.942);
+    private static readonly (string Code, string Name, double Lon, double Lat) Destination = ("PVG", "Shanghai Pudong", 121.805, 31.143);
+
+    private MapView map;
+    private GeoCollection<FeatureSource> flight;
+    private MapStyle style;
+    private MapViewProjection projection = MapViewProjection.WebMercator;
+    private (double Lon, double Lat)[] route;
+
+    // The route line, the corridor's two edges, and the two airports, each cut into its own
+    // source-layer of the one "flight" source. A line, two lines, two labelled points.
+    private const string FlightStyle = @"{
+  ""layers"": [
+    { ""type"": ""line"", ""source-layer"": ""corridor"",
+      ""paint"": { ""line-color"": ""rgba(31,79,214,0.5)"", ""line-width"": 1.5, ""line-dasharray"": [3, 2] } },
+    { ""type"": ""line"", ""source-layer"": ""route"",
+      ""paint"": { ""line-color"": ""#1f4fd6"", ""line-width"": 3 } },
+    { ""type"": ""circle"", ""source-layer"": ""airports"",
+      ""paint"": { ""circle-radius"": 6, ""circle-color"": ""#FFFFFF"", ""circle-stroke-color"": ""#1f4fd6"", ""circle-stroke-width"": 3 } },
+    { ""type"": ""symbol"", ""source-layer"": ""airports"",
+      ""layout"": {
+          ""text-field"": [""get"", ""LABEL""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-anchor"": ""top"",
+          ""text-offset"": [0, 0.8],
+          ""text-size"": 13 },
+      ""paint"": {
+          ""text-color"": ""#101317"",
+          ""text-halo-color"": ""#FFFFFF"",
+          ""text-halo-width"": 1.5 }
+    }
+  ]
+}";
+
+    protected override void OnInitialized()
+    {
+        route = GreatCircle(Origin.Lon, Origin.Lat, Destination.Lon, Destination.Lat, RouteSamples);
+
+        var airports = new InMemoryFeatureSource(
+            new[] { new FeatureSourceColumn("LABEL") },
+            new Collection<Feature>
+            {
+                Airport(Origin), Airport(Destination),
+            });
+
+        flight = new GeoCollection<FeatureSource>
+        {
+            { "route", new InMemoryFeatureSource(Array.Empty<FeatureSourceColumn>(), new Collection<Feature> { new Feature(RouteLine()) }) },
+            { "corridor", new InMemoryFeatureSource(Array.Empty<FeatureSourceColumn>(), new Collection<Feature> { new Feature(CorridorEdges()) }) },
+            { "airports", airports },
+        };
+        style = new MapStyle(FlightStyle);
+    }
+
+    private Feature Airport((string Code, string Name, double Lon, double Lat) airport)
+    {
+        var (x, y) = Meters(airport.Lon, airport.Lat);
+        var feature = new Feature(new PointShape(x, y));
+        feature.ColumnValues["LABEL"] = airport.Code + "  " + airport.Name;
+        return feature;
+    }
+
+    private LineShape RouteLine()
+    {
+        var line = new LineShape();
+        foreach (var (lon, lat) in route)
+        {
+            var (x, y) = Meters(lon, lat);
+            line.Vertices.Add(new Vertex(x, y));
+        }
+        return line;
+    }
+
+    // The two edges of a band 100 nautical miles either side of the route. The offsets are
+    // geodesic and the longitudes stay continuous, like the route's.
+    private MultilineShape CorridorEdges()
+    {
+        var left = new LineShape();
+        var right = new LineShape();
+        for (var i = 0; i < route.Length; i++)
+        {
+            var here = route[i];
+            var heading = i < route.Length - 1 ? Bearing(here, route[i + 1]) : Bearing(route[i - 1], here);
+            var l = Destination_(here, heading - 90, CorridorHalfWidthMeters);
+            var (lx, ly) = Meters(l.Lon, l.Lat);
+            left.Vertices.Add(new Vertex(lx, ly));
+            var r = Destination_(here, heading + 90, CorridorHalfWidthMeters);
+            var (rx, ry) = Meters(r.Lon, r.Lat);
+            right.Vertices.Add(new Vertex(rx, ry));
+        }
+        return new MultilineShape(new[] { left, right });
+    }
+
+    // Points along the great circle, evenly spaced in arc length, with longitudes made
+    // continuous from the origin onward (no jump at the antimeridian).
+    private static (double Lon, double Lat)[] GreatCircle(double aLon, double aLat, double bLon, double bLat, int count)
+    {
+        var p = ToUnit(aLon, aLat);
+        var q = ToUnit(bLon, bLat);
+        var dot = Math.Max(-1, Math.Min(1, p.X * q.X + p.Y * q.Y + p.Z * q.Z));
+        var omega = Math.Acos(dot);
+        var sinOmega = Math.Sin(omega);
+        var result = new (double Lon, double Lat)[count + 1];
+        var previousLon = aLon;
+        for (var i = 0; i <= count; i++)
+        {
+            var t = (double)i / count;
+            var k1 = Math.Sin((1 - t) * omega) / sinOmega;
+            var k2 = Math.Sin(t * omega) / sinOmega;
+            var x = k1 * p.X + k2 * q.X;
+            var y = k1 * p.Y + k2 * q.Y;
+            var z = k1 * p.Z + k2 * q.Z;
+            var lat = Math.Asin(Math.Max(-1, Math.Min(1, z))) * 180 / Math.PI;
+            var lon = Math.Atan2(y, x) * 180 / Math.PI;
+            while (lon - previousLon > 180) lon -= 360;
+            while (lon - previousLon < -180) lon += 360;
+            result[i] = (lon, lat);
+            previousLon = lon;
+        }
+        return result;
+    }
+
+    private static (double X, double Y, double Z) ToUnit(double lon, double lat)
+    {
+        var la = lat * Math.PI / 180;
+        var lo = lon * Math.PI / 180;
+        return (Math.Cos(la) * Math.Cos(lo), Math.Cos(la) * Math.Sin(lo), Math.Sin(la));
+    }
+
+    private static double Bearing((double Lon, double Lat) a, (double Lon, double Lat) b)
+    {
+        var la1 = a.Lat * Math.PI / 180;
+        var la2 = b.Lat * Math.PI / 180;
+        var dLon = (b.Lon - a.Lon) * Math.PI / 180;
+        var y = Math.Sin(dLon) * Math.Cos(la2);
+        var x = Math.Cos(la1) * Math.Sin(la2) - Math.Sin(la1) * Math.Cos(la2) * Math.Cos(dLon);
+        return (Math.Atan2(y, x) * 180 / Math.PI + 360) % 360;
+    }
+
+    // The point a distance along a bearing, longitude kept continuous with the start.
+    private static (double Lon, double Lat) Destination_((double Lon, double Lat) from, double bearingDegrees, double meters)
+    {
+        var la1 = from.Lat * Math.PI / 180;
+        var brng = bearingDegrees * Math.PI / 180;
+        var delta = meters / EarthRadius;
+        var la2 = Math.Asin(Math.Sin(la1) * Math.Cos(delta) + Math.Cos(la1) * Math.Sin(delta) * Math.Cos(brng));
+        var dLon = Math.Atan2(Math.Sin(brng) * Math.Sin(delta) * Math.Cos(la1), Math.Cos(delta) - Math.Sin(la1) * Math.Sin(la2));
+        return (from.Lon + dLon * 180 / Math.PI, la2 * 180 / Math.PI);
+    }
+
+    // Web Mercator meters; a longitude past +/-180 lands past the world edge on purpose.
+    private static (double X, double Y) Meters(double lon, double lat)
+    {
+        var clamped = Math.Max(-85.05, Math.Min(85.05, lat));
+        return (lon / 180 * HalfWorld, EarthRadius * Math.Log(Math.Tan(Math.PI / 4 + clamped * Math.PI / 360)));
+    }
+}

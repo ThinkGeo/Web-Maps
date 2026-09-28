@@ -1,0 +1,220 @@
+﻿@page "/vehicle-navigation"
+@using ThinkGeo.Core
+@using System.Globalization
+@using System.Text.Json.Nodes
+@using Microsoft.AspNetCore.Hosting
+@inject IWebHostEnvironment Environment
+@implements IDisposable
+
+<div class="map-container">
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@start" Zoom="17" Pitch="@pitch">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" ApiKey="@GlobalSettings.ThinkGeoApiKey"
+                                            MapType="@(darkTheme ? ThinkGeoCloudVectorMapsMapType.Dark : ThinkGeoCloudVectorMapsMapType.Light)" />
+            <VectorTileOverlay Id="Route" Style="@routeStyle" FeatureSources="@routeSources" SourceId="nav" />
+            <VectorTileOverlay Id="Vehicle" @ref="vehicleOverlay" Style="@vehicleStyle" FeatureSources="@vehicleSources" SourceId="nav" />
+        </OverlaysSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;left:12px">
+        <button class="btn btn-sm btn-dark" @onclick="SwitchView">@(overview ? "Tracking Mode" : "Overview Mode")</button>
+    </div>
+    <div style="position:absolute;top:12px;right:12px;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Camera</div>
+        <label style="display:flex;align-items:center;gap:8px">
+            Pitch
+            <input type="range" min="0" max="80" value="@pitch" @oninput="PitchChanged" style="width:150px" />
+            <span style="width:36px">@pitch°</span>
+        </label>
+        <button class="btn btn-sm btn-light" style="margin-top:8px" @onclick="ToggleTheme">@(darkTheme ? "Light Theme" : "Dark Theme")</button>
+    </div>
+</div>
+
+@code {
+    private const double DefaultScale = 5000;
+    private const int StepMilliseconds = 1500;
+
+    private MapView map;
+    private VectorTileOverlay vehicleOverlay;
+    private List<Vertex> gpsPoints;
+    private PointShape start;
+    private readonly List<Vertex> visited = new List<Vertex>();
+    private InMemoryFeatureSource routeSource;
+    private InMemoryFeatureSource vehicleSource;
+    private GeoCollection<FeatureSource> routeSources;
+    private GeoCollection<FeatureSource> vehicleSources;
+    private MapStyle routeStyle;
+    private MapStyle vehicleStyle;
+    private GeoImage vehicleImage;
+    private double heading;
+    private double pitch = 45;
+    private bool darkTheme;
+    private bool overview;
+    private readonly CancellationTokenSource driving = new CancellationTokenSource();
+
+    protected override void OnInitialized()
+    {
+        gpsPoints = ReadGpsPoints("./Data/Csv/vehicle-route.csv");
+        start = new PointShape(gpsPoints[0]);
+        vehicleImage = new GeoImage(Path.Combine(Environment.WebRootPath, "images", "vehicle_location.png"));
+
+        routeSource = new InMemoryFeatureSource(new[] { new FeatureSourceColumn("Kind") });
+        routeSource.InternalFeatures.Add(new Feature(new LineShape(gpsPoints), new Dictionary<string, string> { ["Kind"] = "route" }));
+        routeSource.InternalFeatures.Add(new Feature(DestinationArea(gpsPoints[gpsPoints.Count - 1]), new Dictionary<string, string> { ["Kind"] = "destination" }));
+        routeSources = new GeoCollection<FeatureSource> { { "route", routeSource } };
+
+        vehicleSource = new InMemoryFeatureSource(new[] { new FeatureSourceColumn("Kind"), new FeatureSourceColumn("Heading") });
+        vehicleSources = new GeoCollection<FeatureSource> { { "vehicle", vehicleSource } };
+        PushVehicle(start);
+
+        BuildStyles();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        _ = DriveAsync(driving.Token);
+    }
+
+    // One GPS point to the next every 1.5 seconds: the camera eases to the point at a steady
+    // pace, turned to the vehicle's heading with the vehicle 200 pixels below the centre of the
+    // screen, and the vehicle is moved along the segment at the same pace.
+    private async Task DriveAsync(CancellationToken cancellation)
+    {
+        for (var index = 1; index < gpsPoints.Count && !cancellation.IsCancellationRequested; index++)
+        {
+            var from = gpsPoints[index - 1];
+            var to = gpsPoints[index];
+            heading = Math.Atan2(to.X - from.X, to.Y - from.Y) * 180 / Math.PI;
+
+            if (!overview)
+            {
+                var ahead = 200 * MapUtil.GetResolutionFromScale(DefaultScale, GeographyUnit.Meter);
+                var radians = heading * Math.PI / 180;
+                var center = new PointShape(to.X + ahead * Math.Sin(radians), to.Y + ahead * Math.Cos(radians));
+                await map.ZoomToAsync(center, DefaultScale, heading, StepMilliseconds);
+            }
+
+            var started = DateTime.UtcNow;
+            while (!cancellation.IsCancellationRequested)
+            {
+                var progress = Math.Min(1, (DateTime.UtcNow - started).TotalMilliseconds / StepMilliseconds);
+                var position = new PointShape(from.X + (to.X - from.X) * progress, from.Y + (to.Y - from.Y) * progress);
+                if (visited.Count > 0 && visited.Count >= index)
+                {
+                    visited.RemoveAt(visited.Count - 1);
+                }
+                visited.Add(new Vertex(position));
+                PushVehicle(position);
+                await vehicleOverlay.RedrawAsync();
+                if (progress >= 1) break;
+                await Task.Delay(50);
+            }
+        }
+    }
+
+    // The trail behind the vehicle and the vehicle itself, handed to the browser as they are now.
+    private void PushVehicle(PointShape position)
+    {
+        vehicleSource.InternalFeatures.Clear();
+        if (visited.Count >= 2)
+        {
+            vehicleSource.InternalFeatures.Add(new Feature(new LineShape(visited), new Dictionary<string, string> { ["Kind"] = "visited" }));
+        }
+        vehicleSource.InternalFeatures.Add(new Feature(position, new Dictionary<string, string>
+        {
+            ["Kind"] = "vehicle",
+            ["Heading"] = heading.ToString("0.0", CultureInfo.InvariantCulture)
+        }));
+    }
+
+    private void BuildStyles()
+    {
+        var routeColor = darkTheme ? GeoColor.FromHtml("#41F3FF") : GeoColor.FromHtml("#FFD400");
+        var visitedColor = darkTheme ? GeoColor.FromHtml("#21FF8F") : GeoColors.Green;
+        var destinationColor = darkTheme ? GeoColor.FromArgb(70, 33, 255, 143) : GeoColor.FromArgb(70, 0, 150, 60);
+
+        routeStyle = new MapStyle()
+            .AddFillLayer("destination", "nav", "route", destinationColor, filter: StyleExpressions.Equal("Kind", "destination"))
+            .AddLineLayer("route", "nav", "route", routeColor, 6f, filter: StyleExpressions.Equal("Kind", "route"));
+
+        // The vehicle points the way it is heading; the picture turns with the map, so in
+        // tracking mode - the map turned to the heading - it points up the screen.
+        vehicleStyle = new MapStyle()
+            .AddLineLayer("visited", "nav", "vehicle", visitedColor, 6f, filter: StyleExpressions.Equal("Kind", "visited"))
+            .AddSymbolLayer("vehicle", "nav", "vehicle", imageName: "vehicle", allowOverlap: true,
+                filter: StyleExpressions.Equal("Kind", "vehicle"),
+                layout: new JsonObject
+                {
+                    ["icon-rotate"] = new JsonArray("to-number", StyleExpressions.Get("Heading")),
+                    ["icon-rotation-alignment"] = "map"
+                });
+        vehicleStyle.Images.Add("vehicle", vehicleImage);
+    }
+
+    private async Task SwitchView()
+    {
+        overview = !overview;
+        if (!overview) return;
+
+        // The whole route, zoomed out by half; the map's extent stands for its size in pixels.
+        var bounds = new LineShape(gpsPoints).GetBoundingBox();
+        var shown = await map.GetCurrentExtentAsync();
+        var scale = DefaultScale * Math.Max(bounds.Width / shown.Width, bounds.Height / shown.Height) * 1.5;
+        await map.ZoomToAsync(bounds.GetCenterPoint(), scale, 0, 1000);
+    }
+
+    // The map is bound to this value, so tilting it is a matter of setting the field.
+    private void PitchChanged(ChangeEventArgs e)
+    {
+        pitch = double.Parse((string)e.Value, CultureInfo.InvariantCulture);
+    }
+
+    // Light and dark are the same tiles restyled; the route colours follow the theme.
+    private void ToggleTheme()
+    {
+        darkTheme = !darkTheme;
+        BuildStyles();
+    }
+
+    private static PolygonShape DestinationArea(Vertex end)
+    {
+        const double radius = 55;
+        const int segments = 36;
+        var ring = new Collection<Vertex>();
+        for (var i = 0; i <= segments; i++)
+        {
+            var angle = i % segments * 2 * Math.PI / segments;
+            ring.Add(new Vertex(end.X + radius * Math.Cos(angle), end.Y + radius * Math.Sin(angle)));
+        }
+        return new PolygonShape(new RingShape(ring));
+    }
+
+    // Latitude, longitude per line, converted to the Spherical Mercator the map is in.
+    private static List<Vertex> ReadGpsPoints(string path)
+    {
+        var converter = new ProjectionConverter(4326, 3857);
+        converter.Open();
+        var points = new List<Vertex>();
+        foreach (var line in File.ReadAllLines(path))
+        {
+            var parts = line.Split(',');
+            var latitude = double.Parse(parts[0], CultureInfo.InvariantCulture);
+            var longitude = double.Parse(parts[1], CultureInfo.InvariantCulture);
+            points.Add(converter.ConvertToExternalProjection(longitude, latitude));
+        }
+        converter.Close();
+        return points;
+    }
+
+    public void Dispose()
+    {
+        driving.Cancel();
+    }
+}

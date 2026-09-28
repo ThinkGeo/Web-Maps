@@ -118,7 +118,7 @@
 
     }
 
-    Collection<Feature> ExecuteSptialQuery(BaseShape targetShape, QueryType queryType)
+    Collection<Feature> ExecuteSpatialQuery(BaseShape targetShape, QueryType queryType)
     {
         var sourceLayer = (FeatureLayer)sourceLayers[0];
         if (!sourceLayer.IsOpen)
@@ -145,16 +145,16 @@
         if (IsPolygonQuery()) return;
 
         var location = new PointShape(args.WorldX, args.WorldY);
-        var features = ExecuteSptialQuery(location, QueryType.Contains);
-        await HighlightSpaticalQueryFeatures(features);
+        var features = ExecuteSpatialQuery(location, QueryType.Contains);
+        await HighlightSpatialQueryFeatures(features);
     }
 
     async Task OnPolygonDrawn(FeatureDrawnEditOverlayEventArgs args)
     {
         map.EditOverlay.Features.Clear();
         trackFeature = args.DrawnFeature;
-        var features = ExecuteSptialQuery(trackFeature.GetShape(), queryType);
-        await HighlightSpaticalQueryFeatures(features);
+        var features = ExecuteSpatialQuery(trackFeature.GetShape(), queryType);
+        await HighlightSpatialQueryFeatures(features);
         await HighlightTrackFeature(trackFeature);
     }
 
@@ -168,8 +168,8 @@
         queryType = parsedQueryType;
         if (trackFeature != null)
         {
-            var features = ExecuteSptialQuery(trackFeature.GetShape(), queryType);
-            await HighlightSpaticalQueryFeatures(features);
+            var features = ExecuteSpatialQuery(trackFeature.GetShape(), queryType);
+            await HighlightSpatialQueryFeatures(features);
             await HighlightTrackFeature(trackFeature);
         }
     }
@@ -179,11 +179,11 @@
         spatialQueryMode = queryMode;
         trackMode = spatialQueryMode == "Polygon" ? BlazorTrackMode.Polygon : BlazorTrackMode.None;
         map.EditOverlay.Features.Clear();
-        await HighlightSpaticalQueryFeatures(Array.Empty<Feature>());
+        await HighlightSpatialQueryFeatures(Array.Empty<Feature>());
         await HighlightTrackFeature(null);
     }
 
-    async Task HighlightSpaticalQueryFeatures(IEnumerable<Feature> features)
+    async Task HighlightSpatialQueryFeatures(IEnumerable<Feature> features)
     {
         ((InMemoryFeatureLayer)highlightLayers[0]).InternalFeatures.Clear();
         foreach (var feature in features)

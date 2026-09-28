@@ -1,0 +1,82 @@
+@page "/insert-under-labels"
+@using System.Text.Json.Nodes
+@using ThinkGeo.Core
+
+<div class="map-container">
+    @* A wash the map's own overlays cannot express: an overlay is always above everything,
+       labels included. A style layer can go anywhere - InsertLayerAt(StyleLayerSlot.UnderLabels)
+       puts a translucent white layer above the streets and below the labels, so the map quiets
+       while its names stay sharp. *@
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-8238310, 4970071))" Zoom="14">
+        <OverlaysSetting>
+            @if (style != null)
+            {
+                <VectorTileOverlay Id="Basemap" @ref="overlay" Style="@style" />
+            }
+        </OverlaysSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;left:12px;width:250px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+        <div style="font-weight:600;margin-bottom:8px">Insert a layer under the labels</div>
+
+        <label style="display:block;margin-bottom:2px">Wash - @wash.ToString("P0")</label>
+        <input type="range" min="0" max="80" step="5" value="@(wash * 100)" style="width:100%"
+               @oninput="@(e => WashChanged(Convert.ToDouble(e.Value) / 100))" />
+
+        <div style="margin-top:10px;color:#555">
+            The white layer sits above every street and below every label. Slide it up and the
+            streets fade while the names stay crisp - a place in the layer stack an overlay can
+            never reach.
+        </div>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private VectorTileOverlay overlay;
+    private ThinkGeoVectorTileSource source;
+    private MapStyle style;
+    private double wash = 0.5;
+    private int edit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        source = new ThinkGeoVectorTileSource(GlobalSettings.ThinkGeoApiKey);
+        await Rebuild();
+    }
+
+    // The street style, resolved so its layers are there to find the labels among, with the
+    // wash inserted just below them.
+    private async Task Rebuild()
+    {
+        var rebuilt = new MapStyle(ThinkGeoVectorStyles.Light, source);
+        await rebuilt.ResolveAsync();
+        if (wash > 0)
+        {
+            rebuilt.InsertLayerAt(StyleLayerSlot.UnderLabels, new JsonObject
+            {
+                ["id"] = "wash",
+                ["type"] = "background",
+                ["paint"] = new JsonObject
+                {
+                    ["background-color"] = "#FFFFFF",
+                    ["background-opacity"] = wash,
+                },
+            });
+        }
+        style = rebuilt;
+    }
+
+    // Rebuild once the slider settles, so a drag across the range is one restyle, not twenty.
+    private async Task WashChanged(double value)
+    {
+        wash = value;
+        var mine = ++edit;
+        await Task.Delay(250);
+        if (mine != edit) return;
+        await Rebuild();
+        StateHasChanged();
+    }
+}

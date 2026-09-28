@@ -1,0 +1,110 @@
+@page "/display-cluster-points"
+@using System.Collections.ObjectModel
+@using ThinkGeo.Core
+
+<div class="map-container">
+    @* The points are handed to the browser whole and grouped there: Cluster="true" turns the
+       source into a clustered one, and the style reads the count MapLibre adds to each cluster.
+       Zoom in and the clusters split; zoom out and they merge - the grouping is a property of
+       the view, recomputed as it changes, with no tile cut. *@
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-10500000, 4300000))" Zoom="4">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            <VectorTileOverlay Id="Sightings" StyleJson="@ClusterStyle" FeatureSources="@sightings"
+                               SourceId="sightings" Cluster="true" ClusterRadius="55" ClusterMaxZoom="12" />
+        </OverlaysSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;left:12px;width:250px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+        <div style="font-weight:600;margin-bottom:6px">Cluster points</div>
+        <div style="color:#555">
+            @count simulated sightings across the metros. Each circle is a cluster - the number is
+            how many fall inside it. Zoom in and the clusters split into their own points; zoom
+            out and they merge again.
+        </div>
+    </div>
+</div>
+
+@code {
+    // clusters (has point_count), the count on top, and the single points that are not in a
+    // cluster - the three layers every clustered source is drawn with.
+    private const string ClusterStyle = @"{
+  ""layers"": [
+    { ""id"": ""clusters"", ""type"": ""circle"", ""source-layer"": ""sightings"",
+      ""filter"": [""has"", ""point_count""],
+      ""paint"": {
+          ""circle-color"": [""step"", [""get"", ""point_count""],
+              ""#51bbd6"", 20, ""#f1a340"", 60, ""#d7301f""],
+          ""circle-radius"": [""step"", [""get"", ""point_count""],
+              14, 20, 20, 60, 28],
+          ""circle-opacity"": 0.85,
+          ""circle-stroke-color"": ""#FFFFFF"",
+          ""circle-stroke-width"": 2 } },
+    { ""id"": ""cluster-count"", ""type"": ""symbol"", ""source-layer"": ""sightings"",
+      ""filter"": [""has"", ""point_count""],
+      ""layout"": {
+          ""text-field"": [""get"", ""point_count_abbreviated""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 13 },
+      ""paint"": { ""text-color"": ""#FFFFFF"" } },
+    { ""id"": ""unclustered"", ""type"": ""circle"", ""source-layer"": ""sightings"",
+      ""filter"": [""!"", [""has"", ""point_count""]],
+      ""paint"": {
+          ""circle-color"": ""#8856a7"",
+          ""circle-radius"": 5,
+          ""circle-opacity"": 0.9,
+          ""circle-stroke-color"": ""#FFFFFF"",
+          ""circle-stroke-width"": 1.5 } }
+  ]
+}";
+
+    // A cluster of metros, so the points make clusters worth splitting rather than an even spray.
+    private static readonly (double X, double Y)[] Metros =
+    {
+        (-8235000, 4970000),  // New York
+        (-13158000, 4035000), // Los Angeles
+        (-9757000, 5138000),  // Chicago
+        (-10617000, 3455000), // Houston
+        (-10778000, 3866000), // Dallas
+        (-8926000, 2968000),  // Miami
+        (-13617000, 6042000), // Seattle
+        (-11686000, 4832000), // Denver
+        (-9391000, 3993000),  // Atlanta
+    };
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sightings;
+    private int count;
+
+    protected override void OnInitialized()
+    {
+        var random = new Random(42);
+        var features = new Collection<Feature>();
+        foreach (var (mx, my) in Metros)
+        {
+            var here = 40 + random.Next(45);
+            for (var i = 0; i < here; i++)
+            {
+                // A gaussian scatter, tens of kilometres wide, around the metro.
+                var x = mx + Gaussian(random) * 90000;
+                var y = my + Gaussian(random) * 90000;
+                features.Add(new Feature(new PointShape(x, y)));
+            }
+        }
+        count = features.Count;
+        sightings = new GeoCollection<FeatureSource>
+        {
+            { "sightings", new InMemoryFeatureSource(Array.Empty<FeatureSourceColumn>(), features) },
+        };
+    }
+
+    private static double Gaussian(Random random)
+    {
+        var u1 = 1.0 - random.NextDouble();
+        var u2 = 1.0 - random.NextDouble();
+        return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Cos(2.0 * Math.PI * u2);
+    }
+}

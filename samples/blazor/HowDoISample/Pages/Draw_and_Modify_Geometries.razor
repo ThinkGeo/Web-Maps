@@ -133,7 +133,7 @@
             {
                 Feature feature = new Feature(geometryXElement.Value);
                 feature.Id = geometryXElement.Attribute("id").Value;
-                feature.ColumnValues.Add("name", geometryXElement.Attribute("name").Value);
+                feature.ColumnValues.Add("Name", geometryXElement.Attribute("name").Value);
                 shapesFeatureLayer.InternalFeatures.Add(feature.Id, feature);
             }
         }
@@ -207,31 +207,24 @@
 
     private void HandleSaveFeatures()
     {
-        try
+        Collection<Feature> features = new Collection<Feature>();
+
+        // Add the feature in current editing layer.
+        var editingLayer = (InMemoryFeatureLayer)editingLayers[0];
+        foreach (Feature feature in editingLayer.InternalFeatures)
         {
-            Collection<Feature> features = new Collection<Feature>();
-
-            // Add the feature in current editing layer.
-            var editingLayer = (InMemoryFeatureLayer)editingLayers[0];
-            foreach (Feature feature in editingLayer.InternalFeatures)
-            {
-                features.Add(feature);
-            }
-
-            // Deal with newly added shapes.
-            foreach (Feature feature in map.EditOverlay.Features)
-            {
-                features.Add(feature);
-            }
-
-            // Update the local saved features for a specific access id.
-            SaveFeatures(features);
-            ReloadData();
+            features.Add(feature);
         }
-        catch (Exception ex)
+
+        // Deal with newly added shapes.
+        foreach (Feature feature in map.EditOverlay.Features)
         {
-            Console.WriteLine(ex.ToString());
+            features.Add(feature);
         }
+
+        // Update the local saved features for a specific access id.
+        SaveFeatures(features);
+        ReloadData();
     }
 
     async Task MoveExistingFeaturesToEditOverlayAsync()
@@ -249,6 +242,7 @@
     private void SaveFeatures(Collection<Feature> features)
     {
         string jsonFilePath = $"./Data/Temp/{accessId}.json";
+        System.IO.Directory.CreateDirectory("./Data/Temp");
         using (StreamWriter streamWriter = new StreamWriter(jsonFilePath, false))
         {
 

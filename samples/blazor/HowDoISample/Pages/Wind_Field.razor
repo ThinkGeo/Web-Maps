@@ -1,0 +1,101 @@
+﻿@page "/wind-field"
+@using ThinkGeo.Core
+@using OSGeo.GDAL
+@using OSGeo.OSR
+@using System.Globalization
+@using System.Text.Json.Nodes
+
+<div class="map-container">
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-10631010, 4539146))" Zoom="4">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light" ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            <VectorTileOverlay Id="Wind" Style="@style" />
+        </OverlaysSetting>
+    </MapView>
+    <div style="position:absolute;top:12px;right:12px;max-width:340px;padding:10px 12px;background:rgba(255,255,255,.92);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+        <div style="font-weight:600;margin-bottom:4px">NDFD surface wind, as streaming particles</div>
+        <div>@status</div>
+        <div style="margin-top:6px;color:#555">Tracers are advected through the field and leave fading trails, coloured by speed from blue to red. One call - MapStyle.AddParticleFlow - and the browser animates it.</div>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private VectorFieldSource field;
+    private MapStyle style;
+    private string status = "";
+
+    protected override void OnInitialized()
+    {
+        LoadField();
+        style = new MapStyle().AddParticleFlow(field);
+    }
+
+    // Two GeoTIFF bands - wind speed and the direction it comes from - read with GDAL and
+    // handed over as one field. The style animates it: tracer particles are advected through
+    // it and leave fading trails, which is the same call and the same look the desktop
+    // renderer gives it.
+    private void LoadField()
+    {
+        GdalManager.ConfigureGdal();
+        var speeds = ReadFirstBand("./Data/Ndfd/ds.wspd.tif", out var width, out var height, out var extent, out var proj4);
+        var from = ReadFirstBand("./Data/Ndfd/ds.wdir.tif", out _, out _, out _, out _);
+
+        // Meteorological direction is where the wind comes FROM; a particle goes the other way.
+        var towards = new float[from.Length];
+        for (var index = 0; index < from.Length; index++)
+        {
+            towards[index] = float.IsNaN(from[index]) ? float.NaN : (from[index] + 180f) % 360f;
+        }
+
+        field = VectorFieldSource.FromSpeedDirection(speeds, towards, width, height, extent, new ThinkGeo.Core.Projection(proj4));
+        status = string.Format(CultureInfo.InvariantCulture, "{0} x {1} field, 65,536 particles", width, height);
+    }
+
+    private static float[] ReadFirstBand(string path, out int width, out int height, out RectangleShape extent, out string proj4)
+    {
+        var dataset = Gdal.Open(path, Access.GA_ReadOnly) ?? throw new InvalidOperationException("GDAL could not open " + path);
+        try
+        {
+            width = dataset.RasterXSize;
+            height = dataset.RasterYSize;
+            var transform = new double[6];
+            dataset.GetGeoTransform(transform);
+            var x1 = transform[0] + width * transform[1] + height * transform[2];
+            var y1 = transform[3] + width * transform[4] + height * transform[5];
+            extent = new RectangleShape(Math.Min(transform[0], x1), Math.Max(transform[3], y1), Math.Max(transform[0], x1), Math.Min(transform[3], y1));
+
+            var wkt = dataset.GetProjection();
+            var reference = new SpatialReference(string.Empty);
+            reference.ImportFromWkt(ref wkt);
+            reference.ExportToProj4(out proj4);
+            reference.Dispose();
+
+            var band = dataset.GetRasterBand(1);
+            try
+            {
+                var values = new float[width * height];
+                band.ReadRaster(0, 0, width, height, values, width, height, 0, 0);
+                band.GetNoDataValue(out var noData, out var hasNoData);
+                if (hasNoData != 0)
+                {
+                    for (var i = 0; i < values.Length; i++)
+                    {
+                        if (values[i] == (float)noData) values[i] = float.NaN;
+                    }
+                }
+                return values;
+            }
+            finally
+            {
+                band.Dispose();
+            }
+        }
+        finally
+        {
+            dataset.Dispose();
+        }
+    }
+}

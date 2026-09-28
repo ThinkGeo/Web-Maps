@@ -12,13 +12,5 @@ namespace ThinkGeo.UI.Blazor.HowDoI
 
             return File.ReadAllTextAsync(razorFile);
         }
-
-        public Task<string> LoadCsharpCodeAsync(string sample)
-        {
-            var razorFile = Path.Combine(Directory.GetCurrentDirectory(), "Pages", $"{sample}.cs.razor");
-            if (!File.Exists(razorFile)) return Task.FromResult(string.Empty);
-
-            return File.ReadAllTextAsync(razorFile);
-        }
     }
 }

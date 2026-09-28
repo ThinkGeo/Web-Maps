@@ -1,0 +1,755 @@
+﻿@page "/lane-level-navigation"
+@using ThinkGeo.Core
+@using System.Globalization
+@using System.Text.Json.Nodes
+@implements IDisposable
+
+<div class="map-container" style="background:#101317">
+    @* Lane level is closer than the twenty-level ladder goes: four more levels are added to it. *@
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter" ZoomScales="@zoomScales"
+             BackgroundColor="@(GeoColor.FromHtml("#101317"))"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@start" Zoom="19" Pitch="58">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Dark" ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            @if (laneMap != null)
+            {
+                @* The whole lane map is handed to the browser once and cut into tiles there. *@
+                <VectorTileOverlay Id="Lanes" StyleJson="@LaneStyle" FeatureSources="@laneMap.Sources" SourceId="features" PushThreshold="20000" />
+                <VectorTileOverlay Id="Vehicle" @ref="vehicleOverlay" Style="@vehicleStyle" FeatureSources="@vehicleSources" SourceId="features" />
+            }
+        </OverlaysSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;left:12px;min-width:260px;padding:12px 14px;background:rgba(16,19,23,.88);color:#c9d4d0;font:14px system-ui;border-radius:6px">
+        <div style="color:#7ef2d9;font-size:16px;font-weight:600">@street</div>
+        <div style="color:white;font-size:26px;font-weight:600;line-height:1.2;margin:4px 0">@instruction</div>
+        <div>@next</div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px"><span>@speed</span><span>@progress</span></div>
+    </div>
+    <div style="position:absolute;top:12px;right:12px;padding:10px 12px;background:rgba(16,19,23,.88);color:#c9d4d0;font:13px system-ui;border-radius:6px">
+        <div style="color:whitesmoke;font-weight:600;margin-bottom:6px">Camera</div>
+        <label style="display:flex;align-items:center;gap:8px">
+            Pitch
+            <input type="range" min="0" max="60" value="@pitch" @oninput="PitchChanged" style="width:150px" />
+            <span style="width:36px">@pitch°</span>
+        </label>
+        <button class="btn btn-sm btn-light" style="margin-top:8px" @onclick="SwitchView">@(tracking ? "Overview Mode" : "Tracking Mode")</button>
+    </div>
+    @if (laneMap != null)
+    {
+        <div style="position:absolute;bottom:12px;left:12px;padding:8px 12px;background:rgba(16,19,23,.88);color:#c9d4d0;font:12px system-ui;border-radius:6px">
+            <div style="color:#7ef2d9;font-size:14px;font-weight:600">@laneMap.Title</div>
+            <div>@stats</div>
+            <div>@laneMap.Attribution</div>
+        </div>
+    }
+</div>
+
+@code {
+    private const double GroundHeightMeters = 60;
+    private const double StretchMeters = 24;
+    private const double GroundSpeedMetersPerSecond = 12.7;
+
+    // The lane map, drawn by level so that a bridge sits above what it crosses.
+    private const string LaneStyle = @"{
+  ""layers"": [
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""drivable"",
+      ""filter"": [""=="", [""get"", ""level""], ""0""],
+      ""paint"": { ""fill-color"": ""#1b1f24"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""lane"",
+      ""filter"": [""=="", [""get"", ""level""], ""0""],
+      ""paint"": { ""fill-color"": ""#23282e"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""route_lane"",
+      ""filter"": [""=="", [""get"", ""level""], ""0""],
+      ""paint"": { ""fill-color"": ""#23282e"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""route_lane"",
+      ""filter"": [""=="", [""get"", ""level""], ""0""],
+      ""paint"": {
+          ""fill-color"": ""#3b74ff"",
+          ""fill-opacity"": 0.22 }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_edge"",
+      ""filter"": [""=="", [""get"", ""level""], ""0""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#0a0c0f"",
+          ""line-opacity"": 0.95,
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 1.2, 17, 2, 18, 3, 19, 5, 20, 9, 21, 15] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_edge"",
+      ""filter"": [""=="", [""get"", ""level""], ""0""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#b9c1c9"",
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.5, 17, 0.8, 18, 1.2, 19, 2, 20, 4, 21, 7] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_dashed"",
+      ""filter"": [""=="", [""get"", ""level""], ""0""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#ffffff"",
+          ""line-dasharray"": [3, 3.5],
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.6, 17, 1.0, 18, 1.6, 19, 3, 20, 6, 21, 11] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_solid"",
+      ""filter"": [""=="", [""get"", ""level""], ""0""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#ffffff"",
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.7, 17, 1.1, 18, 1.8, 19, 3.5, 20, 7, 21, 12] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_yellow"",
+      ""filter"": [""=="", [""get"", ""level""], ""0""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#f7c948"",
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.7, 17, 1.1, 18, 1.8, 19, 3.5, 20, 7, 21, 12] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_yellow_double"",
+      ""filter"": [""=="", [""get"", ""level""], ""0""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#f7c948"",
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 1.0, 17, 1.8, 18, 3, 19, 6, 20, 12, 21, 20] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_yellow_dashed"",
+      ""filter"": [""=="", [""get"", ""level""], ""0""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#f7c948"",
+          ""line-dasharray"": [3, 3.5],
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.6, 17, 1.0, 18, 1.6, 19, 3, 20, 6, 21, 11] }
+    },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""drivable"",
+      ""filter"": [""=="", [""get"", ""level""], ""1""],
+      ""paint"": { ""fill-color"": ""#1b1f24"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""lane"",
+      ""filter"": [""=="", [""get"", ""level""], ""1""],
+      ""paint"": { ""fill-color"": ""#23282e"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""route_lane"",
+      ""filter"": [""=="", [""get"", ""level""], ""1""],
+      ""paint"": { ""fill-color"": ""#23282e"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""route_lane"",
+      ""filter"": [""=="", [""get"", ""level""], ""1""],
+      ""paint"": {
+          ""fill-color"": ""#3b74ff"",
+          ""fill-opacity"": 0.22 }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_edge"",
+      ""filter"": [""=="", [""get"", ""level""], ""1""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#0a0c0f"",
+          ""line-opacity"": 0.95,
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 1.2, 17, 2, 18, 3, 19, 5, 20, 9, 21, 15] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_edge"",
+      ""filter"": [""=="", [""get"", ""level""], ""1""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#b9c1c9"",
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.5, 17, 0.8, 18, 1.2, 19, 2, 20, 4, 21, 7] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_dashed"",
+      ""filter"": [""=="", [""get"", ""level""], ""1""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#ffffff"",
+          ""line-dasharray"": [3, 3.5],
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.6, 17, 1.0, 18, 1.6, 19, 3, 20, 6, 21, 11] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_solid"",
+      ""filter"": [""=="", [""get"", ""level""], ""1""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#ffffff"",
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.7, 17, 1.1, 18, 1.8, 19, 3.5, 20, 7, 21, 12] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_yellow"",
+      ""filter"": [""=="", [""get"", ""level""], ""1""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#f7c948"",
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.7, 17, 1.1, 18, 1.8, 19, 3.5, 20, 7, 21, 12] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_yellow_double"",
+      ""filter"": [""=="", [""get"", ""level""], ""1""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#f7c948"",
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 1.0, 17, 1.8, 18, 3, 19, 6, 20, 12, 21, 20] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_yellow_dashed"",
+      ""filter"": [""=="", [""get"", ""level""], ""1""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#f7c948"",
+          ""line-dasharray"": [3, 3.5],
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.6, 17, 1.0, 18, 1.6, 19, 3, 20, 6, 21, 11] }
+    },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""drivable"",
+      ""filter"": [""=="", [""get"", ""level""], ""2""],
+      ""paint"": { ""fill-color"": ""#1b1f24"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""lane"",
+      ""filter"": [""=="", [""get"", ""level""], ""2""],
+      ""paint"": { ""fill-color"": ""#23282e"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""route_lane"",
+      ""filter"": [""=="", [""get"", ""level""], ""2""],
+      ""paint"": { ""fill-color"": ""#23282e"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""route_lane"",
+      ""filter"": [""=="", [""get"", ""level""], ""2""],
+      ""paint"": {
+          ""fill-color"": ""#3b74ff"",
+          ""fill-opacity"": 0.22 }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_edge"",
+      ""filter"": [""=="", [""get"", ""level""], ""2""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#0a0c0f"",
+          ""line-opacity"": 0.95,
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 1.2, 17, 2, 18, 3, 19, 5, 20, 9, 21, 15] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_edge"",
+      ""filter"": [""=="", [""get"", ""level""], ""2""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#b9c1c9"",
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.5, 17, 0.8, 18, 1.2, 19, 2, 20, 4, 21, 7] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_dashed"",
+      ""filter"": [""=="", [""get"", ""level""], ""2""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#ffffff"",
+          ""line-dasharray"": [3, 3.5],
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.6, 17, 1.0, 18, 1.6, 19, 3, 20, 6, 21, 11] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_solid"",
+      ""filter"": [""=="", [""get"", ""level""], ""2""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#ffffff"",
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.7, 17, 1.1, 18, 1.8, 19, 3.5, 20, 7, 21, 12] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_yellow"",
+      ""filter"": [""=="", [""get"", ""level""], ""2""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#f7c948"",
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.7, 17, 1.1, 18, 1.8, 19, 3.5, 20, 7, 21, 12] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_yellow_double"",
+      ""filter"": [""=="", [""get"", ""level""], ""2""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#f7c948"",
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 1.0, 17, 1.8, 18, 3, 19, 6, 20, 12, 21, 20] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""lane_marking_yellow_dashed"",
+      ""filter"": [""=="", [""get"", ""level""], ""2""],
+      ""layout"": { ""line-cap"": ""butt"", ""line-join"": ""round"" },
+      ""paint"": {
+          ""line-color"": ""#f7c948"",
+          ""line-dasharray"": [3, 3.5],
+          ""line-width"": [""interpolate"", [""exponential"", 2], [""zoom""], 15, 0.6, 17, 1.0, 18, 1.6, 19, 3, 20, 6, 21, 11] }
+    },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""crossing"",
+      ""paint"": {
+          ""fill-color"": ""#e6ebf0"",
+          ""fill-opacity"": 0.16 }
+    }
+  ]
+}";
+
+    private MapView map;
+    private VectorTileOverlay vehicleOverlay;
+    private readonly Collection<double> zoomScales = new Collection<double>(new ThinkGeoCloudMapsZoomLevelSet().GetScales().ToList());
+    private LaneMap laneMap;
+    private RoutePlayback playback;
+    private RoutePose pose;
+    private PointShape start;
+    private readonly InMemoryFeatureSource vehicle = new InMemoryFeatureSource(new[] { new FeatureSourceColumn("Bearing") });
+    private GeoCollection<FeatureSource> vehicleSources;
+    private MapStyle vehicleStyle;
+    private bool tracking = true;
+    private double pitch = 58;
+    private double cameraScale;
+    private double widthPixels;
+    private double heightPixels;
+    private string street = "", instruction = "", next = "", speed = "", progress = "", stats = "";
+    private readonly CancellationTokenSource driving = new CancellationTokenSource();
+
+    protected override void OnInitialized()
+    {
+        while (zoomScales.Count < 24)
+        {
+            zoomScales.Add(zoomScales[zoomScales.Count - 1] / 2);
+        }
+
+        laneMap = LaneMap.Load("./Data/OpenDrive/XodrWolfsburgLanes.geojson", "./Data/OpenDrive/XodrWolfsburgRoute.json");
+        playback = new RoutePlayback(laneMap.RouteTrace);
+        pose = playback.PoseAtDistance(0);
+        start = new PointShape(pose.Position);
+        stats = string.Format(CultureInfo.InvariantCulture, "{0} lane markings, {1:0.0} km route", laneMap.MarkingCount, laneMap.RouteLength * laneMap.GroundScale / 1000);
+
+        vehicleSources = new GeoCollection<FeatureSource> { { "vehicle", vehicle } };
+        vehicleStyle = new MapStyle()
+            .AddSymbolLayer("vehicle", "features", "vehicle", imageName: "vehicle", allowOverlap: true,
+                layout: new JsonObject
+                {
+                    ["icon-rotate"] = new JsonArray("to-number", StyleExpressions.Get("Bearing")),
+                    ["icon-rotation-alignment"] = "map",
+                    ["icon-size"] = 0.5
+                });
+        vehicleStyle.Images.Add("vehicle", VehicleImage());
+        ShowVehicle(pose);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+
+        // The screen in pixels, from the extent the map shows at the scale it started at.
+        var shown = await map.GetCurrentExtentAsync();
+        var resolution = MapUtil.GetResolutionFromScale(map.ZoomScales[map.Zoom - 1], GeographyUnit.Meter);
+        widthPixels = shown.Width / resolution;
+        heightPixels = shown.Height / resolution;
+        cameraScale = DefaultCameraScale();
+        _ = DriveAsync(driving.Token);
+    }
+
+    // Tracking: the camera eases to the pose a stretch ahead, turned to the road and with the
+    // vehicle a quarter of the screen below the centre, at the ground speed; the vehicle is moved
+    // along the stretch at the same pace. Overview: the vehicle drives on while the camera holds.
+    private async Task DriveAsync(CancellationToken cancellation)
+    {
+        var mapUnitsPerSecond = GroundSpeedMetersPerSecond / laneMap.GroundScale;
+        while (!cancellation.IsCancellationRequested)
+        {
+            var from = pose.DistanceMeters >= playback.Length - 0.5 ? 0 : pose.DistanceMeters;
+            var to = Math.Min(playback.Length, from + StretchMeters / laneMap.GroundScale);
+            var milliseconds = Math.Max(16, (to - from) / mapUnitsPerSecond * 1000);
+
+            if (tracking)
+            {
+                var target = playback.PoseAtDistance(to);
+                await map.ZoomToAsync(CameraCenter(target), cameraScale, Bearing(target), (int)milliseconds);
+            }
+
+            var started = DateTime.UtcNow;
+            var wasTracking = tracking;
+            while (!cancellation.IsCancellationRequested)
+            {
+                var elapsed = (DateTime.UtcNow - started).TotalMilliseconds;
+                var fraction = Math.Min(1, elapsed / milliseconds);
+                ShowVehicle(playback.PoseAtDistance(from + (to - from) * fraction));
+                await vehicleOverlay.RedrawAsync();
+                StateHasChanged();
+                if (fraction >= 1 || wasTracking != tracking) break;
+                await Task.Delay(40);
+            }
+        }
+    }
+
+    private static double Bearing(RoutePose at) => 90 - at.HeadingDegrees;
+
+    private PointShape CameraCenter(RoutePose at)
+    {
+        var ahead = heightPixels * 0.25 * MapUtil.GetResolutionFromScale(cameraScale, GeographyUnit.Meter);
+        var radians = Bearing(at) * Math.PI / 180;
+        return new PointShape(at.Position.X + ahead * Math.Sin(radians), at.Position.Y + ahead * Math.Cos(radians));
+    }
+
+    // Sixty metres of ground fill the height of the screen.
+    private double DefaultCameraScale()
+    {
+        var height = GroundHeightMeters / laneMap.GroundScale;
+        var aspect = Math.Max(1.1, widthPixels / Math.Max(1, heightPixels));
+        var extent = new RectangleShape(
+            pose.Position.X - height * aspect / 2, pose.Position.Y + height / 2,
+            pose.Position.X + height * aspect / 2, pose.Position.Y - height / 2);
+        return MapUtil.GetScale(GeographyUnit.Meter, extent, widthPixels, heightPixels);
+    }
+
+    private void ShowVehicle(RoutePose at)
+    {
+        pose = at;
+        vehicle.InternalFeatures.Clear();
+        vehicle.InternalFeatures.Add(new Feature(new PointShape(at.Position), new Dictionary<string, string>
+        {
+            ["Bearing"] = Bearing(at).ToString("0.0", CultureInfo.InvariantCulture)
+        }));
+        UpdateHud(at);
+    }
+
+    private void UpdateHud(RoutePose at)
+    {
+        var scale = laneMap.GroundScale;
+        progress = string.Format(CultureInfo.InvariantCulture, "{0:0.0} mi complete", at.DistanceMeters * scale / 1609.344);
+        speed = string.Format(CultureInfo.InvariantCulture, "{0:0} mph", GroundSpeedMetersPerSecond * 2.23694 + Math.Sin(at.DistanceMeters * 0.018) * 3);
+
+        var legs = laneMap.RouteLegs;
+        var current = 0;
+        while (current + 1 < legs.Count && at.DistanceMeters >= legs[current + 1].StartDistance)
+        {
+            current++;
+        }
+        street = legs[current].Label;
+        if (current + 1 < legs.Count)
+        {
+            var upcoming = legs[current + 1];
+            var feet = Math.Max(0, upcoming.StartDistance - at.DistanceMeters) * scale * 3.28084;
+            instruction = upcoming.Instruction;
+            next = upcoming.Lane.Length == 0
+                ? string.Format(CultureInfo.InvariantCulture, "In {0:0} ft", feet)
+                : string.Format(CultureInfo.InvariantCulture, "In {0:0} ft, use the {1} lane", feet, upcoming.Lane);
+        }
+        else
+        {
+            var remaining = Math.Max(0, laneMap.RouteLength - at.DistanceMeters) * scale * 3.28084;
+            instruction = "Destination ahead";
+            next = string.Format(CultureInfo.InvariantCulture, "In {0:0} ft", remaining);
+        }
+    }
+
+    private async Task SwitchView()
+    {
+        tracking = !tracking;
+        if (tracking)
+        {
+            await map.SetPitchAsync(pitch);
+            return;
+        }
+
+        await map.SetPitchAsync(45);
+        var extent = laneMap.OverviewExtent;
+        await map.ZoomToAsync(extent.GetCenterPoint(), MapUtil.GetScale(GeographyUnit.Meter, extent, widthPixels, heightPixels), 0, 1800);
+    }
+
+    private async Task PitchChanged(ChangeEventArgs e)
+    {
+        pitch = double.Parse((string)e.Value, CultureInfo.InvariantCulture);
+        if (tracking) await map.SetPitchAsync(pitch);
+    }
+
+    // A car seen from above, drawn once: a pale body, a dark cabin, a windscreen, headlights.
+    private static GeoImage VehicleImage()
+    {
+        var image = new GeoImage(60, 100);
+        var canvas = GeoCanvas.CreateDefaultGeoCanvas();
+        canvas.BeginDrawing(image, new RectangleShape(0, 100, 60, 0), GeographyUnit.Meter);
+        var body = new EllipseShape(new PointShape(30, 50), 27, 48, GeographyUnit.Meter, DistanceUnit.Meter);
+        var cabin = new RectangleShape(10, 74, 50, 30);
+        var windscreen = new RectangleShape(12, 80, 48, 70);
+        canvas.DrawArea(body, new GeoPen(GeoColor.FromHtml("#1b1f24"), 2), new GeoSolidBrush(GeoColor.FromHtml("#f3f5f7")), DrawingLevel.LevelOne);
+        canvas.DrawArea(cabin, new GeoPen(GeoColor.FromHtml("#1b1f24"), 1), new GeoSolidBrush(GeoColor.FromHtml("#2c3440")), DrawingLevel.LevelOne);
+        canvas.DrawArea(windscreen, new GeoSolidBrush(GeoColor.FromHtml("#7ef2d9")), DrawingLevel.LevelOne);
+        canvas.DrawEllipse(new PointShape(16, 92), 8, 5, new GeoSolidBrush(GeoColor.FromHtml("#fff3b0")), DrawingLevel.LevelOne);
+        canvas.DrawEllipse(new PointShape(44, 92), 8, 5, new GeoSolidBrush(GeoColor.FromHtml("#fff3b0")), DrawingLevel.LevelOne);
+        canvas.EndDrawing();
+        return image;
+    }
+
+    public void Dispose()
+    {
+        driving.Cancel();
+    }
+
+    // The OpenDRIVE lanes as GeoJSON, one in-memory source per layer named in the file, and
+    // the route as a trace along it with the lane instructions the route file gives.
+    private sealed class LaneMap
+    {
+        public GeoCollection<FeatureSource> Sources { get; private set; }
+        public IReadOnlyList<Vertex> RouteTrace { get; private set; }
+        public IReadOnlyList<RouteLeg> RouteLegs { get; private set; }
+        public RectangleShape OverviewExtent { get; private set; }
+        public double RouteLength { get; private set; }
+        public int MarkingCount { get; private set; }
+        public string Title { get; private set; }
+        public string Attribution { get; private set; }
+        public double GroundScale { get; private set; }
+
+        public static LaneMap Load(string lanesFile, string routeFile)
+        {
+            var lanes = JsonNode.Parse(File.ReadAllText(lanesFile));
+            var byLayer = new Dictionary<string, List<Feature>>(StringComparer.Ordinal);
+            var columnsByLayer = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+            foreach (var node in lanes["features"].AsArray())
+            {
+                var properties = node["properties"].AsObject();
+                var layer = properties["layer"].GetValue<string>();
+                var geometry = node["geometry"];
+                var values = new Dictionary<string, string>(StringComparer.Ordinal);
+                foreach (var pair in properties)
+                {
+                    values[pair.Key] = pair.Value?.ToString() ?? string.Empty;
+                }
+                BaseShape shape = geometry["type"].GetValue<string>() == "Polygon"
+                    ? Polygon(Project(geometry["coordinates"][0].AsArray()))
+                    : new LineShape(Project(geometry["coordinates"].AsArray()));
+                if (!byLayer.TryGetValue(layer, out var list))
+                {
+                    byLayer[layer] = list = new List<Feature>();
+                    columnsByLayer[layer] = new HashSet<string>(StringComparer.Ordinal);
+                }
+                columnsByLayer[layer].UnionWith(values.Keys);
+                list.Add(new Feature(shape, values));
+            }
+
+            var sources = new GeoCollection<FeatureSource>();
+            foreach (var pair in byLayer)
+            {
+                var source = new InMemoryFeatureSource(columnsByLayer[pair.Key].Select(column => new FeatureSourceColumn(column)).ToArray(), pair.Value);
+                source.BuildIndex();
+                sources.Add(pair.Key, source);
+            }
+
+            var routeJson = JsonNode.Parse(File.ReadAllText(routeFile));
+            var points = new List<Vertex>();
+            var ordinals = new List<int>();
+            foreach (var point in routeJson["points"].AsArray())
+            {
+                points.Add(Project(point[0].GetValue<double>(), point[1].GetValue<double>()));
+                ordinals.Add(point[2].GetValue<int>());
+            }
+            var laneInfo = routeJson["lanes"].AsArray()
+                .Select(lane => (Index: lane["index"].GetValue<int>(), Count: lane["count"].GetValue<int>(), Intersection: lane["intersection"].GetValue<bool>()))
+                .ToList();
+
+            var legs = new List<RouteLeg>();
+            string previousLabel = null;
+            for (var i = 0; i < points.Count; i++)
+            {
+                var lane = laneInfo[ordinals[i]];
+                var label = lane.Intersection ? "Intersection" : string.Format(CultureInfo.InvariantCulture, "Lane {0} of {1}", lane.Index, lane.Count);
+                if (label == previousLabel) continue;
+                previousLabel = label;
+                var position = lane.Count <= 1 ? 0.5 : (lane.Index - 1) / (double)(lane.Count - 1);
+                var side = lane.Intersection ? string.Empty : position < 0.34 ? "left" : position > 0.66 ? "right" : "center";
+                var instruction = legs.Count == 0 ? "Start in " + label.ToLowerInvariant()
+                    : lane.Intersection ? "Cross the intersection"
+                    : "Keep to " + label.ToLowerInvariant();
+                legs.Add(new RouteLeg(label, Length(points.Take(i + 1).ToList()), instruction, side));
+            }
+
+            var trace = Densify(points, 8);
+            var midY = trace[trace.Count / 2].Y;
+            var name = Path.GetFileNameWithoutExtension(lanesFile).Replace("Lanes", string.Empty).Replace("Xodr", string.Empty);
+            return new LaneMap
+            {
+                Sources = sources,
+                RouteTrace = trace,
+                RouteLegs = legs,
+                OverviewExtent = ExtentOf(trace, 220),
+                RouteLength = Length(trace),
+                MarkingCount = byLayer.Where(pair => pair.Key.StartsWith("lane_marking", StringComparison.Ordinal)).Sum(pair => pair.Value.Count),
+                Title = name + ", OpenDRIVE HD map",
+                Attribution = routeJson["attribution"]?.GetValue<string>() ?? string.Empty,
+                // Metres on the ground per metre of Spherical Mercator here.
+                GroundScale = 1.0 / Math.Cosh(midY / 6378137.0)
+            };
+        }
+
+        private static List<Vertex> Project(JsonArray coordinates)
+        {
+            return coordinates.Select(c => Project(c[0].GetValue<double>(), c[1].GetValue<double>())).ToList();
+        }
+
+        private static Vertex Project(double longitude, double latitude)
+        {
+            const double radius = 6378137.0;
+            var lat = Math.Max(-85.05112878, Math.Min(85.05112878, latitude));
+            return new Vertex(radius * longitude * Math.PI / 180.0, radius * Math.Log(Math.Tan(Math.PI / 4.0 + lat * Math.PI / 360.0)));
+        }
+
+        private static PolygonShape Polygon(List<Vertex> vertices)
+        {
+            if (vertices.Count > 0 && (vertices[0].X != vertices[vertices.Count - 1].X || vertices[0].Y != vertices[vertices.Count - 1].Y))
+            {
+                vertices.Add(vertices[0]);
+            }
+            return new PolygonShape(new RingShape(vertices));
+        }
+
+        private static List<Vertex> Densify(IReadOnlyList<Vertex> points, double spacing)
+        {
+            var result = new List<Vertex>();
+            for (var i = 0; i < points.Count - 1; i++)
+            {
+                var steps = Math.Max(1, (int)Math.Ceiling(Distance(points[i], points[i + 1]) / spacing));
+                for (var s = 0; s < steps; s++)
+                {
+                    result.Add(Lerp(points[i], points[i + 1], s / (double)steps));
+                }
+            }
+            result.Add(points[points.Count - 1]);
+            return result;
+        }
+
+        private static double Length(IReadOnlyList<Vertex> points)
+        {
+            var total = 0d;
+            for (var i = 0; i < points.Count - 1; i++)
+            {
+                total += Distance(points[i], points[i + 1]);
+            }
+            return total;
+        }
+
+        private static RectangleShape ExtentOf(IEnumerable<Vertex> points, double padding)
+        {
+            var array = points.ToArray();
+            return new RectangleShape(array.Min(p => p.X) - padding, array.Max(p => p.Y) + padding, array.Max(p => p.X) + padding, array.Min(p => p.Y) - padding);
+        }
+    }
+
+    private static double Distance(Vertex a, Vertex b) => Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));
+
+    private static Vertex Lerp(Vertex a, Vertex b, double t) => new Vertex(a.X + (b.X - a.X) * t, a.Y + (b.Y - a.Y) * t);
+
+    private readonly struct RouteLeg
+    {
+        public RouteLeg(string label, double startDistance, string instruction, string lane)
+        {
+            Label = label;
+            StartDistance = startDistance;
+            Instruction = instruction;
+            Lane = lane;
+        }
+
+        public string Label { get; }
+        public double StartDistance { get; }
+        public string Instruction { get; }
+        public string Lane { get; }
+    }
+
+    private sealed class RoutePlayback
+    {
+        private readonly IReadOnlyList<Vertex> route;
+
+        public RoutePlayback(IReadOnlyList<Vertex> route)
+        {
+            this.route = route;
+            Length = LaneMapLength(route);
+        }
+
+        public double Length { get; }
+
+        public RoutePose PoseAtDistance(double targetDistance)
+        {
+            var walked = 0d;
+            for (var i = 0; i < route.Count - 1; i++)
+            {
+                var segment = Distance(route[i], route[i + 1]);
+                if (walked + segment >= targetDistance)
+                {
+                    var t = segment < 0.001 ? 0 : (targetDistance - walked) / segment;
+                    var heading = Math.Atan2(route[i + 1].Y - route[i].Y, route[i + 1].X - route[i].X) * 180 / Math.PI;
+                    return new RoutePose(Lerp(route[i], route[i + 1], t), heading, targetDistance);
+                }
+                walked += segment;
+            }
+            var end = route[route.Count - 1];
+            var previous = route[Math.Max(0, route.Count - 2)];
+            return new RoutePose(end, Math.Atan2(end.Y - previous.Y, end.X - previous.X) * 180 / Math.PI, Length);
+        }
+
+        private static double LaneMapLength(IReadOnlyList<Vertex> points)
+        {
+            var total = 0d;
+            for (var i = 0; i < points.Count - 1; i++)
+            {
+                total += Distance(points[i], points[i + 1]);
+            }
+            return total;
+        }
+    }
+
+    private readonly struct RoutePose
+    {
+        public RoutePose(Vertex position, double headingDegrees, double distanceMeters)
+        {
+            Position = position;
+            HeadingDegrees = headingDegrees;
+            DistanceMeters = distanceMeters;
+        }
+
+        public Vertex Position { get; }
+        public double HeadingDegrees { get; }
+        public double DistanceMeters { get; }
+    }
+}

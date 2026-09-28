@@ -1,0 +1,158 @@
+﻿@page "/render-based-on-rules"
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(0, 0))" Zoom="2">
+            <OverlaysSetting>
+                <VectorTileOverlay Id="Countries" StyleJson="@applied" FeatureSources="@sources" SourceId="features" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:420px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
+        <div style="padding:6px 8px 4px;font-weight:600">style.json - pick a rule, or edit it; the map follows</div>
+        <div style="padding:0 8px 6px;display:flex;flex-direction:column;gap:2px">
+            <label><input type="radio" name="rule" checked="@(rule == RuleMatch)" @onchange="@(() => Pick(RuleMatch))" /> Values - match</label>
+            <label><input type="radio" name="rule" checked="@(rule == RuleStep)" @onchange="@(() => Pick(RuleStep))" /> Ranges - step</label>
+            <label><input type="radio" name="rule" checked="@(rule == RuleFilter)" @onchange="@(() => Pick(RuleFilter))" /> Only what passes - filter</label>
+            <label><input type="radio" name="rule" checked="@(rule == RuleCase)" @onchange="@(() => Pick(RuleCase))" /> Any condition - case</label>
+        </div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                  style="flex:1;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre"></textarea>
+        <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>
+    </div>
+</div>
+
+@code {
+    // One dataset, four expressions - match, step, filter and case: the classic ValueStyle,
+    // ClassBreakStyle, FilterStyle and boolean-expression styles are one mechanism, an
+    // expression in the layer's paint. Every rule ends in a default, so a feature no
+    // condition matches still has a look.
+    private const string RuleMatch = @"{
+  ""layers"": [
+    { ""type"": ""background"",
+      ""paint"": { ""background-color"": ""#DDE8F0"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""Countries02"",
+      ""paint"": {
+          ""fill-outline-color"": ""#FFFFFF"",
+          ""fill-color"": [""match"", [""get"", ""CURR_TYPE""],
+              ""Dollar"", ""rgba(31,119,180,0.8)"",
+              ""Franc"", ""rgba(44,160,44,0.8)"",
+              ""Pound"", ""rgba(214,39,40,0.8)"",
+              ""Peso"", ""rgba(148,103,189,0.8)"",
+              ""rgba(233,232,214,0.8)""] }
+    }
+  ]
+}";
+
+    private const string RuleStep = @"{
+  ""layers"": [
+    { ""type"": ""background"",
+      ""paint"": { ""background-color"": ""#DDE8F0"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""Countries02"",
+      ""paint"": {
+          ""fill-outline-color"": ""#FFFFFF"",
+          ""fill-color"": [""step"", [""to-number"", [""get"", ""POP_CNTRY""]],
+              ""rgba(233,232,214,0.85)"",
+              1000000, ""rgba(253,208,162,0.85)"",
+              10000000, ""rgba(253,141,60,0.85)"",
+              50000000, ""rgba(217,71,1,0.85)"",
+              200000000, ""rgba(127,39,4,0.85)""] }
+    }
+  ]
+}";
+
+    private const string RuleFilter = @"{
+  ""layers"": [
+    { ""type"": ""background"",
+      ""paint"": { ""background-color"": ""#DDE8F0"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""Countries02"",
+      ""paint"": {
+          ""fill-color"": ""rgba(233,232,214,0.8)"",
+          ""fill-outline-color"": ""#FFFFFF"" }
+    },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""Countries02"",
+      ""filter"": [""=="", [""get"", ""LANDLOCKED""], ""Y""],
+      ""paint"": {
+          ""fill-color"": ""rgba(46,139,87,0.8)"",
+          ""fill-outline-color"": ""#FFFFFF"" }
+    }
+  ]
+}";
+
+    private const string RuleCase = @"{
+  ""layers"": [
+    { ""type"": ""background"",
+      ""paint"": { ""background-color"": ""#DDE8F0"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""Countries02"",
+      ""paint"": {
+          ""fill-outline-color"": ""#FFFFFF"",
+          ""fill-color"": [""case"",
+              [""all"", ["">"", [""to-number"", [""get"", ""POP_CNTRY""]], 10000000],
+                      [""=="", [""get"", ""LANDLOCKED""], ""Y""]],
+              ""rgba(255,255,0,0.8)"",
+              ""rgba(233,232,214,0.8)""] }
+    }
+  ]
+}";
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private string rule = RuleMatch;
+    private string styleJson = RuleMatch;
+    private string applied = RuleMatch;
+    private string status = "";
+    private bool ok = true;
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource>
+        {
+            { "Countries02", new ShapeFileFeatureSource("./Data/Shapefile/Countries02.shp") { ProjectionConverter = new ProjectionConverter(4326, 3857) } },
+        };
+    }
+
+    private void Pick(string chosen)
+    {
+        rule = chosen;
+        styleJson = chosen;
+        applied = chosen;
+        ok = true;
+        status = $"applied at {DateTime.Now:HH:mm:ss}";
+    }
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit) return;
+
+        try
+        {
+            JsonNode.Parse(styleJson);
+            applied = styleJson;
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r') + "   (the map is still drawing the last document that worked)";
+        }
+    }
+}

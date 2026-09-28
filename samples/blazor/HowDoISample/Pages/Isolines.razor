@@ -1,0 +1,198 @@
+﻿@page "/isolines"
+@using ThinkGeo.Core
+@using System.Diagnostics
+@using System.Globalization
+@using System.Text.Json.Nodes
+
+<div class="map-container" style="display:flex;flex-direction:column">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:6px 10px;font:12px system-ui;background:#f6f6f4;border-bottom:1px solid #ccc">
+        <select @onchange="PointsChanged" style="font:12px system-ui">
+            <option value="0" selected>@seedPoints.Count points (real sample data)</option>
+            <option value="500">500 points (synthetic)</option>
+            <option value="2000">2,000 points (synthetic)</option>
+        </select>
+        <label><input type="checkbox" checked="@fillBands" @onchange="@(e => { fillBands = (bool)e.Value; Apply(); })" /> fill bands</label>
+        <label><input type="checkbox" checked="@showLabels" @onchange="@(e => { showLabels = (bool)e.Value; Apply(); })" /> labels</label>
+        <label><input type="checkbox" checked="@showPoints" @onchange="@(e => { showPoints = (bool)e.Value; Apply(); })" /> data points (&lt;= 2,000)</label>
+        <label>levels <input type="range" min="2" max="60" step="1" value="@levelCount" @onchange="@(e => { levelCount = (int)Number(e); Apply(); })" style="width:120px;vertical-align:middle" /> @levelCount</label>
+        <label>width <input type="range" min="1" max="8" step="1" value="@lineWidth" @onchange="@(e => { lineWidth = (float)Number(e); Apply(); })" style="width:80px;vertical-align:middle" /> @lineWidth</label>
+        <label>power <input type="range" min="1" max="4" step="0.5" value="@power" @onchange="@(e => { power = Number(e); Apply(); })" style="width:80px;vertical-align:middle" /> @power.ToString("0.0", CultureInfo.InvariantCulture)</label>
+    </div>
+    <div style="flex:1;min-height:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@center" Zoom="12">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light" ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                @if (style != null)
+                {
+                    <VectorTileOverlay Id="Field" @ref="overlay" Style="@style" FeatureSources="@sources" SourceId="field" />
+                }
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="padding:4px 10px;font:11.5px system-ui;color:#333;background:#f6f6f4;border-top:1px solid #ccc">@status</div>
+</div>
+
+@code {
+    private const int FieldResolution = 120;
+    private const int MaxDrawnDataPoints = 2000;
+
+    private MapView map;
+    private VectorTileOverlay overlay;
+    private Dictionary<PointShape, double> seedPoints;
+    private Dictionary<PointShape, double> currentPoints;
+    private RectangleShape dataBounds;
+    private PointShape center;
+    private readonly InMemoryFeatureSource isolines = new InMemoryFeatureSource(new[] { new FeatureSourceColumn("level"), new FeatureSourceColumn("label") });
+    private readonly InMemoryFeatureSource points = new InMemoryFeatureSource();
+    private GeoCollection<FeatureSource> sources;
+    private MapStyle style;
+    private bool fillBands;
+    private bool showLabels = true;
+    private bool showPoints = true;
+    private int levelCount = 25;
+    private float lineWidth = 3;
+    private double power = 2;
+    private int applyRun;
+    private string status = "";
+
+    protected override void OnInitialized()
+    {
+        seedPoints = LoadCsv("./Data/Csv/Frisco_Mosquitos.csv");
+        currentPoints = seedPoints;
+        dataBounds = new RectangleShape(
+            seedPoints.Keys.Min(p => p.X), seedPoints.Keys.Max(p => p.Y),
+            seedPoints.Keys.Max(p => p.X), seedPoints.Keys.Min(p => p.Y));
+        center = dataBounds.GetCenterPoint();
+        sources = new GeoCollection<FeatureSource> { { "isolines", isolines }, { "points", points } };
+        Apply();
+    }
+
+    // The field is interpolated on the server - inverse distance weighting over a grid across
+    // the data - and traced into isoline features there; the browser draws the features, and
+    // reads their level for the colour, the width and the label.
+    private void Apply() => _ = ApplyAsync();
+
+    private async Task ApplyAsync()
+    {
+        var data = currentPoints;
+        var run = ++applyRun;
+        var levels = IsoLineLayer.GetIsoLineLevels(data, levelCount).Distinct().OrderBy(level => level).ToList();
+        var colors = GeoColor.GetColorsInQualityFamily(GeoColors.Blue, GeoColors.Red, levels.Count, ColorWheelDirection.Clockwise).ToList();
+        var type = fillBands ? IsoLineType.ClosedLinesAsPolygons : IsoLineType.LinesOnly;
+        // Closing the lines into band polygons costs far more than tracing them; the bands read
+        // a coarser grid.
+        var resolution = fillBands ? FieldResolution / 2 : FieldResolution;
+
+        var extent = (RectangleShape)dataBounds.CloneDeep();
+        extent.ScaleUp(20);
+        status = string.Format(CultureInfo.InvariantCulture, "{0:N0} points, {1} levels - interpolating on the server...", data.Count, levels.Count);
+        var watch = Stopwatch.StartNew();
+        var features = await Task.Run(() =>
+        {
+            var grid = GridFeatureSource.GenerateGridMatrix(
+                new GridDefinition(extent, extent.Width / resolution, -9999, data),
+                new InverseDistanceWeightedGridInterpolationModel(power, double.MaxValue));
+            return IsoLineLayer.GetIsoFeatures(grid, levels, "level", type, -9999);
+        });
+        watch.Stop();
+        if (run != applyRun) return;
+
+        // Every second level carries its value as a label.
+        isolines.InternalFeatures.Clear();
+        foreach (var feature in features)
+        {
+            var level = double.Parse(feature.ColumnValues["level"], CultureInfo.InvariantCulture);
+            var index = levels.FindIndex(candidate => Math.Abs(candidate - level) < 1e-9);
+            feature.ColumnValues["level"] = level.ToString(CultureInfo.InvariantCulture);
+            feature.ColumnValues["label"] = index % 2 == 0 ? level.ToString("0.#", CultureInfo.InvariantCulture) : "";
+            isolines.InternalFeatures.Add(feature);
+        }
+
+        points.InternalFeatures.Clear();
+        foreach (var point in data.Keys.Take(MaxDrawnDataPoints))
+        {
+            points.InternalFeatures.Add(new Feature(point));
+        }
+
+        // The colour of a level, read from the feature: one expression, every layer.
+        var colorByLevel = new JsonArray("interpolate", new JsonArray("linear"), new JsonArray("to-number", StyleExpressions.Get("level")));
+        for (var i = 0; i < levels.Count; i++)
+        {
+            colorByLevel.Add(levels[i]);
+            colorByLevel.Add(StyleExpressions.Css(colors[i]));
+        }
+
+        var document = new MapStyle();
+        if (fillBands)
+        {
+            document.AddFillLayer("bands", "field", "isolines", GeoColors.Transparent, opacity: 0.45f,
+                paint: new JsonObject { ["fill-color"] = colorByLevel.DeepClone() });
+        }
+        document.AddLineLayer("lines", "field", "isolines", GeoColors.Transparent, lineWidth,
+            paint: new JsonObject { ["line-color"] = colorByLevel.DeepClone() });
+        if (showLabels)
+        {
+            document.AddSymbolLayer("labels", "field", "isolines", textColumn: "label",
+                textColor: GeoColors.Black, haloColor: GeoColors.White, haloWidth: 1.5f, alongLine: true);
+        }
+        if (showPoints)
+        {
+            document.AddCircleLayer("points", "field", "points", GeoColor.FromArgb(160, 40, 40, 40), 2.5f);
+        }
+        style = document;
+
+        status = string.Format(CultureInfo.InvariantCulture,
+            "{0:N0} points, {1} levels - IDW on the server: a {2}x{2} grid and {3:N0} isoline features in {4:N0} ms; the browser draws them",
+            data.Count, levels.Count, resolution, features.Count, watch.ElapsedMilliseconds);
+        StateHasChanged();
+        if (overlay != null) await overlay.RedrawAsync();
+    }
+
+    private void PointsChanged(ChangeEventArgs e)
+    {
+        var count = int.Parse((string)e.Value, CultureInfo.InvariantCulture);
+        currentPoints = count == 0 ? seedPoints : SyntheticPoints(count);
+        Apply();
+    }
+
+    // Synthetic points: a smooth field drawn from the real ones, plus noise.
+    private Dictionary<PointShape, double> SyntheticPoints(int count)
+    {
+        var random = new Random(42);
+        var seeds = seedPoints.ToList();
+        var synthetic = new Dictionary<PointShape, double>(count);
+        while (synthetic.Count < count)
+        {
+            var x = dataBounds.MinX + random.NextDouble() * dataBounds.Width;
+            var y = dataBounds.MinY + random.NextDouble() * dataBounds.Height;
+            double top = 0, bottom = 0;
+            foreach (var seed in seeds)
+            {
+                var dx = x - seed.Key.X;
+                var dy = y - seed.Key.Y;
+                var weight = 1.0 / (dx * dx + dy * dy + 1.0);
+                top += weight * seed.Value;
+                bottom += weight;
+            }
+            synthetic[new PointShape(x, y)] = top / bottom + (random.NextDouble() - 0.5) * 12.0;
+        }
+        return synthetic;
+    }
+
+    private static Dictionary<PointShape, double> LoadCsv(string path)
+    {
+        var data = new Dictionary<PointShape, double>();
+        foreach (var line in File.ReadLines(path))
+        {
+            var parts = line.Split(',');
+            if (parts.Length < 3) continue;
+            data[new PointShape(double.Parse(parts[0], CultureInfo.InvariantCulture), double.Parse(parts[1], CultureInfo.InvariantCulture))] =
+                double.Parse(parts[2], CultureInfo.InvariantCulture);
+        }
+        return data;
+    }
+
+    private static double Number(ChangeEventArgs e) => double.Parse((string)e.Value, CultureInfo.InvariantCulture);
+}

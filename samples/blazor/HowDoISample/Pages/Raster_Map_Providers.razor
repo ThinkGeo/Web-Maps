@@ -1,0 +1,60 @@
+﻿@page "/raster-map-providers"
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10778800, 3915300))" Zoom="13">
+            <OverlaysSetting>
+                @if (openStreetMap)
+                {
+                    <VectorTileOverlay Id="Osm" Style="@osm" />
+                }
+                else
+                {
+                    <ThinkGeoCloudRasterMapsOverlay Id="ThinkGeo" MapType="@mapType" ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                }
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:300px;padding:10px;display:flex;flex-direction:column;gap:6px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Raster maps from a service</div>
+        <label><input type="radio" name="provider" checked="@(!openStreetMap && mapType == ThinkGeoCloudRasterMapsMapType.Light)" @onchange="@(() => ShowThinkGeo(ThinkGeoCloudRasterMapsMapType.Light))" /> ThinkGeo Cloud - Light</label>
+        <label><input type="radio" name="provider" checked="@(!openStreetMap && mapType == ThinkGeoCloudRasterMapsMapType.Dark)" @onchange="@(() => ShowThinkGeo(ThinkGeoCloudRasterMapsMapType.Dark))" /> ThinkGeo Cloud - Dark</label>
+        <label><input type="radio" name="provider" checked="@(!openStreetMap && mapType == ThinkGeoCloudRasterMapsMapType.Aerial)" @onchange="@(() => ShowThinkGeo(ThinkGeoCloudRasterMapsMapType.Aerial))" /> ThinkGeo Cloud - Aerial</label>
+        <label><input type="radio" name="provider" checked="@(!openStreetMap && mapType == ThinkGeoCloudRasterMapsMapType.Hybrid)" @onchange="@(() => ShowThinkGeo(ThinkGeoCloudRasterMapsMapType.Hybrid))" /> ThinkGeo Cloud - Hybrid</label>
+        <label><input type="radio" name="provider" checked="@openStreetMap" @onchange="@(() => openStreetMap = true)" /> OpenStreetMap</label>
+        <div style="margin-top:6px;color:#555">Azure Maps, Google Maps, HERE and Mapbox serve raster tiles the same way: an XYZ address with your key, declared as a raster source the way OpenStreetMap is below.</div>
+        <div style="margin-top:auto;font:11px Consolas,monospace;color:#444">@(openStreetMap ? "MapStyle raster source - tile.openstreetmap.org" : nameof(ThinkGeoCloudRasterMapsOverlay) + " - " + mapType)</div>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private ThinkGeoCloudRasterMapsMapType mapType = ThinkGeoCloudRasterMapsMapType.Light;
+    private bool openStreetMap;
+    private MapStyle osm;
+
+    // Any XYZ raster service is a raster source in a style document, fetched by the browser.
+    protected override void OnInitialized()
+    {
+        osm = new MapStyle()
+            .AddSource("osm", new JsonObject
+            {
+                ["type"] = "raster",
+                ["tiles"] = new JsonArray("https://tile.openstreetmap.org/{z}/{x}/{y}.png"),
+                ["tileSize"] = 256,
+                ["maxzoom"] = 19,
+                ["attribution"] = "© OpenStreetMap contributors"
+            })
+            .AddRasterLayer("osm");
+    }
+
+    private void ShowThinkGeo(ThinkGeoCloudRasterMapsMapType type)
+    {
+        openStreetMap = false;
+        mapType = type;
+    }
+}

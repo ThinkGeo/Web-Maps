@@ -79,7 +79,7 @@
         // Get the feature as another element for doing geoprocessing.
         var targetFeature = features.ElementAt(1);
         targetFeature.ColumnValues["Display"] = "Target";
-        // Do Diference geoprocessing.
+        // Do Difference geoprocessing.
         var result = sourceFeature.GetDifference(targetFeature);
 
         result.ColumnValues["Display"] = "Difference";

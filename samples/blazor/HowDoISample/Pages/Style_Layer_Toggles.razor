@@ -1,0 +1,87 @@
+﻿@page "/style-layer-toggles"
+@using ThinkGeo.Core
+
+<div class="map-container">
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-8234000, 4970000))" Zoom="14">
+        <OverlaysSetting>
+            @if (style != null)
+            {
+                <VectorTileOverlay Id="Basemap" @ref="overlay" Style="@style" />
+            }
+        </OverlaysSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;right:12px;width:300px;max-height:calc(100% - 24px);display:flex;flex-direction:column;background:rgba(255,255,255,.95);border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25);font:12px system-ui">
+        <div style="padding:9px 11px;border-bottom:1px solid #ddd">
+            <div style="font-weight:600">@layers.Count layers</div>
+            <div style="color:#555;margin-top:3px">
+                Turn any of them off. The document records it and the map skips that layer as
+                it draws, so hiding costs no recompile and no tile is fetched again.
+            </div>
+            <div style="margin-top:7px;display:flex;gap:6px">
+                <button style="padding:2px 8px;cursor:pointer" @onclick="@(() => SetAll(true))">All on</button>
+                <button style="padding:2px 8px;cursor:pointer" @onclick="@(() => SetAll(false))">All off</button>
+            </div>
+        </div>
+
+        <div style="overflow:auto;padding:6px 11px 10px">
+            @foreach (var layer in layers)
+            {
+                <label style="display:flex;align-items:center;gap:6px;padding:1px 0;cursor:pointer">
+                    <input type="checkbox" checked="@visible[layer.Id]"
+                           @onchange="@(e => Toggle(layer.Id, (bool)e.Value))" />
+                    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="@layer.Id">
+                        @layer.Id
+                        <span style="color:#888">(@layer.Type)</span>
+                    </span>
+                </label>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private VectorTileOverlay overlay;
+    private MapStyle style;
+    private List<StyleLayer> layers = new List<StyleLayer>();
+    private readonly Dictionary<string, bool> visible = new Dictionary<string, bool>(StringComparer.Ordinal);
+
+    protected override async Task OnInitializedAsync()
+    {
+        // The basemap as a document of its own, so its layers can be listed and switched.
+        style = new MapStyle(ThinkGeoVectorStyles.Light,
+            new ThinkGeoVectorTileSource(GlobalSettings.ThinkGeoApiKey));
+
+        // Compiling fetches the sprite sheet and turns every paint into a delegate, so it is
+        // asked for once, here, rather than read off a property that cannot wait for it.
+        foreach (var layer in await style.GetStyleLayersAsync())
+        {
+            // A layer with no id cannot be addressed, and two with the same id are one checkbox.
+            if (string.IsNullOrEmpty(layer.Id) || visible.ContainsKey(layer.Id)) continue;
+
+            layers.Add(layer);
+            visible[layer.Id] = true;
+        }
+    }
+
+    private async Task Toggle(string layerId, bool show)
+    {
+        visible[layerId] = show;
+        style.SetLayerVisibility(layerId, show);
+        await overlay.RedrawAsync();
+    }
+
+    private async Task SetAll(bool show)
+    {
+        foreach (var layer in layers)
+        {
+            visible[layer.Id] = show;
+            style.SetLayerVisibility(layer.Id, show);
+        }
+
+        await overlay.RedrawAsync();
+    }
+}

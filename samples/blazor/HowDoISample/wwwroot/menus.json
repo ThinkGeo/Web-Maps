@@ -1,30 +1,210 @@
 [
   {
-    "id": "customer-features",
-    "title": "Your Features, Two Ways",
-    "description": "The same application data - drawn shapes, placed markers, labels - once the classic way with a LayerOverlay rendered on the server, and once the new way with a StyleDocument drawn in the browser. Hide a shape on each and watch what it costs.",
-    "href": "customer-features",
-    "source": "Customer_Features",
-    "preicon": "fas fa-columns",
-    "group": null
+    "id": "map-navigation",
+    "title": "Map Navigation",
+    "description": "Zoom to named places, read the center back in latitude and longitude, and keep the map inside limits - RestrictExtent holds panning to a box, MinimumScale and MaximumScale bound how far it zooms.",
+    "href": "map-navigation",
+    "source": "Map_Navigation",
+    "preicon": "fas fa-location-arrow",
+    "group": "Map Navigation"
   },
   {
-    "id": "vector-maps",
-    "title": "Vector Basemaps",
-    "description": "Displays an attractive background map using vector tiles from the ThinkGeo Cloud.",
-    "href": "",
-    "source": "Vector_Basemaps",
+    "id": "vehicle-navigation",
+    "title": "Vehicle Navigation",
+    "description": "Follows a vehicle along a GPS route: the camera eases from point to point, turned to the heading and tilted, while the trail grows behind it. Switch to an overview, tilt the camera, or restyle the same tiles dark.",
+    "href": "vehicle-navigation",
+    "source": "Vehicle_Navigation",
+    "preicon": "fas fa-location-arrow",
+    "group": "Map Navigation"
+  },
+  {
+    "id": "lane-level-navigation",
+    "title": "Lane-Level Navigation",
+    "description": "An OpenDRIVE HD map of Wolfsburg - lanes, markings, crossings - handed to the browser whole and drawn by level, while the camera follows a vehicle down the route with lane-level instructions.",
+    "href": "lane-level-navigation",
+    "source": "Lane_Level_Navigation",
+    "preicon": "fas fa-road",
+    "group": "Map Navigation"
+  },
+  {
+    "id": "3d-terrain",
+    "title": "3D Terrain",
+    "description": "Raises the Grand Canyon from open elevation tiles and drapes aerial imagery over it, with a relief layer whose style you can edit as the map follows.",
+    "href": "3d-terrain",
+    "source": "Terrain_3D",
+    "preicon": "fas fa-mountain",
+    "group": "3D & Camera"
+  },
+  {
+    "id": "perspective-and-3d",
+    "title": "Perspective & 3D Buildings",
+    "description": "Tilt and rotate the camera over midtown Manhattan - the buildings are a fill-extrusion layer already in the street style, so they rise and lean with the perspective. The sliders set Pitch and Bearing; a right-drag on the map does the same.",
+    "href": "perspective-and-3d",
+    "source": "Perspective_And_3D",
+    "preicon": "fas fa-cube",
+    "group": "3D & Camera"
+  },
+  {
+    "id": "the-globe",
+    "title": "The Globe",
+    "description": "The same vector tiles drawn as a ball. Setting MapView.Projection eases between globe, web mercator and vertical perspective; the tiles never leave web mercator and none is fetched again.",
+    "href": "the-globe",
+    "source": "The_Globe",
+    "preicon": "fas fa-globe-europe",
+    "group": "Projections"
+  },
+  {
+    "id": "project-features",
+    "title": "Project Features",
+    "description": "Reprojects features written in decimal degrees into the Spherical Mercator the map is in, and draws them in the browser.",
+    "href": "project-features",
+    "source": "Project_Features",
+    "preicon": "fas fa-globe-americas",
+    "group": "Projections"
+  },
+  {
+    "id": "project-a-raster",
+    "title": "Project a Raster",
+    "description": "Warps a GeoTIFF stored in WGS84 into US National Atlas Equal Area as it is drawn, with a projection converter on the raster's image source.",
+    "href": "project-a-raster",
+    "source": "Project_A_Raster",
+    "preicon": "fas fa-globe",
+    "group": "Projections"
+  },
+  {
+    "id": "any-projection-satellite",
+    "title": "Any Projection, Satellite Imagery",
+    "description": "ThinkGeo Cloud aerial tiles warped into Robinson, Mollweide, Eckert IV and other projections as they are drawn, by a projection converter on the layer, with the classic renderer.",
+    "href": "any-projection-satellite",
+    "source": "Any_Projection_Satellite",
+    "preicon": "fas fa-satellite",
+    "group": "Projections"
+  },
+  {
+    "id": "cross-the-dateline",
+    "title": "Cross the Dateline",
+    "description": "A Los Angeles to Shanghai great-circle route through the antimeridian, stored with continuous longitudes past -180 and drawn whole - no seam on the globe, one at 180 degrees in Web Mercator, the same data folded back into the world at the tile cut.",
+    "href": "cross-the-dateline",
+    "source": "Cross_The_Dateline",
+    "preicon": "fas fa-plane",
+    "group": "Projections"
+  },
+  {
+    "id": "vector-map-providers",
+    "title": "Vector Map Providers",
+    "description": "The hosted vector maps, each a style: ThinkGeo Maps light and dark over the same tiles, OpenFreeMap and any other server by its style URL alone.",
+    "href": "vector-map-providers",
+    "source": "Vector_Map_Providers",
     "preicon": "fal fa-bezier-curve",
-    "group": "Legacy"
+    "group": "Maps from a Service - Vector"
   },
   {
-    "id": "raster-maps",
-    "title": "Raster Basemaps",
-    "description": "Displays an attractive background map using raster tiles from the ThinkGeo Cloud.",
-    "href": "raster-basemaps",
-    "source": "Raster_Basemaps",
+    "id": "raster-map-providers",
+    "title": "Raster Map Providers",
+    "description": "The hosted raster maps: ThinkGeo Cloud light, dark, aerial and hybrid, and OpenStreetMap as a raster source in a style document.",
+    "href": "raster-map-providers",
+    "source": "Raster_Map_Providers",
     "preicon": "fas fa-layer-group",
-    "group": "Legacy"
+    "group": "Maps from a Service - Raster"
+  },
+  {
+    "id": "style-layer-toggles",
+    "title": "Style Layer Toggles",
+    "description": "Every layer of the basemap's style, listed with a checkbox. SetLayerVisibility switches any of them at runtime - the document records it, the map skips that layer as it draws, and no tile is fetched again.",
+    "href": "style-layer-toggles",
+    "source": "Style_Layer_Toggles",
+    "preicon": "fas fa-layer-group",
+    "group": "Styling"
+  },
+  {
+    "id": "insert-under-labels",
+    "title": "Insert a Layer Under the Labels",
+    "description": "A translucent wash placed above the streets and below the labels with InsertLayerAt(StyleLayerSlot.UnderLabels) - a spot in the layer stack an overlay, always on top of everything, can never reach.",
+    "href": "insert-under-labels",
+    "source": "Insert_Under_Labels",
+    "preicon": "fas fa-layer-group",
+    "group": "Styling"
+  },
+  {
+    "id": "render-points-lines-and-polygons",
+    "title": "Render Points, Lines and Polygons",
+    "description": "Style points, lines and polygons from three shapefiles, and label each of them, from the style document beside the map - edit it and the map follows.",
+    "href": "render-points-lines-and-polygons",
+    "source": "Render_Points_Lines_And_Polygons",
+    "preicon": "fas fa-draw-polygon",
+    "group": "Styling"
+  },
+  {
+    "id": "render-based-on-rules",
+    "title": "Render Based on Rules",
+    "description": "One dataset, four expressions - match, step, filter and case: value, class-break, filter and boolean-expression styling are one mechanism, an expression in the layer's paint.",
+    "href": "render-based-on-rules",
+    "source": "Render_Based_On_Rules",
+    "preicon": "fas fa-project-diagram",
+    "group": "Styling"
+  },
+  {
+    "id": "advanced-labels",
+    "title": "Advanced Labels",
+    "description": "Six label lessons on crafted data - text bends along its line, anchors from its own column, yields to priority, wraps and recases, keeps its icon when the name cannot fit, and writes CJK vertically. Each is a style.json beside the map, editable while it runs.",
+    "href": "advanced-labels",
+    "source": "Advanced_Labels",
+    "preicon": "fas fa-font",
+    "group": "Styling"
+  },
+  {
+    "id": "heatmap",
+    "title": "Heatmap",
+    "description": "A heatmap layer over point sightings: the document decides what each sighting weighs, and radius, intensity, opacity and the color ramp are live controls changed in place.",
+    "href": "heatmap",
+    "source": "Heatmap",
+    "preicon": "fas fa-fire",
+    "group": "Styling"
+  },
+  {
+    "id": "display-cluster-points",
+    "title": "Display Cluster Points",
+    "description": "Hundreds of points handed to the browser and grouped there - VectorTileOverlay.Cluster turns the source into a clustered one, and the style draws each cluster as a numbered circle that splits as the map zooms in.",
+    "href": "display-cluster-points",
+    "source": "Display_Cluster_Points",
+    "preicon": "fas fa-braille",
+    "group": "Styling"
+  },
+  {
+    "id": "features-two-ways",
+    "title": "Your Features, Two Ways",
+    "description": "The same application data - drawn shapes, placed markers, labels - once the classic way with a LayerOverlay rendered on the server, and once the new way with a MapStyle drawn in the browser. Hide a shape on each and watch what it costs.",
+    "href": "features-two-ways",
+    "source": "Features_Two_Ways",
+    "preicon": "fas fa-columns",
+    "group": "Styling"
+  },
+  {
+    "id": "isolines",
+    "title": "Isolines",
+    "description": "Isolines over scattered readings: the field is interpolated on the server - inverse distance weighting over a grid - and traced into features there; the browser draws them, coloured, banded and labelled by level.",
+    "href": "isolines",
+    "source": "Isolines",
+    "preicon": "fas fa-water",
+    "group": "Dynamic Data"
+  },
+  {
+    "id": "wind-field",
+    "title": "Wind as a Vector Field",
+    "description": "NDFD surface wind read from two GeoTIFF bands with GDAL and drawn as a field of arrows, each turned where the wind goes and sized and coloured by speed.",
+    "href": "wind-field",
+    "source": "Wind_Field",
+    "preicon": "fas fa-wind",
+    "group": "Dynamic Data"
+  },
+  {
+    "id": "nexrad-radar",
+    "title": "NEXRAD Weather Radar",
+    "description": "Live US weather radar drawn over the basemap as a raster tile source the browser reads directly, animating the last hour of the national reflectivity mosaic from the Iowa Environmental Mesonet.",
+    "href": "nexrad-radar",
+    "source": "Nexrad_Radar",
+    "preicon": "fas fa-cloud-showers-heavy",
+    "group": "Dynamic Data"
   },
   {
     "id": "marker",
@@ -58,26 +238,8 @@
     "title": "Measure Distance & Area",
     "description": "Demonstrates how to measure distances and areas on the map.",
     "href": "measure-distance-area",
-    "source": "Measure_Distance_ Area",
+    "source": "Measure_Distance_Area",
     "preicon": "fas fa-ruler",
-    "group": "Legacy"
-  },
-  {
-    "id": "vehicle-tracking",
-    "title": "Vehicle Tracking",
-    "description": "A simple vehicle tracking sample showing how to plot markers, interact with features and manipulate the map.",
-    "href": "vehicle-tracking",
-    "source": "Vehicle_Tracking",
-    "preicon": "fas fa-truck-moving",
-    "group": "Legacy"
-  },
-  {
-    "id": "basic-styling",
-    "title": "Basic Styling",
-    "description": "Visualize your data with some of ThinkGeo's built-in styles, including PointStyle, LineStyle, AreaStyle, CompoundStyles, and PredefinedStyles.",
-    "href": "basic-styling",
-    "source": "Basic_Styling",
-    "preicon": "fas fa-palette",
     "group": "Legacy"
   },
   {
@@ -108,15 +270,6 @@
     "group": "Legacy"
   },
   {
-    "id": "projection",
-    "title": "Use different projections",
-    "description": "Shows how to convert a layer's projection from EPSG:4326 to another projection.",
-    "href": "projection",
-    "source": "Projection",
-    "preicon": "far fa-map",
-    "group": "Legacy"
-  },
-  {
     "id": "geometric-functions",
     "title": "Geometric Functions",
     "description": "Shows how to explore all the different APIs for Geometric Functions.",
@@ -142,5 +295,14 @@
     "source": "US_Demographic",
     "preicon": "fas fa-chart-bar",
     "group": "Legacy"
+  },
+  {
+    "id": "export-map",
+    "title": "Export the Map as an Image",
+    "description": "Save the current map view as a PNG - the map's own WebGL canvas, read back at screen resolution and handed to the browser to download.",
+    "href": "export-map",
+    "source": "Export_Map",
+    "preicon": "fas fa-camera",
+    "group": "Printing & Export"
   }
-]
+]

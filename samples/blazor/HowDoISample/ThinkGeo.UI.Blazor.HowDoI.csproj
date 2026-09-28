@@ -13,46 +13,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.Core" Version="15.0.0-beta048" />
-    <PackageReference Include="ThinkGeo.Gdal" Version="15.0.0-beta048" />
-    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.0.0-beta048" />
+    <PackageReference Include="ThinkGeo.Core" Version="15.0.0-beta181" />
+    <PackageReference Include="ThinkGeo.Gdal" Version="15.0.0-beta181" />
+    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.0.0-beta181" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Pages\US_Demographic.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Basic_Styling.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Draw_and_Modify_Geometries.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Error.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Vector_Basemaps.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Load_Feature_Source.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Load_Raster_Source.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Mark_the_Places.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Measure_Distance_ Area.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Balloon_Popup.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Raster_Basemaps.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Vehicle_Tracking.razor">
+    <Content Update="Pages\*.razor">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

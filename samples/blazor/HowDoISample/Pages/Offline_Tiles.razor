@@ -1,0 +1,126 @@
+@page "/offline-tiles"
+@using ThinkGeo.Core
+@using System.Text
+@using System.Text.Json
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10777700, 3912400))" Zoom="12">
+            <OverlaysSetting>
+                @if (style != null)
+                {
+                    <VectorTileOverlay @key="@version" Id="@("tiles-" + version)" Style="@style" />
+                }
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:340px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Offline tiles</div>
+        <div style="color:#555">Vector tiles kept in a file on the server - an MBTiles or a PMTiles archive - reach the browser one tile at a time over the circuit, as the map asks for them; no tile server, no internet. The archive's own style.json can draw them, or a bare style made from the layers its metadata lists.</div>
+        <label><input type="radio" name="archive" checked="@(archive == "pmtiles")" @onchange="@(() => PickAsync("pmtiles"))" /> PMTiles - Frisco (frisco.pmtiles)</label>
+        <label><input type="radio" name="archive" checked="@(archive == "mbtiles")" @onchange="@(() => PickAsync("mbtiles"))" /> MBTiles - the world (maplibre.mbtiles)</label>
+        <label><input type="checkbox" checked="@ownStyle" @onchange="@(args => StyleChangedAsync((bool)args.Value))" /> draw with the archive's style.json</label>
+        <div style="color:#555">@status</div>
+    </div>
+</div>
+
+@code {
+    private const string BareLayer = @",
+    { ""type"": ""fill"", ""source-layer"": ""LAYER"", ""filter"": [""=="", [""geometry-type""], ""Polygon""],
+      ""paint"": { ""fill-color"": ""rgba(90,140,200,0.35)"", ""fill-outline-color"": ""#2A4A7A"" } },
+    { ""type"": ""line"", ""source-layer"": ""LAYER"", ""filter"": [""=="", [""geometry-type""], ""LineString""],
+      ""paint"": { ""line-color"": ""#2A4A7A"", ""line-width"": 1 } },
+    { ""type"": ""circle"", ""source-layer"": ""LAYER"", ""filter"": [""=="", [""geometry-type""], ""Point""],
+      ""paint"": { ""circle-radius"": 4, ""circle-color"": ""#C0392B"", ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 1.5 } }";
+
+    private MapView map;
+    private MapStyle style;
+    private int version;
+    private string archive = "pmtiles";
+    private bool ownStyle = true;
+    private string status = "";
+    private RectangleShape bounds;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await OpenAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        await map.ZoomToExtentAsync(bounds);
+    }
+
+    private async Task PickAsync(string name)
+    {
+        archive = name;
+        await OpenAsync();
+        await map.ZoomToExtentAsync(bounds);
+    }
+
+    private async Task StyleChangedAsync(bool own)
+    {
+        ownStyle = own;
+        await OpenAsync();
+    }
+
+    // The archive is opened on the server; its metadata says which layers it holds and how far
+    // it reaches. The style names the archive as its source, and the overlay serves it.
+    private async Task OpenAsync()
+    {
+        try
+        {
+            IVectorTileSource tiles;
+            string metadata;
+            string stylePath;
+            if (archive == "mbtiles")
+            {
+                var mbtiles = new MbTilesVectorTileSource("./Data/Mbtiles/maplibre.mbtiles");
+                await mbtiles.OpenAsync();
+                tiles = mbtiles;
+                metadata = mbtiles.MetadataJson;
+                stylePath = "./Data/Mbtiles/style.json";
+                bounds = await mbtiles.GetBoundingBoxAsync();
+            }
+            else
+            {
+                var pmtiles = new PmTilesVectorTileSource("./Data/Pmtiles/frisco.pmtiles");
+                await pmtiles.OpenAsync();
+                tiles = pmtiles;
+                metadata = pmtiles.MetadataJson;
+                stylePath = "./Data/Pmtiles/style.json";
+                bounds = pmtiles.GetBoundingBox();
+            }
+
+            style = ownStyle ? new MapStyle().AddStyle(stylePath, tiles) : new MapStyle().AddStyle(BareStyle(metadata), tiles);
+            version++;
+            status = $"{tiles.GetType().Name}, zoom {tiles.MinDataZoom} to {tiles.MaxDataZoom}.";
+        }
+        catch (Exception exception)
+        {
+            status = "Unavailable: " + exception.Message.Split('\n')[0];
+        }
+    }
+
+    // One fill, line and circle layer per layer the archive's metadata declares.
+    private static string BareStyle(string metadata)
+    {
+        var layers = new StringBuilder(@"{ ""layers"": [
+    { ""type"": ""background"", ""paint"": { ""background-color"": ""#F0F0EC"" } }");
+        using (var document = JsonDocument.Parse(metadata))
+        {
+            foreach (var declared in document.RootElement.GetProperty("vector_layers").EnumerateArray())
+            {
+                layers.Append(BareLayer.Replace("LAYER", declared.GetProperty("id").GetString()));
+            }
+        }
+        return layers.Append(" ] }").ToString();
+    }
+}

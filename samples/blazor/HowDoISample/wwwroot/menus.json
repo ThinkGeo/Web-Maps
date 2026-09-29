@@ -306,6 +306,15 @@
     "group": "Your Data"
   },
   {
+    "id": "offline-tiles",
+    "title": "Offline Tiles",
+    "description": "Vector tiles kept in an MBTiles or PMTiles file on the server, served to the browser one tile at a time over the circuit - no tile server, no internet.",
+    "href": "offline-tiles",
+    "source": "Offline_Tiles",
+    "preicon": "fas fa-archive",
+    "group": "Your Data"
+  },
+  {
     "id": "shape-operations",
     "title": "Shape Operations",
     "description": "Buffer, union, intersect, difference, simplify, convex hull and more, run on shapes drawn on the map and animated as the parameter changes.",
@@ -627,6 +636,24 @@
     "href": "export-map",
     "source": "Export_Map",
     "preicon": "fas fa-camera",
+    "group": "Printing & Export"
+  },
+  {
+    "id": "export-to-pdf",
+    "title": "Export to PDF",
+    "description": "Two ways onto a PDF page: the browser's picture of the map as raster, or the extent drawn again on the server as vector - paths and text - through PdfGeoCanvas.",
+    "href": "export-to-pdf",
+    "source": "Export_To_Pdf",
+    "preicon": "far fa-file-pdf",
+    "group": "Printing & Export"
+  },
+  {
+    "id": "draw-the-map-on-an-image",
+    "title": "Draw the Map on an Image",
+    "description": "No map control: layers drawn straight into a GeoImage on the server with a GeoCanvas, shown and saved as a picture.",
+    "href": "draw-the-map-on-an-image",
+    "source": "Draw_The_Map_On_An_Image",
+    "preicon": "far fa-image",
     "group": "Printing & Export"
   }
 ]

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using ThinkGeo.UI.Blazor.HowDoI.Shared;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,7 +22,9 @@ namespace ThinkGeo.UI.Blazor.HowDoI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
-            services.AddServerSideBlazor();
+            // The Export to PDF page's raster print brings the map's picture back over the circuit;
+            // the default limit on what the browser may send in one message is far below a screenshot.
+            services.AddServerSideBlazor().AddHubOptions(options => options.MaximumReceiveMessageSize = 16 * 1024 * 1024);
             services.AddSingleton<MenuService>();
             services.AddSingleton<DemographicMapService>();
             services.AddSingleton<SourceCodeLoader>();
@@ -46,6 +50,18 @@ namespace ThinkGeo.UI.Blazor.HowDoI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
+                // A file a page has made - the PDF of Export to PDF, the picture of Draw the Map
+                // on an Image - is fetched from here as any file is, by the token the page got.
+                endpoints.MapGet("/export/{id}", context =>
+                {
+                    if (ExportStore.TryGet((string)context.Request.RouteValues["id"], out var bytes, out var contentType))
+                    {
+                        context.Response.ContentType = contentType;
+                        return context.Response.Body.WriteAsync(bytes, 0, bytes.Length);
+                    }
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    return System.Threading.Tasks.Task.CompletedTask;
+                });
                 endpoints.MapFallbackToPage("/_Host");
             });
         }

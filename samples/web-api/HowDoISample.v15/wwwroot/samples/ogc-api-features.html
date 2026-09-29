@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>OGC API Features</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <div class="note">Named places of Spain from the IGN's OGC API - Features service, read by OgcApiAsyncFeatureSource in latitude and longitude and projected to the map on the server before the tiles are cut at tiles/places/.</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const layers = [
+            { type: 'circle', 'source-layer': 'places', paint: { 'circle-radius': 5, 'circle-color': 'rgba(139,0,0,1)' } },
+            { type: 'symbol', 'source-layer': 'places', layout: { 'text-field': ['get', 'etiqueta'], 'text-font': ['Noto Sans Bold'], 'text-size': 13, 'text-offset': [0, -0.9], 'text-anchor': 'bottom' },
+              paint: { 'text-color': 'rgba(139,0,0,1)', 'text-halo-color': 'rgba(245,245,245,1)', 'text-halo-width': 2 } },
+        ];
+        const map = tg.createMap({ center: [235690, 5057360], zoom: 14 });
+        await tg.ready(map);
+        const overlay = tg.vectorOverlay(map, 'places', layers, { maxzoom: 14 });
+        tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(layers), (edited) => overlay.setLayers(edited));
+    </script>
+</body>
+</html>

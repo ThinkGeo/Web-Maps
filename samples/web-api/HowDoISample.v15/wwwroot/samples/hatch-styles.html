@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Hatch Styles</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="controls">
+                <p>Every GeoHatchStyle is drawn by AreaStyle.CreateHatchStyle on the server, fetched as a 32-pixel picture and added to the map's images under its own name; fill-pattern picks one by that name. Choose a hatch here or type its name into the editor.</p>
+                <div class="row"><span>Hatch</span><select id="hatch" style="flex:1"></select></div>
+            </div>
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const layers = (hatch) => [
+            { type: 'fill', 'source-layer': 'parks', paint: { 'fill-pattern': 'hatch-' + hatch } },
+            { type: 'line', 'source-layer': 'parks', paint: { 'line-color': '#3F7F45', 'line-width': 1.5 } },
+            { type: 'symbol', 'source-layer': 'parks', minzoom: 15, layout: { 'text-field': ['get', 'NAME'], 'text-font': ['Noto Sans Bold'], 'text-size': 12 }, paint: { 'text-color': '#2F5F35', 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.5 } },
+        ];
+        const hatches = await tg.get('samples/styling/hatches');
+        const map = tg.createMap({ center: [-10777610, 3909120], zoom: 16 });
+        await tg.ready(map);
+        // A pattern image is fetched the first time a document names it.
+        const loaded = new Set();
+        const ensure = async (edited) => {
+            for (const layer of edited) {
+                const name = layer.paint && layer.paint['fill-pattern'];
+                if (typeof name === 'string' && name.startsWith('hatch-') && !loaded.has(name) && hatches.includes(name.slice(6))) {
+                    loaded.add(name);
+                    map.addImage(name, (await map.loadImage(tg.root + 'samples/styling/hatch.png?name=' + name.slice(6))).data);
+                }
+            }
+        };
+        await ensure(layers('DiagonalCross'));
+        const overlay = tg.vectorOverlay(map, 'parks', layers('DiagonalCross'));
+        const select = document.getElementById('hatch');
+        for (const name of hatches) select.appendChild(Object.assign(document.createElement('option'), { value: name, textContent: name }));
+        select.value = 'DiagonalCross';
+        const styleEditor = tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(layers('DiagonalCross')), async (edited) => {
+            await ensure(edited);
+            overlay.setLayers(edited);
+            const named = edited.map(l => l.paint && l.paint['fill-pattern']).find(n => typeof n === 'string' && n.startsWith('hatch-'));
+            if (named && hatches.includes(named.slice(6))) select.value = named.slice(6);
+        });
+        select.addEventListener('change', () => { styleEditor.text = styleEditor.text.replace(/("fill-pattern"\s*:\s*"hatch-)([A-Za-z0-9]+)(")/, `$1${select.value}$3`); });
+    </script>
+</body>
+</html>

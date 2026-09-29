@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Nautical Charts</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        .pill { display: inline-block; padding: 2px 10px; border-radius: 10px; color: #fff; font-weight: 600; background: #888; }
+        .pill.ok { background: #2E7D32; } .pill.caution { background: #E69100; } .pill.danger { background: #C62828; }
+        .fact { display: flex; justify-content: space-between; gap: 8px; } .fact b { font-family: Consolas, monospace; }
+        #aids, #hazards { margin: 0; padding-left: 18px; color: #444; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow" style="width:340px">
+            <h2>Nautical charts</h2>
+            <p>An S-57 chart of Chicago Harbor drawn by the NauticalChartsFeatureLayer with its embedded S-52 styling - depth areas coloured by the safety depths, contours, lights, buoys - on the server into tiles at raster/nautical-chart/. The browser has the picture; the chart's objects stay on the server, and a ship under way asks it at every step what the water it is in holds.</p>
+            <div class="row"><label>Draft <input type="number" id="draft" min="1" max="20" step="0.5" value="6.5" style="width:60px"> m</label><button class="btn primary" id="sail">Sail</button><button class="btn" id="draw">Draw a route</button></div>
+            <div class="row"><span>Status</span><span class="pill" id="status-pill">docked</span></div>
+            <div class="fact"><span>Charted depth</span><b id="depth">-</b></div>
+            <div class="fact"><span>Under the keel</span><b id="under-keel">-</b></div>
+            <div style="font-weight:600;margin-top:4px">Aids to navigation nearby</div>
+            <ul id="aids"><li>-</li></ul>
+            <div style="font-weight:600;margin-top:4px">Hazards within 500 m</div>
+            <ul id="hazards"><li>none</li></ul>
+            <div style="font-weight:600;margin-top:4px">Restricted areas here</div>
+            <div id="restricted" style="color:#444">-</div>
+            <div class="status" id="status"></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const map = tg.createMap({ center: [-9752000, 5137000], zoom: 12, basemap: null });
+        await tg.ready(map);
+        map.addSource('cloud', { type: 'raster', tiles: [`https://cloud.thinkgeo.com/api/v2/maps/raster/light/x1/3857/512/{z}/{x}/{y}.png?apikey=${tg.apiKey}`], tileSize: 512, maxzoom: 19, attribution: '© ThinkGeo' });
+        map.addLayer({ id: 'cloud', type: 'raster', source: 'cloud' });
+        tg.rasterOverlay(map, 'nautical-chart');
+
+        // The route, and the wake behind the ship coloured by what the chart said there.
+        let route = [[-87.597, 41.893], [-87.575, 41.897], [-87.558, 41.882], [-87.560, 41.864], [-87.586, 41.871], [-87.597, 41.893]];
+        const line = tg.geojsonOverlay(map, 'route', [{ type: 'line', paint: { 'line-color': '#1F3A93', 'line-width': 2, 'line-dasharray': [2, 2] } }]);
+        const wake = tg.geojsonOverlay(map, 'wake', [{ type: 'line', paint: { 'line-color': ['match', ['get', 'status'], 'danger', '#C62828', 'caution', '#E69100', 'ok', '#2E7D32', '#888888'], 'line-width': 4 } }]);
+        const element = document.createElement('div');
+        element.innerHTML = '<svg width="26" height="40" viewBox="0 0 26 40"><path d="M13 1 L24 24 L24 38 L2 38 L2 24 Z" fill="#1F3A93" stroke="#fff" stroke-width="2"/></svg>';
+        const ship = new maplibregl.Marker({ element, rotationAlignment: 'map' }).setLngLat(route[0]).addTo(map);
+        const showRoute = () => { line.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: route }, properties: {} }); ship.setLngLat(route[0]); };
+        showRoute();
+
+        // The ship moves a step along the route every tick; at each step the server is asked
+        // what the chart holds there for a ship of this draft, and the answer is shown and left
+        // in the wake. One question at a time: a step whose answer is late is not asked twice.
+        const stepMeters = 60;
+        let timer = null, at = 0, along = 0, asking = false, segments = [];
+        const bearing = (a, b) => Math.atan2((b[0] - a[0]) * Math.cos(a[1] * Math.PI / 180), b[1] - a[1]) * 180 / Math.PI;
+        const metersBetween = (a, b) => { const [ax, ay] = tg.toMeters(a[0], a[1]), [bx, by] = tg.toMeters(b[0], b[1]); return Math.hypot(bx - ax, by - ay) * Math.cos(a[1] * Math.PI / 180); };
+        const tick = async () => {
+            if (asking) return;
+            const from = route[at], to = route[(at + 1) % route.length], length = metersBetween(from, to);
+            along += stepMeters;
+            if (along >= length) { along = 0; at = (at + 1) % route.length; return; }
+            const t = along / length, here = [from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t];
+            ship.setLngLat(here).setRotation(bearing(from, to));
+            asking = true;
+            try {
+                const r = await tg.get(`samples/nautical/helm?lng=${here[0]}&lat=${here[1]}&draft=${document.getElementById('draft').value}`);
+                tell(r);
+                segments.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [segments.length ? segments[segments.length - 1].geometry.coordinates[1] : here, here] }, properties: { status: r.status } });
+                if (segments.length > 400) segments.shift();
+                wake.setData({ type: 'FeatureCollection', features: segments });
+            } catch (e) {
+                tg.say(document.getElementById('status'), e.message, false);
+            }
+            asking = false;
+        };
+        const tell = (r) => {
+            const pill = document.getElementById('status-pill');
+            pill.className = 'pill ' + r.status; pill.textContent = r.status === 'ok' ? 'clear water' : r.status === 'caution' ? 'caution' : r.status === 'danger' ? 'grounding risk' : 'no depth charted';
+            document.getElementById('depth').textContent = r.depth ? `${r.depth.min} - ${r.depth.max} m` : '-';
+            document.getElementById('under-keel').textContent = r.underKeel == null ? '-' : `${r.underKeel >= 0 ? '+' : ''}${r.underKeel} m`;
+            document.getElementById('aids').innerHTML = r.aids.length ? r.aids.map(a => `<li>${a.name} - ${a.distance} m</li>`).join('') : '<li>none within 800 m</li>';
+            document.getElementById('hazards').innerHTML = r.hazards.length ? r.hazards.map(h => `<li>${h.name} - ${h.distance} m</li>`).join('') : '<li>none</li>';
+            document.getElementById('restricted').innerHTML = r.restricted.map(z => `<div><b>${z.name}</b>${z.details ? ' - ' + z.details : ''}</div>`).join('');
+        };
+        const sail = document.getElementById('sail');
+        const stop = () => { clearInterval(timer); timer = null; sail.textContent = 'Sail'; };
+        sail.addEventListener('click', () => { if (timer) stop(); else { timer = setInterval(tick, 250); sail.textContent = 'Stop'; } });
+        // A route of your own: click the vertices, double-click to finish; the ship sails it in a loop.
+        document.getElementById('draw').addEventListener('click', () => {
+            stop();
+            tg.draw(map, 'line', (feature) => { route = feature.geometry.coordinates.concat([feature.geometry.coordinates[0]]); at = 0; along = 0; segments = []; wake.setData(null); showRoute(); });
+        });
+    </script>
+</body>
+</html>

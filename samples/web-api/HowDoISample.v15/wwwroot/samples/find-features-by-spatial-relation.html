@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Find Features by Spatial Relation</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        #grid table { border-collapse: collapse; font-size: 11px; }
+        #grid th, #grid td { border: 1px solid #ddd; padding: 2px 5px; text-align: left; white-space: nowrap; }
+        #grid th { background: #eee; position: sticky; top: 0; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="controls">
+                <h2>Relation</h2>
+                <div id="relations" style="display:flex;flex-direction:column;gap:2px"></div>
+                <label id="radius-box">Distance (meters): <span id="radius-value">500</span><input type="range" id="radius" min="100" max="2000" value="500" style="width:100%"></label>
+                <div id="sql-box" class="row"><input type="text" id="sql" value="SELECT FID, ZONING, PD, SUP FROM Zoning WHERE ZONING = 'AG'" style="flex:1;font:12px Consolas,monospace"><button class="btn primary" id="run-sql">Run</button></div>
+                <p id="hint"></p>
+                <div id="result" style="font-weight:600"></div>
+                <div id="grid" hidden style="max-height:200px;overflow:auto"></div>
+            </div>
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const relations = ['Containing', 'Crossing', 'Disjoint', 'Intersecting', 'Overlapping', 'Touching', 'Within the shape', 'Within a distance', 'By SQL over the table'];
+        const frames = { 'Crossing': [[-10776670, 3914800], 27870], 'Disjoint': [[-10778020, 3914693], 32900], 'Intersecting': [[-10777924, 3914325], 11220], 'Overlapping': [[-10777891, 3914206], 26200], 'Touching': [[-10776520, 3919250], 18060], 'Within the shape': [[-10778569, 3914000], 33100], 'By SQL over the table': [[-10778500, 3914500], 72000] };
+        const layers = [{ type: 'fill', 'source-layer': 'zoning', paint: { 'fill-color': 'rgba(147,112,219,0.35)', 'fill-outline-color': '#6A4FA3' } }];
+
+        const map = tg.createMap({ center: [-10779430, 3914970], zoom: 15 });
+        await tg.ready(map);
+        const zoning = tg.vectorOverlay(map, 'zoning', layers);
+        tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(layers), (edited) => zoning.setLayers(edited));
+        map.addImage('pin', (await map.loadImage(tg.root + 'samples/shapes/circle.png?fill=000000&size=8')).data);
+        const matches = tg.geojsonOverlay(map, 'matches', [
+            { type: 'fill', paint: { 'fill-color': 'rgba(25,25,112,0.35)', 'fill-outline-color': '#191970' } },
+            { type: 'line', paint: { 'line-color': '#191970', 'line-width': 2 } },
+        ]);
+        const query = tg.geojsonOverlay(map, 'query', [
+            { type: 'line', paint: { 'line-color': '#000000', 'line-width': 2 } },
+            { type: 'symbol', filter: ['==', ['geometry-type'], 'Point'], layout: { 'icon-image': 'pin', 'icon-allow-overlap': true } },
+        ]);
+        let relation = relations[0], seed = null, cancel = null;
+        const escape = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+        // The query goes to the server, which runs it on the shapefile with QueryTools.
+        const run = async (geometry) => {
+            const r = await tg.post('samples/shapes/relation', { relation, geometry, radius: +document.getElementById('radius').value });
+            seed = r.query;
+            query.setData({ type: 'Feature', geometry: r.query, properties: {} });
+            matches.setData(r.matches);
+            document.getElementById('result').textContent = r.result;
+        };
+        // SQL over the shapefile's attribute table: the rows come back as a table, and the
+        // parcels they belong to are the matches.
+        const sql = async () => {
+            const grid = document.getElementById('grid');
+            try {
+                const r = await tg.get('samples/shapes/sql?sql=' + encodeURIComponent(document.getElementById('sql').value));
+                grid.innerHTML = `<table><tr>${r.columns.map(c => `<th>${escape(c)}</th>`).join('')}</tr>${r.rows.map(row => `<tr>${row.map(v => `<td>${escape(v)}</td>`).join('')}</tr>`).join('')}</table>`;
+                query.setData(null);
+                matches.setData(r.matches);
+                document.getElementById('result').textContent = r.result;
+            } catch (e) {
+                grid.innerHTML = `<div style="color:#b00020">${escape(e.message)}</div>`;
+            }
+        };
+        const choose = (name) => {
+            relation = name;
+            if (cancel) { cancel(); cancel = null; }
+            const sqlQuery = name === 'By SQL over the table';
+            const pointQuery = name === 'Containing' || name === 'Within a distance', lineQuery = name === 'Crossing' || name === 'Touching';
+            document.getElementById('radius-box').style.display = name === 'Within a distance' ? '' : 'none';
+            document.getElementById('sql-box').style.display = sqlQuery ? '' : 'none';
+            document.getElementById('grid').style.display = sqlQuery ? '' : 'none';
+            document.getElementById('hint').textContent = sqlQuery ? 'The table is the shapefile\'s own, named after the file, read through GDAL, whose OGR runs the SQL on the server. Select FID and the parcels light up.'
+                : pointQuery ? 'Click the map to query somewhere else.'
+                : name === 'Touching' ? 'Touching is exact - the seed is one parcel\'s own edge. A line you draw yourself will almost always match nothing.'
+                : lineQuery ? 'Draw a line to query somewhere else.' : 'Draw a polygon to query somewhere else.';
+            const frame = frames[name] || [[-10779430, 3914970], 18060];
+            map.easeTo({ center: tg.toLngLat(frame[0][0], frame[0][1]), zoom: tg.zoomForScale(frame[1]) });
+            if (sqlQuery) { sql(); return; }
+            if (!pointQuery) cancel = tg.draw(map, lineQuery ? 'line' : 'polygon', (feature) => { run(feature.geometry); choose(name); });
+            run(null);
+        };
+        map.on('click', (e) => { if (relation === 'Containing' || relation === 'Within a distance') run({ type: 'Point', coordinates: [e.lngLat.lng, e.lngLat.lat] }); });
+        document.getElementById('radius').addEventListener('input', (e) => { document.getElementById('radius-value').textContent = e.target.value; run(seed); });
+        document.getElementById('run-sql').addEventListener('click', sql);
+        document.getElementById('sql').addEventListener('keydown', (e) => { if (e.key === 'Enter') sql(); });
+        const list = document.getElementById('relations');
+        relations.forEach((name, i) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'relation', checked: i === 0 });
+            radio.addEventListener('change', () => choose(name));
+            label.append(radio, name);
+            list.appendChild(label);
+        });
+        choose(relations[0]);
+    </script>
+</body>
+</html>

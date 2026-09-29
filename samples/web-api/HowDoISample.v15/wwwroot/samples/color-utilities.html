@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Color Utilities</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <div class="legend" id="legend" style="left:auto;right:332px"><div style="font-weight:600;margin-bottom:4px">Housing units per block group</div><div id="legend-rows"></div></div>
+        <aside class="panel narrow">
+            <h2>Colour utilities</h2>
+            <p>On the server, ColorCloudClient hands back a family of colours that go together - a hue's shades, analogous, complementary, contrasting, quality, tetrad or triad - from a colour you give it or one it picks. Six of them class the housing units of Frisco's census block groups, cut into tiles at tiles/housing/.</p>
+            <label>Family <select id="family"></select></label>
+            <label><input type="checkbox" id="from"> from this colour <input type="color" id="base" value="#2E7BB6" disabled></label>
+            <button class="btn primary" id="generate" style="align-self:flex-start">Generate colours</button>
+            <div class="status" id="status"></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const families = ['Hue', 'Analogous', 'Complementary', 'Contrasting', 'Quality', 'Tetrad', 'Triad'];
+        const breaks = [0, 1000, 2000, 3000, 4000, 5000];
+        for (const name of families) document.getElementById('family').appendChild(Object.assign(document.createElement('option'), { value: name, textContent: name }));
+        document.getElementById('from').addEventListener('change', (e) => document.getElementById('base').disabled = !e.target.checked);
+
+        // The block groups classed by H_UNITS: a step expression with one colour per break.
+        const style = (palette) => [{ type: 'fill', 'source-layer': 'housing', paint: {
+            'fill-color': palette.length < 2 ? palette[0] : ['step', ['to-number', ['get', 'H_UNITS']], palette[0], ...breaks.slice(1, palette.length).flatMap((b, i) => [b, palette[i + 1]])],
+            'fill-opacity': 0.75, 'fill-outline-color': 'rgba(80,80,80,0.6)' } }];
+        const map = tg.createMap({ center: [-10777700, 3912400], zoom: 11 });
+        await tg.ready(map);
+        const overlay = tg.vectorOverlay(map, 'housing', style(['#EEEEEE']));
+        const status = document.getElementById('status');
+        const generate = async () => {
+            tg.say(status, 'asking ThinkGeo Cloud...');
+            const family = document.getElementById('family').value;
+            try {
+                const result = await tg.post('samples/cloud/colors', { family, count: breaks.length, color: document.getElementById('from').checked ? document.getElementById('base').value : null });
+                overlay.setLayers(style(result.colors));
+                document.getElementById('legend-rows').innerHTML = result.colors.map((c, i) => `<div><span class="swatch" style="background:${c}"></span> ${i === result.colors.length - 1 ? 'over ' + breaks[i] : breaks[i] + ' to ' + breaks[i + 1]}</div>`).join('');
+                tg.say(status, `${result.colors.length} colours in the ${family.toLowerCase()} family.`);
+            } catch (e) {
+                tg.say(status, e.message, false);
+            }
+        };
+        document.getElementById('generate').addEventListener('click', generate);
+        generate();
+    </script>
+</body>
+</html>

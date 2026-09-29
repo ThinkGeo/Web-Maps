@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Routing Traveling Salesperson</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow" style="width:340px">
+            <h2>Traveling salesperson</h2>
+            <p>The stops go to the server in no particular order; RoutingCloudClient.GetOptimizedRouteAsync answers with the order that makes the shortest round trip, and the route through them. Click the map to add a stop.</p>
+            <div class="row"><button class="btn" id="reset">Start over</button><span class="status" id="status"></span></div>
+            <div class="list" id="segments"></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const firstStops = [[-10776986.85, 3908680.24], [-10776836.12, 3912348.04], [-10778917.01, 3909965.17], [-10779631.80, 3915721.82], [-10774900.61, 3912552.36]].map(p => tg.toLngLat(p[0], p[1]));
+        const map = tg.createMap({ center: [-10778000, 3912200], zoom: 12 });
+        await tg.ready(map);
+        const route = tg.geojsonOverlay(map, 'route', [{ type: 'line', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#9370DB', 'line-width': 4 } }]);
+        const highlight = tg.geojsonOverlay(map, 'highlight', [{ type: 'line', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#FFD400', 'line-width': 8, 'line-opacity': 0.9 } }]);
+        const stops = tg.geojsonOverlay(map, 'stops', [
+            { type: 'circle', paint: { 'circle-radius': 10, 'circle-color': '#6A3DB8', 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 2 } },
+            { type: 'symbol', layout: { 'text-field': ['get', 'order'], 'text-font': ['Noto Sans Bold'], 'text-size': 11, 'text-allow-overlap': true }, paint: { 'text-color': '#FFFFFF' } },
+            { type: 'symbol', layout: { 'text-field': ['get', 'label'], 'text-font': ['Noto Sans Bold'], 'text-size': 12, 'text-offset': [0, -1.5], 'text-anchor': 'bottom', 'text-allow-overlap': true }, paint: { 'text-color': '#3A1F70', 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.5 } },
+        ]);
+        const status = document.getElementById('status'), list = document.getElementById('segments');
+        let waypoints = firstStops.slice(), busy = false;
+
+        const ask = async () => {
+            busy = true;
+            tg.say(status, 'asking ThinkGeo Cloud...');
+            try {
+                const result = await tg.post('samples/cloud/route', { stops: waypoints, optimize: true });
+                route.setData(result.route); stops.setData(result.stops); highlight.clear();
+                list.innerHTML = '';
+                for (const segment of result.segments) {
+                    const row = document.createElement('div');
+                    row.innerHTML = `<div>${segment.instruction}</div><small>${(segment.distance / 1000).toFixed(2)} km, ${Math.floor(segment.seconds / 60)}:${String(Math.round(segment.seconds % 60)).padStart(2, '0')}</small>`;
+                    row.addEventListener('click', () => { for (const r of list.children) r.classList.toggle('picked', r === row); highlight.setData({ type: 'Feature', geometry: segment.geometry, properties: {} }); tg.fit(map, segment.bounds, 0); });
+                    list.appendChild(row);
+                }
+                tg.say(status, `${waypoints.length} stops in the best order, ${(result.meters / 1000).toFixed(1)} km round trip; ${result.segments.length} segments - click one.`);
+                tg.fit(map, result.bounds, 0);
+            } catch (e) {
+                tg.say(status, e.message, false);
+            }
+            busy = false;
+        };
+        map.on('click', (e) => { if (busy || waypoints.length >= 12) return; waypoints.push([e.lngLat.lng, e.lngLat.lat]); ask(); });
+        document.getElementById('reset').addEventListener('click', () => { if (busy) return; waypoints = firstStops.slice(); ask(); });
+        ask();
+    </script>
+</body>
+</html>

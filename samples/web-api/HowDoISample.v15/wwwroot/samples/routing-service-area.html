@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Routing Service Area</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <div class="legend" style="left:auto;right:332px">
+            <div style="font-weight:600;margin-bottom:4px">Drive time from the point</div>
+            <div><span class="swatch" style="background:rgba(46,160,67,0.45)"></span> within 15 minutes</div>
+            <div><span class="swatch" style="background:rgba(240,200,40,0.45)"></span> within 30 minutes</div>
+            <div><span class="swatch" style="background:rgba(240,140,30,0.45)"></span> within 45 minutes</div>
+            <div><span class="swatch" style="background:rgba(210,50,40,0.45)"></span> within 60 minutes</div>
+        </div>
+        <aside class="panel narrow">
+            <h2>Service area</h2>
+            <p>How far a drive of 15, 30, 45 and 60 minutes reaches from a point: on the server, RoutingCloudClient.GetServiceAreaAsync answers with one polygon per limit. Click the map to ask from somewhere else.</p>
+            <div class="status" id="status"></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const map = tg.createMap({ center: [-10774380, 3907010], zoom: 9 });
+        await tg.ready(map);
+        const areas = tg.geojsonOverlay(map, 'areas', [{ type: 'fill', layout: { 'fill-sort-key': ['-', 100, ['to-number', ['get', 'minutes']]] },
+            paint: { 'fill-color': ['match', ['get', 'minutes'], '15', 'rgba(46,160,67,0.45)', '30', 'rgba(240,200,40,0.45)', '45', 'rgba(240,140,30,0.45)', 'rgba(210,50,40,0.45)'], 'fill-outline-color': 'rgba(60,60,60,0.6)' } }]);
+        const center = tg.geojsonOverlay(map, 'center', [{ type: 'circle', paint: { 'circle-radius': 7, 'circle-color': '#1F3A93', 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 2 } }]);
+        const status = document.getElementById('status');
+        let busy = false;
+        const ask = async (lngLat) => {
+            if (busy) return;
+            busy = true;
+            tg.say(status, 'asking ThinkGeo Cloud...');
+            center.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: lngLat }, properties: {} });
+            areas.clear();
+            try {
+                const result = await tg.post('samples/cloud/service-area', { lng: lngLat[0], lat: lngLat[1] });
+                areas.setData(result.areas);
+                const [x, y] = tg.toMeters(lngLat[0], lngLat[1]);
+                tg.say(status, `${result.count} service areas around ${Math.round(x)}, ${Math.round(y)}.`);
+                tg.fit(map, result.bounds, 0);
+            } catch (e) {
+                tg.say(status, e.message, false);
+            }
+            busy = false;
+        };
+        map.on('click', (e) => ask([e.lngLat.lng, e.lngLat.lat]));
+        ask(tg.toLngLat(-10776836.14, 3912350.71));
+    </script>
+</body>
+</html>

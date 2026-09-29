@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Advanced Labels</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="controls">
+                <div style="font-weight:600">labels - pick a lesson, or edit its document; the map follows</div>
+                <div id="lessons" style="display:flex;flex-direction:column;gap:2px"></div>
+            </div>
+            <div class="editor">
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        // Everything a label will do, one lesson per document: bend along its line, anchor where
+        // its own data says, yield to a higher priority, wrap and recase, keep its icon when its
+        // name cannot fit, and write CJK vertically. The data is built in code on the server to
+        // give each lesson exactly the situation it is about, and cut into tiles at tiles/lessons/.
+        const background = { type: 'background', paint: { 'background-color': '#F4F2EC' } };
+        const only = (kind) => ['==', ['get', 'KIND'], kind];
+        const halo = { 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.4 };
+        const lessons = {
+            'Along a line - curved text': { frame: [[-10786000, 3916000], 45000], layers: [background,
+                { type: 'line', 'source-layer': 'lessons', filter: only('curve'), paint: { 'line-color': '#A1887F', 'line-width': 5 } },
+                { type: 'symbol', 'source-layer': 'lessons', filter: only('curve'), layout: { 'symbol-placement': 'line', 'text-field': ['get', 'NAME'], 'text-font': ['Noto Sans Bold'], 'text-size': 15 }, paint: { 'text-color': '#4E342E', ...halo } }] },
+            'Anchors from the data': { frame: [[-10770000, 3916000], 22000], layers: [background,
+                { type: 'circle', 'source-layer': 'lessons', filter: only('anchor'), paint: { 'circle-radius': 4, 'circle-color': '#1E88E5' } },
+                { type: 'symbol', 'source-layer': 'lessons', filter: only('anchor'), layout: { 'text-field': ['get', 'NAME'], 'text-font': ['Noto Sans Regular'], 'text-anchor': ['get', 'ANCHOR'], 'text-offset': [0, 0], 'text-size': 12 }, paint: { 'text-color': '#37474F', 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.2 } }] },
+            'Priority - who survives the crowd': { frame: [[-10786000, 3904000], 40000], layers: [background,
+                { type: 'circle', 'source-layer': 'lessons', filter: only('rank'), paint: { 'circle-radius': 3, 'circle-color': '#90A4AE' } },
+                { type: 'symbol', 'source-layer': 'lessons', filter: only('rank'), layout: { 'symbol-sort-key': ['to-number', ['get', 'RANK']], 'text-field': ['get', 'NAME'], 'text-font': ['Noto Sans Bold'], 'text-size': 15 }, paint: { 'text-color': ['step', ['to-number', ['get', 'RANK']], '#B71C1C', 4, '#37474F'], ...halo } }] },
+            'Wrap and transform': { frame: [[-10770000, 3904000], 30000], layers: [background,
+                { type: 'circle', 'source-layer': 'lessons', filter: only('wrap'), paint: { 'circle-radius': 4, 'circle-color': '#43A047' } },
+                { type: 'symbol', 'source-layer': 'lessons', filter: only('wrap'), layout: { 'text-field': ['get', 'NAME'], 'text-font': ['Noto Sans Regular'], 'text-max-width': 8, 'text-transform': 'uppercase', 'text-anchor': 'top', 'text-offset': [0, 0.5], 'text-size': 12 }, paint: { 'text-color': '#1B5E20', 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.2 } }] },
+            'Icon stays, text yields': { frame: [[-10786000, 3892000], 20000], layers: [background,
+                { type: 'symbol', 'source-layer': 'lessons', filter: only('poi'), layout: { 'icon-image': 'dot', 'text-field': ['get', 'NAME'], 'text-font': ['Noto Sans Regular'], 'text-optional': true, 'text-anchor': 'top', 'text-offset': [0, 0.7], 'text-size': 13 }, paint: { 'text-color': '#4527A0', 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.2 } }] },
+            'CJK writes vertically': { frame: [[-10770000, 3892000], 45000], layers: [background,
+                { type: 'line', 'source-layer': 'lessons', filter: only('cjk'), paint: { 'line-color': '#80CBC4', 'line-width': 5 } },
+                { type: 'symbol', 'source-layer': 'lessons', filter: only('cjk'), layout: { 'symbol-placement': 'line', 'text-field': ['get', 'NAME'], 'text-font': ['Noto Sans Regular'], 'text-size': 18 }, paint: { 'text-color': '#00695C', ...halo } }] },
+        };
+        const map = tg.createMap({ center: [-10786000, 3916000], zoom: 12, basemap: null });
+        await tg.ready(map);
+        // The one image the documents reference: the dot the text-optional lesson keeps when a
+        // name yields, a point style drawn once on the server.
+        map.addImage('dot', (await map.loadImage(tg.root + 'samples/shapes/circle.png?fill=5E35B1&size=10')).data);
+        const first = Object.keys(lessons)[0];
+        const overlay = tg.vectorOverlay(map, 'lessons', lessons[first].layers);
+        const styleEditor = tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(lessons[first].layers), (edited) => overlay.setLayers(edited));
+        const frame = (name) => map.easeTo({ center: tg.toLngLat(lessons[name].frame[0][0], lessons[name].frame[0][1]), zoom: tg.zoomForScale(lessons[name].frame[1]) });
+        const list = document.getElementById('lessons');
+        Object.keys(lessons).forEach((name, i) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'lesson', checked: i === 0 });
+            radio.addEventListener('change', () => { styleEditor.text = tg.styleText(lessons[name].layers); frame(name); });
+            label.append(radio, name);
+            list.appendChild(label);
+        });
+        frame(first);
+    </script>
+</body>
+</html>

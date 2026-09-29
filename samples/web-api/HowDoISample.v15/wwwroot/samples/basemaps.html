@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Basemaps</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow" style="width:300px">
+            <h2>Basemaps from a service</h2>
+            <div style="font-weight:600">Vector styles</div>
+            <div id="vector" style="display:flex;flex-direction:column;gap:2px"></div>
+            <label><input type="radio" name="basemap" id="custom-radio"> Any style URL</label>
+            <div id="custom-box" style="display:none;flex-direction:column;gap:6px">
+                <textarea id="custom" rows="3" spellcheck="false" style="font:12px Consolas,monospace">https://demotiles.maplibre.org/style.json</textarea>
+                <button class="btn primary" id="load" style="align-self:flex-start">Load</button>
+            </div>
+            <div style="font-weight:600;margin-top:4px">Raster tiles</div>
+            <div id="raster" style="display:flex;flex-direction:column;gap:2px"></div>
+            <p>A vector basemap is a style URL: ThinkGeo Maps' light and dark are two styles over the same keyed tiles, and Mapbox, Esri or TomTom are their style URL with your key. A raster basemap is an XYZ address declared as a raster source, which is how Azure Maps, Google Maps, HERE and the rest are served too. The browser fetches either; the server has no part in it.</p>
+            <div id="status" style="margin-top:auto;font:11px Consolas,monospace;color:#444;word-break:break-all"></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const styles = {
+            'ThinkGeo Maps - Light': 'https://cdn.thinkgeo.com/worldstreets-gl-styles/1.0.0/light.json',
+            'ThinkGeo Maps - Dark': 'https://cdn.thinkgeo.com/worldstreets-gl-styles/1.0.0/dark.json',
+            'OpenFreeMap - Liberty': 'https://tiles.openfreemap.org/styles/liberty',
+            'OpenFreeMap - Positron': 'https://tiles.openfreemap.org/styles/positron',
+            'OpenFreeMap - Dark': 'https://tiles.openfreemap.org/styles/dark',
+        };
+        const cloud = (type, ext) => `https://cloud.thinkgeo.com/api/v2/maps/raster/${type}/x1/3857/512/{z}/{x}/{y}.${ext}?apikey=${tg.apiKey}`;
+        const rasters = {
+            'ThinkGeo Cloud - Light': { tiles: cloud('light', 'png'), tileSize: 512 },
+            'ThinkGeo Cloud - Dark': { tiles: cloud('dark', 'png'), tileSize: 512 },
+            'ThinkGeo Cloud - Aerial': { tiles: cloud('aerial', 'jpeg'), tileSize: 512 },
+            'ThinkGeo Cloud - Hybrid': { tiles: cloud('hybrid', 'png'), tileSize: 512 },
+            'OpenStreetMap': { tiles: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', tileSize: 256, attribution: '© OpenStreetMap contributors' },
+        };
+        const map = tg.createMap({ center: [-10779700, 3912000], zoom: 15, pitch: 45 });
+        const status = document.getElementById('status');
+
+        // Either kind is a style the map is handed whole: a URL, or a document of one raster
+        // source with a raster layer over it.
+        const show = (style, shown) => { map.setStyle(style); status.textContent = shown; };
+        const choice = (list, name, checked, pick) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'basemap', checked });
+            radio.addEventListener('change', () => { document.getElementById('custom-box').style.display = 'none'; pick(); });
+            label.append(radio, name);
+            document.getElementById(list).appendChild(label);
+        };
+        Object.entries(styles).forEach(([name, url], i) => choice('vector', name, i === 0, () => show(url, url)));
+        Object.entries(rasters).forEach(([name, p]) => choice('raster', name, false, () => show({
+            version: 8,
+            sources: { tiles: { type: 'raster', tiles: [p.tiles], tileSize: p.tileSize, maxzoom: 19, attribution: p.attribution || '© ThinkGeo' } },
+            layers: [{ id: 'tiles', type: 'raster', source: 'tiles' }],
+        }, p.tiles.replace(tg.apiKey, '{key}'))));
+        document.getElementById('custom-radio').addEventListener('change', () => document.getElementById('custom-box').style.display = 'flex');
+        document.getElementById('load').addEventListener('click', () => { const url = document.getElementById('custom').value.trim(); show(url, url); });
+        status.textContent = styles['ThinkGeo Maps - Light'];
+    </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WFS</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <div class="note">Cadastral parcels of the Netherlands from PDOK's WFS 2.0 service. The server asks the service for the features each tile needs, cuts them at tiles/parcels/, and the browser draws the tiles; the service is never called from the browser.</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const layers = [
+            { type: 'fill', 'source-layer': 'parcels', paint: { 'fill-color': 'rgba(255,140,0,0.18)' } },
+            { type: 'line', 'source-layer': 'parcels', paint: { 'line-color': 'rgba(255,69,0,1)', 'line-width': 2 } },
+            { type: 'symbol', 'source-layer': 'parcels', layout: { 'text-field': ['get', 'perceelnummer'], 'text-font': ['Noto Sans Bold'], 'text-size': 11 },
+              paint: { 'text-color': 'rgba(150,40,0,1)', 'text-halo-color': 'rgba(255,255,255,1)', 'text-halo-width': 1.5 } },
+        ];
+        const map = tg.createMap({ center: [544950, 6867650], zoom: 17 });
+        await tg.ready(map);
+        const overlay = tg.vectorOverlay(map, 'parcels', layers, { maxzoom: 17 });
+        tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(layers), (edited) => overlay.setLayers(edited));
+    </script>
+</body>
+</html>

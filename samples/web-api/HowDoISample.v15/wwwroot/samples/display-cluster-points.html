@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Display Cluster Points</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <div class="legend" style="left:12px;top:12px;bottom:auto;width:250px">
+            <div style="font-weight:600;margin-bottom:6px">Cluster points</div>
+            <div style="color:#555" id="note"></div>
+        </div>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        // The points are handed to the browser whole and grouped there: a clustered GeoJSON
+        // source, and a style that reads the count the map adds to each cluster. Zoom in and the
+        // clusters split; zoom out and they merge - the grouping is a property of the view,
+        // recomputed as it changes, with no tile cut.
+        const sightings = await tg.get('samples/styling/sightings');
+        document.getElementById('note').textContent = `${sightings.features.length} simulated sightings across the metros. Each circle is a cluster - the number is how many fall inside it. Zoom in and the clusters split into their own points; zoom out and they merge again.`;
+        const map = tg.createMap({ center: [-10500000, 4300000], zoom: 4 });
+        await tg.ready(map);
+        map.addSource('sightings', { type: 'geojson', data: sightings, cluster: true, clusterRadius: 55, clusterMaxZoom: 12 });
+        // clusters (has point_count), the count on top, and the single points that are not in a
+        // cluster - the three layers every clustered source is drawn with.
+        map.addLayer({ id: 'clusters', type: 'circle', source: 'sightings', filter: ['has', 'point_count'],
+            paint: { 'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 20, '#f1a340', 60, '#d7301f'], 'circle-radius': ['step', ['get', 'point_count'], 14, 20, 20, 60, 28], 'circle-opacity': 0.85, 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 2 } });
+        map.addLayer({ id: 'cluster-count', type: 'symbol', source: 'sightings', filter: ['has', 'point_count'],
+            layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-font': ['Noto Sans Bold'], 'text-size': 13 }, paint: { 'text-color': '#FFFFFF' } });
+        map.addLayer({ id: 'unclustered', type: 'circle', source: 'sightings', filter: ['!', ['has', 'point_count']],
+            paint: { 'circle-color': '#8856a7', 'circle-radius': 5, 'circle-opacity': 0.9, 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 1.5 } });
+    </script>
+</body>
+</html>

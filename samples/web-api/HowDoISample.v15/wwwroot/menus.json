@@ -1,0 +1,418 @@
+[
+  {
+    "id": "getting-started",
+    "title": "Getting Started",
+    "description": "One shapefile on the server, cut into vector tiles and drawn by the browser, with the map's own zoom and extent limits.",
+    "source": "GettingStarted",
+    "preicon": "fas fa-file",
+    "group": "Getting Started"
+  },
+  {
+    "id": "map-navigation",
+    "title": "Map Navigation",
+    "description": "Zoom, scale, centre, rotation and pitch set from code, an overview map that turns with the map, and the globe.",
+    "source": "Extending",
+    "preicon": "fas fa-location-arrow",
+    "group": "Getting Started"
+  },
+  {
+    "id": "vector-or-raster-tiles",
+    "title": "Vector Tiles or Raster Tiles",
+    "description": "One style.json served two ways, side by side: vector tiles the browser draws, or raster tiles the server draws from the same document.",
+    "source": "Tiles",
+    "preicon": "fas fa-file",
+    "group": "Getting Started"
+  },
+  {
+    "id": "basemaps",
+    "title": "Basemaps",
+    "description": "ThinkGeo Maps, OpenFreeMap or any style URL as a vector basemap; ThinkGeo Cloud or OpenStreetMap as raster tiles.",
+    "source": "",
+    "preicon": "fal fa-bezier-curve",
+    "group": "Maps from a Service"
+  },
+  {
+    "id": "wfs",
+    "title": "WFS",
+    "description": "Parcels from a WFS 2.0 service, fetched by the server tile by tile and drawn in the browser.",
+    "source": "Services",
+    "preicon": "fas fa-server",
+    "group": "Maps from a Service"
+  },
+  {
+    "id": "ogc-api-features",
+    "title": "OGC API Features",
+    "description": "Places from an OGC API Features service, projected on the server and cut into tiles.",
+    "source": "Services",
+    "preicon": "fas fa-map-marker-alt",
+    "group": "Maps from a Service"
+  },
+  {
+    "id": "noaa-weather-stations",
+    "title": "NOAA Weather Stations",
+    "description": "Live weather station readings from NOAA, coloured by temperature.",
+    "source": "Services",
+    "preicon": "fas fa-thermometer-half",
+    "group": "Maps from a Service"
+  },
+  {
+    "id": "noaa-weather-warnings",
+    "title": "NOAA Weather Warnings",
+    "description": "The warnings NOAA has active right now, coloured by severity.",
+    "source": "Services",
+    "preicon": "fas fa-exclamation-triangle",
+    "group": "Maps from a Service"
+  },
+  {
+    "id": "load-wms",
+    "title": "WMS and WMTS",
+    "description": "A WMS layer and a WMTS layer, each requested tile by tile from its server.",
+    "source": "Services",
+    "preicon": "fas fa-server",
+    "group": "Maps from a Service"
+  },
+  {
+    "id": "vector-file-formats",
+    "title": "Vector File Formats",
+    "description": "Shapefile, GeoJSON, KML, GPX, TAB, TinyGeo, WKB or features built in code, drawn by one style in the browser or on the server.",
+    "source": "YourData",
+    "preicon": "fas fa-file-alt",
+    "group": "Your Data"
+  },
+  {
+    "id": "raster-file-formats",
+    "title": "Raster File Formats",
+    "description": "GeoTIFF, JPEG, MrSID, JPEG2000, ECW or anything GDAL reads, drawn on the server and warped into the map's projection.",
+    "source": "YourData",
+    "preicon": "fas fa-file-image",
+    "group": "Your Data"
+  },
+  {
+    "id": "databases",
+    "title": "Databases",
+    "description": "SQLite, GeoPackage, file geodatabase, PostGIS or SQL Server tables, drawn by one style in the browser or on the server.",
+    "source": "YourData",
+    "preicon": "fas fa-database",
+    "group": "Your Data"
+  },
+  {
+    "id": "offline-tiles",
+    "title": "MBTiles and PMTiles",
+    "description": "Vector tiles kept in an archive file on the server and handed to the browser one at a time; no tile server, no internet.",
+    "source": "YourData",
+    "preicon": "fas fa-archive",
+    "group": "Your Data"
+  },
+  {
+    "id": "custom-feature-sources",
+    "title": "Custom Data Format",
+    "description": "A FeatureSource of your own: one overridden method reads a CSV, and the map treats it like any shapefile.",
+    "source": "Extending",
+    "preicon": "fas fa-puzzle-piece",
+    "group": "Your Data"
+  },
+  {
+    "id": "nautical-charts",
+    "title": "Nautical Charts",
+    "description": "An S-57 chart drawn with its S-52 styling on the server, and a ship under way asking the chart at every step about depth, aids and hazards.",
+    "source": "NauticalCharts",
+    "preicon": "fas fa-file",
+    "group": "Your Data"
+  },
+  {
+    "id": "render-points-lines-and-polygons",
+    "title": "Points, Lines and Polygons",
+    "description": "Style and label points, lines and polygons from three shapefiles; edit the style.json and the map follows.",
+    "source": "Styling",
+    "preicon": "fas fa-draw-polygon",
+    "group": "Styling"
+  },
+  {
+    "id": "render-based-on-rules",
+    "title": "Style by Rules",
+    "description": "Value, class-break, filter and boolean styling as one mechanism: an expression in the layer's paint.",
+    "source": "Styling",
+    "preicon": "fas fa-project-diagram",
+    "group": "Styling"
+  },
+  {
+    "id": "us-demographic",
+    "title": "Choropleth Map",
+    "description": "The 2010 census classed with breaks taken from the data, and a legend read from the same breaks.",
+    "source": "Styling",
+    "preicon": "fas fa-fill-drip",
+    "group": "Styling"
+  },
+  {
+    "id": "advanced-labels",
+    "title": "Advanced Labels",
+    "description": "Six label lessons: text along a line, anchors from a column, priority, wrapping, icons that stay, vertical CJK.",
+    "source": "Styling",
+    "preicon": "fas fa-font",
+    "group": "Styling"
+  },
+  {
+    "id": "heatmap",
+    "title": "Heatmap",
+    "description": "A heatmap over point sightings, with weight, radius, intensity and colour ramp as live controls.",
+    "source": "Styling",
+    "preicon": "fas fa-fire",
+    "group": "Styling"
+  },
+  {
+    "id": "display-cluster-points",
+    "title": "Cluster Points",
+    "description": "Hundreds of points grouped in the browser into numbered circles that split as the map zooms in.",
+    "source": "Styling",
+    "preicon": "fas fa-braille",
+    "group": "Styling"
+  },
+  {
+    "id": "create-a-multi-column-text-style",
+    "title": "Multi-Column Labels",
+    "description": "World capitals labelled with name and population from two columns by a concat expression.",
+    "source": "Styling",
+    "preicon": "fas fa-font",
+    "group": "Styling"
+  },
+  {
+    "id": "display-dot-density",
+    "title": "Dot Density",
+    "description": "Housing units as dots scattered inside each state, one per 25,000, generated once as data.",
+    "source": "Styling",
+    "preicon": "fas fa-braille",
+    "group": "Styling"
+  },
+  {
+    "id": "hatch-styles",
+    "title": "Hatch Styles",
+    "description": "Every GeoHatchStyle drawn by AreaStyle.CreateHatchStyle and tiled across the parks as a fill pattern.",
+    "source": "Styling",
+    "preicon": "fas fa-th",
+    "group": "Styling"
+  },
+  {
+    "id": "migrate-a-classic-layer",
+    "title": "Migrate a Classic Layer",
+    "description": "Five classic FeatureLayers drawn on the server beside the style.json FeatureLayerTranslator wrote for them, with what could not carry over.",
+    "source": "Styling",
+    "preicon": "fas fa-exchange-alt",
+    "group": "Styling"
+  },
+  {
+    "id": "isolines",
+    "title": "Isolines",
+    "description": "Scattered readings interpolated on the server and traced into isolines the browser draws, coloured and labelled by level.",
+    "source": "Dynamic",
+    "preicon": "fas fa-water",
+    "group": "Styling"
+  },
+  {
+    "id": "dynamic-rendering",
+    "title": "Dynamic Rendering",
+    "description": "State populations since 1900 as circles that grow with a year slider; the features travel once, only the style changes.",
+    "source": "Dynamic",
+    "preicon": "fas fa-chart-line",
+    "group": "Styling"
+  },
+  {
+    "id": "vehicle-navigation",
+    "title": "Vehicle Navigation",
+    "description": "The camera follows a vehicle along a GPS route, turned to its heading and tilted, while the trail grows behind it.",
+    "source": "Navigation",
+    "preicon": "fas fa-location-arrow",
+    "group": "Styling"
+  },
+  {
+    "id": "lane-level-navigation",
+    "title": "Lane-Level Navigation",
+    "description": "An OpenDRIVE HD map of Wolfsburg drawn lane by lane while the camera follows a vehicle with lane-level instructions.",
+    "source": "Navigation",
+    "preicon": "fas fa-road",
+    "group": "Styling"
+  },
+  {
+    "id": "shape-operations",
+    "title": "Shape Operations",
+    "description": "Buffer, union, intersect, difference, simplify, convex hull, split and snap, run on the server and animated as the parameter changes.",
+    "source": "Shapes",
+    "preicon": "fas fa-shapes",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "shape-measurements",
+    "title": "Shape Measurements",
+    "description": "Area, length, centre, the shortest line to a point and a stretch along a line, measured on the server.",
+    "source": "Shapes",
+    "preicon": "fas fa-ruler",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "find-features-by-spatial-relation",
+    "title": "Spatial Queries",
+    "description": "Draw a shape and find the parcels that contain, cross, touch, intersect or lie within a distance of it, or query the table by SQL.",
+    "source": "Shapes",
+    "preicon": "fas fa-vector-square",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "get-data-from-one-feature",
+    "title": "Feature Attributes",
+    "description": "Click a park and read every column its record holds, found by a point-in-polygon query.",
+    "source": "Shapes",
+    "preicon": "far fa-info-circle",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "check-if-features-are-equal",
+    "title": "Equal Geometries",
+    "description": "Click a parcel and find every parcel with topologically equal geometry.",
+    "source": "Shapes",
+    "preicon": "fas fa-equals",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "validate-topology",
+    "title": "Validate Topology",
+    "description": "Twenty-five topology rules checked with TopologyValidator, each drawn with the shapes that break it.",
+    "source": "Shapes",
+    "preicon": "fas fa-check-double",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "project-features",
+    "title": "Project Features",
+    "description": "Features in latitude and longitude reprojected on the server into the map's Web Mercator.",
+    "source": "Projections",
+    "preicon": "fas fa-globe-americas",
+    "group": "Projections"
+  },
+  {
+    "id": "setting-the-projection-of-a-layer",
+    "title": "A Layer in Another Projection",
+    "description": "A shapefile in Texas state plane feet on a Web Mercator map: a ProjectionConverter on the source and nothing else changes.",
+    "source": "Projections",
+    "preicon": "fas fa-ruler-combined",
+    "group": "Projections"
+  },
+  {
+    "id": "any-projection-satellite",
+    "title": "Any Projection",
+    "description": "The world in Robinson, Mollweide, Equal Earth and more on an OpenLayers map, warped in the browser or on the server.",
+    "source": "Projections",
+    "preicon": "fas fa-satellite",
+    "group": "Projections"
+  },
+  {
+    "id": "cross-the-dateline",
+    "title": "Cross the Dateline",
+    "description": "A great-circle route across the antimeridian, drawn whole on the globe and folded back into the world at the tile cut.",
+    "source": "Projections",
+    "preicon": "fas fa-plane",
+    "group": "Projections"
+  },
+  {
+    "id": "adornments",
+    "title": "Adornments",
+    "description": "Legend, scale line and bar, compass, logo and graticule drawn on the server and laid over the map; the compass turns with it.",
+    "source": "Tools",
+    "preicon": "fas fa-tools",
+    "group": "Map Tools & Adornments"
+  },
+  {
+    "id": "popups",
+    "title": "Markers and Popups",
+    "description": "Popups over Frisco's hotels read from a shapefile, and markers dropped where you click.",
+    "source": "Tools",
+    "preicon": "far fa-comment-alt",
+    "group": "Map Tools & Adornments"
+  },
+  {
+    "id": "geocoding",
+    "title": "Geocoding",
+    "description": "An address or place name goes to GeocodingCloudClient; every match comes back as a point with its bounds.",
+    "source": "Cloud",
+    "preicon": "fas fa-search-location",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "reverse-geocoding",
+    "title": "Reverse Geocoding",
+    "description": "Click the map and ReverseGeocodingCloudClient answers with the nearest address and the places within a radius.",
+    "source": "Cloud",
+    "preicon": "fas fa-map-pin",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "routing",
+    "title": "Routing",
+    "description": "Stops go to RoutingCloudClient and the route comes back with turn-by-turn segments.",
+    "source": "Cloud",
+    "preicon": "fas fa-route",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "routing-service-area",
+    "title": "Service Area",
+    "description": "How far 15 to 60 minutes of driving reach from a point, one polygon per limit.",
+    "source": "Cloud",
+    "preicon": "fas fa-bullseye",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "routing-traveling-salesperson",
+    "title": "Traveling Salesperson",
+    "description": "Stops in any order go to the routing service, which answers with the shortest round trip.",
+    "source": "Cloud",
+    "preicon": "fas fa-random",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "elevation",
+    "title": "Elevation",
+    "description": "A point, line or area is sampled by ElevationCloudClient; a line's samples draw as a profile.",
+    "source": "Cloud",
+    "preicon": "fas fa-mountain",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "timezone",
+    "title": "Time Zone",
+    "description": "Click anywhere and TimeZoneCloudClient answers with the zone, the local time and the zone's outline.",
+    "source": "Cloud",
+    "preicon": "far fa-clock",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "color-utilities",
+    "title": "Color Utilities",
+    "description": "ColorCloudClient hands back a family of colours that go together; six of them class Frisco's block groups.",
+    "source": "Cloud",
+    "preicon": "fas fa-palette",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "world-maps-query",
+    "title": "World Maps Query",
+    "description": "The features behind ThinkGeo's world map found by a shape you draw, with MapsQueryCloudClient.",
+    "source": "Cloud",
+    "preicon": "fas fa-layer-group",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "export-the-map",
+    "title": "Export the Map",
+    "description": "The map as a PNG or a PDF, drawn by the browser from its canvas or by the server as pixels or as vector paths.",
+    "source": "Printing",
+    "preicon": "fas fa-print",
+    "group": "Printing & Export"
+  },
+  {
+    "id": "printer-layout",
+    "title": "Printer Layout",
+    "description": "A page laid out on the server with sheet, map, title, scale, compass, data grid and notes, exported as PNG or PDF.",
+    "source": "PrinterLayout",
+    "preicon": "fas fa-file",
+    "group": "Printing & Export"
+  }
+]

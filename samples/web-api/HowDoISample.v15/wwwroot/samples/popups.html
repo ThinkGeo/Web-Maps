@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Markers & Popups</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow">
+            <h2>Markers and popups</h2>
+            <p>Both are pieces of the page the browser keeps anchored to a place on the map, outside the tiles. A popup opens over each hotel of Frisco, read from a shapefile on the server, and its content is ordinary markup; close one with its corner. A marker is an image pinned to a place, the pin's tip at its bottom middle. Click the map to drop one, and click a marker for its details.</p>
+            <div class="row"><button class="btn" id="clear">Clear the markers</button><span class="status" id="count"></span></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const map = tg.createMap({ center: [-10777290, 3908740], zoom: 14 });
+        const hotels = await tg.get('samples/tools/hotels');
+        for (const hotel of hotels.features) {
+            new maplibregl.Popup({ closeOnClick: false, offset: 4 }).setLngLat(hotel.geometry.coordinates).setHTML(`<div style="white-space:nowrap">${String(hotel.properties.NAME).replace(/</g, '&lt;')}</div>`).addTo(map);
+        }
+
+        // Each marker is a MapLibre Marker with an element of its own.
+        const markers = [];
+        let next = 1, popup = null;
+        const count = () => document.getElementById('count').textContent = `${hotels.features.length} hotels, ${markers.length} marker${markers.length === 1 ? '' : 's'}.`;
+        const add = (lngLat) => {
+            const id = 'Pin ' + next++;
+            const image = Object.assign(document.createElement('img'), { src: '../images/map-pin.svg', alt: id });
+            image.style.cssText = 'width:32px;height:40px;cursor:pointer';
+            const marker = new maplibregl.Marker({ element: image, anchor: 'bottom' }).setLngLat(lngLat).addTo(map);
+            image.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const [x, y] = tg.toMeters(lngLat[0], lngLat[1]);
+                if (popup) popup.remove();
+                popup = tg.popup(map, lngLat, `<b>${id}</b><br>${Math.round(x)}, ${Math.round(y)}`, { offset: 40 });
+            });
+            markers.push(marker);
+            count();
+        };
+        add(tg.toLngLat(-10775500, 3905800));
+        map.on('click', (e) => { if (popup) { popup.remove(); popup = null; } add([e.lngLat.lng, e.lngLat.lat]); });
+        document.getElementById('clear').addEventListener('click', () => { for (const m of markers) m.remove(); markers.length = 0; if (popup) popup.remove(); count(); });
+    </script>
+</body>
+</html>

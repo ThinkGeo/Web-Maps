@@ -1,0 +1,7 @@
+/* What the WebAPI gallery adds over the shared sheet: the sample lives in a frame, and the code
+   pane shows two files. */
+#result-frame { width: 100%; height: 100%; border: 0; display: block; background: #fff; }
+#output.split > #razor-box { display: block; }
+#razor-box .code-file { position: sticky; top: 0; padding: 4px 10px; font: 12px Consolas, monospace; color: #9A9AA0; background: #1f2124; border-bottom: 1px solid #333; }
+#razor-box pre { margin: 0; padding: 10px; font: 12px Consolas, monospace; color: #e6e6e6; background: #1b1d20; white-space: pre; }
+.code-types a.active { font-weight: 700; }

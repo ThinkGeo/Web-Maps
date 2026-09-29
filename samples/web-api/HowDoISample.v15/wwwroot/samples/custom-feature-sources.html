@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Custom Data Format</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow">
+            <h2>A feature source of your own</h2>
+            <p>SimpleCsvFeatureSource, in the server code beside this page, derives from FeatureSource and overrides one method: GetAllFeaturesCore reads a CSV of latitude, longitude lines. Everything else - the projection converter, the bounding box, the tile cutting at tiles/csv-route/ - is inherited, so the map treats it like any shapefile, and so does the server when it is handed the style to draw into raster tiles itself.</p>
+            <div style="font-weight:600">Drawn by</div>
+            <label><input type="radio" name="drawn" value="browser" checked> the browser, from vector tiles</label>
+            <label><input type="radio" name="drawn" value="server"> the server, into raster tiles</label>
+            <div class="status" id="count"></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const layers = [{ type: 'circle', 'source-layer': 'route', paint: { 'circle-color': '#0000FF', 'circle-radius': 5, 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 2 } }];
+        const map = tg.createMap({ center: [-8237000, 4970000], zoom: 13 });
+        await tg.ready(map);
+        let overlay = null;
+        const draw = async () => {
+            if (overlay) overlay.remove();
+            overlay = document.querySelector('input[name=drawn]:checked').value === 'server' ? await tg.serverOverlay(map, 'csv-route', layers) : tg.vectorOverlay(map, 'csv-route', layers);
+        };
+        for (const radio of document.querySelectorAll('input[name=drawn]')) radio.addEventListener('change', draw);
+        await draw();
+        const info = await tg.get('samples/extending/csv-route');
+        document.getElementById('count').textContent = `${info.count} GPS points along a drive through Lower Manhattan.`;
+        tg.fit(map, info.bounds, 0);
+    </script>
+</body>
+</html>

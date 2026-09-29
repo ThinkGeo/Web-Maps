@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Validate Topology</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow" style="width:340px;padding:0;gap:0">
+            <div style="padding:8px 8px 4px;font-weight:600">Rule</div>
+            <div id="rules" style="flex:1;overflow:auto;padding:0 8px 6px;display:flex;flex-direction:column;gap:2px"></div>
+            <div style="padding:8px;border-top:1px solid #ddd">
+                <div>Blue: checked against. Green: what the rule checks. Red: what breaks it. TopologyValidator runs on the server.</div>
+                <div id="result" style="font-weight:600;margin-top:6px"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const map = tg.createMap({ center: [50, 0], zoom: 18, basemap: null, background: '#f5f5f5', maxZoom: 24 });
+        await tg.ready(map);
+        // Each set drawn in its colour whatever it holds: filled areas, wide lines, dots.
+        const paint = (id, color, fill) => tg.geojsonOverlay(map, id, [
+            { type: 'fill', filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': fill, 'fill-outline-color': color } },
+            { type: 'line', filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'line-color': color, 'line-width': 2 } },
+            { type: 'line', filter: ['==', ['geometry-type'], 'LineString'], paint: { 'line-color': color, 'line-width': 3 } },
+            { type: 'circle', filter: ['==', ['geometry-type'], 'Point'], paint: { 'circle-color': color, 'circle-radius': 6, 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 1.5 } },
+        ]);
+        const against = paint('against', '#0000FF', 'rgba(0,0,255,0.2)');
+        const checkedShapes = paint('checked', '#008000', 'rgba(0,128,0,0.2)');
+        const broken = paint('broken', '#FF0000', 'rgba(255,0,0,0.2)');
+        const list = document.getElementById('rules');
+        let listed = false;
+        const run = async (rule) => {
+            const r = await tg.get('samples/shapes/topology?rule=' + encodeURIComponent(rule || ''));
+            if (!listed) {
+                listed = true;
+                let group = null;
+                for (const item of r.rules) {
+                    if (item.group !== group) { group = item.group; const head = document.createElement('div'); head.style.cssText = 'font-weight:600;color:#666;margin-top:6px'; head.textContent = group; list.appendChild(head); }
+                    const label = document.createElement('label');
+                    const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'rule', checked: item.name === r.rules[0].name });
+                    radio.addEventListener('change', () => run(item.name));
+                    label.append(radio, item.name);
+                    list.appendChild(label);
+                }
+            }
+            against.setData(r.against); checkedShapes.setData(r.checked); broken.setData(r.broken);
+            document.getElementById('result').textContent = r.result;
+            tg.fit(map, r.bounds, 0);
+        };
+        run(null);
+    </script>
+</body>
+</html>

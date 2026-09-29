@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Printer Layout</title>
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        #sheet { position: relative; display: inline-block; line-height: 0; }
+        #picture { box-shadow: 0 1px 6px rgba(0,0,0,.3); }
+        #pan { position: absolute; overflow: hidden; background: rgb(160,207,235); cursor: grab; }
+        #pan.dragging { cursor: grabbing; }
+        #pan img { position: absolute; max-width: none; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <aside class="panel narrow" style="border-left:0;border-right:1px solid #ccc">
+            <h2>Printer layers</h2>
+            <p>Click an item to add it to the print out, or to take it off again.</p>
+            <label><input type="checkbox" data-key="LabelPrinterLayer"> Label printer layer</label>
+            <label><input type="checkbox" data-key="ImagePrinterLayer"> Image printer layer</label>
+            <label><input type="checkbox" data-key="ScaleLinePrinterLayer"> Scale line printer layer</label>
+            <label><input type="checkbox" data-key="ScaleBarPrinterLayer"> Scale bar printer layer</label>
+            <label><input type="checkbox" data-key="DataGridPrinterLayer"> Data grid printer layer</label>
+            <p>The page is laid out on the server with printer layout layers - the sheet, the map, the title and these - and drawn there as a picture; the browser only shows it. Drag the map on the page to pan it and roll the wheel over it to zoom: the server lays the page out again with the map where you left it.</p>
+        </aside>
+        <div id="map" style="display:flex;align-items:center;justify-content:center;background:#e9e9e6;overflow:auto">
+            <div id="sheet" hidden>
+                <img id="picture" alt="The print out">
+                <div id="pan"><img id="moving" alt=""></div>
+            </div>
+            <div id="waiting" style="color:#777;font-size:14px">drawing...</div>
+        </div>
+        <aside class="panel narrow">
+            <h2>Print preview settings</h2>
+            <label>Paper size <select id="PaperSize"><option value="AnsiA">ANSI A - 8.5 x 11</option><option value="AnsiB">ANSI B - 11 x 17</option><option value="AnsiC">ANSI C - 17 x 22</option><option value="AnsiD">ANSI D - 22 x 34</option><option value="AnsiE">ANSI E - 34 x 44</option></select></label>
+            <label>Orientation <select id="Orientation"><option value="Portrait">Portrait</option><option value="Landscape">Landscape</option></select></label>
+            <label>Percentage <select id="Percentage"><option value="100" selected>100%</option><option value="50">50%</option><option value="70">70%</option><option value="90">90%</option><option value="110">110%</option><option value="150">150%</option><option value="200">200%</option><option value="300">300%</option></select></label>
+            <h2>Export</h2>
+            <div class="row"><button class="btn primary" id="png">To bitmap</button><button class="btn primary" id="pdf">To PDF</button></div>
+            <a class="btn" id="save" hidden style="align-self:flex-start"></a>
+            <div class="status" id="status"></div>
+        </aside>
+    </div>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const accessId = crypto.randomUUID();
+        const status = document.getElementById('status'), picture = document.getElementById('picture'), sheet = document.getElementById('sheet'), pan = document.getElementById('pan'), moving = document.getElementById('moving');
+        // The page as last drawn: its size in points, where the map sits on it, and the extent the map shows.
+        let page = null, extent = null, drag = { dx: 0, dy: 0, zoom: 1, ox: 0, oy: 0 }, busy = false, queued = null;
+
+        // One setting changes and the server draws the whole page again.
+        const update = async (key, value) => {
+            if (busy) { queued = [key, value]; return; }
+            busy = true;
+            tg.say(status, 'drawing on the server...');
+            try {
+                const r = await tg.post('samples/printer-layout/update/' + accessId, key ? { key, value } : {});
+                page = r; extent = r.extent;
+                picture.src = tg.root + r.url;
+                tg.say(status, `${r.width} by ${r.height} points.`);
+            } catch (e) {
+                tg.say(status, e.message, false);
+            }
+            busy = false;
+            if (queued) { const next = queued; queued = null; update(...next); }
+        };
+        // The new picture is in: the map's copy sits square on it again.
+        picture.addEventListener('load', () => { sheet.hidden = false; document.getElementById('waiting').hidden = true; moving.src = picture.src; drag = { dx: 0, dy: 0, zoom: 1, ox: 0, oy: 0 }; place(); });
+
+        // The map's part of the page, scaled as the picture is shown, with a copy of the picture
+        // inside it that is what moves while you drag - so the pan shows at once, and the page
+        // around the map stays put.
+        const scale = () => picture.clientWidth / page.width;
+        const place = () => {
+            if (!page) return;
+            // The sheet fitted to the space, never larger than life.
+            const room = document.getElementById('map');
+            picture.style.width = page.width * Math.min((room.clientWidth - 24) / page.width, (room.clientHeight - 24) / page.height, 1) + 'px';
+            const s = scale(), m = page.map;
+            Object.assign(pan.style, { left: m.x * s + 'px', top: m.y * s + 'px', width: m.width * s + 'px', height: m.height * s + 'px' });
+            // The copy is cut down to the map's own pixels before it moves, so the title and the
+            // sheet never slide into the frame; what it uncovers is the water colour behind.
+            Object.assign(moving.style, {
+                width: picture.clientWidth + 'px', left: -m.x * s + 'px', top: -m.y * s + 'px',
+                clipPath: `inset(${m.y * s}px ${picture.clientWidth - (m.x + m.width) * s}px ${picture.clientHeight - (m.y + m.height) * s}px ${m.x * s}px)`,
+                transformOrigin: `${m.x * s + drag.ox}px ${m.y * s + drag.oy}px`, transform: `translate(${drag.dx}px, ${drag.dy}px) scale(${drag.zoom})`,
+            });
+        };
+        window.addEventListener('resize', place);
+
+        // A drag moves the map's extent by as many meters as the pixels dragged; the server is
+        // asked once the mouse is let go.
+        let start = null;
+        pan.addEventListener('mousedown', (e) => { start = [e.clientX, e.clientY]; pan.classList.add('dragging'); e.preventDefault(); });
+        window.addEventListener('mousemove', (e) => { if (!start) return; drag.dx = e.clientX - start[0]; drag.dy = e.clientY - start[1]; place(); });
+        window.addEventListener('mouseup', () => {
+            if (!start) return;
+            start = null; pan.classList.remove('dragging');
+            const metersPerPixel = (extent[2] - extent[0]) / (page.map.width * scale());
+            extent = [extent[0] - drag.dx * metersPerPixel, extent[1] + drag.dy * metersPerPixel, extent[2] - drag.dx * metersPerPixel, extent[3] + drag.dy * metersPerPixel];
+            update('Extent', extent.join(','));
+        });
+        // The wheel zooms about the pointer: the place under it stays under it.
+        let wheelTimer = null;
+        pan.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const factor = e.deltaY < 0 ? 0.8 : 1.25, box = pan.getBoundingClientRect();
+            const fx = (e.clientX - box.left) / box.width, fy = (e.clientY - box.top) / box.height;
+            const x = extent[0] + (extent[2] - extent[0]) * fx, y = extent[3] - (extent[3] - extent[1]) * fy;
+            extent = [x - (x - extent[0]) * factor, y - (y - extent[1]) * factor, x + (extent[2] - x) * factor, y + (extent[3] - y) * factor];
+            drag.zoom /= factor; drag.ox = e.clientX - box.left; drag.oy = e.clientY - box.top; place();
+            clearTimeout(wheelTimer);
+            wheelTimer = setTimeout(() => update('Extent', extent.join(',')), 250);
+        }, { passive: false });
+
+        for (const box of document.querySelectorAll('input[type=checkbox]')) box.addEventListener('change', () => update(box.dataset.key, box.checked ? 'true' : 'false'));
+        for (const id of ['PaperSize', 'Orientation', 'Percentage']) document.getElementById(id).addEventListener('change', (e) => update(id, e.target.value));
+        const exportAs = async (type) => {
+            tg.say(status, 'exporting...');
+            try {
+                const r = await tg.get(`samples/printer-layout/export/${accessId}?type=${type}`);
+                const save = document.getElementById('save');
+                save.hidden = false; save.textContent = 'Save ' + r.name; save.download = r.name; save.href = tg.root + r.url;
+                tg.say(status, `${r.name} is ready.`);
+            } catch (e) {
+                tg.say(status, e.message, false);
+            }
+        };
+        document.getElementById('png').addEventListener('click', () => exportAs('png'));
+        document.getElementById('pdf').addEventListener('click', () => exportAs('pdf'));
+        update(null);
+    </script>
+</body>
+</html>

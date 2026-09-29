@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Migrate a Classic Layer</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        .half { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .half .title { padding: 4px 8px; font: 12px system-ui; background: #2a2a2a; }
+        .half .map { flex: 1; min-height: 0; position: relative; }
+    </style>
+</head>
+<body>
+    <div class="page" style="flex-direction:column">
+        <div style="display:flex;flex:1;min-height:0">
+            <div class="half"><div class="title" style="color:#f88">Classic: five FeatureLayers with their ZoomLevelSet styles, drawn on the server</div><div class="map" id="classic"></div></div>
+            <div class="half" style="border-left:2px solid #444"><div class="title" style="color:#8f8">New: the same layers put through FeatureLayerTranslator, drawn in the browser from the style.json it wrote</div><div class="map" id="new"></div></div>
+        </div>
+        <div style="display:flex;height:200px;border-top:1px solid #444;font:12px system-ui;background:#f6f6f4">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+                <div style="padding:6px 8px 2px;font-weight:600">What the translator wrote</div>
+                <textarea id="json" readonly spellcheck="false" style="flex:1;font:11px Consolas,monospace;padding:4px 8px;border:0;resize:none;white-space:pre;background:#fbfbf9"></textarea>
+            </div>
+            <div style="width:440px;padding:6px 8px;border-left:1px solid #ccc;overflow:auto">
+                <div style="font-weight:600" id="warnings-head"></div>
+                <div id="warnings"></div>
+            </div>
+        </div>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const make = (container) => tg.createMap({ container, center: [-10777290, 3908740], zoom: 16, basemap: null, background: '#EAE8E2' });
+        const classic = make('classic'), fresh = make('new');
+        await Promise.all([tg.ready(classic), tg.ready(fresh)]);
+        // The classic map: raster tiles drawn on the server at raster/classic-layers/.
+        tg.rasterOverlay(classic, 'classic-layers');
+        // The new map: the translated style's layers over vector tiles cut from the same
+        // shapefiles at tiles/translated/, with the images the translator drew for the symbols.
+        const translated = await tg.get('samples/styling/translated-style');
+        for (const name of translated.images) fresh.addImage(name, (await fresh.loadImage(tg.root + 'samples/styling/translated-image/' + encodeURIComponent(name))).data);
+        tg.vectorOverlay(fresh, 'translated', translated.style.layers);
+        document.getElementById('json').value = JSON.stringify(translated.style, null, 2);
+        document.getElementById('warnings-head').textContent = translated.warnings.length === 0 ? 'Every style on these layers has an equivalent; nothing was left out.' : 'Not carried over:';
+        document.getElementById('warnings').innerHTML = translated.warnings.map(w => `<div style="margin-top:4px;color:#8a3b00">${w.replace(/</g, '&lt;')}</div>`).join('');
+        // Pan or zoom one map and the other follows.
+        let syncing = false;
+        const follow = (from, to) => from.on('move', () => { if (syncing) return; syncing = true; to.jumpTo({ center: from.getCenter(), zoom: from.getZoom(), bearing: from.getBearing(), pitch: from.getPitch() }); syncing = false; });
+        follow(classic, fresh); follow(fresh, classic);
+    </script>
+</body>
+</html>

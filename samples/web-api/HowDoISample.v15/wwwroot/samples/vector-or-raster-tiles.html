@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Vector Tiles or Raster Tiles</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        #maps { flex: 1; min-width: 0; display: flex; }
+        .side { flex: 1; min-width: 0; position: relative; }
+        .side + .side { border-left: 2px solid #444; }
+        .side .map { position: absolute; inset: 0; }
+        .tag { position: absolute; left: 10px; top: 10px; z-index: 2; padding: 4px 8px; background: rgba(255,255,255,.92); border-radius: 4px; font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+        .meter { position: absolute; left: 10px; bottom: 10px; z-index: 2; padding: 5px 8px; background: rgba(255,255,255,.92); border-radius: 4px; font: 11px Consolas, monospace; white-space: pre; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div id="maps">
+            <div class="side"><div id="vector" class="map"></div><div class="tag">Vector tiles - the browser draws</div><div class="meter" id="vector-meter">no tiles yet</div></div>
+            <div class="side"><div id="raster" class="map"></div><div class="tag">Raster tiles - the server draws</div><div class="meter" id="raster-meter">no tiles yet</div></div>
+        </div>
+        <aside class="panel narrow" style="width:340px">
+            <h2>Vector tiles or raster tiles</h2>
+            <p>One style.json - Frisco's zoning, parks, trails, streets and schools, as FeatureLayerTranslator wrote it from five classic layers - and one server, delivering it two ways. Left: the data cut into vector tiles at tiles/translated/ and the document drawn by the browser. Right: the same document handed to the server at samples/tiles/style, drawn there by CpuTileRenderer over the same shapefiles into raster tiles at raster/style-…/, which the browser only shows. Both maps look at the same place; move either one.</p>
+            <label>Land zoned agricultural <input type="color" id="colour" value="#d7e3be"></label>
+            <div class="row"><button class="btn" id="half">Zoom in half a level</button><button class="btn" id="turn">Turn 30°</button><button class="btn" id="straight">Straight again</button></div>
+            <div class="status" id="status"></div>
+            <p>What to look for. A colour: the left map redraws from the data it already has, while you drag; the right sends the changed document to the server once you let go and waits for tiles drawn again. Half a zoom level: the left stays crisp, the right is a picture stretched between two levels. A turn: the left's labels stay upright, the right's turn with the map. What each side fetched is counted at the bottom of each map.</p>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        // The translator writes the agricultural fill as this; the page swaps it for the colour picked.
+        const agricultural = 'rgba(215,227,190,1)';
+        const center = [-10779000, 3913500], zoom = 14;
+        const vector = tg.createMap({ container: 'vector', center, zoom, basemap: null, background: '#EAE8E2' });
+        const raster = tg.createMap({ container: 'raster', center, zoom, basemap: null, background: '#EAE8E2' });
+        await Promise.all([tg.ready(vector), tg.ready(raster)]);
+
+        // What each side fetches: every tile answered by the server, its bytes and its time. The
+        // map fetches vector tiles from a worker, where the page cannot see them; a protocol of
+        // the page's own fetches them here instead and hands the bytes over.
+        maplibregl.addProtocol('tg', async (params) => ({ data: await (await fetch(params.url.replace('tg://', tg.root))).arrayBuffer() }));
+        const stats = { vector: { count: 0, bytes: 0, ms: 0 }, raster: { count: 0, bytes: 0, ms: 0 } };
+        const meter = (side) => {
+            const s = stats[side];
+            document.getElementById(side + '-meter').textContent = `${s.count} tiles  ${(s.bytes / 1024).toFixed(0)} KB  ${(s.ms / s.count).toFixed(0)} ms each\nlast  ${(s.last.bytes / 1024).toFixed(1)} KB in ${s.last.ms.toFixed(0)} ms`;
+        };
+        new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+                const side = entry.name.includes('/tiles/translated/') ? 'vector' : entry.name.includes('/raster/style-') ? 'raster' : null;
+                if (!side) continue;
+                const bytes = entry.transferSize || entry.encodedBodySize || 0;
+                const s = stats[side];
+                s.count++; s.bytes += bytes; s.ms += entry.duration; s.last = { bytes, ms: entry.duration };
+                meter(side);
+            }
+        }).observe({ type: 'resource', buffered: true });
+
+        // The style the translator wrote, with the images it drew for the symbols: the left map
+        // draws it over the vector tiles, the right hands it to the server and shows what it drew.
+        const translated = await tg.get('samples/styling/translated-style');
+        for (const name of translated.images) {
+            const image = (await vector.loadImage(tg.root + 'samples/styling/translated-image/' + encodeURIComponent(name))).data;
+            vector.addImage(name, image);
+            raster.addImage(name, image);
+        }
+        const overlay = tg.vectorOverlay(vector, 'translated', translated.style.layers, { tiles: ['tg://tiles/translated/{z}/{x}/{y}.mvt'] });
+        let tiles = await tg.serverOverlay(raster, 'translated', translated.style.layers);
+
+        // Each map follows the other.
+        let following = false;
+        const follow = (from, to) => from.on('move', () => {
+            if (following) return;
+            following = true;
+            to.jumpTo({ center: from.getCenter(), zoom: from.getZoom(), bearing: from.getBearing(), pitch: from.getPitch() });
+            following = false;
+        });
+        follow(vector, raster);
+        follow(raster, vector);
+
+        // The colour: the vector side rewrites its layers and the browser redraws; the raster side
+        // sends the rewritten document to the server and swaps to the tiles it draws from it.
+        const status = document.getElementById('status');
+        const colour = document.getElementById('colour');
+        const recoloured = () => JSON.parse(JSON.stringify(translated.style.layers).split(agricultural).join(colour.value.toUpperCase()));
+        colour.addEventListener('input', () => overlay.setLayers(recoloured()));
+        colour.addEventListener('change', async () => {
+            tg.say(status, 'handing the changed document to the server...');
+            const drawn = await tg.serverOverlay(raster, 'translated', recoloured());
+            tiles.remove();
+            tiles = drawn;
+            tg.say(status, `the server draws the document with ${colour.value} at raster/${drawn.id}/`);
+        });
+        document.getElementById('half').addEventListener('click', () => vector.easeTo({ zoom: Math.floor(vector.getZoom()) + 0.5 }));
+        document.getElementById('turn').addEventListener('click', () => vector.easeTo({ bearing: vector.getBearing() + 30 }));
+        document.getElementById('straight').addEventListener('click', () => vector.easeTo({ bearing: 0, pitch: 0, zoom: Math.round(vector.getZoom()) }));
+    </script>
+</body>
+</html>

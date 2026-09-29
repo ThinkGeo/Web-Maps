@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Render Points, Lines and Polygons</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <div class="note">Parks, streets and hotels - three shapefiles the server cuts into one set of tiles at tiles/frisco/, each the source-layer the style names.</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const layers = [
+            { type: 'background', paint: { 'background-color': '#EAE8E2' } },
+            { type: 'fill', 'source-layer': 'Parks', paint: { 'fill-color': '#B4E0B6', 'fill-outline-color': '#696969' } },
+            { type: 'line', 'source-layer': 'Streets', paint: { 'line-color': '#696969', 'line-width': 6 } },
+            { type: 'line', 'source-layer': 'Streets', paint: { 'line-color': '#F5F5F5', 'line-width': 4 } },
+            { type: 'circle', 'source-layer': 'Hotels', paint: { 'circle-radius': 4, 'circle-color': '#A52A2A' } },
+            { type: 'symbol', 'source-layer': 'Streets', layout: { 'symbol-placement': 'line', 'text-field': ['get', 'FULL_NAME'], 'text-font': ['Noto Sans Bold'], 'text-size': 11 }, paint: { 'text-color': '#191970' } },
+            { type: 'symbol', 'source-layer': 'Parks', layout: { 'text-field': ['get', 'NAME'], 'text-font': ['Noto Sans Bold'], 'text-size': 11 }, paint: { 'text-color': '#006400' } },
+            { type: 'symbol', 'source-layer': 'Hotels', layout: { 'text-field': ['get', 'NAME'], 'text-font': ['Noto Sans Bold'], 'text-size': 11, 'text-offset': [0, 0.5], 'text-anchor': 'top' }, paint: { 'text-color': '#8B0000' } },
+        ];
+        const map = tg.createMap({ center: [-10777290, 3908740], zoom: 16, basemap: null });
+        await tg.ready(map);
+        const overlay = tg.vectorOverlay(map, 'frisco', layers);
+        tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(layers), (edited) => overlay.setLayers(edited));
+    </script>
+</body>
+</html>

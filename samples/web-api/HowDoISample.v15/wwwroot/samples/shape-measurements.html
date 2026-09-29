@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Shape Measurements</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="controls">
+                <h2>Measurement</h2>
+                <div id="measurements" style="display:flex;flex-direction:column;gap:2px"></div>
+                <div id="along" style="display:none;flex-direction:column;gap:4px">
+                    <label>Start this far along (meters) <input type="text" id="offset" value="500" style="width:70px"></label>
+                    <label>and run this far (meters) <input type="text" id="run" value="1000" style="width:70px"></label>
+                    <label>measured from the <select id="from"><option value="FirstPoint">first point</option><option value="LastPoint">last point</option></select></label>
+                </div>
+                <p id="hint"></p>
+                <div id="result" style="font-weight:600"></div>
+            </div>
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const measurements = ['Area', 'Length', 'Center point', 'Shortest line to the stadium', 'A line along a line'];
+        const layers = (sourceLayer) => [
+            { type: 'fill', 'source-layer': sourceLayer, filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': 'rgba(255,165,0,0.25)', 'fill-outline-color': '#8A6D3B' } },
+            { type: 'line', 'source-layer': sourceLayer, paint: { 'line-color': '#8A6D3B', 'line-width': 2 } },
+        ];
+        const map = tg.createMap({ center: [-10778340, 3915490], zoom: 14 });
+        await tg.ready(map);
+        map.addImage('stadium', (await map.loadImage(tg.root + 'samples/shapes/circle.png?fill=0000FF&size=14')).data);
+        map.addImage('measured', (await map.loadImage(tg.root + 'samples/shapes/circle.png?fill=006400&size=12')).data);
+        let dataOverlay = null, measurement = measurements[0], lastClick = null;
+        const measured = tg.geojsonOverlay(map, 'measured', [
+            { type: 'fill', filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': 'rgba(0,128,0,0.375)', 'fill-outline-color': '#006400' } },
+            { type: 'line', filter: ['==', ['geometry-type'], 'LineString'], paint: { 'line-color': '#006400', 'line-width': 5 } },
+            { type: 'symbol', filter: ['==', ['geometry-type'], 'Point'], layout: { 'icon-image': 'measured', 'icon-allow-overlap': true } },
+        ]);
+        const stadium = tg.geojsonOverlay(map, 'stadium', [{ type: 'symbol', layout: { 'icon-image': 'stadium', 'icon-allow-overlap': true } }]);
+        const styleEditor = tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(layers('data')), (edited) => dataOverlay && dataOverlay.setLayers(edited));
+
+        // Lengths are measured on the trails, everything else on the parks; each is a shapefile
+        // the server cuts into tiles.
+        const data = () => {
+            const lines = measurement === 'Length' || measurement === 'A line along a line';
+            const overlay = lines ? 'trails' : 'parks';
+            if (dataOverlay && dataOverlay.source === overlay) return;
+            if (dataOverlay) dataOverlay.remove();
+            const edited = JSON.parse(styleEditor.text).layers.map(l => ({ ...l, 'source-layer': overlay }));
+            dataOverlay = tg.vectorOverlay(map, overlay, edited);
+            styleEditor.text = tg.styleText(edited);
+        };
+        const measure = async (lngLat) => {
+            const r = await tg.post('samples/shapes/measure', { measurement, lng: lngLat && lngLat[0], lat: lngLat && lngLat[1], startingOffset: +document.getElementById('offset').value || 500, runLength: +document.getElementById('run').value || 1000, startingPoint: document.getElementById('from').value });
+            measured.setData(r.drawn);
+            stadium.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: r.stadium }, properties: {} });
+            document.getElementById('result').textContent = r.result;
+            if (r.bounds) tg.fit(map, r.bounds, 0);
+        };
+        const choose = (name) => {
+            measurement = name; lastClick = null;
+            document.getElementById('along').style.display = name === 'A line along a line' ? 'flex' : 'none';
+            document.getElementById('hint').textContent = name === 'A line along a line' ? 'Click a trail, then change how far along the stretch starts and how long it runs.' : name === 'Length' ? 'Click a trail.' : 'Click a park.';
+            data();
+            measure(null);
+        };
+        map.on('click', (e) => { lastClick = [e.lngLat.lng, e.lngLat.lat]; measure(lastClick); });
+        for (const id of ['offset', 'run', 'from']) document.getElementById(id).addEventListener('input', () => measure(lastClick));
+        const list = document.getElementById('measurements');
+        measurements.forEach((name, i) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'measurement', checked: i === 0 });
+            radio.addEventListener('change', () => choose(name));
+            label.append(radio, name);
+            list.appendChild(label);
+        });
+        choose(measurements[0]);
+    </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Vector File Formats</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="controls">
+                <div class="row" id="formats"></div>
+                <div class="row" style="margin-top:6px"><span>Drawn by</span><label><input type="radio" name="drawn" value="browser" checked> the browser, from vector tiles</label><label><input type="radio" name="drawn" value="server"> the server, into raster tiles</label></div>
+            </div>
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <div class="note">Whatever the file format, the server reads it through the matching FeatureSource; the same three style layers draw every one of them. Drawn by the browser, the source is cut into vector tiles at tiles/vector-&lt;format&gt;/. Drawn by the server, the style is handed over and CpuTileRenderer draws it into raster tiles - the same document either way, edits included.</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const formats = ['Shapefile', 'GeoJSON', 'KML', 'GPX', 'MapInfo TAB', 'TinyGeo', 'WKB', 'In memory'];
+
+        const layers = [
+            { type: 'fill', 'source-layer': 'features', filter: ['==', ['geometry-type'], 'Polygon'],
+              paint: { 'fill-color': 'rgba(147,112,219,0.25)', 'fill-outline-color': '#9370DB' } },
+            { type: 'line', 'source-layer': 'features', filter: ['==', ['geometry-type'], 'LineString'],
+              paint: { 'line-color': '#B22222', 'line-width': 2 } },
+            { type: 'circle', 'source-layer': 'features', filter: ['==', ['geometry-type'], 'Point'],
+              paint: { 'circle-radius': 4, 'circle-color': '#1F3A93', 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 1 } },
+        ];
+
+        const map = tg.createMap({ center: [-10777700, 3912400], zoom: 12 });
+        await tg.ready(map);
+        let overlay = null, format = formats[0], timer = null;
+        const drawnBy = () => document.querySelector('input[name=drawn]:checked').value;
+
+        // The style, drawn where the radio says: by the browser over vector tiles, or by the
+        // server, which is handed the document and answers with raster tiles of it.
+        const draw = async () => {
+            if (overlay) overlay.remove();
+            const id = 'vector-' + tg.slug(format), edited = JSON.parse(styleEditor.text).layers;
+            overlay = drawnBy() === 'server' ? await tg.serverOverlay(map, id, edited) : tg.vectorOverlay(map, id, edited);
+        };
+        // An edit reaches the browser's map at once; the server's map once the typing pauses.
+        const styleEditor = tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(layers), (edited) => {
+            if (drawnBy() === 'server') { clearTimeout(timer); timer = setTimeout(draw, 500); }
+            else if (overlay) overlay.setLayers(edited);
+        });
+        const pick = async (name) => {
+            format = name;
+            await draw();
+            tg.fit(map, await tg.get('samples/your-data/bounds/vector-' + tg.slug(name)));
+        };
+        for (const radio of document.querySelectorAll('input[name=drawn]')) radio.addEventListener('change', draw);
+        const box = document.getElementById('formats');
+        formats.forEach((name, i) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'format', checked: i === 0 });
+            radio.addEventListener('change', () => pick(name));
+            label.append(radio, name);
+            box.appendChild(label);
+        });
+        pick(formats[0]);
+    </script>
+</body>
+</html>

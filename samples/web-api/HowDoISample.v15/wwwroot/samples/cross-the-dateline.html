@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Cross the Dateline</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <div class="legend" style="left:12px;top:12px;bottom:auto;width:270px">
+            <div style="font-weight:600;margin-bottom:8px">Cross the dateline</div>
+            <div style="color:#333">Los Angeles &rarr; Shanghai, a great-circle route through the antimeridian, with its 100-nautical-mile corridor.</div>
+            <label style="display:block;margin:8px 0 2px"><input type="radio" name="proj" value="mercator" checked> Web Mercator - the seam is at 180&deg;</label>
+            <label style="display:block;margin:2px 0"><input type="radio" name="proj" value="globe"> On a globe - no seam</label>
+            <div style="margin-top:10px;color:#555">The line is stored on the server with longitudes past -180 and never split by hand. It draws whole on both sides of the seam because the tile cut at tiles/flight/ folds it back into the world.</div>
+        </div>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const map = tg.createMap({ center: [-20037508, 4900000], zoom: 3 });
+        await tg.ready(map);
+        // The route line, the corridor's two edges, and the two airports, each a source-layer of
+        // the one "flight" overlay. A line, two lines, two labelled points.
+        tg.vectorOverlay(map, 'flight', [
+            { type: 'line', 'source-layer': 'corridor', paint: { 'line-color': 'rgba(31,79,214,0.5)', 'line-width': 1.5, 'line-dasharray': [3, 2] } },
+            { type: 'line', 'source-layer': 'route', paint: { 'line-color': '#1f4fd6', 'line-width': 3 } },
+            { type: 'circle', 'source-layer': 'airports', paint: { 'circle-radius': 6, 'circle-color': '#FFFFFF', 'circle-stroke-color': '#1f4fd6', 'circle-stroke-width': 3 } },
+            { type: 'symbol', 'source-layer': 'airports', layout: { 'text-field': ['get', 'LABEL'], 'text-font': ['Noto Sans Bold'], 'text-anchor': 'top', 'text-offset': [0, 0.8], 'text-size': 13 }, paint: { 'text-color': '#101317', 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.5 } },
+        ]);
+        const apply = () => map.setProjection({ type: document.querySelector('input[name=proj]:checked').value });
+        for (const radio of document.querySelectorAll('input[name=proj]')) radio.addEventListener('change', apply);
+    </script>
+</body>
+</html>

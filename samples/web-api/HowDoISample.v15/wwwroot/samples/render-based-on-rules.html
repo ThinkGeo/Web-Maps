@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Render Based on Rules</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="controls">
+                <div style="font-weight:600">style.json - pick a rule, or edit it; the map follows</div>
+                <div id="rules" style="display:flex;flex-direction:column;gap:2px"></div>
+            </div>
+            <div class="editor">
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        // One dataset, four expressions - match, step, filter and case: the classic ValueStyle,
+        // ClassBreakStyle, FilterStyle and boolean-expression styles are one mechanism, an
+        // expression in the layer's paint. Every rule ends in a default, so a feature no
+        // condition matches still has a look.
+        const background = { type: 'background', paint: { 'background-color': '#DDE8F0' } };
+        const rules = {
+            'Values - match': [background, { type: 'fill', 'source-layer': 'Countries02', paint: { 'fill-outline-color': '#FFFFFF',
+                'fill-color': ['match', ['get', 'CURR_TYPE'], 'Dollar', 'rgba(31,119,180,0.8)', 'Franc', 'rgba(44,160,44,0.8)', 'Pound', 'rgba(214,39,40,0.8)', 'Peso', 'rgba(148,103,189,0.8)', 'rgba(233,232,214,0.8)'] } }],
+            'Ranges - step': [background, { type: 'fill', 'source-layer': 'Countries02', paint: { 'fill-outline-color': '#FFFFFF',
+                'fill-color': ['step', ['to-number', ['get', 'POP_CNTRY']], 'rgba(233,232,214,0.85)', 1000000, 'rgba(253,208,162,0.85)', 10000000, 'rgba(253,141,60,0.85)', 50000000, 'rgba(217,71,1,0.85)', 200000000, 'rgba(127,39,4,0.85)'] } }],
+            'Only what passes - filter': [background,
+                { type: 'fill', 'source-layer': 'Countries02', paint: { 'fill-color': 'rgba(233,232,214,0.8)', 'fill-outline-color': '#FFFFFF' } },
+                { type: 'fill', 'source-layer': 'Countries02', filter: ['==', ['get', 'LANDLOCKED'], 'Y'], paint: { 'fill-color': 'rgba(46,139,87,0.8)', 'fill-outline-color': '#FFFFFF' } }],
+            'Any condition - case': [background, { type: 'fill', 'source-layer': 'Countries02', paint: { 'fill-outline-color': '#FFFFFF',
+                'fill-color': ['case', ['all', ['>', ['to-number', ['get', 'POP_CNTRY']], 10000000], ['==', ['get', 'LANDLOCKED'], 'Y']], 'rgba(255,255,0,0.8)', 'rgba(233,232,214,0.8)'] } }],
+        };
+        const map = tg.createMap({ center: [0, 0], zoom: 2, basemap: null });
+        await tg.ready(map);
+        const overlay = tg.vectorOverlay(map, 'countries', rules['Values - match'], { maxzoom: 6 });
+        const styleEditor = tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(rules['Values - match']), (edited) => overlay.setLayers(edited));
+        const list = document.getElementById('rules');
+        Object.keys(rules).forEach((name, i) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'rule', checked: i === 0 });
+            radio.addEventListener('change', () => { styleEditor.text = tg.styleText(rules[name]); });
+            label.append(radio, name);
+            list.appendChild(label);
+        });
+    </script>
+</body>
+</html>

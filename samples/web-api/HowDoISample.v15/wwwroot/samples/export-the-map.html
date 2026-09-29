@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Export the Map</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        #result { position: absolute; inset: 0; z-index: 3; display: none; flex-direction: column; background: #55585c; }
+        #result .bar { display: flex; gap: 10px; align-items: center; padding: 8px 12px; background: #2b2d30; color: #eee; }
+        #result img { flex: 1; min-height: 0; object-fit: contain; margin: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.5); background: #fff; }
+        #result iframe { flex: 1; border: 0; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <div id="result">
+            <div class="bar"><button class="btn" id="back">Back to the map</button><span id="result-name"></span></div>
+            <img id="picture" alt="The exported picture" hidden>
+            <iframe id="preview" hidden></iframe>
+        </div>
+        <aside class="panel narrow" style="width:360px">
+            <h2>Export the map</h2>
+            <p>Frisco's zoning over the basemap, out of the map as a file. The map in the file is drawn either by the browser - its own canvas read back, exactly what is on screen, tilt and all, at screen resolution - or by the server, which draws the view again with no map control at all: the basemap's vector tiles through MvtTilesAsyncLayer, the zoning from its shapefile by the same style.json this page draws it with, into a picture of any width or as vector paths and glyphs that print sharp at any size. A PDF page - title, map, footer - is always made on the server by PdfGeoCanvas; the browser's map goes on it as a picture. The file is kept on the server for a few minutes and fetched from export/{id}.</p>
+            <div class="row"><span>File</span><label><input type="radio" name="format" value="png" checked> PNG</label><label><input type="radio" name="format" value="pdf"> PDF</label></div>
+            <div class="row"><span>Map drawn by</span><label><input type="radio" name="drawn" value="browser" checked> the browser, as pixels</label><label><input type="radio" name="drawn" value="server"> the server, as vectors</label></div>
+            <div class="row" id="width-row"><label>Width <input type="number" id="size" min="200" max="4000" step="100" value="1600"> px</label></div>
+            <div class="row" id="title-row"><label>Title <input type="text" id="title" value="Frisco zoning"></label></div>
+            <div class="row"><button class="btn primary" id="export">Export</button><a class="btn" id="save" hidden download="frisco-zoning.png">Save</a><button class="btn" id="show" hidden>Show it again</button></div>
+            <div class="status" id="status"></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        // The drawing buffer is kept so the canvas still holds the frame when it is read back.
+        const map = tg.createMap({ center: [-10779000, 3912800], zoom: 14, preserveDrawingBuffer: true });
+        await tg.ready(map);
+        // The zoning's style.json: drawn here over vector tiles, and sent along for the server to draw the same way.
+        const layers = [{ type: 'fill', 'source-layer': 'zoning', paint: { 'fill-color': 'rgba(147,112,219,0.3)', 'fill-outline-color': '#9370DB' } }];
+        tg.vectorOverlay(map, 'zoning', layers);
+
+        const status = document.getElementById('status'), picture = document.getElementById('picture'), preview = document.getElementById('preview'), save = document.getElementById('save');
+        const picked = (name) => document.querySelector(`input[name=${name}]:checked`).value;
+        const arrange = () => {
+            document.getElementById('width-row').style.display = picked('format') === 'png' && picked('drawn') === 'server' ? '' : 'none';
+            document.getElementById('title-row').style.display = picked('format') === 'pdf' ? '' : 'none';
+        };
+        for (const radio of document.querySelectorAll('input[type=radio]')) radio.addEventListener('change', arrange);
+        arrange();
+
+        // The view's extent in the map's own metres, north-up, for the server to draw.
+        const extent = () => { const b = map.getBounds(); const [l, b2] = tg.toMeters(b.getWest(), b.getSouth()), [r, t] = tg.toMeters(b.getEast(), b.getNorth()); return [l, b2, r, t].map(Math.round).join(','); };
+        // The file takes the map's place until dismissed: a picture fitted to the space, or the
+        // PDF in the browser's own viewer, page and all.
+        const result = document.getElementById('result');
+        const done = (url, name, kind) => {
+            save.hidden = false; save.download = name; save.href = url; save.textContent = 'Save ' + name;
+            document.getElementById('show').hidden = false;
+            document.getElementById('result-name').textContent = name;
+            picture.hidden = kind !== 'png'; preview.hidden = kind !== 'pdf';
+            if (kind === 'png') picture.src = url; else preview.src = url;
+            result.style.display = 'flex';
+        };
+        document.getElementById('back').addEventListener('click', () => { result.style.display = 'none'; });
+        document.getElementById('show').addEventListener('click', () => { result.style.display = 'flex'; });
+        document.getElementById('export').addEventListener('click', async () => {
+            const format = picked('format'), drawn = picked('drawn');
+            document.getElementById('export').disabled = true;
+            tg.say(status, drawn === 'browser' ? 'reading the map...' : 'drawing on the server...');
+            try {
+                if (format === 'png' && drawn === 'browser') {
+                    done(map.getCanvas().toDataURL('image/png'), 'frisco-zoning.png', 'png');
+                    tg.say(status, `the screen, ${map.getCanvas().width} by ${map.getCanvas().height} pixels.`);
+                } else if (format === 'png') {
+                    const r = await tg.post('samples/printing/image', { size: +document.getElementById('size').value, bbox: extent(), layers });
+                    done(tg.root + r.url, 'frisco-zoning.png', 'png');
+                    tg.say(status, `drawn on the server, ${r.width} by ${r.height} pixels.`);
+                } else {
+                    const body = { kind: drawn === 'browser' ? 'raster' : 'vector', bbox: tg.bboxOf(map), title: document.getElementById('title').value, layers };
+                    if (drawn === 'browser') body.image = map.getCanvas().toDataURL('image/png').split(',')[1];
+                    const r = await tg.post('samples/printing/pdf', body);
+                    done(tg.root + r.url, `frisco-zoning-${body.kind}.pdf`, 'pdf');
+                    tg.say(status, `${r.kilobytes} KB, one page, ${drawn === 'browser' ? 'the screen as pixels' : 'vector paths and text'}.`);
+                }
+            } catch (e) {
+                tg.say(status, e.message, false);
+            }
+            document.getElementById('export').disabled = false;
+        });
+    </script>
+</body>
+</html>

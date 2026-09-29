@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>US Demographic</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow" style="width:250px;padding:0;gap:0">
+            <div style="padding:9px 11px;font-weight:600;border-bottom:1px solid #ddd">US census, 2010</div>
+            <div style="padding:7px 11px 3px;color:#555">Colour the states by</div>
+            <div id="categories" style="padding:0 11px 6px;display:flex;flex-direction:column;gap:2px"></div>
+            <div style="padding:7px 11px;border-top:1px solid #ddd">
+                <div style="font-weight:600;margin-bottom:5px"><span id="legend-name"></span><span style="color:#888;font-weight:400" id="legend-unit"></span></div>
+                <div id="legend"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        // A choropleth the browser draws: the states come as tiles from the server, and a step
+        // expression on the chosen column paints each by the class its value falls in. The class
+        // breaks are the data's own quintiles, computed on the server; switching the column is
+        // a new style over the same tiles.
+        const colors = ['#eff3ff', '#bdd7e7', '#6baed6', '#3182bd', '#08519c'];
+        const categories = await tg.get('samples/styling/census-breaks');
+        const map = tg.createMap({ center: [-11037792, 4953010], zoom: 4 });
+        await tg.ready(map);
+        const overlay = tg.vectorOverlay(map, 'states', [], { maxzoom: 8 });
+        const fmt = (raw, divisor) => { const v = raw / divisor; return v >= 1000 ? Math.round(v).toLocaleString('en-US') : v.toFixed(1).replace(/\.0$/, ''); };
+        const show = (c) => {
+            overlay.setLayers([
+                { type: 'fill', 'source-layer': 'states', paint: { 'fill-color': ['step', ['to-number', ['get', c.column]], colors[0], ...c.breaks.flatMap((b, i) => [b, colors[i + 1]])], 'fill-opacity': 0.8, 'fill-outline-color': '#FFFFFF' } },
+                { type: 'line', 'source-layer': 'states', paint: { 'line-color': '#FFFFFF', 'line-width': 0.6 } },
+            ]);
+            document.getElementById('legend-name').textContent = c.name;
+            document.getElementById('legend-unit').textContent = ` (${c.unit})`;
+            const legend = [`< ${fmt(c.breaks[0], c.divisor)}`, ...c.breaks.slice(0, -1).map((b, i) => `${fmt(b, c.divisor)} – ${fmt(c.breaks[i + 1], c.divisor)}`), `≥ ${fmt(c.breaks[3], c.divisor)}`];
+            document.getElementById('legend').innerHTML = legend.map((text, i) => `<div style="display:flex;align-items:center;gap:7px;margin:2px 0"><span style="width:16px;height:16px;background:${colors[i]};border:1px solid #999;flex:none"></span><span>${text}</span></div>`).reverse().join('');
+        };
+        const list = document.getElementById('categories');
+        categories.forEach((c, i) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'cat', checked: i === 0 });
+            radio.addEventListener('change', () => show(c));
+            label.append(radio, c.name);
+            list.appendChild(label);
+        });
+        show(categories[0]);
+    </script>
+</body>
+</html>

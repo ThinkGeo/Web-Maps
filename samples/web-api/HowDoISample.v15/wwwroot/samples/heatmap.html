@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Heatmap</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel" style="width:440px">
+            <div class="controls">
+                <div style="font-weight:600">style.json - pick a weight, or edit it; the map follows</div>
+                <label><input type="radio" name="weight" value="even" checked> Every sighting counts one</label>
+                <label><input type="radio" name="weight" value="count"> Weighted by coyotes seen - heatmap-weight</label>
+                <div style="font-weight:600;margin-top:4px">paint - changed in place, nothing fetched again</div>
+                <div style="display:grid;grid-template-columns:auto 1fr auto;gap:4px 8px;align-items:center">
+                    <span>heatmap-radius</span><input type="range" id="radius" min="4" max="60" step="1" value="22"><span id="radius-value">22px</span>
+                    <span>heatmap-intensity</span><input type="range" id="intensity" min="0.1" max="3" step="0.05" value="0.55"><span id="intensity-value">0.55</span>
+                    <span>heatmap-opacity</span><input type="range" id="opacity" min="0.1" max="1" step="0.05" value="0.85"><span id="opacity-value">0.85</span>
+                </div>
+                <div class="row"><span>heatmap-color</span><span id="ramps" class="row"></span></div>
+            </div>
+            <div class="editor">
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        // The heatmap layer keeps an id: the paint controls name it. The sightings are a
+        // shapefile the server cuts into tiles at tiles/coyotes/.
+        const heat = (weight) => [
+            { id: 'coyote-heat', type: 'heatmap', 'source-layer': 'Frisco_Coyote_Sightings', paint: { ...(weight ? { 'heatmap-weight': ['match', ['get', 'CoyoteCoun'], '1', 1, '2', 2, '3', 3, 'More than 3', 5, 1] } : {}), 'heatmap-radius': 22, 'heatmap-intensity': 0.55, 'heatmap-opacity': 0.85 } },
+            { type: 'circle', 'source-layer': 'Frisco_Coyote_Sightings', minzoom: 13, paint: { 'circle-radius': 4, 'circle-color': '#A0522D' } },
+        ];
+        // heatmap-color as density stops, 0 (no data) to 1 (densest). Stop 0 is transparent in
+        // every ramp - it leaves the basemap visible where nothing was seen.
+        const ramps = {
+            'MapLibre default': [[0, 'rgba(0,0,255,0)'], [0.1, 'royalblue'], [0.3, 'cyan'], [0.5, 'lime'], [0.7, 'yellow'], [1, 'red']],
+            'Warm': [[0, 'rgba(255,255,178,0)'], [0.15, 'rgba(255,255,178,0.7)'], [0.4, 'rgb(254,204,92)'], [0.7, 'rgb(253,141,60)'], [1, 'rgb(189,0,38)']],
+            'Viridis': [[0, 'rgba(68,1,84,0)'], [0.25, 'rgb(59,82,139)'], [0.5, 'rgb(33,145,140)'], [0.75, 'rgb(94,201,98)'], [1, 'rgb(253,231,37)']],
+            'Blue to red': [[0, 'rgba(33,102,172,0)'], [0.2, 'rgb(103,169,207)'], [0.4, 'rgb(209,229,240)'], [0.6, 'rgb(253,219,199)'], [0.8, 'rgb(239,138,98)'], [1, 'rgb(178,24,43)']],
+        };
+        let ramp = 'MapLibre default';
+        const map = tg.createMap({ center: [-10778000, 3912500], zoom: 13 });
+        await tg.ready(map);
+        const overlay = tg.vectorOverlay(map, 'coyotes', heat(false));
+        const paint = () => {
+            if (!map.getLayer('coyote-heat')) return;
+            const radius = +document.getElementById('radius').value, intensity = +document.getElementById('intensity').value, opacity = +document.getElementById('opacity').value;
+            map.setPaintProperty('coyote-heat', 'heatmap-radius', radius);
+            map.setPaintProperty('coyote-heat', 'heatmap-intensity', intensity);
+            map.setPaintProperty('coyote-heat', 'heatmap-opacity', opacity);
+            map.setPaintProperty('coyote-heat', 'heatmap-color', ['interpolate', ['linear'], ['heatmap-density'], ...ramps[ramp].flat()]);
+            document.getElementById('radius-value').textContent = radius + 'px';
+            document.getElementById('intensity-value').textContent = intensity.toFixed(2);
+            document.getElementById('opacity-value').textContent = opacity.toFixed(2);
+            tg.say(document.getElementById('status'), `"coyote-heat": radius ${radius}, intensity ${intensity.toFixed(2)}, opacity ${opacity.toFixed(2)}, color ${ramp}`);
+        };
+        const styleEditor = tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(heat(false)), (edited) => { overlay.setLayers(edited); paint(); });
+        for (const radio of document.querySelectorAll('input[name=weight]')) radio.addEventListener('change', () => { styleEditor.text = tg.styleText(heat(radio.value === 'count')); });
+        for (const id of ['radius', 'intensity', 'opacity']) document.getElementById(id).addEventListener('input', paint);
+        const box = document.getElementById('ramps');
+        Object.keys(ramps).forEach((name, i) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'ramp', checked: i === 0 });
+            radio.addEventListener('change', () => { ramp = name; paint(); });
+            label.append(radio, name);
+            box.appendChild(label);
+        });
+        paint();
+    </script>
+</body>
+</html>

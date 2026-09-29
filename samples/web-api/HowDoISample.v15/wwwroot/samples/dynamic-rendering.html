@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Dynamic Rendering</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <div id="year" style="position:absolute;left:14px;top:10px;font:bold 44px system-ui;color:rgba(40,40,40,.75);pointer-events:none">1950</div>
+        <aside class="panel editor-panel">
+            <div class="controls">
+                <div style="font-weight:600">style.json - edit it; the map follows</div>
+                <p>One circle per state, its population for every year since 1900 carried as columns y1900 to y2024, cut into tiles at tiles/population/. Moving the year only swaps the column the circle-radius and circle-color expressions read; the features never travel again.</p>
+                <div class="row"><button class="btn" id="play" style="width:64px">Play</button><input type="range" id="slider" min="1900" max="2024" step="1" value="1950" style="flex:1"></div>
+            </div>
+            <div class="editor">
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const layers = (year) => [
+            { type: 'circle', 'source-layer': 'population', paint: {
+                'circle-radius': ['interpolate', ['linear'], ['sqrt', ['to-number', ['get', 'y' + year]]], 0, 2, 6300, 42],
+                'circle-color': ['interpolate', ['linear'], ['to-number', ['get', 'y' + year]], 0, '#2C7BB6', 5000000, '#FFFFBF', 20000000, '#D7191C'],
+                'circle-opacity': 0.65, 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 1 } },
+            { type: 'symbol', 'source-layer': 'population', layout: { 'text-field': ['get', 'STATE_ABBR'], 'text-font': ['Noto Sans Bold'], 'text-size': 10, 'text-allow-overlap': true }, paint: { 'text-color': '#333333' } },
+        ];
+        const map = tg.createMap({ center: [-10650000, 4770000], zoom: 4, basemap: null, background: '#FFFFFF' });
+        await tg.ready(map);
+        tg.vectorOverlay(map, 'us-states', [{ type: 'fill', 'source-layer': 'states', paint: { 'fill-color': '#F8F8F8', 'fill-outline-color': '#B0B0B0' } }], { maxzoom: 8 });
+        const overlay = tg.vectorOverlay(map, 'population', layers(1950), { maxzoom: 6 });
+        const styleEditor = tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(layers(1950)), (edited) => overlay.setLayers(edited));
+        // Every "yNNNN" in the document becomes the chosen year; the editor shows the same text
+        // the map draws.
+        const slider = document.getElementById('slider');
+        const showYear = () => { document.getElementById('year').textContent = slider.value; styleEditor.text = styleEditor.text.replace(/"y\d{4}"/g, `"y${slider.value}"`); };
+        slider.addEventListener('input', showYear);
+        let timer = null;
+        document.getElementById('play').addEventListener('click', (e) => {
+            if (timer) { clearInterval(timer); timer = null; e.target.textContent = 'Play'; return; }
+            if (+slider.value >= 2024) slider.value = 1900;
+            e.target.textContent = 'Stop';
+            timer = setInterval(() => { if (+slider.value >= 2024) { clearInterval(timer); timer = null; e.target.textContent = 'Play'; return; } slider.value = +slider.value + 1; showYear(); }, 120);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Reverse Geocoding</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow" style="width:340px">
+            <h2>Reverse geocoding</h2>
+            <p>A point and a search radius go to the server, where ReverseGeocodingCloudClient.SearchPointAsync answers with the best match and what else lies within the radius. Click the map, or type a latitude and longitude and search.</p>
+            <div class="row"><input type="text" id="coordinates" value="33.150083, -96.834516" placeholder="latitude, longitude" style="flex:1"><button class="btn primary" id="search">Search</button></div>
+            <div class="row"><label>Radius <input type="number" id="radius" min="10" max="2000" step="10" value="200"> m</label><label>Up to <input type="number" id="max" min="1" max="50" value="20"></label></div>
+            <div class="status" id="status">Click anywhere on the map, or search for a place by its coordinates.</div>
+            <div id="nearby"></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const map = tg.createMap({ center: [-10778720, 3915154], zoom: 14 });
+        await tg.ready(map);
+        const asked = tg.geojsonOverlay(map, 'asked', [{ type: 'fill', paint: { 'fill-color': 'rgba(30,90,220,0.08)', 'fill-outline-color': 'rgba(30,90,220,0.6)' } }]);
+        const picked = tg.geojsonOverlay(map, 'picked', [
+            { type: 'fill', filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': 'rgba(147,112,219,0.35)', 'fill-outline-color': '#9370DB' } },
+            { type: 'line', filter: ['==', ['geometry-type'], 'LineString'], paint: { 'line-color': '#9370DB', 'line-width': 5 } },
+            { type: 'circle', filter: ['==', ['geometry-type'], 'Point'], paint: { 'circle-radius': 9, 'circle-color': '#9370DB', 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 2 } },
+        ]);
+        const center = tg.geojsonOverlay(map, 'center', [{ type: 'circle', paint: { 'circle-radius': 5, 'circle-color': '#D7301F', 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 2 } }]);
+        const status = document.getElementById('status'), nearby = document.getElementById('nearby');
+        let popup = null, busy = false;
+
+        const ask = async (lngLat) => {
+            if (busy) return;
+            busy = true;
+            tg.say(status, 'asking ThinkGeo Cloud...');
+            center.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: lngLat }, properties: {} });
+            picked.clear(); nearby.innerHTML = '';
+            if (popup) { popup.remove(); popup = null; }
+            try {
+                const result = await tg.post('samples/cloud/reverse-geocode', { lng: lngLat[0], lat: lngLat[1], radius: +document.getElementById('radius').value, maxResults: +document.getElementById('max').value });
+                asked.setData({ type: 'Feature', geometry: result.circle, properties: {} });
+                if (result.best) popup = tg.popup(map, result.best.at, `<b>Best match</b><br>${result.best.text}`);
+                const groups = {};
+                for (const location of result.nearby) {
+                    const c = (location.category || '').toLowerCase();
+                    const group = c.includes('addresspoint') ? 'Addresses' : ['road', 'rail', 'aeroway', 'waterway'].includes(c) ? 'Roads and ways' : 'Places';
+                    (groups[group] = groups[group] || []).push(location);
+                }
+                for (const group of Object.keys(groups).sort()) {
+                    const head = document.createElement('div'); head.style.cssText = 'font-weight:600;margin-top:6px'; head.textContent = group; nearby.appendChild(head);
+                    const list = document.createElement('div'); list.className = 'list'; nearby.appendChild(list);
+                    for (const location of groups[group]) {
+                        const row = document.createElement('div');
+                        row.innerHTML = `<div>${location.text}</div><small>${location.type}, ${Math.round(location.distance)} m ${location.direction}</small>`;
+                        row.addEventListener('click', () => { for (const r of nearby.querySelectorAll('.list > div')) r.classList.toggle('picked', r === row); picked.setData({ type: 'Feature', geometry: location.geometry, properties: {} }); });
+                        list.appendChild(row);
+                    }
+                }
+                tg.say(status, result.best ? `${result.nearby.length} nearby locations - click one.` : 'Nothing within the radius.');
+            } catch (e) {
+                tg.say(status, e.message, false);
+            }
+            busy = false;
+        };
+        map.on('click', (e) => { document.getElementById('coordinates').value = `${e.lngLat.lat.toFixed(6)}, ${e.lngLat.lng.toFixed(6)}`; ask([e.lngLat.lng, e.lngLat.lat]); });
+        const search = () => {
+            const parts = document.getElementById('coordinates').value.split(',').map(Number);
+            if (parts.length !== 2 || parts.some(isNaN) || Math.abs(parts[0]) > 85 || Math.abs(parts[1]) > 180) { tg.say(status, 'Type a latitude and a longitude, separated by a comma.', false); return; }
+            map.easeTo({ center: [parts[1], parts[0]] });
+            ask([parts[1], parts[0]]);
+        };
+        document.getElementById('search').addEventListener('click', search);
+        document.getElementById('coordinates').addEventListener('keyup', (e) => { if (e.key === 'Enter') search(); });
+    </script>
+</body>
+</html>

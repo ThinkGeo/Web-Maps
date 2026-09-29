@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Project Features</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow">
+            <h2>Reprojecting Features and Coordinates</h2>
+            <p>Well known text in one projection goes to the server, where a ProjectionConverter turns it into the Spherical Mercator the map is in; what comes back is drawn, and read below in the map's meters.</p>
+            <div class="row"><span>From EPSG</span><input type="number" id="epsg" value="4326" style="width:80px"></div>
+            <button class="btn primary" id="one">Reproject and Display a Feature</button>
+            <textarea id="wkt" rows="9" spellcheck="false" style="font:12px Consolas,monospace;white-space:pre;resize:vertical"></textarea>
+            <button class="btn primary" id="many">Reproject and Display Multiple Features</button>
+            <div class="status" id="status"></div>
+            <pre id="converted" style="font:11px Consolas,monospace;color:#444;white-space:pre-wrap;word-break:break-all;margin:0"></pre>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        document.getElementById('wkt').value = 'POINT(-96.834516 33.150083)\n'
+            + 'LINESTRING(-96.83559 33.149,-96.835866046134 33.1508413556856,-96.835793626491 33.1508974965687,-96.8336008970734 33.1511063402186,-96.83356 33.15109,-96.83328 33.14922)\n'
+            + 'POLYGON((-96.83582 33.1508,-96.83578 33.15046,-96.83353 33.15068,-96.83358 33.15102,-96.83582 33.1508))';
+
+        const map = tg.createMap({ center: [-10779580, 3915255], zoom: 18 });
+        await tg.ready(map);
+        // A point is drawn from a named picture; a star has no shape of its own in the style
+        // specification, so a PointStyle draws it once on the server and it is registered here.
+        map.addImage('star', (await map.loadImage(tg.root + 'samples/projections/star.png')).data);
+        const shapes = tg.geojsonOverlay(map, 'shapes', [
+            { type: 'fill', filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': 'rgba(147,112,219,0.31)', 'fill-outline-color': '#9370DB' } },
+            { type: 'line', filter: ['==', ['geometry-type'], 'LineString'], paint: { 'line-color': '#9370DB', 'line-width': 6 } },
+            { type: 'symbol', filter: ['==', ['geometry-type'], 'Point'], layout: { 'icon-image': 'star', 'icon-allow-overlap': true } },
+        ]);
+
+        const reproject = async (wkt) => {
+            const status = document.getElementById('status');
+            try {
+                const result = await tg.post('samples/projections/reproject', { epsg: +document.getElementById('epsg').value, wkt });
+                shapes.setData(result.features);
+                document.getElementById('converted').textContent = result.converted.join('\n');
+                tg.say(status, `${result.converted.length} feature(s) converted`);
+                const b = result.bounds;
+                if (b[2] - b[0] < 1e-6 && b[3] - b[1] < 1e-6) map.easeTo({ center: [b[0], b[1]], zoom: tg.zoomForScale(tg.scaleForZoom(17)) });
+                else tg.fit(map, b, 60);
+            } catch (e) {
+                tg.say(status, e.message, false);
+            }
+        };
+        document.getElementById('one').addEventListener('click', () => reproject('POINT(-96.834516 33.150083)'));
+        document.getElementById('many').addEventListener('click', () => reproject(document.getElementById('wkt').value));
+    </script>
+</body>
+</html>

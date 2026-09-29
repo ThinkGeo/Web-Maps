@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Lane Level Navigation</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        .hud { position: absolute; padding: 10px 12px; background: rgba(16,19,23,.88); color: #c9d4d0; font: 13px system-ui; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div class="page" style="background:#101317">
+        <div id="map"></div>
+        <div class="hud" style="top:12px;left:12px;min-width:260px;font-size:14px">
+            <div id="street" style="color:#7ef2d9;font-size:16px;font-weight:600"></div>
+            <div id="instruction" style="color:white;font-size:26px;font-weight:600;line-height:1.2;margin:4px 0"></div>
+            <div id="next"></div>
+            <div style="display:flex;justify-content:space-between;margin-top:8px"><span id="speed"></span><span id="progress"></span></div>
+        </div>
+        <div class="hud" style="top:12px;right:12px">
+            <div style="color:whitesmoke;font-weight:600;margin-bottom:6px">Camera</div>
+            <label style="display:flex;align-items:center;gap:8px">Pitch <input type="range" id="pitch" min="0" max="60" value="58" style="width:150px"> <span id="pitch-value" style="width:36px">58°</span></label>
+            <button class="btn" id="mode" style="margin-top:8px">Overview Mode</button>
+        </div>
+        <div class="hud" style="bottom:12px;left:12px;font-size:12px">
+            <div id="title" style="color:#7ef2d9;font-size:14px;font-weight:600"></div>
+            <div id="stats"></div>
+            <div id="attribution"></div>
+        </div>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const groundHeightMeters = 60, stretchMeters = 24, groundSpeed = 12.7;
+        const route = await tg.get('samples/navigation/lane-route');
+        const trace = route.trace;   // in the map's meters
+        document.getElementById('title').textContent = route.title;
+        document.getElementById('stats').textContent = `${route.markingCount} lane markings, ${(route.routeLength * route.groundScale / 1000).toFixed(1)} km route`;
+        document.getElementById('attribution').textContent = route.attribution;
+
+        // The lane map, drawn by level so that a bridge sits above what it crosses. Every lane
+        // piece is a vector tile the server cuts from memory at tiles/lanes/.
+        const widths = (...stops) => ['interpolate', ['exponential', 2], ['zoom'], 15, stops[0], 17, stops[1], 18, stops[2], 19, stops[3], 20, stops[4], 21, stops[5]];
+        const level = (n) => {
+            const at = ['==', ['to-string', ['get', 'level']], n];
+            const line = (layer, color, width, extra = {}) => ({ type: 'line', 'source-layer': layer, filter: at, layout: { 'line-cap': 'butt', 'line-join': 'round' }, paint: { 'line-color': color, 'line-width': width, ...extra } });
+            return [
+                { type: 'fill', 'source-layer': 'drivable', filter: at, paint: { 'fill-color': '#1b1f24' } },
+                { type: 'fill', 'source-layer': 'lane', filter: at, paint: { 'fill-color': '#23282e' } },
+                { type: 'fill', 'source-layer': 'route_lane', filter: at, paint: { 'fill-color': '#23282e' } },
+                { type: 'fill', 'source-layer': 'route_lane', filter: at, paint: { 'fill-color': '#3b74ff', 'fill-opacity': 0.22 } },
+                line('lane_edge', '#0a0c0f', widths(1.2, 2, 3, 5, 9, 15), { 'line-opacity': 0.95 }),
+                line('lane_edge', '#b9c1c9', widths(0.5, 0.8, 1.2, 2, 4, 7)),
+                line('lane_marking_dashed', '#ffffff', widths(0.6, 1.0, 1.6, 3, 6, 11), { 'line-dasharray': [3, 3.5] }),
+                line('lane_marking_solid', '#ffffff', widths(0.7, 1.1, 1.8, 3.5, 7, 12)),
+            ];
+        };
+        const laneStyle = [...level('0'), ...level('1'), ...level('2'), { type: 'fill', 'source-layer': 'crossing', paint: { 'fill-color': '#e6ebf0', 'fill-opacity': 0.16 } }];
+
+        const map = tg.createMap({ center: trace[0], zoom: 20, pitch: 58, basemap: 'dark', maxZoom: 24 });
+        await tg.ready(map);
+        tg.vectorOverlay(map, 'lanes', laneStyle, { maxzoom: 20 });
+        map.addImage('vehicle', (await map.loadImage(tg.root + 'samples/navigation/vehicle.png')).data);
+        const vehicle = tg.geojsonOverlay(map, 'vehicle', [{ type: 'symbol', layout: { 'icon-image': 'vehicle', 'icon-allow-overlap': true, 'icon-rotate': ['get', 'bearing'], 'icon-rotation-alignment': 'map', 'icon-size': 0.5 } }]);
+
+        // Where the vehicle is a distance along the trace, and which way the road runs there.
+        const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+        const length = trace.reduce((sum, p, i) => i ? sum + dist(trace[i - 1], p) : 0, 0);
+        const poseAt = (target) => {
+            let walked = 0;
+            for (let i = 0; i < trace.length - 1; i++) {
+                const segment = dist(trace[i], trace[i + 1]);
+                if (walked + segment >= target) {
+                    const t = segment < 0.001 ? 0 : (target - walked) / segment;
+                    return { position: [trace[i][0] + (trace[i + 1][0] - trace[i][0]) * t, trace[i][1] + (trace[i + 1][1] - trace[i][1]) * t], heading: Math.atan2(trace[i + 1][1] - trace[i][1], trace[i + 1][0] - trace[i][0]) * 180 / Math.PI, distance: target };
+                }
+                walked += segment;
+            }
+            const end = trace[trace.length - 1], previous = trace[Math.max(0, trace.length - 2)];
+            return { position: end, heading: Math.atan2(end[1] - previous[1], end[0] - previous[0]) * 180 / Math.PI, distance: length };
+        };
+        const bearing = (pose) => 90 - pose.heading;
+
+        // Sixty metres of ground fill the height of the screen.
+        const heightPx = map.getContainer().clientHeight;
+        const cameraZoom = tg.zoomForResolution(groundHeightMeters / route.groundScale / heightPx);
+        const cameraCenter = (pose) => {
+            const ahead = heightPx * 0.25 * tg.resolutionForZoom(cameraZoom), r = bearing(pose) * Math.PI / 180;
+            return tg.toLngLat(pose.position[0] + ahead * Math.sin(r), pose.position[1] + ahead * Math.cos(r));
+        };
+
+        let pose = poseAt(0), tracking = true;
+        const show = (at) => {
+            pose = at;
+            vehicle.setData({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'Point', coordinates: tg.toLngLat(at.position[0], at.position[1]) }, properties: { bearing: bearing(at) } }] });
+            const scale = route.groundScale;
+            document.getElementById('progress').textContent = `${(at.distance * scale / 1609.344).toFixed(1)} mi complete`;
+            document.getElementById('speed').textContent = `${Math.round(groundSpeed * 2.23694 + Math.sin(at.distance * 0.018) * 3)} mph`;
+            let current = 0;
+            while (current + 1 < route.legs.length && at.distance >= route.legs[current + 1].startDistance) current++;
+            document.getElementById('street').textContent = route.legs[current].label;
+            if (current + 1 < route.legs.length) {
+                const upcoming = route.legs[current + 1];
+                const feet = Math.max(0, upcoming.startDistance - at.distance) * scale * 3.28084;
+                document.getElementById('instruction').textContent = upcoming.instruction;
+                document.getElementById('next').textContent = upcoming.lane ? `In ${Math.round(feet)} ft, use the ${upcoming.lane} lane` : `In ${Math.round(feet)} ft`;
+            } else {
+                document.getElementById('instruction').textContent = 'Destination ahead';
+                document.getElementById('next').textContent = `In ${Math.round(Math.max(0, route.routeLength - at.distance) * scale * 3.28084)} ft`;
+            }
+        };
+        show(pose);
+
+        // Tracking: the camera eases to the pose a stretch ahead, turned to the road and with
+        // the vehicle a quarter of the screen below the centre, at the ground speed; the vehicle
+        // is moved along the stretch at the same pace. Overview: the vehicle drives on while the
+        // camera holds.
+        (async () => {
+            const unitsPerSecond = groundSpeed / route.groundScale;
+            while (true) {
+                const from = pose.distance >= length - 0.5 ? 0 : pose.distance;
+                const to = Math.min(length, from + stretchMeters / route.groundScale);
+                const ms = Math.max(16, (to - from) / unitsPerSecond * 1000);
+                if (tracking) {
+                    const target = poseAt(to);
+                    map.easeTo({ center: cameraCenter(target), zoom: cameraZoom, bearing: bearing(target), duration: ms, easing: t => t });
+                }
+                const started = performance.now(), was = tracking;
+                while (true) {
+                    const fraction = Math.min(1, (performance.now() - started) / ms);
+                    show(poseAt(from + (to - from) * fraction));
+                    if (fraction >= 1 || was !== tracking) break;
+                    await new Promise(r => setTimeout(r, 40));
+                }
+            }
+        })();
+
+        document.getElementById('mode').addEventListener('click', (e) => {
+            tracking = !tracking;
+            e.target.textContent = tracking ? 'Overview Mode' : 'Tracking Mode';
+            if (tracking) { map.setPitch(+document.getElementById('pitch').value); return; }
+            map.setPitch(45);
+            const b = route.overviewBounds;
+            map.fitBounds([[b[0], b[1]], [b[2], b[3]]], { bearing: 0, duration: 1800 });
+        });
+        document.getElementById('pitch').addEventListener('input', (e) => { document.getElementById('pitch-value').textContent = e.target.value + '°'; if (tracking) map.setPitch(+e.target.value); });
+    </script>
+</body>
+</html>

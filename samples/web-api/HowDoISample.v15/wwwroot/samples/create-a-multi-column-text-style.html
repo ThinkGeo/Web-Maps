@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Create a Multi-Column Text Style</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <div class="note">A label built from several columns is a concat expression in text-field, where the classic TextStyle used a {COLUMN} template. Countries and capitals are two shapefiles the server cuts into one set of tiles at tiles/world/.</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const layers = [
+            { type: 'background', paint: { 'background-color': '#DDE8F0' } },
+            { type: 'fill', 'source-layer': 'Countries02', paint: { 'fill-color': '#E9E8D6', 'fill-outline-color': '#B5B5A5' } },
+            { type: 'symbol', 'source-layer': 'WorldCapitals', layout: { 'text-field': ['concat', ['get', 'CITY_NAME'], '\n', 'Population: ', ['get', 'POPULATION']], 'text-font': ['Noto Sans Bold'], 'text-size': 11 }, paint: { 'text-color': '#1A1A1A' } },
+        ];
+        const map = tg.createMap({ center: [1675000, 5900000], zoom: 5, basemap: null });
+        await tg.ready(map);
+        const overlay = tg.vectorOverlay(map, 'world', layers, { maxzoom: 8 });
+        tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(layers), (edited) => overlay.setLayers(edited));
+    </script>
+</body>
+</html>

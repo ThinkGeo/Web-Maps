@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Adornments</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <div id="coordinates" style="position:absolute;left:calc(50% - 160px);bottom:12px;transform:translateX(-50%);padding:6px 12px;background:rgba(255,255,255,.92);border-radius:4px;font:14px Consolas,monospace;box-shadow:0 1px 4px rgba(0,0,0,.25);white-space:nowrap">move the pointer over the map</div>
+        <aside class="panel narrow">
+            <h2>Adornments</h2>
+            <p>Adornment layers are drawn on the server as one picture the size of the map, laid over it and drawn again whenever the view settles. The states are classed by population in the style; the legend is a LegendAdornmentLayer with one item per class. The scale line and bar read the scale of what is shown. The compass is a MagneticDeclinationAdornmentLayer - true north, magnetic north and the declination between them for the middle of the map - pinned to a corner and turned with the map. The graticule is a feature layer drawn as tiles; the zoom and compass buttons are the map's own.</p>
+            <label><input type="checkbox" id="legend" checked> Legend</label>
+            <label><input type="checkbox" id="scale" checked> Scale line and scale bar</label>
+            <div class="row" style="padding-left:22px"><label>Units <select id="units">
+                <option value="imperialandmetric">imperial and metric</option>
+                <option value="metricandnauticalmile">metric and nautical miles</option>
+                <option value="nauticalmileandimperial">nautical miles and imperial</option>
+                <option value="default">the default</option>
+            </select></label><label><input type="checkbox" id="styled"> own text styles</label></div>
+            <label><input type="checkbox" id="compass" checked> Compass - true and magnetic north</label>
+            <label><input type="checkbox" id="graticule"> Graticule, as tiles</label>
+            <label>Pointer coordinates as <select id="format"><option value="LatLon">latitude, longitude</option><option value="DMS">degrees, minutes, seconds</option><option value="Meters">Web Mercator meters</option></select></label>
+            <p>Turn the map with a right-drag: the compass turns with it, and the scale still reads the scale of the map, not of the box the turned map covers.</p>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const map = tg.createMap({ center: [-10650000, 4600000], zoom: 4 });
+        map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-left');
+        await tg.ready(map);
+        tg.vectorOverlay(map, 'us-states', [{ type: 'fill', 'source-layer': 'states', paint: {
+            'fill-color': ['step', ['to-number', ['get', 'POP1990']], '#B0C4DE', 2000000, '#87CEFA', 6000000, '#4169E1', 12000000, '#00008B'], 'fill-outline-color': '#696969', 'fill-opacity': 0.75 } }], { maxzoom: 8 });
+
+        // Each adornment is its own overlay on the server, and its own picture over the map here.
+        const shown = {};
+        const show = (id, make) => { if (shown[id]) { shown[id].remove(); shown[id] = null; } if (document.getElementById(id).checked) shown[id] = make(); };
+        const apply = {
+            legend: () => show('legend', () => tg.adornments(map, 'legend')),
+            scale: () => show('scale', () => tg.adornments(map, 'scale-' + document.getElementById('units').value + (document.getElementById('styled').checked ? '-styled' : ''))),
+            compass: () => show('compass', () => tg.compass(map, 'compass')),
+            graticule: () => show('graticule', () => tg.rasterOverlay(map, 'graticule')),
+        };
+        for (const id of Object.keys(apply)) { document.getElementById(id).addEventListener('change', apply[id]); apply[id](); }
+        document.getElementById('units').addEventListener('change', apply.scale);
+        document.getElementById('styled').addEventListener('change', apply.scale);
+
+        const dms = (value, positive, negative) => {
+            const whole = Math.abs(value), d = Math.floor(whole), m = Math.floor((whole - d) * 60), s = ((whole - d) * 60 - m) * 60;
+            return `${d}°${String(m).padStart(2, '0')}'${s.toFixed(1).padStart(4, '0')}"${value >= 0 ? positive : negative}`;
+        };
+        map.on('mousemove', (e) => {
+            const format = document.getElementById('format').value;
+            const out = document.getElementById('coordinates');
+            if (format === 'Meters') { const [x, y] = tg.toMeters(e.lngLat.lng, e.lngLat.lat); out.textContent = `X ${Math.round(x).toLocaleString()}  Y ${Math.round(y).toLocaleString()}`; }
+            else if (format === 'DMS') out.textContent = dms(e.lngLat.lat, 'N', 'S') + '  ' + dms(e.lngLat.lng, 'E', 'W');
+            else out.textContent = `${e.lngLat.lat.toFixed(5)}, ${e.lngLat.lng.toFixed(5)}`;
+        });
+    </script>
+</body>
+</html>

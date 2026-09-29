@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Raster File Formats</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow">
+            <h2>File</h2>
+            <div id="formats" style="display:flex;flex-direction:column;gap:2px"></div>
+            <p>Each format has a raster layer named after it, and anything else GDAL reads goes through the base class. A raster is the server's to draw - the browser reads none of these files - one tile at a time at raster/raster-&lt;format&gt;/; a file in another projection is warped as it is drawn.</p>
+            <div class="status" id="status"></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const formats = ['GeoTIFF - NAIP aerial', 'Plain JPEG + world file', 'MrSID - aerial in state plane feet', 'JPEG2000 - world', 'ECW - world imagery', 'Anything else GDAL reads'];
+        const map = tg.createMap({ center: [-10780597, 3916063], zoom: 14 });
+        await tg.ready(map);
+        let overlay = null;
+
+        const pick = async (name) => {
+            const status = document.getElementById('status');
+            try {
+                const bounds = await tg.get('samples/your-data/bounds/raster-' + tg.slug(name));
+                if (overlay) overlay.remove();
+                overlay = tg.rasterOverlay(map, 'raster-' + tg.slug(name));
+                tg.fit(map, bounds);
+                tg.say(status, name);
+            } catch (e) {
+                tg.say(status, 'Unavailable: ' + e.message, false);
+            }
+        };
+
+        const box = document.getElementById('formats');
+        formats.forEach((name, i) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'format', checked: i === 0 });
+            radio.addEventListener('change', () => pick(name));
+            label.append(radio, name);
+            box.appendChild(label);
+        });
+        pick(formats[0]);
+    </script>
+</body>
+</html>

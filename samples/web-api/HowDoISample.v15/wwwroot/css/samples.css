@@ -1,0 +1,32 @@
+/* The look every sample page shares inside the gallery's frame: a map with a panel beside it. */
+html, body { height: 100%; margin: 0; font: 13px system-ui, sans-serif; color: #222; }
+.page { display: flex; height: 100%; }
+#map { flex: 1; min-width: 0; position: relative; }
+.panel { width: 420px; display: flex; flex-direction: column; gap: 8px; padding: 10px; background: #f6f6f4; border-left: 1px solid #ccc; overflow: auto; box-sizing: border-box; }
+.panel.narrow { width: 320px; }
+.panel h2 { font-size: 13px; font-weight: 600; margin: 0; }
+.panel p { margin: 0; color: #555; }
+.panel .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.panel label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+.panel input[type=text], .panel input[type=number], .panel select { font: 13px system-ui, sans-serif; padding: 3px 6px; }
+.panel input[type=number] { width: 64px; }
+.panel .status { color: #555; min-height: 1.2em; }
+.panel .list { border-top: 1px solid #ddd; }
+.panel .list > div { padding: 4px 6px; border-bottom: 1px solid #e3e3e3; cursor: pointer; }
+.panel .list > div.picked { background: #e3eafc; }
+.panel .list small { color: #888; display: block; }
+.btn { font: 12px system-ui, sans-serif; padding: 4px 10px; border: 1px solid #b5b5b5; border-radius: 3px; background: #fff; cursor: pointer; }
+.btn:hover { background: #eef2f8; }
+.btn.primary { background: #1a73e8; border-color: #1a73e8; color: #fff; }
+.btn.primary:hover { background: #1660c4; }
+.btn:disabled { opacity: .5; cursor: default; }
+.editor { display: flex; flex-direction: column; flex: 1; min-height: 240px; }
+.editor .head { padding: 8px 8px 4px; font-weight: 600; }
+.editor .note { padding: 0 8px 6px; color: #555; }
+.editor textarea { flex: 1; font: 11.5px Consolas, monospace; padding: 6px; border: 0; border-top: 1px solid #ccc; resize: none; white-space: pre; outline: none; }
+.editor .status { padding: 4px 8px 6px; }
+.panel.editor-panel { padding: 0; gap: 0; }
+.panel.editor-panel .controls { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.legend { position: absolute; left: 12px; bottom: 12px; padding: 8px 10px; background: rgba(255,255,255,.92); border-radius: 4px; font: 12px system-ui, sans-serif; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+.legend .swatch { display: inline-block; width: 14px; height: 10px; border: 1px solid #888; vertical-align: middle; margin-right: 4px; }
+.maplibregl-popup-content { font: 12px system-ui, sans-serif; }

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Setting the Projection of a Layer</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <div class="note">The shapefile is in Texas state plane feet (EPSG:2276). Its ProjectionConverter says so, and the source hands out every feature in the map's meters - the tiles are cut at tiles/zoning/ and the style drawn as if the file had always been Web Mercator.</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const layers = [{ type: 'fill', 'source-layer': 'zoning', paint: { 'fill-color': 'rgba(147,112,219,0.2)', 'fill-outline-color': '#9370DB' } }];
+        const map = tg.createMap({ center: [-10778770, 3915250], zoom: 12 });
+        await tg.ready(map);
+        const overlay = tg.vectorOverlay(map, 'zoning', layers);
+        tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(layers), (edited) => overlay.setLayers(edited));
+        tg.fit(map, await tg.get('samples/projections/zoning-bounds'), 0);
+    </script>
+</body>
+</html>

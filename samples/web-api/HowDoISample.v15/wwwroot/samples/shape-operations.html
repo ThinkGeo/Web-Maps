@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Shape Operations</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow">
+            <h2>Operation</h2>
+            <div id="operations" style="display:flex;flex-direction:column;gap:2px"></div>
+            <div id="union-box" style="display:none;flex-direction:column;gap:4px">
+                <div id="union-note"></div>
+                <button class="btn primary" id="merge">Merge them into one</button>
+                <button class="btn" id="separate" disabled>Separate them again</button>
+            </div>
+            <div id="params-box" style="display:none;flex-direction:column;gap:4px">
+                <label id="first-label"><span></span> <input type="text" id="first" style="width:80px"></label>
+                <label id="second-label" hidden><span></span> <input type="text" id="second" style="width:80px"></label>
+                <label><input type="checkbox" id="animate"> Animate it</label>
+            </div>
+            <p id="legend">Orange is the shape read from the file, green what the operation makes of it, blue the area the paired operations use. Every operation runs on the server; the outcome comes back as GeoJSON.</p>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const operations = ['Buffer', 'Simplify', 'Rotate', 'Scale', 'Translate', 'Convex hull', 'Envelope', 'Split by a line', 'Snap a line to it', 'Intersection with the blue area', 'Difference from the blue area', 'Union of all the pieces'];
+        const parameters = { 'Buffer': ['Distance (meters)', '1000'], 'Simplify': ['Tolerance (meters)', '500'], 'Rotate': ['Degrees', '90'], 'Scale': ['Percentage', '50'], 'Translate': ['X offset (meters)', '3000', 'Y offset (meters)', '3000'], 'Split by a line': ['Angle of the cut (degrees)', '30'], 'Snap a line to it': ['Gap to the shape (meters)', '200'] };
+        const sweeps = { 'Buffer': [100, 4000, false], 'Simplify': [0, 4000, false], 'Rotate': [0, 360, true], 'Scale': [20, 200, false], 'Translate': [-6000, 6000, false], 'Split by a line': [0, 360, true], 'Snap a line to it': [0, 900, false] };
+        const legends = {
+            'Split by a line': 'The shape is split by the half-plane on one side of the green line: each piece its own colour. AreaBaseShape.Split does the cutting on the server.',
+            'Snap a line to it': 'A short line starts a gap east of the shape. The blue circle is the reach, 400 m: while the shape is inside it, the line is moved so that it starts on the shape\'s closest point - green is where the line ends up.',
+        };
+
+        const map = tg.createMap({ center: [-10782000, 3911500], zoom: 12 });
+        await tg.ready(map);
+        const region = tg.geojsonOverlay(map, 'region', [{ type: 'fill', paint: { 'fill-color': 'rgba(0,0,255,0.125)', 'fill-outline-color': '#0000FF' } }]);
+        const source = tg.geojsonOverlay(map, 'source', [{ type: 'fill', paint: { 'fill-color': ['get', 'color'] } }]);
+        const result = tg.geojsonOverlay(map, 'result', [
+            { type: 'fill', paint: { 'fill-color': 'rgba(0,128,0,0.375)' } },
+            { type: 'line', paint: { 'line-color': '#006400', 'line-width': 2 } },
+        ]);
+        let operation = operations[0], merged = false, phase = 0, timer = null, framed = false;
+
+        const apply = async () => {
+            const first = +document.getElementById('first').value || 0, second = +document.getElementById('second').value || 0;
+            const r = await tg.get(`samples/shapes/operation?name=${encodeURIComponent(operation)}&first=${first}&second=${second}&merged=${merged}`);
+            source.setData(r.source);
+            region.setData(r.region ? { type: 'Feature', geometry: r.region, properties: {} } : null);
+            result.setData(r.result ? { type: 'Feature', geometry: r.result, properties: {} } : null);
+            document.getElementById('union-note').textContent = r.note;
+            if (!framed) { framed = true; tg.fit(map, r.bounds, 0); }
+        };
+        const choose = (name) => {
+            operation = name; merged = false; phase = 0;
+            stop(); document.getElementById('animate').checked = false;
+            const p = parameters[name];
+            document.getElementById('params-box').style.display = p ? 'flex' : 'none';
+            document.getElementById('union-box').style.display = name === 'Union of all the pieces' ? 'flex' : 'none';
+            document.getElementById('legend').textContent = legends[name] || 'Orange is the shape read from the file, green what the operation makes of it, blue the area the paired operations use. Every operation runs on the server; the outcome comes back as GeoJSON.';
+            if (p) {
+                document.querySelector('#first-label span').textContent = p[0]; document.getElementById('first').value = p[1];
+                document.getElementById('second-label').hidden = !p[2];
+                if (p[2]) { document.querySelector('#second-label span').textContent = p[2]; document.getElementById('second').value = p[3]; }
+            }
+            document.getElementById('merge').disabled = merged; document.getElementById('separate').disabled = !merged;
+            apply();
+        };
+        // The parameter sweeps its range and the result follows, one request per frame.
+        const stop = () => { if (timer) clearInterval(timer); timer = null; };
+        document.getElementById('animate').addEventListener('change', (e) => {
+            stop();
+            if (!e.target.checked) return;
+            timer = setInterval(() => {
+                const [from, to, wraps] = sweeps[operation] || [0, 1, false];
+                phase = (phase + 0.012) % 1;
+                const travel = wraps ? phase : 1 - Math.abs(2 * phase - 1);
+                document.getElementById('first').value = Math.round(from + (to - from) * travel);
+                apply();
+            }, 120);
+        });
+        document.getElementById('first').addEventListener('input', apply);
+        document.getElementById('second').addEventListener('input', apply);
+        document.getElementById('merge').addEventListener('click', () => { merged = true; document.getElementById('merge').disabled = true; document.getElementById('separate').disabled = false; apply(); });
+        document.getElementById('separate').addEventListener('click', () => { merged = false; document.getElementById('merge').disabled = false; document.getElementById('separate').disabled = true; apply(); });
+        const list = document.getElementById('operations');
+        operations.forEach((name, i) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'operation', checked: i === 0 });
+            radio.addEventListener('change', () => choose(name));
+            label.append(radio, name);
+            list.appendChild(label);
+        });
+        choose(operations[0]);
+    </script>
+</body>
+</html>

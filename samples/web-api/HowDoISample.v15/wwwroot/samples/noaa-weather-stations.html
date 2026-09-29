@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>NOAA Weather Stations</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <div class="note">NOAA's weather stations and their current readings, read live by NoaaWeatherStationFeatureSource on the server and cut into tiles at tiles/stations/ like any other source. Each dot is coloured by its Temperature column.</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const layers = [
+            { type: 'circle', 'source-layer': 'stations',
+              paint: { 'circle-radius': 4.5, 'circle-color': ['step', ['to-number', ['get', 'Temperature']], 'rgba(69,117,180,1)', 32, 'rgba(145,191,219,1)', 50, 'rgba(255,255,191,1)', 70, 'rgba(252,141,89,1)', 85, 'rgba(215,48,39,1)'],
+                       'circle-stroke-color': 'rgba(255,255,255,1)', 'circle-stroke-width': 1.5 } },
+            { type: 'symbol', 'source-layer': 'stations', minzoom: 7,
+              layout: { 'text-field': ['concat', ['get', 'Temperature'], '°'], 'text-font': ['Noto Sans Bold'], 'text-size': 10, 'text-offset': [0, 1.1] },
+              paint: { 'text-color': '#333333', 'text-halo-color': '#FFFFFF', 'text-halo-width': 1 } },
+        ];
+        const map = tg.createMap({ center: [-10807050, 5045070], zoom: 4 });
+        await tg.ready(map);
+        const overlay = tg.vectorOverlay(map, 'stations', layers, { maxzoom: 8 });
+        tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(layers), (edited) => overlay.setLayers(edited));
+    </script>
+</body>
+</html>

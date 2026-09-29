@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Get Data from One Feature</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="controls"><h2>Click a park to see every column its record holds</h2><p>The click goes to the server, which finds the park containing the point and reads all its columns.</p></div>
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const layers = [{ type: 'fill', 'source-layer': 'parks', paint: { 'fill-color': 'rgba(147,112,219,0.2)', 'fill-outline-color': '#9370DB' } }];
+        const map = tg.createMap({ center: [-10778100, 3915600], zoom: 13 });
+        await tg.ready(map);
+        const parks = tg.vectorOverlay(map, 'parks', layers);
+        tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(layers), (edited) => parks.setLayers(edited));
+        let popup = null;
+        map.on('click', async (e) => {
+            const r = await tg.post('samples/shapes/feature-at', { lng: e.lngLat.lng, lat: e.lngLat.lat });
+            if (popup) { popup.remove(); popup = null; }
+            if (!r.found) return;
+            const escape = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+            popup = tg.popup(map, r.at, `<div style="font:11px Verdana,sans-serif;white-space:pre;max-height:260px;overflow:auto">${r.columns.map(c => escape(c.name) + ': ' + escape(c.value)).join('\n')}</div>`);
+        });
+    </script>
+</body>
+</html>

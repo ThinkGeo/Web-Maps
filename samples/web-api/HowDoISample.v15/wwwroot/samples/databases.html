@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Databases</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="controls">
+                <h2>Database</h2>
+                <div id="databases" style="display:flex;flex-direction:column;gap:2px"></div>
+                <div class="row" style="margin-top:6px"><span>Drawn by</span><label><input type="radio" name="drawn" value="browser" checked> the browser, from vector tiles</label><label><input type="radio" name="drawn" value="server"> the server, into raster tiles</label></div>
+                <p>The first three are databases carried as a file, the last two are servers connected to. The connection is the only line that differs. Drawn by the browser, the overlay cuts the table into vector tiles at tiles/db-&lt;database&gt;/; drawn by the server, the style is handed over and drawn there into raster tiles - the same document either way.</p>
+                <div class="status" id="picked"></div>
+            </div>
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const databases = ['SQLite', 'GeoPackage', 'Esri File Geodatabase', 'PostgreSQL / PostGIS', 'SQL Server'];
+        const layers = [
+            { type: 'fill', 'source-layer': 'data', filter: ['==', ['geometry-type'], 'Polygon'],
+              paint: { 'fill-color': 'rgba(90,140,200,0.35)', 'fill-outline-color': '#2A4A7A' } },
+            { type: 'line', 'source-layer': 'data',
+              paint: { 'line-color': '#2A4A7A', 'line-width': 2 } },
+            { type: 'circle', 'source-layer': 'data', filter: ['==', ['geometry-type'], 'Point'],
+              paint: { 'circle-radius': 4, 'circle-color': '#C0392B', 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 1.5 } },
+        ];
+
+        const map = tg.createMap({ center: [-10780300, 3915800], zoom: 12 });
+        await tg.ready(map);
+        let overlay = null, database = databases[0], timer = null;
+        const drawnBy = () => document.querySelector('input[name=drawn]:checked').value;
+
+        // The style, drawn where the radio says: by the browser over vector tiles, or by the
+        // server, which is handed the document and answers with raster tiles of it.
+        const draw = async () => {
+            if (overlay) overlay.remove();
+            const id = 'db-' + tg.slug(database), edited = JSON.parse(styleEditor.text).layers;
+            overlay = drawnBy() === 'server' ? await tg.serverOverlay(map, id, edited) : tg.vectorOverlay(map, id, edited);
+        };
+        // An edit reaches the browser's map at once; the server's map once the typing pauses.
+        const styleEditor = tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(layers), (edited) => {
+            if (drawnBy() === 'server') { clearTimeout(timer); timer = setTimeout(draw, 500); }
+            else if (overlay) overlay.setLayers(edited);
+        });
+        const pick = async (name) => {
+            const picked = document.getElementById('picked');
+            try {
+                // Asking the table where it is can be a network round trip; the server answers
+                // 503 with the reason when a database cannot be reached.
+                const bounds = await tg.get('samples/your-data/bounds/db-' + tg.slug(name));
+                database = name;
+                await draw();
+                tg.fit(map, bounds);
+                tg.say(picked, name);
+            } catch (e) {
+                tg.say(picked, 'Unavailable: ' + e.message, false);
+            }
+        };
+        for (const radio of document.querySelectorAll('input[name=drawn]')) radio.addEventListener('change', draw);
+        const box = document.getElementById('databases');
+        databases.forEach((name, i) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'database', checked: i === 0 });
+            radio.addEventListener('change', () => pick(name));
+            label.append(radio, name);
+            box.appendChild(label);
+        });
+        pick(databases[0]);
+    </script>
+</body>
+</html>

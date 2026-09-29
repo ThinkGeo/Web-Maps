@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Vector Tiles</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow">
+            <h2>Vector tiles</h2>
+            <p>Vector tiles kept in a file on the server - an MBTiles or a PMTiles archive - are served one tile at a time from tiles/offline-&lt;archive&gt;/ as the map asks for them; no tile server, no internet. The archive's own style.json can draw them, or a bare style made from the layers its metadata lists.</p>
+            <label><input type="radio" name="archive" value="pmtiles" checked> PMTiles - Frisco (frisco.pmtiles)</label>
+            <label><input type="radio" name="archive" value="mbtiles"> MBTiles - the world (maplibre.mbtiles)</label>
+            <label><input type="checkbox" id="own" checked> draw with the archive's style.json</label>
+            <div class="status" id="status"></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const map = tg.createMap({ center: [-10777700, 3912400], zoom: 12, basemap: null });
+        await tg.ready(map);
+        const status = document.getElementById('status');
+        let archive = 'pmtiles';
+
+        // The archive is opened on the server; its metadata says which layers it holds and how
+        // far it reaches. Both styles name the overlay serving it as their only source.
+        const open = async (zoomTo) => {
+            try {
+                const info = await tg.get('samples/your-data/offline/' + archive);
+                const own = document.getElementById('own').checked;
+                const style = JSON.parse(own ? info.style : info.bare);
+                const source = { type: 'vector', tiles: [tg.root + info.tiles], minzoom: info.minzoom, maxzoom: info.maxzoom };
+                style.sources = {};
+                for (const layer of style.layers) if (layer.source) style.sources[layer.source] = source;
+                map.setStyle(tg.normalizeStyle(style));
+                if (zoomTo) tg.fit(map, info.bounds);
+                tg.say(status, `${info.kind}, zoom ${info.minzoom} to ${info.maxzoom}.`);
+            } catch (e) {
+                tg.say(status, 'Unavailable: ' + e.message, false);
+            }
+        };
+
+        for (const radio of document.querySelectorAll('input[name=archive]')) {
+            radio.addEventListener('change', () => { archive = radio.value; open(true); });
+        }
+        document.getElementById('own').addEventListener('change', () => open(false));
+        open(true);
+    </script>
+</body>
+</html>

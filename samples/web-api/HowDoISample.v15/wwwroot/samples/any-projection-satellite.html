@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Any Projection</title>
+    <link rel="stylesheet" href="../lib/ol.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        #map { background: #DCE8EF; }
+        .ol-attribution { font: 11px system-ui; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow" style="width:320px">
+            <h2>Any projection</h2>
+            <div style="font-weight:600">Warp</div>
+            <label><input type="radio" name="warp" value="browser" checked> in the browser - OpenLayers reprojects Spherical Mercator tiles</label>
+            <label><input type="radio" name="warp" value="server"> on the server - the layer's projection converter draws tiles of the target grid</label>
+            <div style="font-weight:600;margin-top:4px">Data</div>
+            <label><input type="radio" name="source" value="aerial" checked> ThinkGeo Cloud aerial tiles</label>
+            <label><input type="radio" name="source" value="geotiff"> World GeoTIFF, stored in WGS84</label>
+            <div style="font-weight:600;margin-top:4px">Projection</div>
+            <div id="choices" style="display:flex;flex-direction:column;gap:2px"></div>
+            <p>This page's map is OpenLayers: its view can be any projection proj4 knows, where MapLibre draws Web Mercator only. In the browser, the tiles arrive in Spherical Mercator and OpenLayers warps each one - so the poles, which Mercator never had, stay empty. On the server, the layer is drawn straight into the target projection's own tile grid by GdalProjectionConverter - the GeoTIFF is read there from its WGS84 file and reaches the poles - and the browser only shows the tiles.</p>
+            <div class="status" id="status"></div>
+            <div id="proj" style="margin-top:auto;font:11px Consolas,monospace;color:#444;word-break:break-all"></div>
+        </aside>
+    </div>
+    <script src="../lib/proj4.js"></script>
+    <script src="../lib/ol.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const projections = ['Spherical Mercator', 'US National Atlas Equal Area', 'Robinson', 'Mollweide', 'Equal Earth', 'Equal Area - Cylindrical', 'Equal Area - Sinusoidal'];
+        const aerial = `https://cloud.thinkgeo.com/api/v2/maps/raster/aerial/x1/3857/512/{z}/{x}/{y}.jpeg?apikey=${tg.apiKey}`;
+        // The GeoTIFF as Spherical Mercator tiles the server draws, for the browser to warp.
+        const geotiff = tg.root + 'raster/raster-anything-else-gdal-reads/{z}/{x}/{y}.png';
+        const status = document.getElementById('status');
+        let projection = projections[0], map = null, asked = 0;
+        const picked = (name) => document.querySelector(`input[name=${name}]:checked`).value;
+
+        const show = async () => {
+            const warp = picked('warp'), source = picked('source'), slug = tg.slug(projection), mine = ++asked;
+            tg.say(status, 'asking the server for the grid...');
+            const grid = await tg.get('samples/projections/grid?projection=' + encodeURIComponent(projection));
+            if (mine !== asked) return; // a later choice overtook this one
+            // A projection proj4 does not know yet is registered under a code of its own, with
+            // the world extent the server computed for it.
+            let code = 'EPSG:3857';
+            if (grid.proj4) {
+                code = 'TG:' + slug;
+                if (!ol.proj.get(code)) {
+                    proj4.defs(code, grid.proj4);
+                    ol.proj.proj4.register(proj4);
+                    // proj4 wraps a place past the edge of the world round to the other side, and
+                    // OpenLayers would warp a tile straddling the edge from tiles of that side, or
+                    // leave it out. A place outside the outline is taken as the nearest place on
+                    // it instead: the tile is warped from the right side, and clipped at the edge.
+                    const toTarget = ol.proj.getTransform('EPSG:3857', code), toSource = ol.proj.getTransform(code, 'EPSG:3857');
+                    ol.proj.addCoordinateTransforms('EPSG:3857', code, (xy) => toTarget(xy), (xy) => toSource(nearestInside(xy, grid.outline)));
+                }
+                // Its extent is the world's outline, not the square grid around it: OpenLayers
+                // clips its warp to the extent, and a corner of the square has no place on the globe.
+                ol.proj.get(code).setExtent(grid.worldExtent);
+                ol.proj.get(code).setWorldExtent([-179.9, -85, 179.9, 85]);
+            }
+            document.getElementById('proj').textContent = grid.proj4 || 'EPSG:3857';
+
+            const layer = warp === 'browser'
+                ? new ol.layer.Tile({ source: new ol.source.XYZ({ url: source === 'aerial' ? aerial : geotiff, projection: 'EPSG:3857', tileSize: 512, maxZoom: 19, wrapX: false, crossOrigin: 'anonymous', attributions: '© ThinkGeo' }) })
+                : new ol.layer.Tile({ source: new ol.source.XYZ({
+                    url: `${tg.root}samples/projections/tile/${source}/${slug}/{z}/{x}/{y}.png`, projection: code, attributions: '© ThinkGeo',
+                    tileGrid: new ol.tilegrid.TileGrid({ extent: grid.extent, origin: [grid.extent[0], grid.extent[3]], resolutions: grid.resolutions, tileSize: grid.tileSize }) }) });
+            if (map) map.setTarget(null);
+            map = new ol.Map({ target: 'map', layers: [layer], view: new ol.View({ projection: code, center: ol.extent.getCenter(grid.extent), zoom: 1 }) });
+            window.map = map;
+            if (warp === 'browser') clipToWorld(layer, grid.outline);
+            map.getView().fit(grid.extent, { padding: [20, 20, 20, 20] });
+            tg.say(status, `${projection}, warped ${warp === 'browser' ? 'in the browser by OpenLayers' : 'on the server by the layer\'s projection converter'}.`);
+        };
+        // A place outside the world's outline, as the nearest place just inside it.
+        const nearestInside = (xy, outline) => {
+            let inside = false, cx = 0, cy = 0;
+            for (let i = 0, j = outline.length - 1; i < outline.length; j = i++) {
+                const [ax, ay] = outline[i], [bx, by] = outline[j];
+                if ((ay > xy[1]) !== (by > xy[1]) && xy[0] < (bx - ax) * (xy[1] - ay) / (by - ay) + ax) inside = !inside;
+                cx += ax / outline.length; cy += ay / outline.length;
+            }
+            if (inside) return xy;
+            let best = xy, bestDistance = Infinity;
+            for (let i = 0, j = outline.length - 1; i < outline.length; j = i++) {
+                const [ax, ay] = outline[i], [bx, by] = outline[j], dx = bx - ax, dy = by - ay, length = dx * dx + dy * dy;
+                const t = length ? Math.max(0, Math.min(1, ((xy[0] - ax) * dx + (xy[1] - ay) * dy) / length)) : 0;
+                const px = ax + t * dx, py = ay + t * dy, distance = (xy[0] - px) ** 2 + (xy[1] - py) ** 2;
+                if (distance < bestDistance) { bestDistance = distance; best = [px, py]; }
+            }
+            return [best[0] + (cx - best[0]) * 1e-4, best[1] + (cy - best[1]) * 1e-4];
+        };
+        // OpenLayers knows a projection only by its rectangular extent; the layer is clipped to
+        // the world's outline the server computed as it is drawn, which is how OpenLayers masks
+        // any layer, so nothing warped past the edge shows.
+        const clipToWorld = (layer, outline) => {
+            layer.on('prerender', (e) => {
+                const ctx = e.context;
+                ctx.save();
+                ctx.beginPath();
+                outline.forEach((c, i) => { const px = ol.render.getRenderPixel(e, map.getPixelFromCoordinate(c)); i ? ctx.lineTo(px[0], px[1]) : ctx.moveTo(px[0], px[1]); });
+                ctx.closePath();
+                ctx.clip();
+            });
+            layer.on('postrender', (e) => e.context.restore());
+        };
+        const list = document.getElementById('choices');
+        projections.forEach((name, i) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'projection', checked: i === 0 });
+            radio.addEventListener('change', () => { projection = name; show(); });
+            label.append(radio, name);
+            list.appendChild(label);
+        });
+        for (const radio of document.querySelectorAll('input[name=warp], input[name=source]')) radio.addEventListener('change', show);
+        show();
+    </script>
+</body>
+</html>

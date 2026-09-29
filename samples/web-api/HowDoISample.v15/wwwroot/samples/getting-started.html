@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Getting Started</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow">
+            <h2>Getting started</h2>
+            <p>The smallest map this Web API serves. Frisco's parks are read from a shapefile on the server, cut into vector tiles at tiles/getting-started/ as the map asks for them, and drawn by the browser with one style layer. Drag to pan, the wheel to zoom, right-drag to rotate.</p>
+            <div class="row"><button class="btn" id="in">Zoom in</button><button class="btn" id="out">Zoom out</button><button class="btn" id="fit">Back to the parks</button></div>
+            <label><input type="checkbox" id="inside"> Keep the map inside Frisco</label>
+            <label><input type="checkbox" id="zooms"> Stop zooming out past 1:2,000,000 and in past 1:5,000</label>
+            <pre id="readout" style="font:12px Consolas,monospace;color:#444;margin:0"></pre>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const map = tg.createMap({ center: [-10778000, 3912000], zoom: 12 });
+        await tg.ready(map);
+        tg.vectorOverlay(map, 'getting-started', [{ type: 'fill', 'source-layer': 'parks', paint: { 'fill-color': 'rgba(60,160,80,0.45)', 'fill-outline-color': '#2E7D32' } }]);
+        const bounds = await tg.get('samples/getting-started/bounds');
+        tg.fit(map, bounds, 0);
+
+        document.getElementById('in').addEventListener('click', () => map.zoomIn());
+        document.getElementById('out').addEventListener('click', () => map.zoomOut());
+        document.getElementById('fit').addEventListener('click', () => tg.fit(map, bounds, 0));
+        // The map's own limits: a box it cannot pan out of, and the zooms it stops at, given as scales.
+        document.getElementById('inside').addEventListener('change', (e) => map.setMaxBounds(e.target.checked ? [[bounds[0], bounds[1]], [bounds[2], bounds[3]]] : null));
+        document.getElementById('zooms').addEventListener('change', (e) => { map.setMinZoom(e.target.checked ? tg.zoomForScale(2000000) : 0); map.setMaxZoom(e.target.checked ? tg.zoomForScale(5000) : 20); });
+
+        // What the map looks at, read back as it moves.
+        const readout = () => {
+            const c = map.getCenter();
+            document.getElementById('readout').textContent = `zoom     ${map.getZoom().toFixed(2)}\nscale    1 : ${Math.round(tg.scaleForZoom(map.getZoom())).toLocaleString()}\ncentre   ${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}\nrotation ${Math.round((map.getBearing() + 360) % 360)}°`;
+        };
+        map.on('move', readout);
+        readout();
+    </script>
+</body>
+</html>

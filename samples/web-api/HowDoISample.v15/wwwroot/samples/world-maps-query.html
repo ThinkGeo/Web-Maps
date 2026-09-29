@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>World Maps Query</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow" style="width:340px">
+            <h2>World Maps query</h2>
+            <p>The features behind ThinkGeo's world map - buildings, roads, places and more - can be asked for by shape: on the server, MapsQueryCloudClient finds the ones containing, intersecting, overlapping, within or nearest to a shape you draw.</p>
+            <div class="row"><select id="layer"></select><select id="kind"></select><label>up to <input type="number" id="max" min="1" max="500" value="100"></label></div>
+            <div class="row"><span>Draw a</span><button class="btn" id="point">point</button><button class="btn" id="line">line</button><button class="btn" id="polygon">polygon</button><button class="btn" id="again">Ask again</button></div>
+            <div class="status" id="status"></div>
+            <div class="list" id="found" style="font-size:12px"></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const layers = ['Buildings', 'Countries', 'States', 'Roads', 'Rail', 'Addresses', 'Cities', 'Land-Use', 'Places', 'POIs', 'Transport', 'Water', 'Waterways'];
+        const kinds = ['Intersecting', 'Containing', 'Nearest', 'Overlapping', 'Within'];
+        for (const name of layers) document.getElementById('layer').appendChild(Object.assign(document.createElement('option'), { value: name, textContent: name }));
+        for (const name of kinds) document.getElementById('kind').appendChild(Object.assign(document.createElement('option'), { value: name, textContent: name }));
+
+        const map = tg.createMap({ center: [-10779560, 3915280], zoom: 15 });
+        await tg.ready(map);
+        const found = tg.geojsonOverlay(map, 'found', [
+            { type: 'fill', filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': 'rgba(255,69,0,0.18)', 'fill-outline-color': '#FF4500' } },
+            { type: 'line', paint: { 'line-color': '#FF4500', 'line-width': 2 } },
+            { type: 'circle', filter: ['==', ['geometry-type'], 'Point'], paint: { 'circle-radius': 6, 'circle-color': '#FF4500', 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 1.5 } },
+        ]);
+        const asked = tg.geojsonOverlay(map, 'asked', [
+            { type: 'fill', filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': 'rgba(30,90,220,0.1)' } },
+            { type: 'line', paint: { 'line-color': '#1E5ADC', 'line-width': 2, 'line-dasharray': [3, 2] } },
+            { type: 'circle', filter: ['==', ['geometry-type'], 'Point'], paint: { 'circle-radius': 7, 'circle-color': '#1E5ADC', 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 2 } },
+        ]);
+        const status = document.getElementById('status'), list = document.getElementById('found');
+        const sw = tg.toLngLat(-10779877.70, 3915119.63), ne = tg.toLngLat(-10779248.97, 3915441.00);
+        let geometry = { type: 'Polygon', coordinates: [[sw, [ne[0], sw[1]], ne, [sw[0], ne[1]], sw]] }, busy = false, cancel = null;
+
+        const query = async () => {
+            if (busy) return;
+            busy = true;
+            tg.say(status, 'asking ThinkGeo Cloud...');
+            asked.setData({ type: 'Feature', geometry, properties: {} });
+            found.clear(); list.innerHTML = '';
+            const layer = document.getElementById('layer').value, kind = document.getElementById('kind').value;
+            try {
+                const result = await tg.post('samples/cloud/maps-query', { geometry, layer, kind, maxResults: +document.getElementById('max').value });
+                found.setData(result.features);
+                for (const text of result.described) { const row = document.createElement('div'); row.textContent = text; list.appendChild(row); }
+                tg.say(status, result.count === 0 ? `No ${layer.toLowerCase()} ${kind.toLowerCase()} the shape.` : `${result.count} ${layer.toLowerCase()} ${kind.toLowerCase()} the shape.`);
+                if (result.bounds) tg.fit(map, result.bounds, 0);
+            } catch (e) {
+                tg.say(status, e.message, false);
+            }
+            busy = false;
+        };
+        for (const mode of ['point', 'line', 'polygon']) {
+            document.getElementById(mode).addEventListener('click', () => {
+                if (cancel) cancel();
+                for (const m of ['point', 'line', 'polygon']) document.getElementById(m).classList.toggle('primary', m === mode);
+                cancel = tg.draw(map, mode, (feature) => { cancel = null; for (const m of ['point', 'line', 'polygon']) document.getElementById(m).classList.remove('primary'); geometry = feature.geometry; query(); });
+            });
+        }
+        document.getElementById('again').addEventListener('click', query);
+        query();
+    </script>
+</body>
+</html>

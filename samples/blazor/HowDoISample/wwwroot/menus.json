@@ -171,6 +171,96 @@
     "group": "Maps from a Service - Raster"
   },
   {
+    "id": "geocoding",
+    "title": "Geocoding",
+    "description": "An address or a place name goes to GeocodingCloudClient and every match comes back as a point with its bounding box; pick one and the map goes there.",
+    "href": "geocoding",
+    "source": "Geocoding",
+    "preicon": "fas fa-search-location",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "reverse-geocoding",
+    "title": "Reverse Geocoding",
+    "description": "Click the map and ReverseGeocodingCloudClient answers with the nearest address, the places, roads and addresses within a radius.",
+    "href": "reverse-geocoding",
+    "source": "Reverse_Geocoding",
+    "preicon": "fas fa-map-pin",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "routing",
+    "title": "Routing",
+    "description": "Stops go to RoutingCloudClient.GetRouteAsync and the route comes back with its turn-by-turn segments; click the map to add a stop.",
+    "href": "routing",
+    "source": "Routing",
+    "preicon": "fas fa-route",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "routing-service-area",
+    "title": "Routing: Service Area",
+    "description": "How far 15, 30, 45 and 60 minutes of driving reach from a point, one polygon per limit from RoutingCloudClient.GetServiceAreaAsync.",
+    "href": "routing-service-area",
+    "source": "Routing_Service_Area",
+    "preicon": "fas fa-bullseye",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "routing-traveling-salesperson",
+    "title": "Routing: Traveling Salesperson",
+    "description": "Stops in no particular order go to RoutingCloudClient.GetOptimizedRouteAsync, which answers with the order of the shortest round trip.",
+    "href": "routing-traveling-salesperson",
+    "source": "Routing_Traveling_Salesperson",
+    "preicon": "fas fa-random",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "elevation",
+    "title": "Elevation",
+    "description": "A point, a line or an area drawn on the map is sampled by ElevationCloudClient; a line's samples draw as a profile.",
+    "href": "elevation",
+    "source": "Elevation",
+    "preicon": "fas fa-mountain",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "timezone",
+    "title": "Time Zone",
+    "description": "Click anywhere and TimeZoneCloudClient answers with the zone, the local time there and the zone's outline.",
+    "href": "timezone",
+    "source": "Timezone",
+    "preicon": "far fa-clock",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "projection-cloud-services",
+    "title": "Projection",
+    "description": "Well known text in latitude and longitude goes to ProjectionCloudClient and comes back in the map's meters.",
+    "href": "projection-cloud-services",
+    "source": "Projection_Cloud_Services",
+    "preicon": "fas fa-globe",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "color-utilities",
+    "title": "Color Utilities",
+    "description": "ColorCloudClient hands back a family of colours that go together; six of them class Frisco's census block groups by housing units.",
+    "href": "color-utilities",
+    "source": "Color_Utilities",
+    "preicon": "fas fa-palette",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "world-maps-query",
+    "title": "World Maps Query",
+    "description": "The features behind ThinkGeo's world map asked for by a shape you draw: containing, intersecting, overlapping, within or nearest, with MapsQueryCloudClient.",
+    "href": "world-maps-query",
+    "source": "World_Maps_Query",
+    "preicon": "fas fa-layer-group",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
     "id": "vector-file-formats",
     "title": "Vector File Formats",
     "description": "Open a vector file - a shapefile, GeoJSON, KML, GPX, MapInfo TAB, TinyGeo, an S-57 chart - or build features in code; reading the format is the only line that differs. The overlay cuts it into tiles and one editable style draws them all.",

@@ -1,0 +1,113 @@
+@page "/projection-cloud-services"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10778720, 3915154))" Zoom="13">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Marks" @ref="marks" StyleJson="@MarksStyle" FeatureSources="@sources" SourceId="marks" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:380px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Projection as a service</div>
+        <div style="color:#555">Shapes in latitude and longitude (EPSG:4326), one per line as well known text, go to ProjectionCloudClient.ProjectAsync and come back in the map's Web Mercator meters. Edit them and project again.</div>
+        <textarea @bind="wkt" spellcheck="false" style="flex:1;min-height:120px;font:11.5px Consolas,monospace;padding:6px;white-space:pre;resize:none"></textarea>
+        <button class="btn btn-sm btn-primary" style="align-self:flex-start" @onclick="ProjectAsync" disabled="@busy">Project to EPSG:3857</button>
+        <div style="color:#555">@status</div>
+        <textarea readonly spellcheck="false" style="flex:1;min-height:120px;font:11.5px Consolas,monospace;padding:6px;white-space:pre;resize:none;background:#fbfbf9">@projectedWkt</textarea>
+    </div>
+</div>
+
+@code {
+    private const string MarksStyle = @"{
+  ""layers"": [
+    { ""type"": ""fill"", ""source-layer"": ""projected"",
+      ""paint"": { ""fill-color"": ""rgba(147,112,219,0.3)"", ""fill-outline-color"": ""#9370DB"" } },
+    { ""type"": ""line"", ""source-layer"": ""projected"",
+      ""paint"": { ""line-color"": ""#9370DB"", ""line-width"": 4 } },
+    { ""type"": ""circle"", ""source-layer"": ""projected"", ""filter"": [""=="", [""geometry-type""], ""Point""],
+      ""paint"": { ""circle-radius"": 8, ""circle-color"": ""#9370DB"", ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 2 } }
+  ]
+}";
+
+    private MapView map;
+    private VectorTileOverlay marks;
+    private GeoCollection<FeatureSource> sources;
+    private readonly InMemoryFeatureSource projected = new InMemoryFeatureSource();
+    private ProjectionCloudClient client;
+    private bool busy;
+    private string status = "";
+    private string projectedWkt = "";
+    private string wkt = string.Join("\n",
+        "POINT(-96.834516 33.150083)",
+        "LINESTRING(-96.8425 33.1465,-96.8380 33.1502,-96.8322 33.1518,-96.8271 33.1560)",
+        "POLYGON((-96.8460 33.1400,-96.8380 33.1400,-96.8380 33.1440,-96.8460 33.1440,-96.8460 33.1400))");
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "projected", projected } };
+        client = new ProjectionCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        await ProjectAsync();
+        StateHasChanged();
+    }
+
+    private async Task ProjectAsync()
+    {
+        var features = new List<Feature>();
+        foreach (var line in wkt.Split('\n'))
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+            try
+            {
+                features.Add(new Feature(line.Trim()));
+            }
+            catch (Exception exception)
+            {
+                status = "Not well known text: " + line.Trim() + " (" + exception.Message + ")";
+                return;
+            }
+        }
+        if (features.Count == 0) return;
+
+        busy = true;
+        status = "asking ThinkGeo Cloud...";
+        StateHasChanged();
+        try
+        {
+            var results = await client.ProjectAsync(features, 4326, 3857);
+            projected.InternalFeatures.Clear();
+            foreach (var feature in results)
+            {
+                projected.InternalFeatures.Add(feature);
+            }
+            projectedWkt = string.Join("\n", results.Select(feature => feature.GetWellKnownText()));
+            status = $"{results.Count} shapes projected.";
+        }
+        catch (Exception exception)
+        {
+            status = exception.Message;
+            busy = false;
+            return;
+        }
+        busy = false;
+        await marks.RedrawAsync();
+
+        var bounds = MapUtil.GetBoundingBoxOfItems(projected.InternalFeatures.Select(feature => feature.GetShape()));
+        bounds.ScaleUp(40);
+        await map.ZoomToExtentAsync(bounds);
+    }
+}

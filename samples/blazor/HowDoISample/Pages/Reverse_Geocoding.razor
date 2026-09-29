@@ -1,0 +1,164 @@
+@page "/reverse-geocoding"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10778720, 3915154))" Zoom="14" OnClick="@Clicked">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Marks" @ref="marks" StyleJson="@MarksStyle" FeatureSources="@sources" SourceId="marks" />
+            </OverlaysSetting>
+            <PopupOverlaySetting>
+                <PopupOverlay Id="Best">
+                    <PopupSetting>
+                        <Popup Id="best-match" Position="@bestAt" OffsetY="-8">
+                            <div style="font:12px system-ui;max-width:240px"><b>Best match</b><br />@bestText</div>
+                        </Popup>
+                    </PopupSetting>
+                </PopupOverlay>
+            </PopupOverlaySetting>
+        </MapView>
+    </div>
+    <div style="width:340px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui;overflow:auto">
+        <div style="font-weight:600">Reverse geocoding</div>
+        <div style="color:#555">A point and a search radius go to ReverseGeocodingCloudClient.SearchPointAsync, which answers with the best match and what else lies within the radius. Click the map, or type a latitude and longitude and search.</div>
+        <div style="display:flex;gap:6px;align-items:center">
+            <input @bind="coordinates" @bind:event="oninput" @onkeyup="@(args => args.Key == "Enter" ? SearchAsync() : Task.CompletedTask)" placeholder="latitude, longitude" style="flex:1;font:13px system-ui;padding:4px 6px" />
+            <button class="btn btn-sm btn-primary" @onclick="SearchAsync" disabled="@busy">Search</button>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+            <label>Radius <input type="number" min="10" max="2000" step="10" @bind="radius" style="width:64px" /> m</label>
+            <label>Up to <input type="number" min="1" max="50" @bind="maxResults" style="width:52px" /></label>
+        </div>
+        <div style="color:#555">@status</div>
+        @foreach (var group in nearby)
+        {
+            <div style="font-weight:600;margin-top:4px">@group.Key</div>
+            @foreach (var location in group.Value)
+            {
+                <div style="cursor:pointer;padding:4px 6px;border-bottom:1px solid #e3e3e3;background:@(location == picked ? "#eee6fb" : "transparent")" @onclick="() => PickAsync(location)">
+                    <div>@(string.IsNullOrEmpty(location.Address) ? location.LocationName : location.Address)</div>
+                    <div style="color:#888;font-size:11px">@location.LocationType, @location.DistanceFromQueryFeature.ToString("0") m @location.DirectionFromQueryFeature</div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private const string MarksStyle = @"{
+  ""layers"": [
+    { ""type"": ""fill"", ""source-layer"": ""asked"",
+      ""paint"": { ""fill-color"": ""rgba(30,90,220,0.08)"", ""fill-outline-color"": ""rgba(30,90,220,0.6)"" } },
+    { ""type"": ""fill"", ""source-layer"": ""picked"",
+      ""paint"": { ""fill-color"": ""rgba(147,112,219,0.35)"", ""fill-outline-color"": ""#9370DB"" } },
+    { ""type"": ""line"", ""source-layer"": ""picked"",
+      ""paint"": { ""line-color"": ""#9370DB"", ""line-width"": 5 } },
+    { ""type"": ""circle"", ""source-layer"": ""picked"", ""filter"": [""=="", [""geometry-type""], ""Point""],
+      ""paint"": { ""circle-radius"": 9, ""circle-color"": ""#9370DB"", ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 2 } },
+    { ""type"": ""circle"", ""source-layer"": ""center"",
+      ""paint"": { ""circle-radius"": 5, ""circle-color"": ""#D7301F"", ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 2 } }
+  ]
+}";
+
+    private MapView map;
+    private VectorTileOverlay marks;
+    private GeoCollection<FeatureSource> sources;
+    private readonly InMemoryFeatureSource asked = new InMemoryFeatureSource();
+    private readonly InMemoryFeatureSource center = new InMemoryFeatureSource();
+    private readonly InMemoryFeatureSource pickedMark = new InMemoryFeatureSource();
+    private ReverseGeocodingCloudClient client;
+    private int radius = 200;
+    private int maxResults = 20;
+    private bool busy;
+    private string status = "Click anywhere on the map, or search for a place by its coordinates.";
+    private string coordinates = "33.150083, -96.834516";
+    private PointShape bestAt;
+    private string bestText = "";
+    private CloudReverseGeocodingLocation picked;
+    private readonly SortedDictionary<string, List<CloudReverseGeocodingLocation>> nearby = new SortedDictionary<string, List<CloudReverseGeocodingLocation>>();
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "asked", asked }, { "picked", pickedMark }, { "center", center } };
+        client = new ReverseGeocodingCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
+    }
+
+    private Task Clicked(ClickedMapViewEventArgs args)
+    {
+        var degrees = ProjectionConverter.Convert(3857, 4326, new PointShape(args.WorldX, args.WorldY));
+        coordinates = FormattableString.Invariant($"{degrees.Y:0.000000}, {degrees.X:0.000000}");
+        return AskAsync(new PointShape(args.WorldX, args.WorldY));
+    }
+
+    // The box holds latitude and longitude in degrees; the service is asked in the map's meters.
+    private async Task SearchAsync()
+    {
+        var parts = coordinates.Split(',');
+        if (parts.Length != 2
+            || !double.TryParse(parts[0].Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var latitude)
+            || !double.TryParse(parts[1].Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var longitude)
+            || Math.Abs(latitude) > 85 || Math.Abs(longitude) > 180)
+        {
+            status = "Type a latitude and a longitude, separated by a comma.";
+            return;
+        }
+        var point = ProjectionConverter.Convert(4326, 3857, new PointShape(longitude, latitude));
+        await map.SetCenterAsync(point);
+        await AskAsync(point);
+    }
+
+    private async Task AskAsync(PointShape point)
+    {
+        if (busy) return;
+        busy = true;
+        status = "asking ThinkGeo Cloud...";
+        asked.InternalFeatures.Clear();
+        asked.InternalFeatures.Add(new Feature(new EllipseShape(point, radius)));
+        center.InternalFeatures.Clear();
+        center.InternalFeatures.Add(new Feature(point));
+        pickedMark.InternalFeatures.Clear();
+        nearby.Clear();
+        picked = null;
+        bestAt = null;
+        await marks.RedrawAsync();
+
+        var result = await client.SearchPointAsync(point.X, point.Y, 3857, radius, DistanceUnit.Meter, new CloudReverseGeocodingOptions { MaxResults = maxResults });
+        busy = false;
+        if (result.Exception != null)
+        {
+            status = result.Exception.Message;
+            return;
+        }
+
+        if (result.BestMatchLocation != null)
+        {
+            var shape = result.BestMatchLocation.LocationFeature.GetShape();
+            bestAt = shape.GetClosestPointTo(point, GeographyUnit.Meter) ?? shape.GetCenterPoint();
+            bestText = string.IsNullOrEmpty(result.BestMatchLocation.Address) ? result.BestMatchLocation.LocationName : result.BestMatchLocation.Address;
+        }
+        foreach (var location in result.NearbyLocations ?? Enumerable.Empty<CloudReverseGeocodingLocation>())
+        {
+            var category = location.LocationCategory?.ToLowerInvariant().Contains("addresspoint") == true ? "Addresses"
+                : location.LocationCategory == "Road" || location.LocationCategory == "Rail" || location.LocationCategory == "Aeroway" || location.LocationCategory == "Waterway" ? "Roads and ways"
+                : "Places";
+            if (!nearby.TryGetValue(category, out var list))
+            {
+                nearby[category] = list = new List<CloudReverseGeocodingLocation>();
+            }
+            list.Add(location);
+        }
+        status = result.BestMatchLocation == null ? "Nothing within the radius." : $"{nearby.Values.Sum(list => list.Count)} nearby locations - click one.";
+    }
+
+    private async Task PickAsync(CloudReverseGeocodingLocation location)
+    {
+        picked = location;
+        pickedMark.InternalFeatures.Clear();
+        pickedMark.InternalFeatures.Add(new Feature(location.LocationFeature.GetShape()));
+        await marks.RedrawAsync();
+    }
+}

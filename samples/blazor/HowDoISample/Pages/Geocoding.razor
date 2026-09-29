@@ -1,0 +1,126 @@
+@page "/geocoding"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10778720, 3915154))" Zoom="11"
+                 OnCurrentExtentChanged="@(args => extent = args.CurrentExtent)">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Marks" @ref="marks" StyleJson="@MarksStyle" FeatureSources="@sources" SourceId="marks" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:340px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui;overflow:auto">
+        <div style="font-weight:600">Geocoding</div>
+        <div style="color:#555">An address or a place name goes to GeocodingCloudClient.SearchAsync; every match comes back as a point, a bounding box and its properties.</div>
+        <input @bind="searchText" @bind:event="oninput" @onkeyup="@(args => args.Key == "Enter" ? SearchAsync() : Task.CompletedTask)" placeholder="Address or place" style="font:13px system-ui;padding:4px 6px" />
+        <div style="display:flex;gap:10px;align-items:center">
+            <label>Up to <input type="number" min="1" max="50" @bind="maxResults" style="width:52px" /> results</label>
+            <label><input type="checkbox" @bind="inView" /> in the current view</label>
+        </div>
+        <button class="btn btn-sm btn-primary" style="align-self:flex-start" @onclick="SearchAsync" disabled="@busy">Search</button>
+        <div style="color:#555">@status</div>
+        @foreach (var location in found)
+        {
+            <div style="cursor:pointer;padding:5px 6px;border-bottom:1px solid #e3e3e3;background:@(location == picked ? "#e3eafc" : "transparent")" @onclick="() => PickAsync(location)">
+                <div>@location.LocationName</div>
+                <div style="color:#888;font-size:11px">@location.LocationType</div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private const string MarksStyle = @"{
+  ""layers"": [
+    { ""type"": ""circle"", ""source-layer"": ""hits"",
+      ""paint"": { ""circle-radius"": 6, ""circle-color"": ""#D7301F"", ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 2 } },
+    { ""type"": ""circle"", ""source-layer"": ""picked"",
+      ""paint"": { ""circle-radius"": 11, ""circle-color"": ""rgba(215,48,31,0.25)"", ""circle-stroke-color"": ""#D7301F"", ""circle-stroke-width"": 2 } },
+    { ""type"": ""symbol"", ""source-layer"": ""picked"",
+      ""layout"": { ""text-field"": [""get"", ""name""], ""text-font"": [""Noto Sans Bold""], ""text-size"": 12, ""text-offset"": [0, 1.4], ""text-anchor"": ""top"" },
+      ""paint"": { ""text-color"": ""#7A1A0E"", ""text-halo-color"": ""#FFFFFF"", ""text-halo-width"": 1.5 } }
+  ]
+}";
+
+    private static readonly FeatureSourceColumn[] Columns = { new FeatureSourceColumn("name") };
+
+    private MapView map;
+    private VectorTileOverlay marks;
+    private GeoCollection<FeatureSource> sources;
+    private readonly InMemoryFeatureSource hits = new InMemoryFeatureSource(Columns, Array.Empty<Feature>());
+    private readonly InMemoryFeatureSource pickedMark = new InMemoryFeatureSource(Columns, Array.Empty<Feature>());
+    private GeocodingCloudClient client;
+    private RectangleShape extent;
+    private string searchText = "Frisco Square";
+    private int maxResults = 10;
+    private bool inView;
+    private bool busy;
+    private string status = "";
+    private List<CloudGeocodingLocation> found = new List<CloudGeocodingLocation>();
+    private CloudGeocodingLocation picked;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "hits", hits }, { "picked", pickedMark } };
+        client = new GeocodingCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
+    }
+
+    private async Task SearchAsync()
+    {
+        if (busy || string.IsNullOrWhiteSpace(searchText)) return;
+        busy = true;
+        status = "asking ThinkGeo Cloud...";
+        var options = new CloudGeocodingOptions
+        {
+            MaxResults = maxResults,
+            ResultProjectionInSrid = 3857,
+            BBox = inView ? extent : null,
+        };
+        var result = await client.SearchAsync(searchText.Trim(), options);
+        busy = false;
+        if (result.Exception != null)
+        {
+            status = result.Exception.Message;
+            return;
+        }
+
+        found = result.Locations?.ToList() ?? new List<CloudGeocodingLocation>();
+        status = found.Count == 0 ? "Nothing matched." : $"{found.Count} matching locations - click one.";
+        hits.InternalFeatures.Clear();
+        foreach (var location in found)
+        {
+            hits.InternalFeatures.Add(new Feature(location.LocationPoint, new Dictionary<string, string> { ["name"] = location.LocationName }));
+        }
+        pickedMark.InternalFeatures.Clear();
+        await marks.RedrawAsync();
+        if (found.Count > 0)
+        {
+            await PickAsync(found[0]);
+        }
+    }
+
+    private async Task PickAsync(CloudGeocodingLocation location)
+    {
+        picked = location;
+        pickedMark.InternalFeatures.Clear();
+        pickedMark.InternalFeatures.Add(new Feature(location.LocationPoint, new Dictionary<string, string> { ["name"] = location.LocationName }));
+        await marks.RedrawAsync();
+
+        var box = location.BoundingBox;
+        if (box != null && box.Width > 1 && box.Height > 1)
+        {
+            box = (RectangleShape)box.CloneDeep();
+            box.ScaleUp(40);
+            await map.ZoomToExtentAsync(box);
+        }
+        else
+        {
+            await map.ZoomToAsync(location.LocationPoint, 4500);
+        }
+    }
+}

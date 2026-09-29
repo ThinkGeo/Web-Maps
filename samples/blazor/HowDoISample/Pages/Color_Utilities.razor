@@ -1,0 +1,138 @@
+@page "/color-utilities"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10777700, 3912400))" Zoom="11">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Housing" StyleJson="@styleJson" FeatureSources="@sources" SourceId="features" />
+            </OverlaysSetting>
+        </MapView>
+        <div style="position:absolute;right:12px;bottom:12px;padding:8px 10px;background:rgba(255,255,255,.92);border-radius:4px;font:12px system-ui;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+            <div style="font-weight:600;margin-bottom:4px">Housing units per block group</div>
+            @for (var i = 0; i < colours.Count; i++)
+            {
+                <div><span style="display:inline-block;width:14px;height:10px;background:@colours[i];border:1px solid #888;vertical-align:middle"></span> @(i == colours.Count - 1 ? $"over {Breaks[i]}" : $"{Breaks[i]} to {Breaks[i + 1]}")</div>
+            }
+        </div>
+    </div>
+    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui;overflow:auto">
+        <div style="font-weight:600">Colour utilities</div>
+        <div style="color:#555">ColorCloudClient hands back a family of colours that go together - a hue's shades, analogous, complementary, contrasting, quality, tetrad or triad - from a colour you give it or one it picks. Six of them class the housing units of Frisco's census block groups.</div>
+        <label>Family
+            <select @bind="family" style="font:13px system-ui;margin-left:6px">
+                @foreach (var name in Families)
+                {
+                    <option value="@name">@name</option>
+                }
+            </select>
+        </label>
+        <label><input type="checkbox" @bind="fromColour" /> from this colour <input type="color" @bind="baseColour" disabled="@(!fromColour)" /></label>
+        <button class="btn btn-sm btn-primary" style="align-self:flex-start" @onclick="GenerateAsync" disabled="@busy">Generate colours</button>
+        <div style="color:#555">@status</div>
+    </div>
+</div>
+
+@code {
+    private static readonly string[] Families = { "Hue", "Analogous", "Complementary", "Contrasting", "Quality", "Tetrad", "Triad" };
+    private static readonly int[] Breaks = { 0, 1000, 2000, 3000, 4000, 5000 };
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private ColorCloudClient client;
+    private string family = "Hue";
+    private bool fromColour;
+    private string baseColour = "#2E7BB6";
+    private bool busy;
+    private string status = "";
+    private List<string> colours = new List<string>();
+    private string styleJson = Style(new[] { "#EEEEEE" });
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource>
+        {
+            { "housing", new ShapeFileFeatureSource("./Data/Shapefile/Frisco 2010 Census Housing Units.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } }
+        };
+        client = new ColorCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GenerateAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task GenerateAsync()
+    {
+        busy = true;
+        status = "asking ThinkGeo Cloud...";
+        StateHasChanged();
+        try
+        {
+            var picked = fromColour ? GeoColor.FromHtml(baseColour) : null;
+            var got = await ColoursAsync(family, picked, Breaks.Length);
+            colours = got.Take(Breaks.Length).Select(colour => $"#{colour.R:X2}{colour.G:X2}{colour.B:X2}").ToList();
+            styleJson = Style(colours);
+            status = $"{colours.Count} colours in the {family.ToLowerInvariant()} family.";
+        }
+        catch (Exception exception)
+        {
+            status = exception.Message;
+        }
+        busy = false;
+    }
+
+    // A family with a base colour gives several sets - one per colour of the family - and
+    // the sets are read in order; a hue or quality family is one set.
+    private async Task<IEnumerable<GeoColor>> ColoursAsync(string name, GeoColor colour, int count)
+    {
+        switch (name)
+        {
+            case "Hue": return colour == null ? await client.GetColorsInHueFamilyAsync(count) : await client.GetColorsInHueFamilyAsync(colour, count);
+            case "Quality": return colour == null ? await client.GetColorsInQualityFamilyAsync(count) : await client.GetColorsInQualityFamilyAsync(colour, count);
+            case "Analogous": return Flat(colour == null ? await client.GetColorsInAnalogousFamilyAsync(count) : await client.GetColorsInAnalogousFamilyAsync(colour, count));
+            case "Complementary": return Flat(colour == null ? await client.GetColorsInComplementaryFamilyAsync(count) : await client.GetColorsInComplementaryFamilyAsync(colour, count));
+            case "Contrasting": return Flat(colour == null ? await client.GetColorsInContrastingFamilyAsync(count) : await client.GetColorsInContrastingFamilyAsync(colour, count));
+            case "Tetrad": return Flat(colour == null ? await client.GetColorsInTetradFamilyAsync(count) : await client.GetColorsInTetradFamilyAsync(colour, count));
+            default: return Flat(colour == null ? await client.GetColorsInTriadFamilyAsync(count) : await client.GetColorsInTriadFamilyAsync(colour, count));
+        }
+    }
+
+    private static IEnumerable<GeoColor> Flat(Dictionary<GeoColor, Collection<GeoColor>> sets) => sets.Values.SelectMany(set => set);
+
+    // The block groups classed by H_UNITS: a step expression with one colour per break.
+    private static string Style(IReadOnlyList<string> palette)
+    {
+        if (palette.Count < 2)
+        {
+            return Fill("\"" + palette[0] + "\"");
+        }
+        var steps = "\"" + palette[0] + "\"";
+        for (var i = 1; i < palette.Count && i < Breaks.Length; i++)
+        {
+            steps += $", {Breaks[i]}, \"{palette[i]}\"";
+        }
+        return Fill(@"[""step"", [""to-number"", [""get"", ""H_UNITS""]], " + steps + "]");
+    }
+
+    private static string Fill(string colour)
+    {
+        return @"{
+  ""layers"": [
+    { ""type"": ""fill"", ""source-layer"": ""housing"",
+      ""paint"": {
+          ""fill-color"": " + colour + @",
+          ""fill-opacity"": 0.75,
+          ""fill-outline-color"": ""rgba(80,80,80,0.6)"" } }
+  ]
+}";
+    }
+}

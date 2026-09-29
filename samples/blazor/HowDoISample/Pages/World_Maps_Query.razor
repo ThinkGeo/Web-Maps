@@ -1,0 +1,174 @@
+@page "/world-maps-query"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10779560, 3915280))" Zoom="15">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Marks" @ref="marks" StyleJson="@MarksStyle" FeatureSources="@sources" SourceId="marks" />
+            </OverlaysSetting>
+            <EditOverlaySetting>
+                <EditOverlay TrackMode="@trackMode" OnFeatureDrawn="@Drawn" />
+            </EditOverlaySetting>
+        </MapView>
+    </div>
+    <div style="width:340px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui;overflow:auto">
+        <div style="font-weight:600">World Maps query</div>
+        <div style="color:#555">The features behind ThinkGeo's world map - buildings, roads, places and more - can be asked for by shape: MapsQueryCloudClient finds the ones containing, intersecting, overlapping, within or nearest to a shape you draw.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <select @bind="layer" style="font:13px system-ui">
+                @foreach (var name in Layers)
+                {
+                    <option value="@name">@name</option>
+                }
+            </select>
+            <select @bind="kind" style="font:13px system-ui">
+                @foreach (var name in Kinds)
+                {
+                    <option value="@name">@name</option>
+                }
+            </select>
+            <label>up to <input type="number" min="1" max="500" @bind="maxResults" style="width:56px" /></label>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+            <span>Draw a</span>
+            <button class="btn btn-sm @(trackMode == BlazorTrackMode.Point ? "btn-primary" : "btn-light")" @onclick="() => trackMode = BlazorTrackMode.Point">point</button>
+            <button class="btn btn-sm @(trackMode == BlazorTrackMode.LineString ? "btn-primary" : "btn-light")" @onclick="() => trackMode = BlazorTrackMode.LineString">line</button>
+            <button class="btn btn-sm @(trackMode == BlazorTrackMode.Polygon ? "btn-primary" : "btn-light")" @onclick="() => trackMode = BlazorTrackMode.Polygon">polygon</button>
+            <button class="btn btn-sm btn-light" @onclick="QueryAsync" disabled="@busy">Ask again</button>
+        </div>
+        <div style="color:#555">@status</div>
+        @foreach (var feature in found.Take(60))
+        {
+            <div style="padding:3px 6px;border-bottom:1px solid #e3e3e3;font-size:12px">@Describe(feature)</div>
+        }
+    </div>
+</div>
+
+@code {
+    private static readonly string[] Layers = { "Buildings", "Countries", "States", "Roads", "Rail", "Addresses", "Cities", "Land-Use", "Places", "POIs", "Transport", "Water", "Waterways" };
+    private static readonly string[] Kinds = { "Intersecting", "Containing", "Nearest", "Overlapping", "Within" };
+
+    private const string MarksStyle = @"{
+  ""layers"": [
+    { ""type"": ""fill"", ""source-layer"": ""found"",
+      ""paint"": { ""fill-color"": ""rgba(255,69,0,0.18)"", ""fill-outline-color"": ""#FF4500"" } },
+    { ""type"": ""line"", ""source-layer"": ""found"",
+      ""paint"": { ""line-color"": ""#FF4500"", ""line-width"": 2 } },
+    { ""type"": ""circle"", ""source-layer"": ""found"", ""filter"": [""=="", [""geometry-type""], ""Point""],
+      ""paint"": { ""circle-radius"": 6, ""circle-color"": ""#FF4500"", ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 1.5 } },
+    { ""type"": ""fill"", ""source-layer"": ""asked"",
+      ""paint"": { ""fill-color"": ""rgba(30,90,220,0.1)"" } },
+    { ""type"": ""line"", ""source-layer"": ""asked"",
+      ""paint"": { ""line-color"": ""#1E5ADC"", ""line-width"": 2, ""line-dasharray"": [3, 2] } },
+    { ""type"": ""circle"", ""source-layer"": ""asked"", ""filter"": [""=="", [""geometry-type""], ""Point""],
+      ""paint"": { ""circle-radius"": 7, ""circle-color"": ""#1E5ADC"", ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 2 } }
+  ]
+}";
+
+    private MapView map;
+    private VectorTileOverlay marks;
+    private GeoCollection<FeatureSource> sources;
+    private readonly InMemoryFeatureSource asked = new InMemoryFeatureSource();
+    private readonly InMemoryFeatureSource foundShapes = new InMemoryFeatureSource();
+    private MapsQueryCloudClient client;
+    private BlazorTrackMode trackMode = BlazorTrackMode.None;
+    private string layer = "Buildings";
+    private string kind = "Intersecting";
+    private int maxResults = 100;
+    private bool busy;
+    private string status = "";
+    private BaseShape shape = new RectangleShape(-10779877.70, 3915441.00, -10779248.97, 3915119.63);
+    private List<Feature> found = new List<Feature>();
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "found", foundShapes }, { "asked", asked } };
+        client = new MapsQueryCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        await QueryAsync();
+        StateHasChanged();
+    }
+
+    private async Task Drawn(FeatureDrawnEditOverlayEventArgs args)
+    {
+        map.EditOverlay.Features.Clear();
+        trackMode = BlazorTrackMode.None;
+        shape = args.DrawnFeature.GetShape();
+        await QueryAsync();
+    }
+
+    private async Task QueryAsync()
+    {
+        if (busy) return;
+        busy = true;
+        status = "asking ThinkGeo Cloud...";
+        StateHasChanged();
+        asked.InternalFeatures.Clear();
+        asked.InternalFeatures.Add(new Feature(shape));
+        foundShapes.InternalFeatures.Clear();
+        found.Clear();
+        await marks.RedrawAsync();
+
+        CloudMapsQueryResult result;
+        try
+        {
+            var name = layer.ToLowerInvariant().Replace("-", "");
+            var options = new CloudMapsQuerySpatialQueryOptions { MaxResults = maxResults };
+            switch (kind)
+            {
+                case "Containing": result = await client.GetFeaturesContainingAsync(name, shape, 3857, options); break;
+                case "Nearest": result = await client.GetFeaturesNearestAsync(name, shape, 3857, maxResults); break;
+                case "Overlapping": result = await client.GetFeaturesOverlappingAsync(name, shape, 3857, options); break;
+                case "Within": result = await client.GetFeaturesWithinAsync(name, shape, 3857, options); break;
+                default: result = await client.GetFeaturesIntersectingAsync(name, shape, 3857, options); break;
+            }
+        }
+        catch (Exception exception)
+        {
+            busy = false;
+            status = exception.InnerException?.Message ?? exception.Message;
+            return;
+        }
+        busy = false;
+        if (result.Exception != null)
+        {
+            status = result.Exception.Message;
+            return;
+        }
+
+        found = result.Features?.ToList() ?? new List<Feature>();
+        foreach (var feature in found)
+        {
+            foundShapes.InternalFeatures.Add(new Feature(feature.GetShape()));
+        }
+        await marks.RedrawAsync();
+        status = found.Count == 0 ? $"No {layer.ToLowerInvariant()} {kind.ToLowerInvariant()} the shape." : $"{found.Count} {layer.ToLowerInvariant()} {kind.ToLowerInvariant()} the shape.";
+
+        if (found.Count > 0)
+        {
+            var bounds = MapUtil.GetBoundingBoxOfItems(found.Select(feature => feature.GetShape()).Append(shape));
+            bounds.ScaleUp(20);
+            await map.ZoomToExtentAsync(bounds);
+        }
+    }
+
+    private static string Describe(Feature feature)
+    {
+        var name = feature.ColumnValues.FirstOrDefault(column => column.Key == "name" || column.Key == "NAME").Value;
+        var type = feature.ColumnValues.FirstOrDefault(column => column.Key == "type" || column.Key == "fclass" || column.Key == "kind").Value;
+        return string.IsNullOrEmpty(name) && string.IsNullOrEmpty(type) ? feature.GetWellKnownType().ToString() : $"{name} {(string.IsNullOrEmpty(type) ? "" : "(" + type + ")")}".Trim();
+    }
+}

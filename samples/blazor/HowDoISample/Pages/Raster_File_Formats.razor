@@ -1,0 +1,100 @@
+@page "/raster-file-formats"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10780597, 3916063))" Zoom="14">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                @if (layers != null)
+                {
+                    <LayerOverlay @key="format" Id="@("raster-" + Array.IndexOf(Formats, format))" Layers="@layers" />
+                }
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:320px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
+        <div style="padding:8px 8px 4px;font-weight:600">File</div>
+        <div style="padding:0 8px 6px;display:flex;flex-direction:column;gap:2px">
+            @foreach (var name in Formats)
+            {
+                <label><input type="radio" name="format" checked="@(format == name)" @onchange="@(() => Pick(name))" /> @name</label>
+            }
+        </div>
+        <div style="padding:0 8px 6px;color:#555">
+            Each format has a raster layer named after it, and anything else GDAL reads goes through the base class. A file in another projection gets a GdalProjectionConverter and is warped as it is drawn.
+        </div>
+        <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>
+    </div>
+</div>
+
+@code {
+    private static readonly string[] Formats =
+    {
+        "GeoTIFF - NAIP aerial", "Plain JPEG + world file", "ECW - world imagery", "Anything else GDAL reads"
+    };
+
+    private MapView map;
+    private GeoCollection<LayerBase> layers;
+    private string format = Formats[0];
+    private string status = "";
+    private bool ok = true;
+
+    protected override void OnInitialized()
+    {
+        layers = new GeoCollection<LayerBase> { { "raster", Open(format) } };
+        status = layers["raster"].GetType().Name;
+    }
+
+    // The world files say where each image sits but not which plane its numbers are in, so
+    // the ones not already in the map's meters state theirs.
+    private static RasterLayer Open(string name)
+    {
+        switch (name)
+        {
+            case "Plain JPEG + world file":
+                return new GdalRasterLayer("./Data/Jpg/m_3309650_sw_14_1_20160911_20161121.jpg");
+            case "ECW - world imagery":
+                return new EcwGdalRasterLayer("./Data/World.ecw") { ImageSource = { ProjectionConverter = new GdalProjectionConverter(4326, 3857) } };
+            case "Anything else GDAL reads":
+                return new GdalRasterLayer("./Data/GeoTiff/World.tif") { ImageSource = { ProjectionConverter = new GdalProjectionConverter(4326, 3857) } };
+            default:
+                return new GeoTiffRasterLayer("./Data/GeoTiff/m_3309650_sw_14_1_20160911_20161121.tif");
+        }
+    }
+
+    private async Task Pick(string name)
+    {
+        RasterLayer layer;
+        RectangleShape bounds;
+        try
+        {
+            layer = Open(name);
+            bounds = await Task.Run(() =>
+            {
+                layer.Open();
+                var box = layer.GetBoundingBox();
+                layer.Close();
+                return box;
+            });
+        }
+        catch (Exception exception)
+        {
+            while (exception.InnerException != null) exception = exception.InnerException;
+            ok = false;
+            status = "Unavailable: " + exception.Message.Split('\n')[0];
+            return;
+        }
+
+        format = name;
+        layers = new GeoCollection<LayerBase> { { "raster", layer } };
+        ok = true;
+        status = layer.GetType().Name;
+        StateHasChanged();
+
+        await map.ZoomToExtentAsync(bounds);
+    }
+}

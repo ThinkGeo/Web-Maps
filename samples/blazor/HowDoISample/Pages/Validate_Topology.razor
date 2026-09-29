@@ -1,0 +1,182 @@
+@page "/validate-topology"
+@using ThinkGeo.Core
+@using System.Collections.ObjectModel
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(50, 0))" Zoom="18">
+            <OverlaysSetting>
+                <VectorTileOverlay Id="Shapes" @ref="overlay" Style="@style" FeatureSources="@sources" SourceId="shapes" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:340px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
+        <div style="padding:8px 8px 4px;font-weight:600">Rule</div>
+        <div style="flex:1;overflow:auto;padding:0 8px 6px;display:flex;flex-direction:column;gap:2px">
+            @foreach (var group in Rules.GroupBy(r => r.Group))
+            {
+                <div style="font-weight:600;color:#666;margin-top:6px">@group.Key</div>
+                @foreach (var r in group)
+                {
+                    <label><input type="radio" name="rule" checked="@(rule == r.Name)" @onchange="@(() => Choose(r.Name))" /> @r.Name</label>
+                }
+            }
+        </div>
+        <div style="padding:8px;border-top:1px solid #ddd">
+            <div>Blue: checked against. Green: what the rule checks. Red: what breaks it.</div>
+            <div style="font-weight:600;margin-top:6px">@result</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private sealed class Rule
+    {
+        public string Group;
+        public string Name;
+        public string[] Subject;
+        public string[] Against;
+        public Func<Collection<Feature>, Collection<Feature>, Collection<Feature>> Broken;
+        public string Note;
+    }
+
+    private static readonly Rule[] Rules =
+    {
+        new Rule { Group = "Points", Name = "Must touch lines", Subject = new[] { "POINT(0 0)", "POINT(50 0)", "POINT(150 0)" }, Against = new[] { "LINESTRING(0 0,100 0)" },
+            Broken = (s, a) => TopologyValidator.PointsMustTouchLines(s, a).InvalidFeatures, Note = "Points that miss the line are red." },
+        new Rule { Group = "Points", Name = "Must touch line endpoints", Subject = new[] { "POINT(0 0)", "POINT(50 0)", "POINT(100 0)" }, Against = new[] { "LINESTRING(0 0,100 0,100 100,0 100)" },
+            Broken = (s, a) => TopologyValidator.PointsMustTouchLineEndpoints(s, a).InvalidFeatures, Note = "A point on the line but not at an end is still wrong." },
+        new Rule { Group = "Points", Name = "Must touch polygon boundaries", Subject = new[] { "POINT(150 0)", "POINT(50 50)", "POINT(0 0)" }, Against = new[] { "POLYGON((0 0,100 0,100 100,0 100,0 0))" },
+            Broken = (s, a) => TopologyValidator.PointsMustTouchPolygonBoundaries(s, a).InvalidFeatures, Note = "Inside is not on the boundary; nor is outside." },
+        new Rule { Group = "Points", Name = "Must be within polygons", Subject = new[] { "POINT(150 0)", "POINT(0 0)", "POINT(50 50)" }, Against = new[] { "POLYGON((0 0,100 0,100 100,0 100,0 0))" },
+            Broken = (s, a) => TopologyValidator.PointsMustBeWithinPolygons(s, a).InvalidFeatures, Note = "A point on the corner is not within." },
+
+        new Rule { Group = "Lines", Name = "Endpoints must touch points", Subject = new[] { "LINESTRING(0 0,100 0,100 50)" }, Against = new[] { "POINT(0 0)" },
+            Broken = (s, a) => TopologyValidator.LineEndPointsMustTouchPoints(s, a).InvalidFeatures, Note = "One end has its point, the other does not." },
+        new Rule { Group = "Lines", Name = "Must overlap polygon boundaries", Subject = new[] { "LINESTRING(-50 0,150 0)" }, Against = new[] { "POLYGON((0 0,100 0,100 100,0 100,0 0))" },
+            Broken = (s, a) => TopologyValidator.LinesMustOverlapPolygonBoundaries(s, a).InvalidFeatures, Note = "Only the stretch that runs along the boundary counts." },
+        new Rule { Group = "Lines", Name = "Must be covered by other lines", Subject = new[] { "LINESTRING(0 0,100 0,100 100,0 100)" }, Against = new[] { "LINESTRING(0 -50,50 0,100 0,100 150)" },
+            Broken = (s, a) => TopologyValidator.LinesMustBeCoveredByLines(a, s).InvalidFeatures, Note = "The parts with nothing under them are red." },
+        new Rule { Group = "Lines", Name = "Must be a single part", Subject = new[] { "MULTILINESTRING((0 -50,100 -50,100 -100,0 -100))", "MULTILINESTRING((0 0,100 0),(100 50,0 50))" },
+            Broken = (s, a) => TopologyValidator.LinesMustBeSinglePart(s).InvalidFeatures, Note = "One multiline is really one strand; the other is two." },
+        new Rule { Group = "Lines", Name = "Must form a closed polygon", Subject = new[] { "LINESTRING(0 0,100 0,100 100,20 100)", "LINESTRING(0 0,-50 0,-50 100,0 100)" },
+            Broken = (s, a) => TopologyValidator.LinesMustFormClosedPolygon(s).InvalidFeatures, Note = "The ends that do not meet are red." },
+        new Rule { Group = "Lines", Name = "Must not have pseudonodes", Subject = new[] { "LINESTRING(0 0,50 0,50 50,0 0)", "LINESTRING(-50 0,-50 50)", "LINESTRING(-100 0,-50 50)", "LINESTRING(-50 -50,-50 -100)", "LINESTRING(-100 -50,-50 -100)", "LINESTRING(-50 -100,0 -100)" },
+            Broken = (s, a) => TopologyValidator.LinesMustNotHavePseudonodes(s).InvalidFeatures, Note = "A node joining exactly two lines is a pseudonode." },
+        new Rule { Group = "Lines", Name = "Must not intersect", Subject = new[] { "LINESTRING(0 0,100 0,100 100)", "LINESTRING(0 -50,30 0,60 0,100 50)", "LINESTRING(20 50,20 -50)" },
+            Broken = (s, a) => TopologyValidator.LinesMustNotIntersect(s).InvalidFeatures, Note = "Each crossing comes back as a point." },
+        new Rule { Group = "Lines", Name = "Must not self-intersect or touch", Subject = new[] { "LINESTRING(0 0,100 0,100 100)", "LINESTRING(0 -50,30 0,60 0,100 50)", "LINESTRING(20 50,20 -50)" },
+            Broken = (s, a) => TopologyValidator.LinesMustNotSelfIntersectOrTouch(s).InvalidFeatures, Note = "Crossings and shared stretches both count." },
+        new Rule { Group = "Lines", Name = "Must not overlap", Subject = new[] { "LINESTRING(0 0,100 0,100 100)", "LINESTRING(0 -50,30 0,60 0,100 50)", "LINESTRING(20 50,20 -50)" },
+            Broken = (s, a) => TopologyValidator.LinesMustNotOverlap(s).InvalidFeatures, Note = "Only the shared stretches, not the crossings." },
+        new Rule { Group = "Lines", Name = "Must not overlap other lines", Subject = new[] { "LINESTRING(150 0,100 30,100 60,150 100)" }, Against = new[] { "LINESTRING(0 0,100 0,100 100,0 100)" },
+            Broken = (s, a) => TopologyValidator.LinesMustNotOverlapLines(a, s).InvalidFeatures, Note = "The stretch lying on the blue line is red." },
+        new Rule { Group = "Lines", Name = "Must not self-intersect", Subject = new[] { "LINESTRING(0 0,100 0,100 100,50 100,50 -50)" },
+            Broken = (s, a) => TopologyValidator.LinesMustNotSelfIntersect(s).InvalidFeatures, Note = "One line, crossing itself once." },
+        new Rule { Group = "Lines", Name = "Must not self-overlap", Subject = new[] { "LINESTRING(0 0,100 0,100 100,0 100,20 0,40 0,40 -50)" },
+            Broken = (s, a) => TopologyValidator.LinesMustNotSelfOverlap(s).InvalidFeatures, Note = "One line, doubling back along itself." },
+
+        new Rule { Group = "Polygons", Name = "Boundaries must overlap boundaries", Subject = new[] { "POLYGON((0 0,50 0,50 50,0 50,0 0))" }, Against = new[] { "POLYGON((0 0,100 0,100 100,0 100,0 0))" },
+            Broken = (s, a) => TopologyValidator.PolygonBoundariesMustOverlapPolygonBoundaries(a, s).InvalidFeatures, Note = "Two corners are shared; the rest of the boundary is not." },
+        new Rule { Group = "Polygons", Name = "Boundaries must overlap lines", Subject = new[] { "POLYGON((0 0,100 0,100 100,0 100,0 0))" }, Against = new[] { "LINESTRING(-50 0,100 0,100 150)" },
+            Broken = (s, a) => TopologyValidator.PolygonBoundariesMustOverlapLines(s, a).InvalidFeatures, Note = "The line covers two sides; the other two are red." },
+        new Rule { Group = "Polygons", Name = "Must overlap other polygons", Subject = new[] { "POLYGON((25 25,50 25,50 50,25 50,25 25))", "POLYGON((75 25,125 25,125 75,75 75,75 25))", "POLYGON((150 25,200 25,200 75,150 75,150 25))" }, Against = new[] { "POLYGON((0 0,100 0,100 100,0 100,0 0))" },
+            Broken = (s, a) => TopologyValidator.PolygonsMustOverlapPolygons(a, s).InvalidFeatures, Note = "The one that never meets the blue square is red." },
+        new Rule { Group = "Polygons", Name = "Must be within other polygons", Subject = new[] { "POLYGON((25 25,50 25,50 50,25 50,25 25))", "POLYGON((75 25,125 25,125 75,75 75,75 25))", "POLYGON((150 25,200 25,200 75,150 75,150 25))" }, Against = new[] { "POLYGON((0 0,100 0,100 100,0 100,0 0))" },
+            Broken = (s, a) => TopologyValidator.PolygonsMustBeWithinPolygons(a, s).InvalidFeatures, Note = "Overlapping is not enough - it has to be all the way inside." },
+        new Rule { Group = "Polygons", Name = "Must contain points", Subject = new[] { "POLYGON((150 0,250 0,250 100,150 100,150 0))", "POLYGON((0 0,100 0,100 100,0 100,0 0))" }, Against = new[] { "POINT(50 50)" },
+            Broken = (s, a) => TopologyValidator.PolygonsMustContainPoint(s, a).InvalidFeatures, Note = "The empty polygon is red." },
+        new Rule { Group = "Polygons", Name = "Must overlap each other", Subject = new[] { "POLYGON((0 0,100 0,100 100,0 100,0 0))", "POLYGON((-50 -50,50 -50,50 50,-50 50,-50 -50))" },
+            Broken = (s, a) => TopologyValidator.PolygonsMustOverlapEachOther(Wkt(s[0].GetWellKnownText()), Wkt(s[1].GetWellKnownText())).InvalidFeatures, Note = "This one reports from both sets: everything outside the shared corner." },
+        new Rule { Group = "Polygons", Name = "Must not leave gaps", Subject = new[] { "POLYGON((0 0,40 0,40 40,0 40,0 0))", "POLYGON((30 30,70 30,70 70,30 70,30 30))", "POLYGON((60 0,100 0,100 40,60 40,60 0))", "POLYGON((30 10,70 10,70 -30,30 -30,30 10))" },
+            Broken = (s, a) => TopologyValidator.PolygonsMustNotHaveGaps(s).InvalidFeatures, Note = "The hole left between them comes back as its own shape." },
+        new Rule { Group = "Polygons", Name = "Must not overlap", Subject = new[] { "POLYGON((25 25,50 25,50 50,25 50,25 25))", "POLYGON((75 25,125 25,125 75,75 75,75 25))", "POLYGON((150 25,200 25,200 75,150 75,150 25))", "POLYGON((0 0,100 0,100 100,0 100,0 0))" },
+            Broken = (s, a) => TopologyValidator.PolygonsMustNotOverlap(s).InvalidFeatures, Note = "Red is the overlap itself, not the polygons that made it." },
+        new Rule { Group = "Polygons", Name = "Must not overlap other polygons", Subject = new[] { "POLYGON((25 25,50 25,50 50,25 50,25 25))", "POLYGON((75 25,125 25,125 75,75 75,75 25))", "POLYGON((150 25,200 25,200 75,150 75,150 25))" }, Against = new[] { "POLYGON((0 0,100 0,100 100,0 100,0 0))" },
+            Broken = (s, a) => TopologyValidator.PolygonsMustNotOverlapPolygons(a, s).InvalidFeatures, Note = "The reverse of the rule above: overlapping is the fault." },
+    };
+
+    private MapView map;
+    private VectorTileOverlay overlay;
+    private GeoCollection<FeatureSource> sources;
+    private MapStyle style;
+    private readonly InMemoryFeatureSource against = new InMemoryFeatureSource();
+    private readonly InMemoryFeatureSource checkedShapes = new InMemoryFeatureSource();
+    private readonly InMemoryFeatureSource broken = new InMemoryFeatureSource();
+    private string rule = Rules[0].Name;
+    private string result = "";
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "against", against }, { "checked", checkedShapes }, { "broken", broken } };
+        style = new MapStyle().SetBackground(GeoColor.FromHtml("#f5f5f5"));
+        Paint("against", GeoColors.Blue);
+        Paint("checked", GeoColors.Green);
+        Paint("broken", GeoColors.Red);
+    }
+
+    // Each set drawn in its colour whatever it holds: filled areas, wide lines, dots.
+    private void Paint(string layer, GeoColor color)
+    {
+        style.AddFillLayer(layer + "-fill", "shapes", layer, new GeoColor(50, color), color, filter: StyleExpressions.GeometryType("Polygon"))
+            .AddLineLayer(layer + "-edge", "shapes", layer, color, 2f, filter: StyleExpressions.GeometryType("Polygon"))
+            .AddLineLayer(layer + "-line", "shapes", layer, color, 3f, filter: StyleExpressions.GeometryType("LineString"))
+            .AddCircleLayer(layer + "-point", "shapes", layer, color, 6f, GeoColors.White, 1.5f, filter: StyleExpressions.GeometryType("Point"));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        await RunAsync();
+    }
+
+    private async Task Choose(string name)
+    {
+        rule = name;
+        await RunAsync();
+    }
+
+    private async Task RunAsync()
+    {
+        var chosen = Rules.First(r => r.Name == rule);
+        var subject = Wkt(chosen.Subject);
+        var counterpart = chosen.Against == null ? new Collection<Feature>() : Wkt(chosen.Against);
+        var invalid = chosen.Broken(subject, counterpart);
+
+        Fill(against, counterpart);
+        Fill(checkedShapes, subject);
+        Fill(broken, invalid);
+        await overlay.RedrawAsync();
+
+        result = invalid.Count == 0 ? "Nothing breaks this rule. " + chosen.Note : invalid.Count + " in red. " + chosen.Note;
+
+        var bounds = MapUtil.GetBoundingBoxOfItems(counterpart.Concat(subject).Concat(invalid).Select(f => f.GetShape()));
+        bounds.ScaleUp(50);
+        await map.ZoomToExtentAsync(bounds);
+    }
+
+    private static Collection<Feature> Wkt(params string[] wellKnownText)
+    {
+        var features = new Collection<Feature>();
+        foreach (var text in wellKnownText)
+        {
+            features.Add(new Feature(text));
+        }
+        return features;
+    }
+
+    private static void Fill(InMemoryFeatureSource into, IEnumerable<Feature> features)
+    {
+        into.InternalFeatures.Clear();
+        foreach (var feature in features)
+        {
+            into.InternalFeatures.Add(feature);
+        }
+    }
+}

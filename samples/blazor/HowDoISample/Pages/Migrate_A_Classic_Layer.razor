@@ -1,0 +1,186 @@
+@page "/migrate-a-classic-layer"
+@using ThinkGeo.Core
+@using System.Text.Json
+@using System.Text.Json.Nodes
+
+<div class="map-container" style="display:flex;flex-direction:column">
+
+    <div style="display:flex;flex:1;min-height:0">
+
+        <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+            <div style="padding:4px 8px;font:12px system-ui;background:#2a2a2a;color:#f88">
+                Classic: five FeatureLayers with their ZoomLevelSet styles, drawn on the server
+            </div>
+            <div style="flex:1;min-height:0">
+                <MapView Id="classicMap" @ref="classicMap" MapUnit="GeographyUnit.Meter"
+                         Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                         Center="@Frisco" Zoom="16"
+                         OnCurrentExtentChanged="@(args => Mirror(true, args.CurrentExtent))">
+                    <OverlaysSetting>
+                        <LayerOverlay Id="Classic" Layers="@classicLayers" />
+                    </OverlaysSetting>
+                </MapView>
+            </div>
+        </div>
+
+        <div style="flex:1;display:flex;flex-direction:column;min-width:0;border-left:2px solid #444">
+            <div style="padding:4px 8px;font:12px system-ui;background:#2a2a2a;color:#8f8">
+                New: the same layers put through FeatureLayerTranslator, drawn in the browser from the style.json it wrote
+            </div>
+            <div style="flex:1;min-height:0">
+                <MapView Id="newMap" @ref="newMap" MapUnit="GeographyUnit.Meter"
+                         Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                         Center="@Frisco" Zoom="16"
+                         OnCurrentExtentChanged="@(args => Mirror(false, args.CurrentExtent))">
+                    <OverlaysSetting>
+                        <VectorTileOverlay Id="Translated" Style="@style" FeatureSources="@translatedSources" SourceId="features" />
+                    </OverlaysSetting>
+                </MapView>
+            </div>
+        </div>
+
+    </div>
+
+    <div style="display:flex;height:200px;border-top:1px solid #444;font:12px system-ui;background:#f6f6f4">
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+            <div style="padding:6px 8px 2px;font-weight:600">What the translator wrote</div>
+            <textarea readonly spellcheck="false" style="flex:1;font:11px Consolas,monospace;padding:4px 8px;border:0;resize:none;white-space:pre;background:#fbfbf9">@translatedJson</textarea>
+        </div>
+        <div style="width:440px;padding:6px 8px;border-left:1px solid #ccc;overflow:auto">
+            <div style="font-weight:600">@(warnings.Count == 0 ? "Every style on these layers has an equivalent; nothing was left out." : "Not carried over:")</div>
+            @foreach (var warning in warnings)
+            {
+                <div style="margin-top:4px;color:#8a3b00">@warning</div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private static readonly PointShape Frisco = new PointShape(-10777290, 3908740);
+
+    private MapView classicMap;
+    private MapView newMap;
+    private GeoCollection<LayerBase> classicLayers;
+    private GeoCollection<FeatureSource> translatedSources;
+    private MapStyle style;
+    private string translatedJson = "";
+    private readonly List<string> warnings = new List<string>();
+    private RectangleShape expectedOnClassic;
+    private RectangleShape expectedOnNew;
+
+    protected override void OnInitialized()
+    {
+        // Each map reads the shapefiles through layers of its own: a feature source is not
+        // shared between a server-side draw and the tile cutter.
+        classicLayers = new GeoCollection<LayerBase>();
+        foreach (var layer in ClassicLayers())
+        {
+            classicLayers.Add(layer.Name, layer);
+        }
+
+        // One tile source over every layer's data. Each layer translates against it, so the
+        // style layers all name the one source the overlay cuts tiles from.
+        var source = new FeatureSourceVectorTileSource { SourceId = "features" };
+        var layers = ClassicLayers().ToList();
+        foreach (var layer in layers)
+        {
+            source.FeatureSources.Add(layer.Name, layer.FeatureSource);
+        }
+        translatedSources = source.FeatureSources;
+
+        style = new MapStyle().SetBackground(GeoColor.FromHtml("#EAE8E2"));
+        var zoomScales = new ZoomLevelSet().GetScales();
+        foreach (var layer in layers)
+        {
+            var translation = FeatureLayerTranslator.Translate(layer, source, zoomScales);
+            style.AddFeatureLayer(translation);
+            warnings.AddRange(translation.Warnings);
+            warnings.AddRange(translation.JsonWarnings);
+        }
+        translatedJson = JsonNode.Parse(style.ToJson()).ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    // Pan or zoom one map and the other follows. The move it is given comes back as its own
+    // extent-changed event; that echo is recognised and not sent back.
+    private async Task Mirror(bool fromClassic, RectangleShape extent)
+    {
+        var expectedHere = fromClassic ? expectedOnClassic : expectedOnNew;
+        if (expectedHere != null && About(expectedHere, extent))
+        {
+            if (fromClassic) expectedOnClassic = null; else expectedOnNew = null;
+            return;
+        }
+
+        var target = fromClassic ? newMap : classicMap;
+        if (target?.IsLoaded != true) return;
+        if (fromClassic) expectedOnNew = extent; else expectedOnClassic = extent;
+        await target.ZoomToExtentAsync(extent);
+    }
+
+    private static bool About(RectangleShape a, RectangleShape b)
+    {
+        var tolerance = a.Width * 0.02;
+        return Math.Abs(a.GetCenterPoint().X - b.GetCenterPoint().X) < tolerance
+            && Math.Abs(a.GetCenterPoint().Y - b.GetCenterPoint().Y) < tolerance
+            && Math.Abs(a.Width - b.Width) < a.Width * 0.1;
+    }
+
+    private static IEnumerable<FeatureLayer> ClassicLayers()
+    {
+        ShapeFileFeatureLayer Layer(string file, string name) =>
+            new ShapeFileFeatureLayer("./Data/Shapefile/" + file) { Name = name, FeatureSource = { ProjectionConverter = new ProjectionConverter(2276, 3857) } };
+
+        var zoning = Layer("Zoning.shp", "zoning");
+        zoning.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(new ValueStyle("ZONING", new Collection<ValueItem>
+        {
+            new ValueItem("C-1", new AreaStyle(new GeoSolidBrush(GeoColor.FromHtml("#F2C9B4")))),
+            new ValueItem("I", new AreaStyle(new GeoSolidBrush(GeoColor.FromHtml("#CBC3D8")))),
+            new ValueItem("AG", new AreaStyle(new GeoSolidBrush(GeoColor.FromHtml("#D7E3BE")))),
+            new ValueItem("O-1", new AreaStyle(new GeoSolidBrush(GeoColor.FromHtml("#F4E2A6")))),
+            new ValueItem("O-2", new AreaStyle(new GeoSolidBrush(GeoColor.FromHtml("#F4E2A6")))),
+        })
+        {
+            DefaultStyle = new AreaStyle(new GeoSolidBrush(GeoColor.FromHtml("#E9E4DA"))),
+        });
+        zoning.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+        var parks = Layer("Parks.shp", "parks");
+        parks.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(AreaStyle.CreateHatchStyle(
+            GeoHatchStyle.DiagonalCross, GeoColor.FromHtml("#5E9E62"), GeoColor.FromArgb(110, 180, 224, 182), GeoColor.FromHtml("#3F7F45")));
+        parks.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(new TextStyle("NAME", new GeoFont("Arial", 12, DrawingFontStyles.Bold | DrawingFontStyles.Underline), new GeoSolidBrush(GeoColors.DarkGreen))
+        {
+            HaloPen = new GeoPen(GeoColors.White, 2),
+        });
+        parks.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+        var trails = Layer("Hike_Bike.shp", "trails");
+        trails.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(new LineStyle(new GeoPen(GeoColor.FromHtml("#8C5A2B"), 2) { DashStyle = LineDashStyle.Dash }));
+        trails.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+        var streets = Layer("Streets.shp", "streets");
+        streets.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(new LineStyle(new GeoPen(GeoColors.DimGray, 6), new GeoPen(GeoColors.WhiteSmoke, 4)));
+        streets.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+        streets.ZoomLevelSet.ZoomLevel17.CustomStyles.Add(new TextStyle("FULL_NAME", new GeoFont("Arial", 11, DrawingFontStyles.Bold | DrawingFontStyles.Strikeout), new GeoSolidBrush(GeoColors.MidnightBlue))
+        {
+            HaloPen = new GeoPen(GeoColors.White, 2),
+        });
+        streets.ZoomLevelSet.ZoomLevel17.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+        var schools = Layer("Schools.shp", "schools");
+        schools.ZoomLevelSet.ZoomLevel15.CustomStyles.Add(new PointStyle(PointSymbolType.Star, 14, new GeoSolidBrush(GeoColor.FromHtml("#F5B301")), new GeoPen(GeoColor.FromHtml("#8A5A00"), 1)));
+        schools.ZoomLevelSet.ZoomLevel15.CustomStyles.Add(new TextStyle("NAME", new GeoFont("Arial", 11, DrawingFontStyles.Bold | DrawingFontStyles.Underline), new GeoSolidBrush(GeoColor.FromHtml("#8A5A00")))
+        {
+            TextPlacement = TextPlacement.Lower,
+            YOffsetInPixel = 2,
+            HaloPen = new GeoPen(GeoColors.White, 2),
+        });
+        schools.ZoomLevelSet.ZoomLevel15.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+        yield return zoning;
+        yield return parks;
+        yield return trails;
+        yield return streets;
+        yield return schools;
+    }
+}

@@ -2,10 +2,19 @@
   {
     "id": "map-navigation",
     "title": "Map Navigation",
-    "description": "Zoom to named places, read the center back in latitude and longitude, and keep the map inside limits - RestrictExtent holds panning to a box, MinimumScale and MaximumScale bound how far it zooms.",
+    "description": "Navigate midtown Manhattan with the gestures built into the map - drag to pan, the wheel to zoom, right-drag to rotate and tilt - while the center is read back in latitude and longitude.",
     "href": "map-navigation",
     "source": "Map_Navigation",
     "preicon": "fas fa-location-arrow",
+    "group": "Map Navigation"
+  },
+  {
+    "id": "restrict-map-extent",
+    "title": "Restrict Map Extent",
+    "description": "Hold the map inside limits while it runs - RestrictExtent keeps panning inside a box, and MinimumScale and MaximumScale stop it zooming past two scales, each turned on and off live.",
+    "href": "restrict-map-extent",
+    "source": "Restrict_Map_Extent",
+    "preicon": "fas fa-compress-arrows-alt",
     "group": "Map Navigation"
   },
   {
@@ -72,6 +81,15 @@
     "group": "Projections"
   },
   {
+    "id": "setting-the-projection-of-a-layer",
+    "title": "Setting the Projection of a Layer",
+    "description": "A shapefile in Texas state plane feet drawn on a Web Mercator map: a ProjectionConverter on the source and nothing else changes.",
+    "href": "setting-the-projection-of-a-layer",
+    "source": "Setting_The_Projection_Of_A_Layer",
+    "preicon": "fas fa-ruler-combined",
+    "group": "Projections"
+  },
+  {
     "id": "any-projection-satellite",
     "title": "Any Projection, Satellite Imagery",
     "description": "ThinkGeo Cloud aerial tiles warped into Robinson, Mollweide, Eckert IV and other projections as they are drawn, by a projection converter on the layer, with the classic renderer.",
@@ -99,6 +117,42 @@
     "group": "Maps from a Service - Vector"
   },
   {
+    "id": "wfs",
+    "title": "WFS",
+    "description": "Cadastral parcels from a WFS 2.0 service, fetched by the server as each tile needs them and drawn in the browser.",
+    "href": "wfs",
+    "source": "WFS",
+    "preicon": "fas fa-server",
+    "group": "Maps from a Service - Vector"
+  },
+  {
+    "id": "ogc-api-features",
+    "title": "OGC API - Features",
+    "description": "Named places from an OGC API - Features service, read in latitude and longitude and projected on the server before the tiles are cut.",
+    "href": "ogc-api-features",
+    "source": "OGC_API_Features",
+    "preicon": "fas fa-map-marker-alt",
+    "group": "Maps from a Service - Vector"
+  },
+  {
+    "id": "noaa-weather-stations",
+    "title": "NOAA Weather Stations",
+    "description": "NOAA's weather stations and their current readings, read live by NoaaWeatherStationFeatureSource and coloured by temperature.",
+    "href": "noaa-weather-stations",
+    "source": "NOAA_Weather_Stations",
+    "preicon": "fas fa-thermometer-half",
+    "group": "Maps from a Service - Vector"
+  },
+  {
+    "id": "noaa-weather-warnings",
+    "title": "NOAA Weather Warnings",
+    "description": "The warnings NOAA has active right now, read by NoaaWeatherWarningsFeatureSource and coloured by severity.",
+    "href": "noaa-weather-warnings",
+    "source": "NOAA_Weather_Warnings",
+    "preicon": "fas fa-exclamation-triangle",
+    "group": "Maps from a Service - Vector"
+  },
+  {
     "id": "raster-map-providers",
     "title": "Raster Map Providers",
     "description": "The hosted raster maps: ThinkGeo Cloud light, dark, aerial and hybrid, and OpenStreetMap as a raster source in a style document.",
@@ -106,6 +160,96 @@
     "source": "Raster_Map_Providers",
     "preicon": "fas fa-layer-group",
     "group": "Maps from a Service - Raster"
+  },
+  {
+    "id": "load-wms",
+    "title": "WMS & WMTS",
+    "description": "Draw an OGC web service as the map: a WMS layer (mundialis OSM) and a WMTS layer (Swisstopo) requested tile by tile from their servers.",
+    "href": "work-with-ogc-services",
+    "source": "Work_with_OGC_Services",
+    "preicon": "fas fa-server",
+    "group": "Maps from a Service - Raster"
+  },
+  {
+    "id": "vector-file-formats",
+    "title": "Vector File Formats",
+    "description": "Open a vector file - a shapefile, GeoJSON, KML, GPX, MapInfo TAB, TinyGeo, an S-57 chart - or build features in code; reading the format is the only line that differs. The overlay cuts it into tiles and one editable style draws them all.",
+    "href": "vector-file-formats",
+    "source": "Vector_File_Formats",
+    "preicon": "fas fa-file-alt",
+    "group": "Your Data"
+  },
+  {
+    "id": "raster-file-formats",
+    "title": "Raster File Formats",
+    "description": "Open a raster file - a NAIP GeoTIFF, a plain JPEG with its world file, ECW, or anything else GDAL reads - through the raster layer named after the format, warped into the map's projection as it is drawn.",
+    "href": "raster-file-formats",
+    "source": "Raster_File_Formats",
+    "preicon": "fas fa-file-image",
+    "group": "Your Data"
+  },
+  {
+    "id": "databases",
+    "title": "Databases",
+    "description": "Open a table from a database - SQLite, a GeoPackage, an Esri file geodatabase, PostgreSQL / PostGIS or SQL Server; the connection is the only line that differs.",
+    "href": "databases",
+    "source": "Databases",
+    "preicon": "fas fa-database",
+    "group": "Your Data"
+  },
+  {
+    "id": "shape-operations",
+    "title": "Shape Operations",
+    "description": "Buffer, union, intersect, difference, simplify, convex hull and more, run on shapes drawn on the map and animated as the parameter changes.",
+    "href": "shape-operations",
+    "source": "Shape_Operations",
+    "preicon": "fas fa-shapes",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "shape-measurements",
+    "title": "Shape Measurements",
+    "description": "Area, length, perimeter, distance and the point nearest to a click, measured on Frisco parks and trails in the unit you choose.",
+    "href": "shape-measurements",
+    "source": "Shape_Measurements",
+    "preicon": "fas fa-ruler",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "find-features-by-spatial-relation",
+    "title": "Find Features by Spatial Relation",
+    "description": "Draw a shape and find the zoning parcels that contain, intersect, touch, cross or lie within a distance of it, with QueryTools.",
+    "href": "find-features-by-spatial-relation",
+    "source": "Find_Features_By_Spatial_Relation",
+    "preicon": "fas fa-vector-square",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "get-data-from-one-feature",
+    "title": "Get Data from One Feature",
+    "description": "Click a park and read every column its record holds, found with a point-in-polygon query and shown in a popup.",
+    "href": "get-data-from-one-feature",
+    "source": "Get_Data_From_One_Feature",
+    "preicon": "far fa-info-circle",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "check-if-features-are-equal",
+    "title": "Check If Features Are Equal",
+    "description": "Click a zoning parcel and find every other parcel with topologically equal geometry, whatever the order of its vertices.",
+    "href": "check-if-features-are-equal",
+    "source": "Check_If_Features_Are_Equal",
+    "preicon": "fas fa-equals",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "validate-topology",
+    "title": "Validate Topology",
+    "description": "Twenty-five topology rules - no overlaps, no gaps, endpoints covered, and more - each checked with TopologyValidator and drawn with the shapes that break it.",
+    "href": "validate-topology",
+    "source": "Validate_Topology",
+    "preicon": "fas fa-check-double",
+    "group": "Shapes & Spatial Queries"
   },
   {
     "id": "style-layer-toggles",
@@ -141,6 +285,15 @@
     "href": "render-based-on-rules",
     "source": "Render_Based_On_Rules",
     "preicon": "fas fa-project-diagram",
+    "group": "Styling"
+  },
+  {
+    "id": "us-demographic",
+    "title": "US Demographic Map",
+    "description": "A choropleth of the 2010 US census - each state coloured by the class its value falls in, with the breaks taken from the data. A step expression on the chosen column, drawn in the browser, with a legend read from the same breaks.",
+    "href": "us-demographic",
+    "source": "US_Demographic",
+    "preicon": "fas fa-fill-drip",
     "group": "Styling"
   },
   {
@@ -180,6 +333,42 @@
     "group": "Styling"
   },
   {
+    "id": "create-a-multi-column-text-style",
+    "title": "Create a Multi-Column Text Style",
+    "description": "Label world capitals with their name and population from two columns, using a concat expression in text-field.",
+    "href": "create-a-multi-column-text-style",
+    "source": "Create_A_Multi_Column_Text_Style",
+    "preicon": "fas fa-font",
+    "group": "Styling"
+  },
+  {
+    "id": "display-dot-density",
+    "title": "Display Dot Density",
+    "description": "Owner- and renter-occupied housing as dots scattered inside each state, one per 25,000 units, generated once as data and coloured by the style.",
+    "href": "display-dot-density",
+    "source": "Display_Dot_Density",
+    "preicon": "fas fa-braille",
+    "group": "Styling"
+  },
+  {
+    "id": "hatch-styles",
+    "title": "Hatch Styles",
+    "description": "Every GeoHatchStyle drawn once by AreaStyle.CreateHatchStyle, added to the style's images, and tiled across the parks by fill-pattern.",
+    "href": "hatch-styles",
+    "source": "Hatch_Styles",
+    "preicon": "fas fa-th",
+    "group": "Styling"
+  },
+  {
+    "id": "migrate-a-classic-layer",
+    "title": "Migrate a Classic Layer",
+    "description": "Five classic FeatureLayers with their ZoomLevelSet styles, drawn on the server on one map and put through FeatureLayerTranslator on the other, with the style.json it wrote and what it could not carry.",
+    "href": "migrate-a-classic-layer",
+    "source": "Migrate_A_Classic_Layer",
+    "preicon": "fas fa-exchange-alt",
+    "group": "Styling"
+  },
+  {
     "id": "isolines",
     "title": "Isolines",
     "description": "Isolines over scattered readings: the field is interpolated on the server - inverse distance weighting over a grid - and traced into features there; the browser draws them, coloured, banded and labelled by level.",
@@ -205,6 +394,24 @@
     "source": "Nexrad_Radar",
     "preicon": "fas fa-cloud-showers-heavy",
     "group": "Dynamic Data"
+  },
+  {
+    "id": "dynamic-rendering",
+    "title": "Dynamic Rendering",
+    "description": "State populations since 1900 as circles that grow and change colour as a year slider moves; the features travel once and only the style expressions change.",
+    "href": "dynamic-rendering",
+    "source": "Dynamic_Rendering",
+    "preicon": "fas fa-chart-line",
+    "group": "Dynamic Data"
+  },
+  {
+    "id": "custom-feature-sources",
+    "title": "Custom Feature Sources",
+    "description": "A FeatureSource of your own: one class, one overridden method that reads a CSV of coordinates, and the map treats it like any shapefile.",
+    "href": "custom-feature-sources",
+    "source": "Custom_Feature_Sources",
+    "preicon": "fas fa-puzzle-piece",
+    "group": "Extending the SDK"
   },
   {
     "id": "marker",
@@ -240,60 +447,6 @@
     "href": "measure-distance-area",
     "source": "Measure_Distance_Area",
     "preicon": "fas fa-ruler",
-    "group": "Legacy"
-  },
-  {
-    "id": "load-featuresource",
-    "title": "Load Feature Source",
-    "description": "Shows how to render common vector-based GIS formats on your map, including ESRI ShapeFile and more.",
-    "href": "load-feature-source",
-    "source": "Load_Feature_Source",
-    "preicon": "far fa-map",
-    "group": "Legacy"
-  },
-  {
-    "id": "load-rastersource",
-    "title": "Load Raster Source",
-    "description": "Shows how to render common raster-based GIS formats on your map, including GeoTiff, ECW and more.",
-    "href": "load-raster-source",
-    "source": "Load_Raster_Source",
-    "preicon": "fas fa-file-image",
-    "group": "Legacy"
-  },
-  {
-    "id": "load-wms",
-    "title": "Work with OGC Services",
-    "description": "Shows how to work with OGC standard services such as WMS, WFS, WMTS etc. in ThinkGeo UI Web for Blazor.",
-    "href": "work-with-ogc-services",
-    "source": "Work_with_OGC_Services",
-    "preicon": "fas fa-server",
-    "group": "Legacy"
-  },
-  {
-    "id": "geometric-functions",
-    "title": "Geometric Functions",
-    "description": "Shows how to explore all the different APIs for Geometric Functions.",
-    "href": "geometric-functions",
-    "source": "Geometric_Functions",
-    "preicon": "far fa-object-group",
-    "group": "Legacy"
-  },
-  {
-    "id": "spatial-query",
-    "title": "Spatial Query",
-    "description": "Shows how to select features by running a Spatial Query.",
-    "href": "spatial-query",
-    "source": "Spatial_Query",
-    "preicon": "far fa-info-circle",
-    "group": "Legacy"
-  },
-  {
-    "id": "us-demographic",
-    "title": "US Demographic Map",
-    "description": "Gives you a head start on your statistics project, which includes details about race, age, gender, land usage, and more for all the states in U.S.",
-    "href": "us-demographic",
-    "source": "US_Demographic",
-    "preicon": "fas fa-chart-bar",
     "group": "Legacy"
   },
   {

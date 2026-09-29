@@ -1,0 +1,81 @@
+@page "/custom-feature-sources"
+@using ThinkGeo.Core
+@using System.Globalization
+@using System.Collections.ObjectModel
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-8237000, 4970000))" Zoom="13">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Route" Style="@style" FeatureSources="@sources" SourceId="route" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:320px;padding:10px;display:flex;flex-direction:column;gap:8px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">A feature source of your own</div>
+        <div style="color:#555">SimpleCsvFeatureSource, defined at the bottom of this page, derives from FeatureSource and overrides one method: GetAllFeaturesCore reads a CSV of latitude, longitude lines. Everything else - the projection converter, the bounding box, the tile cutting, the style - is inherited, so the map treats it like any shapefile.</div>
+        <div style="color:#555">@count GPS points along a drive through Lower Manhattan.</div>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private MapStyle style;
+    private RectangleShape bounds;
+    private int count;
+
+    protected override void OnInitialized()
+    {
+        var route = new SimpleCsvFeatureSource("./Data/Csv/vehicle-route.csv") { ProjectionConverter = new ProjectionConverter(4326, 3857) };
+        sources = new GeoCollection<FeatureSource> { { "route", route } };
+        style = new MapStyle().AddCircleLayer("points", "route", "route", GeoColors.Blue, 5f, GeoColors.White, 2f);
+
+        route.Open();
+        bounds = route.GetBoundingBox();
+        count = (int)route.GetCount();
+        route.Close();
+        bounds.ScaleUp(50);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        await map.ZoomToExtentAsync(bounds);
+    }
+
+    // A FeatureSource over a CSV of "latitude,longitude" lines. Reading them is the whole job;
+    // the base class does the rest.
+    public class SimpleCsvFeatureSource : FeatureSource
+    {
+        private readonly string path;
+        private Collection<Feature> features;
+
+        public SimpleCsvFeatureSource(string csvPath)
+        {
+            path = csvPath;
+        }
+
+        protected override Collection<Feature> GetAllFeaturesCore(IEnumerable<string> returningColumnNames)
+        {
+            if (features != null) return features;
+
+            features = new Collection<Feature>();
+            foreach (var line in File.ReadAllLines(path))
+            {
+                var parts = line.Split(',');
+                if (parts.Length < 2) continue;
+                features.Add(new Feature(double.Parse(parts[1], CultureInfo.InvariantCulture), double.Parse(parts[0], CultureInfo.InvariantCulture)));
+            }
+            return features;
+        }
+    }
+}

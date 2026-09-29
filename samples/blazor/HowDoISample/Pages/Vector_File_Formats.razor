@@ -1,0 +1,191 @@
+@page "/vector-file-formats"
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+@using System.Globalization
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10780300, 3915800))" Zoom="12">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                @if (sources != null)
+                {
+                    <VectorTileOverlay @key="format" Id="@("data-" + Array.IndexOf(Formats, format))" StyleJson="@applied" FeatureSources="@sources" SourceId="features" />
+                }
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:420px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
+        <div style="padding:8px 8px 4px;font-weight:600">File</div>
+        <div style="padding:0 8px 6px;display:flex;flex-direction:column;gap:2px">
+            @foreach (var name in Formats)
+            {
+                <label><input type="radio" name="format" checked="@(format == name)" @onchange="@(() => Pick(name))" /> @name</label>
+            }
+        </div>
+        <div style="padding:0 8px 6px;color:#555">
+            A FeatureSource reads the file, the overlay cuts it into tiles, and the style draws them. Only the first line differs by format.
+        </div>
+        <div style="padding:6px 8px 4px;font-weight:600;border-top:1px solid #ddd">style.json - edit it; the map follows</div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                  style="flex:1;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre"></textarea>
+        <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>
+    </div>
+</div>
+
+@code {
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""fill"",
+      ""source-layer"": ""data"",
+      ""filter"": [""=="", [""geometry-type""], ""Polygon""],
+      ""paint"": {
+          ""fill-color"": ""rgba(90,140,200,0.35)"",
+          ""fill-outline-color"": ""#2A4A7A"" }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""data"",
+      ""paint"": {
+          ""line-color"": ""#2A4A7A"",
+          ""line-width"": 2 }
+    },
+
+    { ""type"": ""circle"",
+      ""source-layer"": ""data"",
+      ""filter"": [""=="", [""geometry-type""], ""Point""],
+      ""paint"": {
+          ""circle-radius"": 4,
+          ""circle-color"": ""#C0392B"",
+          ""circle-stroke-color"": ""#FFFFFF"",
+          ""circle-stroke-width"": 1.5 }
+    }
+  ]
+}";
+
+    private static readonly string[] Formats =
+    {
+        "Shapefile", "GeoJSON", "KML", "GPX", "MapInfo TAB", "TinyGeo", "S-57 nautical chart", "In memory (built in code)"
+    };
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private string format = Formats[0];
+    private string styleJson = StyleJson;
+    private string applied = StyleJson;
+    private string status = "";
+    private bool ok = true;
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "data", Open(format) } };
+        status = sources["data"].GetType().Name;
+    }
+
+    // The chosen file, read by whatever source understands it. Each converts from the plane its
+    // own format stores - a GPS track is degrees, a Texas cadastral file is state plane, a CAD
+    // drawing carries whatever the surveyor drew in.
+    private static FeatureSource Open(string name)
+    {
+        switch (name)
+        {
+            case "GeoJSON":
+                return new GeoJsonFeatureSource("./Data/GeoJson/pittsburghpacity-designated-historic-districts.geojson") { ProjectionConverter = new ProjectionConverter(4326, 3857) };
+            case "KML":
+                // This KML was written in the map's own meters, so it needs no conversion.
+                return new KmlGdalFeatureSource("./Data/Kml/Frisco.kml");
+            case "GPX":
+                return new GpxFeatureSource("./Data/Gpx/Hike_Bike.gpx") { ProjectionConverter = new ProjectionConverter(4326, 3857) };
+            case "MapInfo TAB":
+                return new TabFeatureSource("./Data/Tab/City_ETJ.tab") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+            case "TinyGeo":
+                return new TinyGeoFeatureSource("./Data/TinyGeo/Zoning.tgeo") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+            case "S-57 nautical chart":
+                return new NauticalChartsFeatureSource("./Data/S57/US1GC09M/US1GC09M.000") { ProjectionConverter = new ProjectionConverter(4326, 3857) };
+            case "In memory (built in code)":
+                return BuildInMemory();
+            default:
+                return new ShapeFileFeatureSource("./Data/Shapefile/Parks.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+        }
+    }
+
+    // Features made in code rather than read from a file - the same kind of source, drawn by the
+    // same style. The CSV holds x, y in the map's meters and a count.
+    private static FeatureSource BuildInMemory()
+    {
+        var features = new Collection<Feature>();
+        foreach (var line in File.ReadLines("./Data/Csv/Frisco_Mosquitos.csv"))
+        {
+            var parts = line.Split(',');
+            if (parts.Length < 2) continue;
+            features.Add(new Feature(double.Parse(parts[0], CultureInfo.InvariantCulture), double.Parse(parts[1], CultureInfo.InvariantCulture)));
+        }
+        return new InMemoryFeatureSource(Array.Empty<FeatureSourceColumn>(), features);
+    }
+
+    private async Task Pick(string name)
+    {
+        FeatureSource source;
+        RectangleShape bounds;
+        try
+        {
+            source = Open(name);
+            // Opening the file to ask where it is can be a lot of parsing, so it happens off
+            // the circuit's thread.
+            bounds = await Task.Run(() =>
+            {
+                source.Open();
+                // GDAL reports a KML's extent clamped to degrees; its features say where it really is.
+                var box = name == "KML"
+                    ? MapUtil.GetBoundingBoxOfItems(source.GetAllFeatures(ReturningColumnsType.NoColumns))
+                    : source.GetBoundingBox();
+                source.Close();
+                return box;
+            });
+        }
+        catch (Exception exception)
+        {
+            while (exception.InnerException != null) exception = exception.InnerException;
+            ok = false;
+            status = "Unavailable: " + exception.Message.Split('\n')[0];
+            return;
+        }
+
+        format = name;
+        sources = new GeoCollection<FeatureSource> { { "data", source } };
+        ok = true;
+        status = source.GetType().Name;
+        StateHasChanged();
+
+        if (bounds != null && bounds.Width > 0 && bounds.Height > 0)
+        {
+            bounds.ScaleUp(20);
+            await map.ZoomToExtentAsync(bounds);
+        }
+    }
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit) return;
+
+        try
+        {
+            JsonNode.Parse(styleJson);
+            applied = styleJson;
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+}

@@ -13,15 +13,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.Core" Version="15.0.0-beta181" />
-    <PackageReference Include="ThinkGeo.Gdal" Version="15.0.0-beta181" />
-    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.0.0-beta181" />
+    <PackageReference Include="ThinkGeo.Core" Version="15.0.0-beta184" />
+    <PackageReference Include="ThinkGeo.Gdal" Version="15.0.0-beta184" />
+    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.0.0-beta184" />
+    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.0.0-beta184" />
+    <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.0.0-beta184" />
+    <PackageReference Include="ThinkGeo.PostgreSql" Version="15.0.0-beta184" />
+    <PackageReference Include="ThinkGeo.SqlServer" Version="15.0.0-beta184" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Update="Pages\*.razor">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Data\**" Exclude="Data\temp\**;Data\**\*.json" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <Target Name="PublishRazorSources" AfterTargets="Publish">
+    <ItemGroup>
+      <RazorSourceFile Include="Pages\*.razor" />
+    </ItemGroup>
+    <Copy SourceFiles="@(RazorSourceFile)" DestinationFolder="$(PublishDir)Pages" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

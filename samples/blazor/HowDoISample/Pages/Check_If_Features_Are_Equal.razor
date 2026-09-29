@@ -1,0 +1,79 @@
+@page "/check-if-features-are-equal"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10776520, 3919250))" Zoom="15" OnClick="@MapClicked">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Zoning" @ref="overlay" Style="@style" FeatureSources="@sources" SourceId="zoning" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:320px;padding:10px;display:flex;flex-direction:column;gap:8px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Topologically equal</div>
+        <div style="color:#555">Click a parcel: its own outline becomes the query shape, drawn in red, and every parcel whose geometry is exactly the same - itself, and any duplicate record - is highlighted in blue.</div>
+        <div style="font-weight:600">@result</div>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private VectorTileOverlay overlay;
+    private GeoCollection<FeatureSource> sources;
+    private MapStyle style;
+    private InMemoryFeatureSource zoning;
+    private readonly InMemoryFeatureSource query = new InMemoryFeatureSource();
+    private readonly InMemoryFeatureSource highlighted = new InMemoryFeatureSource();
+    private string result = "";
+
+    protected override void OnInitialized()
+    {
+        // The parcels, read once into memory in the map's meters, are both what is drawn and
+        // what is queried.
+        var file = new ShapeFileFeatureSource("./Data/Shapefile/Zoning.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+        file.Open();
+        zoning = new InMemoryFeatureSource(file.GetColumns(), file.GetAllFeatures(ReturningColumnsType.AllColumns));
+        file.Close();
+
+        sources = new GeoCollection<FeatureSource> { { "zoning", zoning }, { "query", query }, { "highlighted", highlighted } };
+        style = new MapStyle()
+            .AddFillLayer("zoning", "zoning", "zoning", new GeoColor(50, GeoColors.MediumPurple), GeoColors.MediumPurple)
+            .AddFillLayer("highlighted", "zoning", "highlighted", new GeoColor(90, GeoColors.MidnightBlue))
+            .AddLineLayer("highlighted-edge", "zoning", "highlighted", GeoColors.MidnightBlue, 2f)
+            .AddLineLayer("query-edge", "zoning", "query", GeoColors.LightRed, 3f);
+
+        zoning.Open();
+        Find(zoning.GetAllFeatures(ReturningColumnsType.NoColumns).First().GetShape());
+        zoning.Close();
+    }
+
+    private async Task MapClicked(ClickedMapViewEventArgs args)
+    {
+        zoning.Open();
+        var parcel = new QueryTools(zoning).GetFeaturesContaining(new PointShape(args.WorldX, args.WorldY), ReturningColumnsType.NoColumns).FirstOrDefault();
+        if (parcel != null)
+        {
+            Find(parcel.GetShape());
+        }
+        zoning.Close();
+        await overlay.RedrawAsync();
+    }
+
+    private void Find(BaseShape shape)
+    {
+        var equal = new QueryTools(zoning).GetFeaturesTopologicalEqual(shape, ReturningColumnsType.NoColumns).ToList();
+
+        query.InternalFeatures.Clear();
+        query.InternalFeatures.Add(new Feature(shape));
+        highlighted.InternalFeatures.Clear();
+        foreach (var feature in equal)
+        {
+            highlighted.InternalFeatures.Add(feature);
+        }
+        result = equal.Count + " parcel" + (equal.Count == 1 ? "" : "s") + " topologically equal to the query shape";
+    }
+}

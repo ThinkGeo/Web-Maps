@@ -1,0 +1,240 @@
+@page "/shape-measurements"
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+@using System.Globalization
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10778340, 3915490))" Zoom="14" OnClick="@MapClicked">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay @key="file" Id="@("data-" + file)" StyleJson="@applied" FeatureSources="@dataSources" SourceId="features" />
+                <VectorTileOverlay Id="Marks" @ref="marks" Style="@markStyle" FeatureSources="@markSources" SourceId="marks" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:420px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
+        <div style="padding:8px 8px 4px;font-weight:600">Measurement</div>
+        <div style="padding:0 8px 6px;display:flex;flex-direction:column;gap:2px">
+            @foreach (var name in Measurements)
+            {
+                <label><input type="radio" name="measurement" checked="@(measurement == name)" @onchange="@(() => Choose(name))" /> @name</label>
+            }
+            @if (measurement == "A line along a line")
+            {
+                <label style="margin-top:4px">Start this far along (meters) <input @bind="startingOffset" @bind:event="oninput" @bind:after="Remeasure" style="width:70px" /></label>
+                <label>and run this far (meters) <input @bind="runLength" @bind:event="oninput" @bind:after="Remeasure" style="width:70px" /></label>
+                <label>measured from the
+                    <select @bind="startingPoint" @bind:after="Remeasure">
+                        <option value="@StartingPoint.FirstPoint">first point</option>
+                        <option value="@StartingPoint.LastPoint">last point</option>
+                    </select>
+                </label>
+            }
+        </div>
+        <div style="padding:0 8px 4px;color:#555">@hint</div>
+        <div style="padding:0 8px 6px;font-weight:600">@result</div>
+        <div style="padding:6px 8px 4px;font-weight:600;border-top:1px solid #ddd">style.json - edit it; the map follows</div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                  style="flex:1;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre"></textarea>
+        <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>
+    </div>
+</div>
+
+@code {
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""fill"",
+      ""source-layer"": ""data"",
+      ""filter"": [""=="", [""geometry-type""], ""Polygon""],
+      ""paint"": {
+          ""fill-color"": ""rgba(255,165,0,0.25)"",
+          ""fill-outline-color"": ""#8A6D3B"" }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""data"",
+      ""paint"": {
+          ""line-color"": ""#8A6D3B"",
+          ""line-width"": 2 }
+    }
+  ]
+}";
+
+    private static readonly string[] Measurements = { "Area", "Length", "Center point", "Shortest line to the stadium", "A line along a line" };
+    private static readonly PointShape Stadium = new PointShape(-10779651.5, 3915933.0);
+
+    private MapView map;
+    private VectorTileOverlay marks;
+    private GeoCollection<FeatureSource> dataSources;
+    private GeoCollection<FeatureSource> markSources;
+    private MapStyle markStyle;
+    private readonly InMemoryFeatureSource measured = new InMemoryFeatureSource();
+    private ShapeFileFeatureSource data;
+    private Feature measuring;
+    private string measurement = Measurements[0];
+    private string file = "Parks";
+    private string startingOffset = "500";
+    private string runLength = "1000";
+    private StartingPoint startingPoint = StartingPoint.FirstPoint;
+    private string hint = "";
+    private string result = "";
+    private string styleJson = StyleJson;
+    private string applied = StyleJson;
+    private string status = "";
+    private bool ok = true;
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        ChooseData();
+
+        var stadium = new InMemoryFeatureSource();
+        stadium.InternalFeatures.Add(new Feature(Stadium));
+        markSources = new GeoCollection<FeatureSource> { { "measured", measured }, { "stadium", stadium } };
+        markStyle = new MapStyle()
+            .AddFillLayer("measured-fill", "marks", "measured", new GeoColor(96, GeoColors.Green), GeoColors.DarkGreen, filter: StyleExpressions.GeometryType("Polygon"))
+            .AddLineLayer("measured-line", "marks", "measured", GeoColors.DarkGreen, 5f, filter: StyleExpressions.GeometryType("LineString"))
+            .AddSymbolLayer("measured-point", "marks", "measured", imageName: "measured", allowOverlap: true, filter: StyleExpressions.GeometryType("Point"))
+            .AddSymbolLayer("stadium", "marks", "stadium", imageName: "stadium", allowOverlap: true);
+        markStyle.Images.Add("stadium", PointStyle.CreateSimpleCircleStyle(GeoColors.Blue, 14, GeoColors.White, 3));
+        markStyle.Images.Add("measured", PointStyle.CreateSimpleCircleStyle(GeoColors.DarkGreen, 12, GeoColors.White, 3));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        await ShowAsync();
+    }
+
+    // Lengths are measured on the trails, everything else on the parks.
+    private void ChooseData()
+    {
+        var lines = measurement == "Length" || measurement == "A line along a line";
+        file = lines ? "Hike_Bike" : "Parks";
+        data = new ShapeFileFeatureSource("./Data/Shapefile/" + file + ".shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+        dataSources = new GeoCollection<FeatureSource>
+        {
+            { "data", new ShapeFileFeatureSource("./Data/Shapefile/" + file + ".shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } }
+        };
+    }
+
+    private async Task Choose(string name)
+    {
+        measurement = name;
+        ChooseData();
+        await ShowAsync();
+    }
+
+    private async Task ShowAsync()
+    {
+        hint = measurement == "A line along a line" ? "Click a trail, then change how far along the stretch starts and how long it runs."
+            : measurement == "Length" ? "Click a trail." : "Click a park.";
+
+        data.Open();
+        var biggest = data.GetAllFeatures(ReturningColumnsType.NoColumns)
+            .OrderByDescending(candidate => { var box = candidate.GetBoundingBox(); return box.Width + box.Height; })
+            .FirstOrDefault();
+        data.Close();
+        if (biggest == null) return;
+
+        var bounds = biggest.GetBoundingBox();
+        bounds.ScaleUp(60);
+        await map.ZoomToExtentAsync(bounds);
+        await MeasureAsync(biggest);
+    }
+
+    private async Task MapClicked(ClickedMapViewEventArgs args)
+    {
+        data.Open();
+        var nearest = data.GetFeaturesNearestTo(new PointShape(args.WorldX, args.WorldY), GeographyUnit.Meter, 1, ReturningColumnsType.NoColumns).FirstOrDefault();
+        data.Close();
+        await MeasureAsync(nearest);
+    }
+
+    private Task Remeasure() => MeasureAsync(measuring);
+
+    private async Task MeasureAsync(Feature feature)
+    {
+        if (feature == null) return;
+        measuring = feature;
+        var shape = feature.GetShape();
+        var drawn = new List<BaseShape>();
+
+        switch (measurement)
+        {
+            case "Length":
+                drawn.Add(shape);
+                result = ((LineBaseShape)shape).GetLength(GeographyUnit.Meter, DistanceUnit.Kilometer).ToString("f3", CultureInfo.InvariantCulture) + " km";
+                break;
+            case "Center point":
+                var center = shape.GetCenterPoint();
+                drawn.Add(shape);
+                drawn.Add(center);
+                result = center.X.ToString("f0", CultureInfo.InvariantCulture) + ", " + center.Y.ToString("f0", CultureInfo.InvariantCulture);
+                break;
+            case "Shortest line to the stadium":
+                var line = shape.GetShortestLineTo(Stadium, GeographyUnit.Meter);
+                drawn.Add(shape);
+                drawn.Add(line);
+                result = line.GetLength(GeographyUnit.Meter, DistanceUnit.Kilometer).ToString("f3", CultureInfo.InvariantCulture) + " km to the stadium";
+                break;
+            case "A line along a line":
+                var trail = shape as LineShape ?? ((MultilineShape)shape).Lines.First();
+                var stretch = trail.GetLineOnALine(startingPoint, Number(startingOffset, 500), Number(runLength, 1000), GeographyUnit.Meter, DistanceUnit.Meter);
+                var got = stretch?.GetLength(GeographyUnit.Meter, DistanceUnit.Meter) ?? 0;
+                if (got > 0)
+                {
+                    drawn.Add(stretch);
+                    result = got.ToString("f0", CultureInfo.InvariantCulture) + " m of it";
+                }
+                else
+                {
+                    result = "Nothing there - this trail is " + trail.GetLength(GeographyUnit.Meter, DistanceUnit.Meter).ToString("f0", CultureInfo.InvariantCulture) + " m long";
+                }
+                break;
+            default:
+                drawn.Add(shape);
+                result = ((AreaBaseShape)shape).GetArea(GeographyUnit.Meter, AreaUnit.SquareKilometers).ToString("f3", CultureInfo.InvariantCulture) + " sq km";
+                break;
+        }
+
+        measured.InternalFeatures.Clear();
+        foreach (var piece in drawn)
+        {
+            measured.InternalFeatures.Add(new Feature(piece));
+        }
+        await marks.RedrawAsync();
+    }
+
+    private static double Number(string text, double fallback)
+        => double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? value : fallback;
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit) return;
+
+        try
+        {
+            JsonNode.Parse(styleJson);
+            applied = styleJson;
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+}

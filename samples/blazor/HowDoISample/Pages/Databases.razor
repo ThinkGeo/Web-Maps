@@ -1,0 +1,162 @@
+@page "/databases"
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10780300, 3915800))" Zoom="12">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                @if (sources != null)
+                {
+                    <VectorTileOverlay @key="database" Id="@("data-" + Array.IndexOf(Databases_, database))" StyleJson="@applied" FeatureSources="@sources" SourceId="features" />
+                }
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:420px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
+        <div style="padding:8px 8px 4px;font-weight:600">Database</div>
+        <div style="padding:0 8px 6px;display:flex;flex-direction:column;gap:2px">
+            @foreach (var name in Databases_)
+            {
+                <label><input type="radio" name="database" checked="@(database == name)" @onchange="@(() => Pick(name))" /> @name</label>
+            }
+        </div>
+        <div style="padding:0 8px 6px;color:#555">
+            The first three are databases you carry as a file, the last two are servers you connect to. The connection is the only line that differs; the overlay cuts the table into tiles and the style draws them.
+        </div>
+        <div style="padding:6px 8px 4px;font-weight:600;border-top:1px solid #ddd">style.json - edit it; the map follows</div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                  style="flex:1;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre"></textarea>
+        <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>
+    </div>
+</div>
+
+@code {
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""fill"",
+      ""source-layer"": ""data"",
+      ""filter"": [""=="", [""geometry-type""], ""Polygon""],
+      ""paint"": {
+          ""fill-color"": ""rgba(90,140,200,0.35)"",
+          ""fill-outline-color"": ""#2A4A7A"" }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""data"",
+      ""paint"": {
+          ""line-color"": ""#2A4A7A"",
+          ""line-width"": 2 }
+    },
+
+    { ""type"": ""circle"",
+      ""source-layer"": ""data"",
+      ""filter"": [""=="", [""geometry-type""], ""Point""],
+      ""paint"": {
+          ""circle-radius"": 4,
+          ""circle-color"": ""#C0392B"",
+          ""circle-stroke-color"": ""#FFFFFF"",
+          ""circle-stroke-width"": 1.5 }
+    }
+  ]
+}";
+
+    private static readonly string[] Databases_ = { "SQLite", "GeoPackage", "Esri File Geodatabase", "PostgreSQL / PostGIS", "SQL Server" };
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private string database = Databases_[0];
+    private string styleJson = StyleJson;
+    private string applied = StyleJson;
+    private string status = "";
+    private bool ok = true;
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "data", Open(database) } };
+        status = sources["data"].GetType().Name;
+    }
+
+    // The chosen table, read by whatever source understands it. Each converts from the plane its
+    // own table stores.
+    private static FeatureSource Open(string name)
+    {
+        switch (name)
+        {
+            case "GeoPackage":
+                return new GdalFeatureSource("./Data/GeoPackage/mora_surficial_geology.gpkg") { ProjectionConverter = new ProjectionConverter(26910, 3857) };
+            case "Esri File Geodatabase":
+                return new FileGeoDatabaseFeatureSource("./Data/FileGeoDatabase/zoning.gdb", "zoning") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+            case "PostgreSQL / PostGIS":
+                return new PostgreSqlFeatureSource("User ID=ThinkGeoTest;Password=ThinkGeoTestPassword;Host=demodb.thinkgeo.com;Port=5432;Database=postgres;Pooling=true;", "countries", "gid", 4326) { ProjectionConverter = new ProjectionConverter(4326, 3857) };
+            case "SQL Server":
+                return new SqlServerFeatureSource("Server=demodb.thinkgeo.com;Database=thinkgeo;User Id=ThinkGeoTest;Password=ThinkGeoTestPassword;TrustServerCertificate=True;", "frisco_coyote_sightings", "id") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+            default:
+                return new SqliteFeatureSource("Data Source=" + Path.GetFullPath("./Data/SQLite/frisco-restaurants.sqlite") + ";", "restaurants", "id", "geometry") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+        }
+    }
+
+    private async Task Pick(string name)
+    {
+        FeatureSource source;
+        RectangleShape bounds;
+        try
+        {
+            source = Open(name);
+            // Asking the table where it is can be a network round trip, so it happens off the
+            // circuit's thread.
+            bounds = await Task.Run(() =>
+            {
+                source.Open();
+                var box = source.GetBoundingBox();
+                source.Close();
+                return box;
+            });
+        }
+        catch (Exception exception)
+        {
+            while (exception.InnerException != null) exception = exception.InnerException;
+            ok = false;
+            status = "Unavailable: " + exception.Message.Split('\n')[0];
+            return;
+        }
+
+        database = name;
+        sources = new GeoCollection<FeatureSource> { { "data", source } };
+        ok = true;
+        status = source.GetType().Name;
+        StateHasChanged();
+
+        if (bounds != null && bounds.Width > 0 && bounds.Height > 0)
+        {
+            bounds.ScaleUp(20);
+            await map.ZoomToExtentAsync(bounds);
+        }
+    }
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit) return;
+
+        try
+        {
+            JsonNode.Parse(styleJson);
+            applied = styleJson;
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+}

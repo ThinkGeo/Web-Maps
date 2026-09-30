@@ -1,0 +1,112 @@
+Third-Party Notices
+===================
+
+This sample application includes or uses the following third-party software and
+data. Please retain this file when redistributing the sample application.
+
+
+Bootstrap 4.3.1
+---------------
+
+Used by: css/lib/bootstrap/bootstrap.min.css
+
+Copyright 2011-2019 The Bootstrap Authors
+Copyright 2011-2019 Twitter, Inc.
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+https://github.com/twbs/bootstrap/blob/v4.3.1/LICENSE
+
+
+Font Awesome Free 5.10.2
+------------------------
+
+Used by: css/font-awesome.min.css and webfonts/*
+
+Font Awesome Free is distributed under these licenses:
+
+* Icons: Creative Commons Attribution 4.0 International (CC BY 4.0)
+* Fonts: SIL Open Font License 1.1
+* Code: MIT License
+
+The original attribution and license references are also present in
+css/font-awesome.min.css and the bundled SVG font files.
+
+https://fontawesome.com/license/free
+
+
+ThinkGeo.UI.Blazor static assets
+--------------------------------
+
+The ThinkGeo.UI.Blazor package supplies additional browser assets, including
+OpenLayers, MapLibre GL JS, and Web Font Loader. Their notices are included in
+the package static assets:
+
+* _content/ThinkGeo.UI.Blazor/OpenLayers.LICENSE.txt
+* _content/ThinkGeo.UI.Blazor/maplibre-gl.LICENSE.txt
+* _content/ThinkGeo.UI.Blazor/js/webfontloader.js (Apache-2.0 header)
+
+
+OpenStreetMap and Protomaps
+---------------------------
+
+Data/Pmtiles/frisco.pmtiles and its style use OpenStreetMap-derived data and
+Protomaps. Keep the following attribution visible wherever that map is shown:
+
+© OpenStreetMap contributors, © Protomaps
+
+OpenStreetMap data is available under the Open Database License (ODbL). The
+style file contains the corresponding attribution and ODbL reference.
+
+https://www.openstreetmap.org/copyright
+https://opendatacommons.org/licenses/odbl/
+https://protomaps.com/legal
+
+
+IGN OGC API - Features data
+---------------------------
+
+The OGC API - Features sample reads named-place data from the Instituto
+Geográfico Nacional (IGN) service at https://api-features.ign.es/. The data is
+made available under the Creative Commons Attribution 4.0 International
+license. Retain an attribution to Instituto Geográfico Nacional (IGN) and a
+link to the source and license when displaying or redistributing this sample.
+
+https://api-features.ign.es/
+https://creativecommons.org/licenses/by/4.0/
+
+
+DLR/atlatec Wolfsburg OpenDRIVE data
+------------------------------------
+
+Data/OpenDrive is distributed under CC BY 4.0. Retain the accompanying files:
+
+* Data/OpenDrive/LICENSE-Wolfsburg-CC-BY-4.0.txt
+* Data/OpenDrive/CITATION-Wolfsburg.cff
+* Data/OpenDrive/README.md
+
+
+Additional sample data
+----------------------
+
+Sources and available licensing information for the remaining sample datasets
+are documented in Data/README.md. Verify the original terms for municipal
+open-data sources and ThinkGeo-provided imagery before commercial redistribution.

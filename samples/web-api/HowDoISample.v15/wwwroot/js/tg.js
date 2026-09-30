@@ -213,23 +213,36 @@ export function viewBox(map, w, h) {
 
 /**
  * A compass drawn on the server - the magnetic declination adornment, in the middle of a small
- * picture of its own for the map's centre - pinned to the top right and laid on the ground: it
- * turns with the map so its true north points to true north, and foreshortens with the pitch the
- * way anything lying flat does, through a 3D transform the browser applies to the picture.
+ * picture of its own for the map's centre - pinned to the top right and turned with the map, so
+ * its true north points to true north however the map is turned.
+ *
+ * Leaning it with the ground as well is a choice, and off by default, which is what MapLibre's
+ * own compass button does with visualizePitch. A north arrow is a direction on the ground and
+ * leaning is the truthful picture of it; a declination diagram is a legend - three labelled
+ * lines, degrees and mils - and a legend that leans is a legend that is hard to read. When it
+ * does lean it is scaled back up by 1/sqrt(cos(pitch)), the same compensation MapLibre applies,
+ * so it is not flattened away.
  */
-export function compass(map, overlay, size = 170) {
+export function compass(map, overlay, { size = 170, lean = false } = {}) {
     const image = document.createElement('img');
     Object.assign(image.style, { position: 'absolute', right: '10px', top: '10px', width: size + 'px', height: size + 'px', pointerEvents: 'none', transformOrigin: '50% 50%' });
     map.getContainer().appendChild(image);
     const refresh = () => { image.src = `${root}adornments/${overlay}?width=${size}&height=${size}&bbox=${viewBox(map, size, size)}&t=${Date.now()}`; };
-    // The picture is a plane on the ground: turned within that plane by the bearing, then the
-    // plane itself tilted away by the pitch, which is what the camera does to the map.
-    const turn = () => { image.style.transform = `perspective(${size * 4}px) rotateX(${map.getPitch()}deg) rotateZ(${-map.getBearing()}deg)`; };
+    let leaning = lean;
+    const turn = () => {
+        const pitch = leaning ? map.getPitch() : 0;
+        const back = 1 / Math.sqrt(Math.cos(pitch * Math.PI / 180));
+        image.style.transform = `perspective(${size * 4}px) scale(${back}) rotateX(${pitch}deg) rotateZ(${-map.getBearing()}deg)`;
+    };
     map.on('moveend', refresh);
     map.on('rotate', turn);
     map.on('pitch', turn);
     ready(map).then(() => { refresh(); turn(); });
-    return { refresh, remove: () => { map.off('moveend', refresh); map.off('rotate', turn); map.off('pitch', turn); image.remove(); } };
+    return {
+        refresh,
+        setLean: (on) => { leaning = on; turn(); },
+        remove: () => { map.off('moveend', refresh); map.off('rotate', turn); map.off('pitch', turn); image.remove(); },
+    };
 }
 
 /**

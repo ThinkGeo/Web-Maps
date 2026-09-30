@@ -156,10 +156,14 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
 
             // Every hatch there is, and one of them as a 32-pixel pattern drawn by AreaStyle.CreateHatchStyle.
             app.MapGet("/samples/styling/hatches", () => Results.Json(Enum.GetNames(typeof(GeoHatchStyle)).OrderBy(name => name, StringComparer.OrdinalIgnoreCase)));
-            app.MapGet("/samples/styling/hatch.png", (string name) =>
+            // The pattern the map fills with is see-through, so the parks show what is under
+            // them; the swatch the page picks from asks for the same hatch on white, where the
+            // lines read at a glance.
+            app.MapGet("/samples/styling/hatch.png", (string name, bool onWhite = false) =>
             {
                 if (!Enum.TryParse<GeoHatchStyle>(name, out var hatch)) return Results.NotFound();
-                return Results.Bytes(Pictures.OfStyle(AreaStyle.CreateHatchStyle(hatch, GeoColor.FromHtml("#3F7F45"), GeoColor.FromArgb(110, 180, 224, 182)), 32, 32), "image/png");
+                var style = AreaStyle.CreateHatchStyle(hatch, GeoColor.FromHtml("#3F7F45"), GeoColor.FromArgb(110, 180, 224, 182));
+                return Results.Bytes(Pictures.OfStyle(style, 32, 32, onWhite ? GeoColors.White : null), "image/png");
             });
 
             // The style.json FeatureLayerTranslator wrote for the five classic layers, what it

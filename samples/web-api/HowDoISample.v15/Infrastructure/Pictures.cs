@@ -20,13 +20,18 @@ namespace ThinkGeo.UI.WebApi.HowDoI
             }
         }
 
-        /// <summary>A style's sample - the picture a legend shows for it - as PNG bytes.</summary>
-        public static byte[] OfStyle(Style style, int width, int height)
+        /// <summary>
+        /// A style's sample - the picture a legend shows for it - as PNG bytes. A ground can be
+        /// painted first, which is what a translucent fill needs to be read against; left out,
+        /// the picture is see-through and takes the colour of whatever it is laid on.
+        /// </summary>
+        public static byte[] OfStyle(Style style, int width, int height, GeoColor ground = null)
         {
             using (var image = new GeoImage(width, height))
             {
                 var canvas = GeoCanvas.CreateDefaultGeoCanvas();
                 canvas.BeginDrawing(image, new RectangleShape(0, height, width, 0), GeographyUnit.Meter);
+                if (ground != null) canvas.Clear(new GeoSolidBrush(ground));
                 style.DrawSample(canvas, new DrawingRectangleF(width / 2f, height / 2f, width, height));
                 canvas.EndDrawing();
                 return image.GetImageBytes(GeoImageFormat.Png);

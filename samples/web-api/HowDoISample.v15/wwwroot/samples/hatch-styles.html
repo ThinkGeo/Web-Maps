@@ -6,8 +6,9 @@
     <link rel="stylesheet" href="../lib/maplibre-gl.css">
     <link rel="stylesheet" href="../css/samples.css">
     <style>
-        #hatches { display: grid; grid-template-columns: repeat(auto-fill, 36px); gap: 4px; max-height: 210px; overflow: auto; padding: 2px; }
-        .swatch { width: 36px; height: 36px; padding: 0; border: 1px solid #bbb; border-radius: 3px; background: #fff center/32px 32px no-repeat; cursor: pointer; }
+        /* Every hatch at once: as many columns as the panel holds, so the wall never scrolls. */
+        #hatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(28px, 1fr)); gap: 3px; padding: 2px; }
+        .swatch { aspect-ratio: 1; padding: 0; border: 1px solid #bbb; border-radius: 3px; background: #fff url() 0 0 / 32px 32px repeat; cursor: pointer; }
         .swatch:hover { border-color: #1a73e8; }
         .swatch.on { outline: 2px solid #1a73e8; outline-offset: -1px; border-color: #1a73e8; }
         #hovering { font-family: Consolas, monospace; }
@@ -16,7 +17,7 @@
 <body>
     <div class="page">
         <div id="map"></div>
-        <aside class="panel editor-panel">
+        <aside class="panel editor-panel" style="width:470px">
             <div class="controls">
                 <p>Every GeoHatchStyle is drawn by AreaStyle.CreateHatchStyle on the server, fetched as a 32-pixel picture and added to the map's images under its own name; fill-pattern picks one by that name. The swatches below are those same pictures. Point at one and the parks take it; click to keep it, or type the name into the editor.</p>
                 <div id="hatches"></div>
@@ -78,7 +79,7 @@
         for (const name of hatches) {
             const swatch = Object.assign(document.createElement('button'), { className: 'swatch', title: name });
             swatch.dataset.name = name;
-            swatch.style.backgroundImage = `url(${tg.root}samples/styling/hatch.png?name=${name})`;
+            swatch.style.backgroundImage = `url(${tg.root}samples/styling/hatch.png?name=${name}&onWhite=true)`;
             swatch.addEventListener('mouseenter', () => show(name));
             swatch.addEventListener('click', () => { styleEditor.text = styleEditor.text.replace(/("fill-pattern"\s*:\s*"hatch-)([A-Za-z0-9_]+)(")/, `$1${name}$3`); });
             grid.appendChild(swatch);

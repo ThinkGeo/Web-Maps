@@ -27,6 +27,10 @@
             <div class="row"><span>Map drawn by</span><label><input type="radio" name="drawn" value="browser" checked> the browser, as pixels</label><label><input type="radio" name="drawn" value="server"> the server, as vectors</label></div>
             <div class="row" id="width-row"><label>Width <input type="number" id="size" min="200" max="4000" step="100" value="1600"> px</label></div>
             <div class="row" id="title-row"><label>Title <input type="text" id="title" value="Frisco zoning"></label></div>
+            <div class="row" id="paper-row">
+                <label>Paper <select id="paper"><option value="AnsiA">ANSI A - 8.5 x 11</option><option value="AnsiB">ANSI B - 11 x 17</option><option value="A4">A4</option><option value="A3">A3</option></select></label>
+                <label><select id="orientation"><option value="Landscape">Landscape</option><option value="Portrait">Portrait</option></select></label>
+            </div>
             <div class="row"><button class="btn primary" id="export">Export</button><a class="btn" id="save" hidden download="frisco-zoning.png">Save</a><button class="btn" id="show" hidden>Show it again</button></div>
             <div class="status" id="status"></div>
         </aside>
@@ -47,6 +51,7 @@
         const arrange = () => {
             document.getElementById('width-row').style.display = picked('format') === 'png' && picked('drawn') === 'server' ? '' : 'none';
             document.getElementById('title-row').style.display = picked('format') === 'pdf' ? '' : 'none';
+            document.getElementById('paper-row').style.display = picked('format') === 'pdf' ? '' : 'none';
         };
         for (const radio of document.querySelectorAll('input[type=radio]')) radio.addEventListener('change', arrange);
         arrange();
@@ -79,11 +84,11 @@
                     done(tg.root + r.url, 'frisco-zoning.png', 'png');
                     tg.say(status, `drawn on the server, ${r.width} by ${r.height} pixels.`);
                 } else {
-                    const body = { kind: drawn === 'browser' ? 'raster' : 'vector', bbox: tg.bboxOf(map), title: document.getElementById('title').value, layers };
+                    const body = { kind: drawn === 'browser' ? 'raster' : 'vector', bbox: tg.bboxOf(map), title: document.getElementById('title').value, layers, paper: document.getElementById('paper').value, orientation: document.getElementById('orientation').value };
                     if (drawn === 'browser') body.image = map.getCanvas().toDataURL('image/png').split(',')[1];
                     const r = await tg.post('samples/printing/pdf', body);
                     done(tg.root + r.url, `frisco-zoning-${body.kind}.pdf`, 'pdf');
-                    tg.say(status, `${r.kilobytes} KB, one page, ${drawn === 'browser' ? 'the screen as pixels' : 'vector paths and text'}.`);
+                    tg.say(status, `${r.kilobytes} KB, one page of ${r.page}, ${drawn === 'browser' ? 'the screen as pixels' : 'vector paths and text'}.`);
                 }
             } catch (e) {
                 tg.say(status, e.message, false);

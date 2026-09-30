@@ -12,9 +12,14 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
     /// </summary>
     public class Printing : ISampleGroup
     {
-        // A landscape letter page, in points.
-        private const float PageWidth = 792;
-        private const float PageHeight = 612;
+        // The papers a page can be, portrait, in points.
+        private static readonly Dictionary<string, (float Width, float Height)> Papers = new Dictionary<string, (float, float)>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["AnsiA"] = (612, 792),
+            ["AnsiB"] = (792, 1224),
+            ["A4"] = (595, 842),
+            ["A3"] = (842, 1191),
+        };
 
         public void Register(OverlayCatalog catalog)
         {
@@ -35,6 +40,10 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 var kind = body.GetProperty("kind").GetString();
                 var extent = GeoJson.Extent(body.GetProperty("bbox").GetString());
                 var title = body.GetProperty("title").GetString();
+                // The paper and the way it is turned, in points.
+                var paper = Papers.TryGetValue(body.TryGetProperty("paper", out var asked) ? asked.GetString() ?? "" : "", out var size) ? size : Papers["AnsiA"];
+                var landscape = !body.TryGetProperty("orientation", out var turned) || turned.GetString() != "Portrait";
+                var (PageWidth, PageHeight) = landscape ? (paper.Height, paper.Width) : (paper.Width, paper.Height);
                 try
                 {
                     using var stream = new MemoryStream();
@@ -47,7 +56,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                         var width = picture.Width * scale;
                         var height = picture.Height * scale;
                         canvas.DrawScreenImage(picture, PageWidth / 2, 54 + (height / 2), width, height, DrawingLevel.LevelOne, 0, 0, 0);
-                        Frame(canvas, extent, title);
+                        Frame(canvas, extent, title, PageWidth, PageHeight);
                         canvas.EndDrawing();
                     }
                     else
@@ -67,13 +76,13 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                         canvas.Flush();
                         zoning.Draw(canvas, labels);
                         canvas.Flush();
-                        Frame(canvas, extent, title);
+                        Frame(canvas, extent, title, PageWidth, PageHeight);
                         canvas.EndDrawing();
                         zoning.Close();
                         await basemap.CloseAsync();
                     }
                     var bytes = stream.ToArray();
-                    return Results.Json(new { url = "export/" + ExportStore.Put(bytes, "application/pdf"), kilobytes = bytes.Length / 1024, kind });
+                    return Results.Json(new { url = "export/" + ExportStore.Put(bytes, "application/pdf"), kilobytes = bytes.Length / 1024, kind, page = FormattableString.Invariant($"{PageWidth:0} by {PageHeight:0} points") });
                 }
                 catch (Exception exception)
                 {
@@ -147,17 +156,17 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             new StyledLayer(layers, new[] { new KeyValuePair<string, FeatureSource>("zoning", SampleData.Frisco("Zoning.shp")) });
 
         // A title band across the top and a footer across the bottom, over whatever the page holds.
-        private static void Frame(GeoCanvas canvas, RectangleShape extent, string title)
+        private static void Frame(GeoCanvas canvas, RectangleShape extent, string title, float PageWidth, float PageHeight)
         {
-            Band(canvas, 0, 44);
+            Band(canvas, 0, 44, PageWidth);
             canvas.DrawTextWithScreenCoordinate(title, new GeoFont("Arial", 20, DrawingFontStyles.Bold), GeoBrushes.Black, PageWidth / 2, 24, DrawingLevel.LevelFour);
-            Band(canvas, PageHeight - 26, PageHeight);
+            Band(canvas, PageHeight - 26, PageHeight, PageWidth);
             var centre = ProjectionConverter.Convert(3857, 4326, extent.GetCenterPoint());
             var footer = FormattableString.Invariant($"Centre {centre.Y:0.0000}, {centre.X:0.0000}   -   {extent.Width / 1000:0.0} km across   -   {DateTime.Now:yyyy-MM-dd HH:mm}");
             canvas.DrawTextWithScreenCoordinate(footer, new GeoFont("Arial", 9), GeoBrushes.DimGray, PageWidth / 2, PageHeight - 12, DrawingLevel.LevelFour);
         }
 
-        private static void Band(GeoCanvas canvas, float top, float bottom)
+        private static void Band(GeoCanvas canvas, float top, float bottom, float PageWidth)
         {
             var corners = new[] { new ScreenPointF(0, top), new ScreenPointF(PageWidth, top), new ScreenPointF(PageWidth, bottom), new ScreenPointF(0, bottom), new ScreenPointF(0, top) };
             canvas.DrawArea(new[] { corners }, null, new GeoSolidBrush(GeoColor.FromArgb(225, GeoColors.White)), DrawingLevel.LevelFour, 0, 0, PenBrushDrawingOrder.BrushFirst);

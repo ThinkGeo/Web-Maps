@@ -10,6 +10,7 @@
         #result .bar { display: flex; gap: 10px; align-items: center; padding: 8px 12px; background: #2b2d30; color: #eee; }
         #result img { flex: 1; min-height: 0; object-fit: contain; margin: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.5); background: #fff; }
         #result iframe { flex: 1; border: 0; }
+        #path { padding: 6px 8px; background: #eef2f8; border-left: 3px solid #1a73e8; }
     </style>
 </head>
 <body>
@@ -22,15 +23,22 @@
         </div>
         <aside class="panel narrow" style="width:360px">
             <h2>Export the map</h2>
-            <p>Frisco's zoning over the basemap, out of the map as a file. The map in the file is drawn either by the browser - its own canvas read back, exactly what is on screen, tilt and all, at screen resolution - or by the server, which draws the view again with no map control at all: the basemap's vector tiles through MvtTilesAsyncLayer, the zoning from its shapefile by the same style.json this page draws it with, into a picture of any width or as vector paths and glyphs that print sharp at any size. A PDF page - title, map, footer - is always made on the server by PdfGeoCanvas; the browser's map goes on it as a picture. The file is kept on the server for a few minutes and fetched from export/{id}.</p>
-            <div class="row"><span>File</span><label><input type="radio" name="format" value="png" checked> PNG</label><label><input type="radio" name="format" value="pdf"> PDF</label></div>
-            <div class="row"><span>Map drawn by</span><label><input type="radio" name="drawn" value="browser" checked> the browser, as pixels</label><label><input type="radio" name="drawn" value="server"> the server, as vectors</label></div>
-            <div class="row" id="width-row"><label>Width <input type="number" id="size" min="200" max="4000" step="100" value="1600"> px</label></div>
-            <div class="row" id="title-row"><label>Title <input type="text" id="title" value="Frisco zoning"></label></div>
-            <div class="row" id="paper-row">
+            <p>The map itself out of the app as a file, with nothing else on it. Ask for what you want and the page shows which way it had to be drawn: what is on screen the browser can hand over as it stands, anything larger or in vector only the server can draw. A sheet with a title block and a legend is the next sample.</p>
+            <div class="row"><span>I want</span>
+                <label><input type="radio" name="output" value="pixels" checked> pixels, to put in something else</label>
+                <label><input type="radio" name="output" value="vector"> vector, to print or to edit</label>
+            </div>
+            <div class="row" id="size-row"><label>Size <select id="size">
+                <option value="screen">what is on screen</option>
+                <option value="1600" selected>1600 px wide</option>
+                <option value="2400">2400 px wide</option>
+                <option value="4000">4000 px wide</option>
+            </select></label></div>
+            <div class="row" id="paper-row" style="display:none">
                 <label>Paper <select id="paper"><option value="AnsiA">ANSI A - 8.5 x 11</option><option value="AnsiB">ANSI B - 11 x 17</option><option value="A4">A4</option><option value="A3">A3</option></select></label>
                 <label><select id="orientation"><option value="Landscape">Landscape</option><option value="Portrait">Portrait</option></select></label>
             </div>
+            <div id="path"></div>
             <div class="row"><button class="btn primary" id="export">Export</button><a class="btn" id="save" hidden download="frisco-zoning.png">Save</a><button class="btn" id="show" hidden>Show it again</button></div>
             <div class="status" id="status"></div>
         </aside>
@@ -46,21 +54,31 @@
         const layers = [{ type: 'fill', 'source-layer': 'zoning', paint: { 'fill-color': 'rgba(147,112,219,0.3)', 'fill-outline-color': '#9370DB' } }];
         tg.vectorOverlay(map, 'zoning', layers);
 
-        const status = document.getElementById('status'), picture = document.getElementById('picture'), preview = document.getElementById('preview'), save = document.getElementById('save');
+        const status = document.getElementById('status'), picture = document.getElementById('picture'), preview = document.getElementById('preview'), save = document.getElementById('save'), result = document.getElementById('result');
         const picked = (name) => document.querySelector(`input[name=${name}]:checked`).value;
+        // What was asked for decides who can draw it: the browser can only hand over its own
+        // canvas, at the size it happens to be, and only the server can draw vector or a size
+        // of your choosing - without a browser at all, which is what a scheduled job needs.
+        const drawnBy = () => picked('output') === 'pixels' && document.getElementById('size').value === 'screen' ? 'browser' : 'server';
         const arrange = () => {
-            document.getElementById('width-row').style.display = picked('format') === 'png' && picked('drawn') === 'server' ? '' : 'none';
-            document.getElementById('title-row').style.display = picked('format') === 'pdf' ? '' : 'none';
-            document.getElementById('paper-row').style.display = picked('format') === 'pdf' ? '' : 'none';
+            const vector = picked('output') === 'vector';
+            document.getElementById('size-row').style.display = vector ? 'none' : '';
+            document.getElementById('paper-row').style.display = vector ? '' : 'none';
+            const canvas = map.getCanvas();
+            document.getElementById('path').textContent = drawnBy() === 'browser'
+                ? `The browser's own canvas, ${canvas.width} by ${canvas.height} pixels. Tilt, rotation and the globe come with it, and it needs no server.`
+                : vector
+                    ? 'Drawn again on the server as paths and glyphs. Sharp at any size and editable, north-up and flat.'
+                    : 'Drawn again on the server at the size asked for. Any resolution, north-up and flat, and no browser needed.';
         };
-        for (const radio of document.querySelectorAll('input[type=radio]')) radio.addEventListener('change', arrange);
+        for (const element of document.querySelectorAll('input[name=output], #size')) element.addEventListener('change', arrange);
+        map.on('resize', arrange);
         arrange();
 
         // The view's extent in the map's own metres, north-up, for the server to draw.
         const extent = () => { const b = map.getBounds(); const [l, b2] = tg.toMeters(b.getWest(), b.getSouth()), [r, t] = tg.toMeters(b.getEast(), b.getNorth()); return [l, b2, r, t].map(Math.round).join(','); };
         // The file takes the map's place until dismissed: a picture fitted to the space, or the
-        // PDF in the browser's own viewer, page and all.
-        const result = document.getElementById('result');
+        // PDF in the browser's own viewer.
         const done = (url, name, kind) => {
             save.hidden = false; save.download = name; save.href = url; save.textContent = 'Save ' + name;
             document.getElementById('show').hidden = false;
@@ -71,24 +89,23 @@
         };
         document.getElementById('back').addEventListener('click', () => { result.style.display = 'none'; });
         document.getElementById('show').addEventListener('click', () => { result.style.display = 'flex'; });
+
         document.getElementById('export').addEventListener('click', async () => {
-            const format = picked('format'), drawn = picked('drawn');
             document.getElementById('export').disabled = true;
-            tg.say(status, drawn === 'browser' ? 'reading the map...' : 'drawing on the server...');
+            tg.say(status, drawnBy() === 'browser' ? 'reading the map...' : 'drawing on the server...');
             try {
-                if (format === 'png' && drawn === 'browser') {
-                    done(map.getCanvas().toDataURL('image/png'), 'frisco-zoning.png', 'png');
-                    tg.say(status, `the screen, ${map.getCanvas().width} by ${map.getCanvas().height} pixels.`);
-                } else if (format === 'png') {
+                if (picked('output') === 'vector') {
+                    const r = await tg.post('samples/printing/pdf', { bbox: tg.bboxOf(map), layers, paper: document.getElementById('paper').value, orientation: document.getElementById('orientation').value });
+                    done(tg.root + r.url, 'frisco-zoning.pdf', 'pdf');
+                    tg.say(status, `${r.kilobytes} KB of vector paths and text, one page of ${r.page}.`);
+                } else if (drawnBy() === 'browser') {
+                    const canvas = map.getCanvas();
+                    done(canvas.toDataURL('image/png'), 'frisco-zoning.png', 'png');
+                    tg.say(status, `the browser's canvas, ${canvas.width} by ${canvas.height} pixels.`);
+                } else {
                     const r = await tg.post('samples/printing/image', { size: +document.getElementById('size').value, bbox: extent(), layers });
                     done(tg.root + r.url, 'frisco-zoning.png', 'png');
                     tg.say(status, `drawn on the server, ${r.width} by ${r.height} pixels.`);
-                } else {
-                    const body = { kind: drawn === 'browser' ? 'raster' : 'vector', bbox: tg.bboxOf(map), title: document.getElementById('title').value, layers, paper: document.getElementById('paper').value, orientation: document.getElementById('orientation').value };
-                    if (drawn === 'browser') body.image = map.getCanvas().toDataURL('image/png').split(',')[1];
-                    const r = await tg.post('samples/printing/pdf', body);
-                    done(tg.root + r.url, `frisco-zoning-${body.kind}.pdf`, 'pdf');
-                    tg.say(status, `${r.kilobytes} KB, one page of ${r.page}, ${drawn === 'browser' ? 'the screen as pixels' : 'vector paths and text'}.`);
                 }
             } catch (e) {
                 tg.say(status, e.message, false);

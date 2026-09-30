@@ -6,13 +6,14 @@ using ThinkGeo.Core;
 namespace ThinkGeo.UI.WebApi.HowDoI.Samples
 {
     /// <summary>
-    /// Printing and Export: pages and pictures made on the server - a PDF with the map as the
-    /// browser's picture or as vector paths, a GeoImage drawn with no map control at all -
-    /// kept for a few minutes and fetched from export/{id}.
+    /// The map itself as a file, with no page furniture on it: a picture of any size, or a PDF
+    /// of vector paths and glyphs. Both are drawn on the server with no map control at all and
+    /// kept for a few minutes at export/{id}. A sheet with a title and a legend on it is
+    /// <see cref="PrinterLayout"/>.
     /// </summary>
     public class Printing : ISampleGroup
     {
-        // The papers a page can be, portrait, in points.
+        // The papers a PDF page can be, portrait, in points.
         private static readonly Dictionary<string, (float Width, float Height)> Papers = new Dictionary<string, (float, float)>(StringComparer.OrdinalIgnoreCase)
         {
             ["AnsiA"] = (612, 792),
@@ -27,62 +28,47 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
 
         public void MapEndpoints(IEndpointRouteBuilder app)
         {
-            // Two ways onto a page. Raster: the map exactly as the browser draws it, sent up as a
-            // picture and placed on the page - pixels. Vector: the extent drawn again on the
-            // server into a PdfGeoCanvas - the ThinkGeo Cloud vector tiles styled by
-            // MvtTilesAsyncLayer, the zoning from its shapefile by the style.json the page sends,
-            // the title and footer as text - so every road, parcel and label is a path or a glyph
-            // that prints sharp at any size.
+            // The view drawn onto a PDF page as vector: the basemap's tiles styled by
+            // MvtTilesAsyncLayer and the zoning by the style.json the page sends, both onto a
+            // PdfGeoCanvas, so every road, parcel and label is a path or a glyph. The map fills
+            // the page; nothing else is on it.
             app.MapPost("/samples/printing/pdf", async (HttpRequest request) =>
             {
                 using var document = await JsonDocument.ParseAsync(request.Body);
                 var body = document.RootElement;
-                var kind = body.GetProperty("kind").GetString();
                 var extent = GeoJson.Extent(body.GetProperty("bbox").GetString());
-                var title = body.GetProperty("title").GetString();
-                // The paper and the way it is turned, in points.
                 var paper = Papers.TryGetValue(body.TryGetProperty("paper", out var asked) ? asked.GetString() ?? "" : "", out var size) ? size : Papers["AnsiA"];
                 var landscape = !body.TryGetProperty("orientation", out var turned) || turned.GetString() != "Portrait";
-                var (PageWidth, PageHeight) = landscape ? (paper.Height, paper.Width) : (paper.Width, paper.Height);
+                var (pageWidth, pageHeight) = landscape ? (paper.Height, paper.Width) : (paper.Width, paper.Height);
                 try
                 {
+                    var basemap = await BasemapAsync();
+                    var zoning = Zoning(body.GetProperty("layers").GetRawText());
+                    zoning.Open();
+
+                    // The page shows what the browser shows, widened or heightened to the page's shape.
+                    var pageExtent = MapUtil.GetDrawingExtent(extent, pageWidth, pageHeight);
+                    var pageScale = MapUtil.GetScale(GeographyUnit.Meter, pageExtent, pageWidth, pageHeight);
+                    var features = await basemap.GetFeaturesInsideBoundingBoxAsync(pageExtent, pageScale, CancellationToken.None);
+
                     using var stream = new MemoryStream();
-                    var canvas = new PdfGeoCanvas { PageWidth = PageWidth, PageHeight = PageHeight };
-                    if (kind == "raster")
-                    {
-                        var picture = new GeoImage(Convert.FromBase64String(body.GetProperty("image").GetString()));
-                        canvas.BeginDrawing(stream, new RectangleShape(0, PageHeight, PageWidth, 0), GeographyUnit.Meter);
-                        var scale = Math.Min((PageWidth - 40) / picture.Width, (PageHeight - 90) / picture.Height);
-                        var width = picture.Width * scale;
-                        var height = picture.Height * scale;
-                        canvas.DrawScreenImage(picture, PageWidth / 2, 54 + (height / 2), width, height, DrawingLevel.LevelOne, 0, 0, 0);
-                        Frame(canvas, extent, title, PageWidth, PageHeight);
-                        canvas.EndDrawing();
-                    }
-                    else
-                    {
-                        var basemap = await BasemapAsync();
-                        var zoning = Zoning(body.GetProperty("layers").GetRawText());
-                        zoning.Open();
+                    var canvas = new PdfGeoCanvas { PageWidth = pageWidth, PageHeight = pageHeight };
+                    canvas.BeginDrawing(stream, pageExtent, GeographyUnit.Meter);
+                    var labels = new Collection<SimpleCandidate>();
+                    basemap.Draw(canvas, features, labels);
+                    canvas.Flush();
+                    zoning.Draw(canvas, labels);
+                    canvas.EndDrawing();
+                    zoning.Close();
+                    await basemap.CloseAsync();
 
-                        // The page shows what the browser shows, widened or heightened to the page's shape.
-                        var pageExtent = MapUtil.GetDrawingExtent(extent, PageWidth, PageHeight);
-                        var pageScale = MapUtil.GetScale(GeographyUnit.Meter, pageExtent, PageWidth, PageHeight);
-                        var features = await basemap.GetFeaturesInsideBoundingBoxAsync(pageExtent, pageScale, CancellationToken.None);
-
-                        canvas.BeginDrawing(stream, pageExtent, GeographyUnit.Meter);
-                        var labels = new Collection<SimpleCandidate>();
-                        basemap.Draw(canvas, features, labels);
-                        canvas.Flush();
-                        zoning.Draw(canvas, labels);
-                        canvas.Flush();
-                        Frame(canvas, extent, title, PageWidth, PageHeight);
-                        canvas.EndDrawing();
-                        zoning.Close();
-                        await basemap.CloseAsync();
-                    }
                     var bytes = stream.ToArray();
-                    return Results.Json(new { url = "export/" + ExportStore.Put(bytes, "application/pdf"), kilobytes = bytes.Length / 1024, kind, page = FormattableString.Invariant($"{PageWidth:0} by {PageHeight:0} points") });
+                    return Results.Json(new
+                    {
+                        url = "export/" + ExportStore.Put(bytes, "application/pdf"),
+                        kilobytes = bytes.Length / 1024,
+                        page = FormattableString.Invariant($"{pageWidth:0} by {pageHeight:0} points"),
+                    });
                 }
                 catch (Exception exception)
                 {
@@ -90,10 +76,9 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 }
             });
 
-            // No map control at all: the layers are drawn straight into a GeoImage on the server
-            // with a GeoCanvas - the basemap's vector tiles underneath, Frisco's zoning on top by
-            // the style.json the page sends - over the extent the browser asks for in the map's
-            // own metres, or the zoning's own, at the width asked for; the height follows the extent.
+            // The same view drawn into a GeoImage instead, at the width asked for; the height
+            // follows the extent. No map control, no browser: this is the call a scheduled job
+            // or a report generator makes.
             app.MapPost("/samples/printing/image", async (HttpRequest request) =>
             {
                 using var document = await JsonDocument.ParseAsync(request.Body);
@@ -154,22 +139,5 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
         // meters by the style.json given: the same document the browser draws it with.
         private static StyledLayer Zoning(string layers) =>
             new StyledLayer(layers, new[] { new KeyValuePair<string, FeatureSource>("zoning", SampleData.Frisco("Zoning.shp")) });
-
-        // A title band across the top and a footer across the bottom, over whatever the page holds.
-        private static void Frame(GeoCanvas canvas, RectangleShape extent, string title, float PageWidth, float PageHeight)
-        {
-            Band(canvas, 0, 44, PageWidth);
-            canvas.DrawTextWithScreenCoordinate(title, new GeoFont("Arial", 20, DrawingFontStyles.Bold), GeoBrushes.Black, PageWidth / 2, 24, DrawingLevel.LevelFour);
-            Band(canvas, PageHeight - 26, PageHeight, PageWidth);
-            var centre = ProjectionConverter.Convert(3857, 4326, extent.GetCenterPoint());
-            var footer = FormattableString.Invariant($"Centre {centre.Y:0.0000}, {centre.X:0.0000}   -   {extent.Width / 1000:0.0} km across   -   {DateTime.Now:yyyy-MM-dd HH:mm}");
-            canvas.DrawTextWithScreenCoordinate(footer, new GeoFont("Arial", 9), GeoBrushes.DimGray, PageWidth / 2, PageHeight - 12, DrawingLevel.LevelFour);
-        }
-
-        private static void Band(GeoCanvas canvas, float top, float bottom, float PageWidth)
-        {
-            var corners = new[] { new ScreenPointF(0, top), new ScreenPointF(PageWidth, top), new ScreenPointF(PageWidth, bottom), new ScreenPointF(0, bottom), new ScreenPointF(0, top) };
-            canvas.DrawArea(new[] { corners }, null, new GeoSolidBrush(GeoColor.FromArgb(225, GeoColors.White)), DrawingLevel.LevelFour, 0, 0, PenBrushDrawingOrder.BrushFirst);
-        }
     }
 }

@@ -402,15 +402,15 @@
   {
     "id": "export-the-map",
     "title": "Export the Map",
-    "description": "The map as a PNG or a PDF, drawn by the browser from its canvas or by the server as pixels or as vector paths.",
+    "description": "The map itself as a file: pixels at screen size from the browser, or any size or vector from the server, which needs no browser at all.",
     "source": "Printing",
     "preicon": "fas fa-print",
     "group": "Printing & Export"
   },
   {
     "id": "printer-layout",
-    "title": "Printer Layout",
-    "description": "A page laid out on the server with sheet, map, title, scale, compass, data grid and notes, exported as PNG or PDF.",
+    "title": "Print a Map",
+    "description": "A zoning plan sheet laid out on the server: title block, legend, scale bar, north arrow, parcel table and notes placed in inches on the paper, exported as PDF.",
     "source": "PrinterLayout",
     "preicon": "fas fa-file",
     "group": "Printing & Export"

@@ -11,8 +11,9 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
     /// A zoning plan sheet laid out on the server: printer layout layers place the map, the
     /// title block, the legend, the scale bar, the north arrow, the parcel table and the notes
     /// in inches on the paper, so they keep their size and their place whatever paper is
-    /// chosen. The sheet is drawn as a picture for the browser to show, and written to a PDF
-    /// page of the paper's own size.
+    /// chosen. The map is ThinkGeo Cloud's vector tiles with the zoning over them, both drawn
+    /// onto the sheet. It is drawn as a picture for the browser to show, and written to a PDF
+    /// page of the paper's own size, where every road, parcel and label is a path or a glyph.
     /// </summary>
     public class PrinterLayout : ISampleGroup
     {
@@ -37,6 +38,8 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             public RectangleShape MapExtent = ZoningExtent.Value;
             public PrinterPageSize PaperSize = PrinterPageSize.AnsiA;
             public PrinterOrientation Orientation = PrinterOrientation.Landscape;
+            public bool Basemap = true;
+            public bool TitleBlock = true;
             public bool Legend = true;
             public bool ScaleBar = true;
             public bool NorthArrow = true;
@@ -100,6 +103,8 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                     {
                         case "PaperSize": info.PaperSize = Enum.Parse<PrinterPageSize>(value); break;
                         case "Orientation": info.Orientation = Enum.Parse<PrinterOrientation>(value); break;
+                        case "Basemap": info.Basemap = value == "true"; break;
+                        case "TitleBlock": info.TitleBlock = value == "true"; break;
                         case "Legend": info.Legend = value == "true"; break;
                         case "ScaleBar": info.ScaleBar = value == "true"; break;
                         case "NorthArrow": info.NorthArrow = value == "true"; break;
@@ -136,7 +141,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 var info = Sheets.GetOrAdd(accessId, _ => new SheetInfo());
                 try
                 {
-                    var layout = Layout(info, out _);
+                    var (layout, _) = await LayoutAsync(info);
                     using var stream = new MemoryStream();
                     var canvas = new PdfGeoCanvas();
                     canvas.SetPageSize(layout.Pages[0].Page);
@@ -158,7 +163,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
         // its frame.
         private static async Task<(byte[] Bytes, int Width, int Height, (double X, double Y, double Width, double Height) Map, RectangleShape Extent)> PictureAsync(SheetInfo info)
         {
-            var layout = Layout(info, out var map);
+            var (layout, map) = await LayoutAsync(info);
             layout.IncludePageBackground = true;
             var sheet = layout.Pages[0].Page.GetPosition(PrintingUnit.Point);
             var width = (int)sheet.Width;
@@ -182,7 +187,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
         // legend down the right, the scale bar and north arrow under the map, and the parcel
         // table and notes along the bottom. Every position is in inches on the paper, so the
         // same layout holds on any sheet size.
-        private static PrinterLayoutDocument Layout(SheetInfo info, out MapPrinterLayoutAsyncLayer map)
+        private static async Task<(PrinterLayoutDocument Layout, MapPrinterLayoutAsyncLayer Map)> LayoutAsync(SheetInfo info)
         {
             var sheet = new PagePrinterLayoutAsyncLayer(info.PaperSize, info.Orientation);
             var page = new PrinterLayoutPage(sheet);
@@ -194,19 +199,28 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             var top = paper.MaxY - margin;
             var bottom = paper.MinY + margin;
 
-            // The title block, always there: it is what makes the sheet a document.
-            var title = new LabelPrinterLayoutAsyncLayer("City of Frisco, Texas\nZoning Plan", new GeoFont("Arial", 15, DrawingFontStyles.Bold), new GeoSolidBrush(GeoColors.Black))
+            // The title block: what makes the sheet a document rather than a picture of a map.
+            if (info.TitleBlock)
             {
-                PrinterWrapMode = PrinterWrapMode.WrapText,
-            };
-            title.SetPosition(right - left, titleHeight, (left + right) / 2, top - titleHeight / 2, PrintingUnit.Inch);
-            page.Layers.Add(title);
+                var title = new LabelPrinterLayoutAsyncLayer("City of Frisco, Texas\nZoning Plan", new GeoFont("Arial", 15, DrawingFontStyles.Bold), new GeoSolidBrush(GeoColors.Black))
+                {
+                    PrinterWrapMode = PrinterWrapMode.WrapText,
+                };
+                title.SetPosition(right - left, titleHeight, (left + right) / 2, top - titleHeight / 2, PrintingUnit.Inch);
+                page.Layers.Add(title);
+            }
 
-            var mapTop = top - titleHeight - gap;
+            var mapTop = info.TitleBlock ? top - titleHeight - gap : top;
             var mapRight = info.Legend ? right - legendWidth - gap : right;
             var mapBottom = bottom + (info.ParcelTable || info.Notes ? bottomHeight + gap : 0) + (info.ScaleBar || info.NorthArrow ? barHeight + gap : 0);
 
-            map = new MapPrinterLayoutAsyncLayer(new LayerBase[] { Zoning() }, info.MapExtent, GeographyUnit.Meter)
+            // The layers of the map itself, bottom first: the basemap's vector tiles, then the
+            // zoning over them. Both draw onto whatever canvas the sheet is drawn to, so both
+            // are paths and glyphs on the PDF.
+            var inside = new List<LayerBase>();
+            if (info.Basemap) inside.Add(await BasemapAsync());
+            inside.Add(Zoning(info.Basemap));
+            var map = new MapPrinterLayoutAsyncLayer(inside, info.MapExtent, GeographyUnit.Meter)
             {
                 BackgroundMask = new AreaStyle(new GeoPen(GeoColors.DimGray, 1), new GeoSolidBrush(GeoColor.FromHtml("#FBFAF7"))),
             };
@@ -265,17 +279,33 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
 
             var layout = new PrinterLayoutDocument();
             layout.Pages.Add(page);
-            return layout;
+            return (layout, map);
+        }
+
+        // ThinkGeo Cloud's vector tiles styled by MvtTilesAsyncLayer; the style asks for its
+        // tiles with a {key} placeholder in their address, which the key fills.
+        private static async Task<MvtTilesAsyncLayer> BasemapAsync()
+        {
+            var basemap = new MvtTilesAsyncLayer(ThinkGeoVectorStyles.Light) { TimeoutInSeconds = 60 };
+            basemap.SendingHttpRequest += (_, args) =>
+            {
+                var address = args.HttpRequestMessage.RequestUri.ToString().Replace("{key}", GlobalSettings.ThinkGeoApiKey).Replace("%7Bkey%7D", GlobalSettings.ThinkGeoApiKey);
+                args.HttpRequestMessage.RequestUri = new Uri(address);
+            };
+            await basemap.OpenAsync();
+            return basemap;
         }
 
         // Frisco's zoning, drawn by a style.json of one fill layer whose colour comes from the
         // parcel's own class - the same colours the legend lists.
-        private static StyledLayer Zoning()
+        private static StyledLayer Zoning(bool overBasemap)
         {
             var match = new StringBuilder("[\"match\",[\"get\",\"ZONING\"]");
             foreach (var (code, _, colour) in Classes) match.Append(",\"" + code + "\",\"" + colour + "\"");
             match.Append(",\"" + OtherColour + "\"]");
-            var layers = "[{\"type\":\"fill\",\"source-layer\":\"zoning\",\"paint\":{\"fill-color\":" + match + ",\"fill-outline-color\":\"#8C8C8C\"}}]";
+            // Over the basemap the fills let the streets through; on bare paper they are solid.
+            var opacity = overBasemap ? "0.6" : "1";
+            var layers = "[{\"type\":\"fill\",\"source-layer\":\"zoning\",\"paint\":{\"fill-color\":" + match + ",\"fill-opacity\":" + opacity + ",\"fill-outline-color\":\"#8C8C8C\"}}]";
             return new StyledLayer(layers, new[] { new KeyValuePair<string, FeatureSource>("zoning", SampleData.Frisco("Zoning.shp")) });
         }
 

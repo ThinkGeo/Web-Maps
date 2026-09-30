@@ -16,8 +16,10 @@
     <div class="page">
         <aside class="panel narrow" style="border-left:0;border-right:1px solid #ccc">
             <h2>Print a map</h2>
-            <p>A zoning plan sheet, laid out on the server. The map is one element on the paper; the title block, legend, scale bar, north arrow, parcel table and notes are printer layout layers placed in inches, so they keep their size and their place whatever paper is chosen. Drag the map to pan it and roll the wheel to zoom; the sheet is laid out again with the map where you left it.</p>
+            <p>A zoning plan sheet, laid out on the server. The map is one element on the paper: ThinkGeo Cloud's vector tiles with the zoning over them, drawn onto the sheet like everything else, so on the PDF every road, parcel and label is a path or a glyph. The title block, legend, scale bar, north arrow, parcel table and notes are printer layout layers placed in inches, so they keep their size and their place whatever paper is chosen. Drag the map to pan it and roll the wheel to zoom; the sheet is laid out again with the map where you left it. Turn everything off and what is left is the bare map on the paper you chose.</p>
             <div style="font-weight:600">On the sheet</div>
+            <label><input type="checkbox" data-key="Basemap" checked> Basemap under the zoning</label>
+            <label><input type="checkbox" data-key="TitleBlock" checked> Title block</label>
             <label><input type="checkbox" data-key="Legend" checked> Legend</label>
             <label><input type="checkbox" data-key="ScaleBar" checked> Scale bar</label>
             <label><input type="checkbox" data-key="NorthArrow" checked> North arrow</label>

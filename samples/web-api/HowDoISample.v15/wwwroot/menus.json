@@ -402,7 +402,7 @@
   {
     "id": "export-the-map",
     "title": "Export the Map",
-    "description": "The map itself as a file: pixels at screen size from the browser, or any size or vector from the server, which needs no browser at all.",
+    "description": "A picture of the map for a report or an email: at screen size the browser's own canvas, larger than that drawn again on the server, which needs no browser.",
     "source": "Printing",
     "preicon": "fas fa-print",
     "group": "Printing & Export"
@@ -410,7 +410,7 @@
   {
     "id": "printer-layout",
     "title": "Print a Map",
-    "description": "A zoning plan sheet laid out on the server: title block, legend, scale bar, north arrow, parcel table and notes placed in inches on the paper, exported as PDF.",
+    "description": "A zoning plan sheet laid out on the server: vector basemap, zoning, title block, legend, scale bar, north arrow, parcel table and notes placed in inches on the paper, exported as PDF.",
     "source": "PrinterLayout",
     "preicon": "fas fa-file",
     "group": "Printing & Export"

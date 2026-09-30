@@ -213,19 +213,23 @@ export function viewBox(map, w, h) {
 
 /**
  * A compass drawn on the server - the magnetic declination adornment, in the middle of a small
- * picture of its own for the map's centre - pinned to the top right and turned with the map, so
- * its true north points to true north however the map is turned.
+ * picture of its own for the map's centre - pinned to the top right and laid on the ground: it
+ * turns with the map so its true north points to true north, and foreshortens with the pitch the
+ * way anything lying flat does, through a 3D transform the browser applies to the picture.
  */
 export function compass(map, overlay, size = 170) {
     const image = document.createElement('img');
     Object.assign(image.style, { position: 'absolute', right: '10px', top: '10px', width: size + 'px', height: size + 'px', pointerEvents: 'none', transformOrigin: '50% 50%' });
     map.getContainer().appendChild(image);
     const refresh = () => { image.src = `${root}adornments/${overlay}?width=${size}&height=${size}&bbox=${viewBox(map, size, size)}&t=${Date.now()}`; };
-    const turn = () => { image.style.transform = `rotate(${-map.getBearing()}deg)`; };
+    // The picture is a plane on the ground: turned within that plane by the bearing, then the
+    // plane itself tilted away by the pitch, which is what the camera does to the map.
+    const turn = () => { image.style.transform = `perspective(${size * 4}px) rotateX(${map.getPitch()}deg) rotateZ(${-map.getBearing()}deg)`; };
     map.on('moveend', refresh);
     map.on('rotate', turn);
+    map.on('pitch', turn);
     ready(map).then(() => { refresh(); turn(); });
-    return { refresh, remove: () => { map.off('moveend', refresh); map.off('rotate', turn); image.remove(); } };
+    return { refresh, remove: () => { map.off('moveend', refresh); map.off('rotate', turn); map.off('pitch', turn); image.remove(); } };
 }
 
 /**

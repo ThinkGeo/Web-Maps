@@ -31,17 +31,6 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             return (pieces, bounds);
         });
 
-        // The parcels, read once into memory in the map's meters, for the equality query.
-        private static readonly Lazy<InMemoryFeatureSource> ZoningInMemory = new Lazy<InMemoryFeatureSource>(() =>
-        {
-            var file = SampleData.Frisco("Zoning.shp");
-            file.Open();
-            var source = new InMemoryFeatureSource(file.GetColumns(), file.GetAllFeatures(ReturningColumnsType.AllColumns));
-            file.Close();
-            source.Open();
-            return source;
-        });
-
         public void Register(OverlayCatalog catalog)
         {
             catalog.Vector("parks", () =>
@@ -299,69 +288,6 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                     at = GeoJson.LngLat(park.GetShape().GetCenterPoint()),
                     columns = park.ColumnValues.Select(column => new { name = column.Key, value = column.Value }),
                 });
-            });
-
-            // The parcel under a click becomes the query shape, and every parcel whose geometry
-            // is exactly the same - itself, and any duplicate record - is found.
-            app.MapPost("/samples/shapes/equal", async (HttpRequest request) =>
-            {
-                var body = await Body(request);
-                var zoning = ZoningInMemory.Value;
-                BaseShape shape;
-                if (body.TryGetProperty("lng", out var lng) && lng.ValueKind == JsonValueKind.Number)
-                {
-                    var parcel = new QueryTools(zoning).GetFeaturesContaining(GeoJson.Point(lng.GetDouble(), body.GetProperty("lat").GetDouble()), ReturningColumnsType.NoColumns).FirstOrDefault();
-                    if (parcel == null) return Results.Json(new { found = false });
-                    shape = parcel.GetShape();
-                }
-                else
-                {
-                    shape = zoning.GetAllFeatures(ReturningColumnsType.NoColumns).First().GetShape();
-                }
-                var equal = new QueryTools(zoning).GetFeaturesTopologicalEqual(shape, ReturningColumnsType.NoColumns).ToList();
-                return Results.Json(new
-                {
-                    found = true,
-                    query = Json(GeoJson.Geometry(shape)),
-                    equal = Json(GeoJson.Collection(equal)),
-                    result = equal.Count + " parcel" + (equal.Count == 1 ? "" : "s") + " topologically equal to the query shape",
-                });
-            });
-
-            // SQL over the zoning shapefile's attribute table: the shapefile read through GDAL,
-            // whose OGR runs the SQL, and ExecuteQuery on that source. The rows come back as a
-            // table, and the parcels the rows belong to as the matches, by their FID.
-            app.MapGet("/samples/shapes/sql", (string sql) =>
-            {
-                GdalManager.ConfigureGdal();
-                var zoning = new GdalFeatureSource(SampleData.Path("Shapefile/Zoning.shp")) { ProjectionConverter = new ProjectionConverter(2276, 3857) };
-                zoning.Open();
-                try
-                {
-                    var table = zoning.ExecuteQuery(sql ?? "");
-                    var columns = table.Columns.Cast<System.Data.DataColumn>().Select(column => column.ColumnName).ToList();
-                    var all = table.Rows.Cast<System.Data.DataRow>().ToList();
-                    var rows = all.Take(200).Select(row => row.ItemArray.Select(value => value?.ToString()).ToArray()).ToList();
-                    var idColumn = columns.FindIndex(column => string.Equals(column, "FID", StringComparison.OrdinalIgnoreCase));
-                    var found = idColumn < 0
-                        ? new Collection<Feature>()
-                        : zoning.GetFeaturesByIds(all.Select(row => row[idColumn]?.ToString()).Where(id => !string.IsNullOrEmpty(id)), ReturningColumnsType.NoColumns);
-                    return Results.Json(new
-                    {
-                        columns,
-                        rows,
-                        matches = Json(GeoJson.Collection(found)),
-                        result = all.Count + " rows" + (rows.Count < all.Count ? ", the first " + rows.Count + " shown" : "") + (idColumn < 0 ? "; select FID to see the parcels" : ", " + found.Count + " parcels"),
-                    });
-                }
-                catch (Exception exception)
-                {
-                    return Results.Problem(exception.Message, statusCode: 400);
-                }
-                finally
-                {
-                    zoning.Close();
-                }
             });
 
             // A filled circle with a white rim, drawn by a PointStyle: the picture the pages pin.

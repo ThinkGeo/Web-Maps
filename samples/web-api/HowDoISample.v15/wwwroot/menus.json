@@ -264,14 +264,6 @@
     "group": "Shapes & Spatial Queries"
   },
   {
-    "id": "check-if-features-are-equal",
-    "title": "Equal Geometries",
-    "description": "Click a parcel and find every parcel with topologically equal geometry.",
-    "source": "Shapes",
-    "preicon": "fas fa-equals",
-    "group": "Shapes & Spatial Queries"
-  },
-  {
     "id": "validate-topology",
     "title": "Validate Topology",
     "description": "Twenty-five topology rules checked with TopologyValidator, each drawn with the shapes that break it.",

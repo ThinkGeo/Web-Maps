@@ -12,7 +12,7 @@
         <div id="coordinates" style="position:absolute;left:calc(50% - 160px);bottom:12px;transform:translateX(-50%);padding:6px 12px;background:rgba(255,255,255,.92);border-radius:4px;font:14px Consolas,monospace;box-shadow:0 1px 4px rgba(0,0,0,.25);white-space:nowrap">move the pointer over the map</div>
         <aside class="panel narrow">
             <h2>Adornments</h2>
-            <p>Adornment layers are drawn on the server as one picture the size of the map, laid over it and drawn again whenever the view settles. The states are classed by population in the style; the legend is a LegendAdornmentLayer with one item per class. The scale line and bar read the scale of what is shown. The compass is a MagneticDeclinationAdornmentLayer - true north, magnetic north and the declination between them for the middle of the map - pinned to a corner and turned with the map. The graticule is a feature layer drawn as tiles; the zoom and compass buttons are the map's own.</p>
+            <p>Adornment layers are drawn on the server as one picture the size of the map, laid over it and drawn again whenever the view settles. The states are classed by population in the style; the legend is a LegendAdornmentLayer with one item per class. The scale line and bar read the scale of what is shown. The compass is a MagneticDeclinationAdornmentLayer - true north, magnetic north and the declination between them for the middle of the map - pinned to a corner and laid on the ground, so it turns with the map and leans away with the pitch. The graticule is a feature layer drawn as tiles; the zoom and compass buttons are the map's own.</p>
             <label><input type="checkbox" id="legend" checked> Legend</label>
             <label><input type="checkbox" id="scale" checked> Scale line and scale bar</label>
             <div class="row" style="padding-left:22px"><label>Units <select id="units">
@@ -24,14 +24,14 @@
             <label><input type="checkbox" id="compass" checked> Compass - true and magnetic north</label>
             <label><input type="checkbox" id="graticule"> Graticule, as tiles</label>
             <label>Pointer coordinates as <select id="format"><option value="LatLon">latitude, longitude</option><option value="DMS">degrees, minutes, seconds</option><option value="Meters">Web Mercator meters</option></select></label>
-            <p>Turn the map with a right-drag: the compass turns with it, and the scale still reads the scale of the map, not of the box the turned map covers.</p>
+            <p>Right-drag the map: the compass turns and tilts with the ground, and the scale still reads the scale of the map, not of the box the turned map covers.</p>
         </aside>
     </div>
     <script src="../lib/maplibre-gl.js"></script>
     <script type="module">
         import * as tg from '../js/tg.js';
 
-        const map = tg.createMap({ center: [-10650000, 4600000], zoom: 4 });
+        const map = tg.createMap({ center: [-10650000, 4600000], zoom: 4, pitch: 35 });
         map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-left');
         await tg.ready(map);
         tg.vectorOverlay(map, 'us-states', [{ type: 'fill', 'source-layer': 'states', paint: {

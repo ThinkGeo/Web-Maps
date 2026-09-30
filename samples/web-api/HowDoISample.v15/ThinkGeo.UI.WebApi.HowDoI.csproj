@@ -25,8 +25,8 @@
        from there (see SampleData). -->
   <ItemGroup>
     <Content Include="..\..\blazor\HowDoISample\Data\**" Exclude="..\..\blazor\HowDoISample\Data\temp\**" Link="Data\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-    <!-- The Legacy group's own data, from the classic WebAPI samples. -->
-    <Content Include="Data\Legacy\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <!-- The gallery's own data, by format like the shared folder: a JPEG2000, a MrSID, a WKB file, an S-57 chart, a compass picture. -->
+    <Content Include="Data\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- The code pane shows each sample's server source beside its page; the .cs files go out

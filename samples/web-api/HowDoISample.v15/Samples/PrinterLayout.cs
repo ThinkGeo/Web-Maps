@@ -163,7 +163,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             }
             if (info.ImagePrinterLayer)
             {
-                var compass = new ImagePrinterLayoutAsyncLayer(new GeoImage(SampleData.Path("Legacy/Printing/Compass.png")));
+                var compass = new ImagePrinterLayoutAsyncLayer(new GeoImage(SampleData.Path("Images/Compass.png")));
                 compass.SetPosition(.75, .75, center.X + 3.5, center.Y - 3, PrintingUnit.Inch);
                 page.Layers.Add(compass);
             }

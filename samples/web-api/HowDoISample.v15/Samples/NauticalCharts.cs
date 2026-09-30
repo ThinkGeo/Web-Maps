@@ -19,7 +19,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
         // The chart, open once for the questions the helm asks; a source answers one at a time.
         private static readonly Lazy<NauticalChartsFeatureSource> Chart = new Lazy<NauticalChartsFeatureSource>(() =>
         {
-            var chart = new NauticalChartsFeatureSource(SampleData.Path("Legacy/NauticalCharts/US4IL10M.000")) { ProjectionConverter = new ProjectionConverter(4326, 3857) };
+            var chart = new NauticalChartsFeatureSource(SampleData.Path("S57/US4IL10M/US4IL10M.000")) { ProjectionConverter = new ProjectionConverter(4326, 3857) };
             chart.Open();
             return chart;
         });
@@ -29,7 +29,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
         {
             catalog.Raster("nautical-chart", () =>
             {
-                var chart = new NauticalChartsFeatureLayer(SampleData.Path("Legacy/NauticalCharts/US4IL10M.000"))
+                var chart = new NauticalChartsFeatureLayer(SampleData.Path("S57/US4IL10M/US4IL10M.000"))
                 {
                     IsDepthContourTextVisible = true,
                     IsLightDescriptionVisible = true,

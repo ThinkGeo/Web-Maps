@@ -116,7 +116,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 case "GPX": return new GpxFeatureSource(SampleData.Path("Gpx/Hike_Bike.gpx")) { ProjectionConverter = new ProjectionConverter(4326, 3857) };
                 case "MapInfo TAB": return new TabFeatureSource(SampleData.Path("Tab/City_ETJ.tab")) { ProjectionConverter = new ProjectionConverter(2276, 3857) };
                 case "TinyGeo": return new TinyGeoFeatureSource(SampleData.Path("TinyGeo/Zoning.tgeo")) { ProjectionConverter = new ProjectionConverter(2276, 3857) };
-                case "WKB": return new WkbFileFeatureSource(SampleData.Path("Legacy/Layers/Wkb/USStates.wkb"));   // the US states, written in the map's own meters
+                case "WKB": return new WkbFileFeatureSource(SampleData.Path("Wkb/USStates.wkb"));   // the US states, written in the map's own meters
                 default: return MosquitoTraps();
             }
         }
@@ -145,8 +145,8 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             {
                 case "Plain JPEG + world file": return new GdalRasterLayer(SampleData.Path("Jpg/m_3309650_sw_14_1_20160911_20161121.jpg"));
                 // The MrSID's own projection is read from its .prj; the converter warps every tile of it into the map's meters.
-                case "MrSID - aerial in state plane feet": return new MrSidGdalRasterLayer(SampleData.Path("Legacy/Layers/MrSid/US380AndGeeRoad.sid")) { ImageSource = { ProjectionConverter = new GdalProjectionConverter(Projection.ConvertWktToProjString(File.ReadAllText(SampleData.Path("Legacy/Layers/MrSid/US380AndGeeRoad.prj"))), Projection.GetGoogleMapProjString()) } };
-                case "JPEG2000 - world": return new Jpeg2000GdalRasterLayer(SampleData.Path("Legacy/Layers/Jpeg2000/World.jp2"), SampleData.Path("Legacy/Layers/Jpeg2000/World.j2w"));   // placed by its world file, already in the map's meters
+                case "MrSID - aerial in state plane feet": return new MrSidGdalRasterLayer(SampleData.Path("MrSid/US380AndGeeRoad.sid")) { ImageSource = { ProjectionConverter = new GdalProjectionConverter(Projection.ConvertWktToProjString(File.ReadAllText(SampleData.Path("MrSid/US380AndGeeRoad.prj"))), Projection.GetGoogleMapProjString()) } };
+                case "JPEG2000 - world": return new Jpeg2000GdalRasterLayer(SampleData.Path("Jpeg2000/World.jp2"), SampleData.Path("Jpeg2000/World.j2w"));   // placed by its world file, already in the map's meters
                 case "ECW - world imagery": return new EcwGdalRasterLayer(SampleData.Path("World.ecw")) { ImageSource = { ProjectionConverter = new GdalProjectionConverter(4326, 3857) } };
                 case "Anything else GDAL reads": return new GdalRasterLayer(SampleData.Path("GeoTiff/World.tif")) { ImageSource = { ProjectionConverter = new GdalProjectionConverter(4326, 3857) } };
                 default: return new GeoTiffRasterLayer(SampleData.Path("GeoTiff/m_3309650_sw_14_1_20160911_20161121.tif"));

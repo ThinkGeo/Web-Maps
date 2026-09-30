@@ -145,55 +145,64 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             });
 
             // Area, length, centre, the shortest line to the stadium, or a stretch along a
-            // trail, measured on the feature nearest the click - or the biggest one.
+            // trail, measured on the feature nearest the click - or the biggest one. Every
+            // measurement is taken in the Texas state plane feet the data is recorded in, never
+            // in the Web Mercator the map is drawn in, which stretches everything by
+            // 1/cos(latitude) - a fifth too long and nearly half again too large at Frisco.
             app.MapPost("/samples/shapes/measure", async (HttpRequest request) =>
             {
                 var body = await Body(request);
                 var measurement = body.GetProperty("measurement").GetString();
                 var lines = measurement == "Length" || measurement == "A line along a line";
-                var data = SampleData.Frisco(lines ? "Hike_Bike.shp" : "Parks.shp");
+                // The file itself, in its own feet; a converter takes the click in and the answer out.
+                var data = new ShapeFileFeatureSource(SampleData.Path("Shapefile/" + (lines ? "Hike_Bike.shp" : "Parks.shp")));
+                var toFeet = new ProjectionConverter(3857, 2276);
+                toFeet.Open();
                 data.Open();
                 Feature feature;
                 RectangleShape bounds = null;
                 if (body.TryGetProperty("lng", out var lng) && lng.ValueKind == JsonValueKind.Number)
                 {
-                    feature = data.GetFeaturesNearestTo(GeoJson.Point(lng.GetDouble(), body.GetProperty("lat").GetDouble()), GeographyUnit.Meter, 1, ReturningColumnsType.NoColumns).FirstOrDefault();
+                    var at = (PointShape)toFeet.ConvertToExternalProjection(GeoJson.Point(lng.GetDouble(), body.GetProperty("lat").GetDouble()));
+                    feature = data.GetFeaturesNearestTo(at, GeographyUnit.Feet, 1, ReturningColumnsType.NoColumns).FirstOrDefault();
                 }
                 else
                 {
                     feature = data.GetAllFeatures(ReturningColumnsType.NoColumns).OrderByDescending(candidate => { var box = candidate.GetBoundingBox(); return box.Width + box.Height; }).FirstOrDefault();
-                    bounds = feature?.GetBoundingBox();
+                    bounds = feature == null ? null : (RectangleShape)toFeet.ConvertToInternalProjection(feature.GetBoundingBox());
                     bounds?.ScaleUp(60);
                 }
                 data.Close();
                 if (feature == null) return Results.NotFound();
 
                 var shape = feature.GetShape();
+                var stadium = (PointShape)toFeet.ConvertToExternalProjection(Stadium);
                 var drawn = new List<BaseShape>();
                 string result;
                 switch (measurement)
                 {
                     case "Length":
                         drawn.Add(shape);
-                        result = ((LineBaseShape)shape).GetLength(GeographyUnit.Meter, DistanceUnit.Kilometer).ToString("f3", CultureInfo.InvariantCulture) + " km";
+                        result = ((LineBaseShape)shape).GetLength(GeographyUnit.Feet, DistanceUnit.Kilometer).ToString("f3", CultureInfo.InvariantCulture) + " km";
                         break;
                     case "Center point":
                         var center = shape.GetCenterPoint();
                         drawn.Add(shape);
                         drawn.Add(center);
-                        result = center.X.ToString("f0", CultureInfo.InvariantCulture) + ", " + center.Y.ToString("f0", CultureInfo.InvariantCulture);
+                        var onMap = (PointShape)toFeet.ConvertToInternalProjection(center);
+                        result = onMap.X.ToString("f0", CultureInfo.InvariantCulture) + ", " + onMap.Y.ToString("f0", CultureInfo.InvariantCulture);
                         break;
                     case "Shortest line to the stadium":
-                        var line = shape.GetShortestLineTo(Stadium, GeographyUnit.Meter);
+                        var line = shape.GetShortestLineTo(stadium, GeographyUnit.Feet);
                         drawn.Add(shape);
                         drawn.Add(line);
-                        result = line.GetLength(GeographyUnit.Meter, DistanceUnit.Kilometer).ToString("f3", CultureInfo.InvariantCulture) + " km to the stadium";
+                        result = line.GetLength(GeographyUnit.Feet, DistanceUnit.Kilometer).ToString("f3", CultureInfo.InvariantCulture) + " km to the stadium";
                         break;
                     case "A line along a line":
                         var trail = shape as LineShape ?? ((MultilineShape)shape).Lines.First();
                         var startingPoint = body.GetProperty("startingPoint").GetString() == "LastPoint" ? StartingPoint.LastPoint : StartingPoint.FirstPoint;
-                        var stretch = trail.GetLineOnALine(startingPoint, body.GetProperty("startingOffset").GetDouble(), body.GetProperty("runLength").GetDouble(), GeographyUnit.Meter, DistanceUnit.Meter);
-                        var got = stretch?.GetLength(GeographyUnit.Meter, DistanceUnit.Meter) ?? 0;
+                        var stretch = trail.GetLineOnALine(startingPoint, body.GetProperty("startingOffset").GetDouble(), body.GetProperty("runLength").GetDouble(), GeographyUnit.Feet, DistanceUnit.Meter);
+                        var got = stretch?.GetLength(GeographyUnit.Feet, DistanceUnit.Meter) ?? 0;
                         if (got > 0)
                         {
                             drawn.Add(stretch);
@@ -201,17 +210,20 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                         }
                         else
                         {
-                            result = "Nothing there - this trail is " + trail.GetLength(GeographyUnit.Meter, DistanceUnit.Meter).ToString("f0", CultureInfo.InvariantCulture) + " m long";
+                            result = "Nothing there - this trail is " + trail.GetLength(GeographyUnit.Feet, DistanceUnit.Meter).ToString("f0", CultureInfo.InvariantCulture) + " m long";
                         }
                         break;
                     default:
                         drawn.Add(shape);
-                        result = ((AreaBaseShape)shape).GetArea(GeographyUnit.Meter, AreaUnit.SquareKilometers).ToString("f3", CultureInfo.InvariantCulture) + " sq km";
+                        result = ((AreaBaseShape)shape).GetArea(GeographyUnit.Feet, AreaUnit.SquareKilometers).ToString("f3", CultureInfo.InvariantCulture) + " sq km";
                         break;
                 }
+                // Measured in feet, drawn in the map's metres.
+                var onScreen = drawn.Select(piece => toFeet.ConvertToInternalProjection(piece)).ToList();
+                toFeet.Close();
                 return Results.Json(new
                 {
-                    drawn = Json(GeoJson.Collection(drawn)),
+                    drawn = Json(GeoJson.Collection(onScreen)),
                     stadium = GeoJson.LngLat(Stadium),
                     result,
                     bounds = bounds == null ? null : GeoJson.Bounds(bounds),

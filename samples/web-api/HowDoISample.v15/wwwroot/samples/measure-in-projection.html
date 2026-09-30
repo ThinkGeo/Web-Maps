@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Measure in the Right Projection</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        table { border-collapse: collapse; width: 100%; font-size: 12px; }
+        th, td { border-bottom: 1px solid #ddd; padding: 4px 6px; text-align: right; }
+        th:first-child, td:first-child { text-align: left; }
+        td.value { font-family: Consolas, monospace; }
+        tr.truth td { font-weight: 600; background: #eef6ee; }
+        td.off { font-family: Consolas, monospace; color: #b00020; }
+        td.off.small { color: #2E7D32; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow" style="width:400px">
+            <h2>Measure in the right projection</h2>
+            <p>Web Mercator is a projection for looking at, not for measuring in. It keeps angles and pays for it with scale: everything is stretched by 1/cos(latitude), so an area comes out too big by the square of that, and the further from the equator the worse it gets. Click a park, then drag it north: the same park, the same size on the ground, and the map follows it without changing zoom, so what you see it swell to on the screen is the error in the table.</p>
+            <div class="row"><span>Latitude</span><input type="range" id="lat" min="0" max="70" step="1" value="33" style="flex:1"><span id="lat-value" class="value" style="width:34px">33°</span></div>
+            <div class="row"><label><input type="radio" name="unit" value="area" checked> Area</label><label><input type="radio" name="unit" value="length"> Perimeter</label></div>
+            <table id="table"><tbody></tbody></table>
+            <p id="note" style="margin-top:6px"></p>
+            <p>The geodesic figure is the answer on the ellipsoid itself, which is what a surveyor means. An equal-area projection matches it for area anywhere. A local grid - the state plane zone the county records are in - matches for both, inside the zone it was made for. Web Mercator matches neither, and only looks close near the equator.</p>
+            <div class="status" id="status"></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const map = tg.createMap({ center: [-10777610, 3909120], zoom: 13 });
+        await tg.ready(map);
+        tg.vectorOverlay(map, 'parks', [
+            { type: 'fill', 'source-layer': 'parks', paint: { 'fill-color': 'rgba(60,160,80,0.35)', 'fill-outline-color': '#2E7D32' } },
+        ]);
+        const moved = tg.geojsonOverlay(map, 'moved', [
+            { type: 'fill', paint: { 'fill-color': 'rgba(200,60,30,0.35)', 'fill-outline-color': '#C0392B' } },
+            { type: 'line', paint: { 'line-color': '#C0392B', 'line-width': 2 } },
+        ]);
+
+        const table = document.querySelector('#table tbody'), status = document.getElementById('status');
+        const picked = () => document.querySelector('input[name=unit]:checked').value;
+        let park = null;
+
+        const ask = async () => {
+            if (park == null) return;
+            const latitude = +document.getElementById('lat').value;
+            document.getElementById('lat-value').textContent = latitude + '°';
+            try {
+                const r = await tg.get(`samples/projections/measure?id=${encodeURIComponent(park)}&latitude=${latitude}`);
+                moved.setData(r.shape);
+                // The map follows the copy without changing its zoom, so the park visibly swells
+                // as it goes north: that growth on the screen is the error in the table.
+                const ring = r.shape.geometry.coordinates.flat(2).filter(p => Array.isArray(p));
+                const middle = ring.reduce((sum, p) => [sum[0] + p[0] / ring.length, sum[1] + p[1] / ring.length], [0, 0]);
+                if (isFinite(middle[0]) && isFinite(middle[1])) map.easeTo({ center: middle, duration: 0 });
+                const rows = r.measurements[picked()];
+                table.innerHTML = '<tr><th>Measured in</th><th>' + (picked() === 'area' ? 'Area, sq km' : 'Perimeter, km') + '</th><th>Off by</th></tr>'
+                    + rows.map(row => {
+                        const off = row.truth ? '' : (row.off >= 0 ? '+' : '') + row.off.toFixed(1) + '%';
+                        return `<tr class="${row.truth ? 'truth' : ''}"><td>${row.name}</td><td class="value">${row.value.toFixed(3)}</td><td class="off ${Math.abs(row.off) < 0.5 ? 'small' : ''}">${off}</td></tr>`;
+                    }).join('');
+                document.getElementById('note').textContent = r.note;
+                tg.say(status, r.name);
+            } catch (e) {
+                tg.say(status, e.message, false);
+            }
+        };
+        map.on('click', (e) => {
+            const hit = map.queryRenderedFeatures(e.point).find(f => f.sourceLayer === 'parks');
+            if (!hit) return;
+            park = hit.id != null ? hit.id : hit.properties.NAME;
+            ask();
+        });
+        document.getElementById('lat').addEventListener('input', ask);
+        for (const radio of document.querySelectorAll('input[name=unit]')) radio.addEventListener('change', ask);
+        // The biggest park to start with, so there is something on the table straight away.
+        park = '';
+        await ask();
+    </script>
+</body>
+</html>

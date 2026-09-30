@@ -179,6 +179,79 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             });
 
             // A star drawn by a PointStyle: the picture a point is drawn from in the browser.
+            // One Frisco park measured four ways, and moved to the latitude asked for first so
+            // the cost of Web Mercator can be watched as it grows. The park is read in the state
+            // plane feet it is recorded in and moved in degrees, so nothing but the projection
+            // under test decides the answer.
+            app.MapGet("/samples/projections/measure", (string id, double latitude) =>
+            {
+                var parks = new ShapeFileFeatureSource(SampleData.Path("Shapefile/Parks.shp"));
+                parks.Open();
+                var all = parks.GetAllFeatures(new[] { "NAME" });
+                parks.Close();
+                var park = all.FirstOrDefault(feature => feature.Id == id || (feature.ColumnValues.TryGetValue("NAME", out var name) && name == id))
+                    ?? all.OrderByDescending(feature => ((AreaBaseShape)feature.GetShape()).GetArea(GeographyUnit.Feet, AreaUnit.SquareFeet)).First();
+
+                // Where the park is, and the same park set down at the latitude asked for. Moving
+                // it is done through an equal area projection centred on it: read out in metres
+                // about its own middle, then read back in as if that middle were at the new
+                // latitude. The copy is the same size and shape on the ground as the original,
+                // which is the whole point - only its latitude changes.
+                var toDegrees = new ProjectionConverter(2276, 4326);
+                toDegrees.Open();
+                var home = ((AreaBaseShape)toDegrees.ConvertToExternalProjection(park.GetShape())).GetCenterPoint();
+                toDegrees.Close();
+
+                Projection EqualAreaAt(double at) => new Projection(FormattableString.Invariant($"+proj=laea +lat_0={at} +lon_0={home.X} +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"));
+                AreaBaseShape Through(BaseShape shape, Projection from, Projection to)
+                {
+                    var converter = new ProjectionConverter(from, to);
+                    converter.Open();
+                    var result = (AreaBaseShape)converter.ConvertToExternalProjection(shape);
+                    converter.Close();
+                    return result;
+                }
+                var flat = Through(park.GetShape(), new Projection(2276), EqualAreaAt(home.Y));
+                var moved = Through(flat, EqualAreaAt(latitude), new Projection(4326));
+
+                // The ellipsoid itself is the answer a surveyor would give.
+                var truthArea = moved.GetArea(GeographyUnit.DecimalDegree, AreaUnit.SquareKilometers);
+                var truthLength = moved.GetPerimeter(GeographyUnit.DecimalDegree, DistanceUnit.Kilometer);
+                (double Area, double Length) In(Projection projection)
+                {
+                    var there = Through(moved, new Projection(4326), projection);
+                    return (there.GetArea(GeographyUnit.Meter, AreaUnit.SquareKilometers), there.GetPerimeter(GeographyUnit.Meter, DistanceUnit.Kilometer));
+                }
+                var mercator = In(new Projection(3857));
+                var equalArea = In(EqualAreaAt(latitude));
+
+                object Row(string name, double value, double truth, bool isTruth = false) =>
+                    new { name, value, off = truth == 0 ? 0 : (value - truth) / truth * 100, truth = isTruth };
+                var area = new List<object> { Row("The ellipsoid, geodesic", truthArea, truthArea, true), Row("Equal area, centred here", equalArea.Area, truthArea), Row("Web Mercator", mercator.Area, truthArea) };
+                var length = new List<object> { Row("The ellipsoid, geodesic", truthLength, truthLength, true), Row("Equal area, centred here", equalArea.Length, truthLength), Row("Web Mercator", mercator.Length, truthLength) };
+                // The county's own grid answers for the county; moved away it is out of its zone
+                // and says so, which is the other half of the lesson.
+                if (Math.Abs(latitude - home.Y) < 0.5)
+                {
+                    var onGrid = (AreaBaseShape)park.GetShape();
+                    area.Insert(1, Row("Texas state plane (EPSG:2276)", onGrid.GetArea(GeographyUnit.Feet, AreaUnit.SquareKilometers), truthArea));
+                    length.Insert(1, Row("Texas state plane (EPSG:2276)", onGrid.GetPerimeter(GeographyUnit.Feet, DistanceUnit.Kilometer), truthLength));
+                }
+
+                var stretch = 1 / Math.Cos(latitude * Math.PI / 180);
+                var toMap = new ProjectionConverter(4326, 3857);
+                toMap.Open();
+                var drawn = toMap.ConvertToExternalProjection(new Feature(moved));
+                toMap.Close();
+                return Results.Json(new
+                {
+                    name = park.ColumnValues.TryGetValue("NAME", out var parkName) && parkName.Length > 0 ? parkName : "a park",
+                    shape = JsonDocument.Parse(GeoJson.One(drawn)).RootElement,
+                    measurements = new { area, length },
+                    note = FormattableString.Invariant($"At {latitude:0}° Web Mercator stretches every length by 1/cos({latitude:0}°) = {stretch:0.000}, so an area by {stretch * stretch:0.000}."),
+                });
+            });
+
             app.MapGet("/samples/projections/star.png", () =>
                 Results.Bytes(Pictures.OfStyle(new PointStyle(PointSymbolType.Star, 24, GeoBrushes.MediumPurple, GeoPens.Purple), 32, 32), "image/png"));
         }

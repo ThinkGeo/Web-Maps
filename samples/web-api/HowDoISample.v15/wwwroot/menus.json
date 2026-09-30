@@ -273,18 +273,18 @@
   },
   {
     "id": "project-features",
-    "title": "Project Features",
-    "description": "Features in latitude and longitude reprojected on the server into the map's Web Mercator.",
+    "title": "Reproject Your Data",
+    "description": "One ProjectionConverter, two places to put it: called on shapes you hold, or set on a layer's source so every feature it hands out arrives in the map's system.",
     "source": "Projections",
     "preicon": "fas fa-globe-americas",
     "group": "Projections"
   },
   {
-    "id": "setting-the-projection-of-a-layer",
-    "title": "A Layer in Another Projection",
-    "description": "A shapefile in Texas state plane feet on a Web Mercator map: a ProjectionConverter on the source and nothing else changes.",
+    "id": "measure-in-projection",
+    "title": "Measure in the Right Projection",
+    "description": "Web Mercator is for looking at, not for measuring in: the same park measured on the ellipsoid, in an equal-area projection, in its state plane grid and in Web Mercator, at any latitude you drag it to.",
     "source": "Projections",
-    "preicon": "fas fa-ruler-combined",
+    "preicon": "fas fa-globe",
     "group": "Projections"
   },
   {

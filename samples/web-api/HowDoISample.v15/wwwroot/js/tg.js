@@ -142,6 +142,19 @@ function pictureOf(image) {
     return canvas.toDataURL('image/png');
 }
 
+/**
+ * The map as it is on screen, as a PNG data URL. The map must be created with
+ * preserveDrawingBuffer, and even then the drawing buffer is empty once the map has settled and
+ * stopped painting: reading it then gives a black picture. So a repaint is asked for and the
+ * canvas read inside the render that follows, while the frame is still there.
+ */
+export function snapshot(map) {
+    return new Promise((resolve) => {
+        map.once('render', () => resolve(map.getCanvas().toDataURL('image/png')));
+        map.triggerRepaint();
+    });
+}
+
 /** Features the page holds itself - results of a query, shapes it drew - as a GeoJSON source under the layers given. */
 export function geojsonOverlay(map, id, layers, data, { before } = {}) {
     data = data || { type: 'FeatureCollection', features: [] };

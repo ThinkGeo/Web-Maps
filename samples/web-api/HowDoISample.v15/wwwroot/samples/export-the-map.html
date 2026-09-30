@@ -22,6 +22,7 @@
         <aside class="panel narrow" style="width:360px">
             <h2>Export the map</h2>
             <p>A picture of the map, to put in a report, an email or a slide. How big decides who can make it: at the size it is on screen the browser hands over its own canvas, and anything larger is drawn again on the server, which needs no browser at all and is therefore what a scheduled job or a report generator calls. A page to print, with a title block and a legend on it, is the next sample.</p>
+            <p>Reading the canvas takes two things: the map has to be made with preserveDrawingBuffer, and the read has to happen while a frame is actually there. A map that has settled has stopped painting and its buffer is empty, so a repaint is asked for and the canvas read in the render that follows; read it plainly and the picture comes back black.</p>
             <div class="row"><label>Size <select id="size">
                 <option value="screen">what is on screen</option>
                 <option value="1600" selected>1600 px wide</option>
@@ -80,7 +81,7 @@
                 if (onScreen()) {
                     const canvas = map.getCanvas();
                     const note = `${canvas.width} by ${canvas.height} pixels, the browser's canvas`;
-                    done(canvas.toDataURL('image/png'), note);
+                    done(await tg.snapshot(map), note);
                     tg.say(status, note + '.');
                 } else {
                     const r = await tg.post('samples/printing/image', { size: +document.getElementById('size').value, bbox: extent(), layers });

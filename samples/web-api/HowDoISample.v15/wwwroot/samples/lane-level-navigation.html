@@ -2,11 +2,17 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Lane Level Navigation</title>
     <link rel="stylesheet" href="../lib/maplibre-gl.css">
     <link rel="stylesheet" href="../css/samples.css">
     <style>
         .hud { position: absolute; padding: 10px 12px; background: rgba(16,19,23,.88); color: #c9d4d0; font: 13px system-ui; border-radius: 6px; }
+        @media (max-width: 760px) {
+            .hud { padding: 7px 9px; font-size: 12px; max-width: 44vw; min-width: 0 !important; }
+            .hud input[type=range] { width: 100% !important; }
+            #instruction { font-size: 19px !important; }
+        }
     </style>
 </head>
 <body>

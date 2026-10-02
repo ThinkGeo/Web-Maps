@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Too Many Points</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        .knobs { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 8px; align-items: center; }
+        .where { padding: 6px 8px; background: #eceff3; border-radius: 3px; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <div class="legend" id="legend" style="display:none">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:5px;background:#1F78B4"></span> Owner-occupied
+            <span style="display:inline-block;width:10px;height:10px;border-radius:5px;background:#F07814;margin-left:12px"></span> Renter-occupied
+            <div style="color:#555;margin-top:4px">1 dot = 25,000 housing units (1990 census)</div>
+        </div>
+        <aside class="panel editor-panel" style="width:440px">
+            <div class="controls">
+                <div style="font-weight:600">More points than pixels: three answers</div>
+                <label><input type="radio" name="mode" value="heatmap" checked> Heatmap - draw the density instead of the points</label>
+                <label><input type="radio" name="mode" value="cluster"> Clusters - group them and count each group</label>
+                <label><input type="radio" name="mode" value="dots"> Dot density - one dot per so many of a thing</label>
+                <div class="where" id="where"></div>
+                <div id="heatmap-knobs">
+                    <div style="font-weight:600;margin-bottom:4px">paint - changed in place, nothing fetched again</div>
+                    <div class="knobs">
+                        <span>heatmap-radius</span><input type="range" id="radius" min="4" max="60" step="1" value="22"><span id="radius-value">22px</span>
+                        <span>heatmap-intensity</span><input type="range" id="intensity" min="0.1" max="3" step="0.05" value="0.55"><span id="intensity-value">0.55</span>
+                        <span>heatmap-opacity</span><input type="range" id="opacity" min="0.1" max="1" step="0.05" value="0.85"><span id="opacity-value">0.85</span>
+                    </div>
+                    <div class="row" style="margin-top:4px"><span>heatmap-color</span><span id="ramps" class="row"></span></div>
+                    <label style="margin-top:4px"><input type="checkbox" id="weighted"> Weight each sighting by how many coyotes were seen</label>
+                </div>
+                <div id="cluster-knobs" style="display:none">
+                    <div class="knobs">
+                        <span>clusterRadius</span><input type="range" id="cluster-radius" min="20" max="120" step="5" value="55"><span id="cluster-radius-value">55px</span>
+                        <span>clusterMaxZoom</span><input type="range" id="cluster-max" min="4" max="16" step="1" value="12"><span id="cluster-max-value">12</span>
+                    </div>
+                    <div class="note" style="padding:4px 0">These two belong to the source, not the style, so changing either rebuilds the source and the browser groups the points again.</div>
+                </div>
+            </div>
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        // The same problem three ways, and each one splits the work differently. Watch the line
+        // above the knobs: it says which side did what.
+        const views = {
+            heatmap: { center: [-10778000, 3912500], zoom: 13 },
+            cluster: { center: [-10500000, 4300000], zoom: 4 },
+            dots: { center: [-10650000, 4600000], zoom: 4 },
+        };
+        const where = {
+            heatmap: 'The server cuts the sightings into tiles at tiles/coyotes/; the browser works out the density of whatever arrives and paints it. Nothing is counted on the server.',
+            cluster: 'The server hands over every point at once as GeoJSON; the browser does the grouping, and redoes it at every zoom. No tile is cut.',
+            dots: 'The server scatters the dots inside each state as real features and cuts them into tiles at tiles/dots/. The style only gives them a colour.',
+        };
+
+        const heatLayers = (weighted) => [
+            { id: 'coyote-heat', type: 'heatmap', 'source-layer': 'Frisco_Coyote_Sightings', paint: { ...(weighted ? { 'heatmap-weight': ['match', ['get', 'CoyoteCoun'], '1', 1, '2', 2, '3', 3, 'More than 3', 5, 1] } : {}), 'heatmap-radius': 22, 'heatmap-intensity': 0.55, 'heatmap-opacity': 0.85 } },
+            { type: 'circle', 'source-layer': 'Frisco_Coyote_Sightings', minzoom: 13, paint: { 'circle-radius': 4, 'circle-color': '#A0522D' } },
+        ];
+        // The three layers every clustered source is drawn with: the groups, the count on top of
+        // them, and the points that ended up in no group at all.
+        const clusterLayers = [
+            { id: 'clusters', type: 'circle', filter: ['has', 'point_count'], paint: { 'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 20, '#f1a340', 60, '#d7301f'], 'circle-radius': ['step', ['get', 'point_count'], 14, 20, 20, 60, 28], 'circle-opacity': 0.85, 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 2 } },
+            { id: 'cluster-count', type: 'symbol', filter: ['has', 'point_count'], layout: { 'text-field': ['get', 'point_count_abbreviated'], 'text-font': ['Noto Sans Bold'], 'text-size': 13 }, paint: { 'text-color': '#FFFFFF' } },
+            { id: 'unclustered', type: 'circle', filter: ['!', ['has', 'point_count']], paint: { 'circle-color': '#8856a7', 'circle-radius': 5, 'circle-opacity': 0.9, 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 1.5 } },
+        ];
+        const dotLayers = [
+            { type: 'fill', 'source-layer': 'USStates_3857', paint: { 'fill-color': '#FCFCFA', 'fill-outline-color': '#787878' } },
+            { type: 'circle', 'source-layer': 'owner', paint: { 'circle-radius': 1.9, 'circle-color': '#1F78B4' } },
+            { type: 'circle', 'source-layer': 'renter', paint: { 'circle-radius': 1.9, 'circle-color': '#F07814' } },
+        ];
+        // heatmap-color as density stops, 0 (nothing seen) to 1 (densest). Stop 0 is transparent
+        // in every ramp, so the basemap still shows where nothing was seen.
+        const ramps = {
+            'MapLibre default': [[0, 'rgba(0,0,255,0)'], [0.1, 'royalblue'], [0.3, 'cyan'], [0.5, 'lime'], [0.7, 'yellow'], [1, 'red']],
+            'Warm': [[0, 'rgba(255,255,178,0)'], [0.15, 'rgba(255,255,178,0.7)'], [0.4, 'rgb(254,204,92)'], [0.7, 'rgb(253,141,60)'], [1, 'rgb(189,0,38)']],
+            'Viridis': [[0, 'rgba(68,1,84,0)'], [0.25, 'rgb(59,82,139)'], [0.5, 'rgb(33,145,140)'], [0.75, 'rgb(94,201,98)'], [1, 'rgb(253,231,37)']],
+            'Blue to red': [[0, 'rgba(33,102,172,0)'], [0.2, 'rgb(103,169,207)'], [0.4, 'rgb(209,229,240)'], [0.6, 'rgb(253,219,199)'], [0.8, 'rgb(239,138,98)'], [1, 'rgb(178,24,43)']],
+        };
+
+        const sightings = await tg.get('samples/styling/sightings');
+        const map = tg.createMap(views.heatmap);
+        await tg.ready(map);
+        const status = document.getElementById('status');
+        let mode = 'heatmap', ramp = 'MapLibre default', overlay = null, editor = null, drawn = [];
+
+        const clear = () => {
+            for (const id of drawn) if (map.getLayer(id)) map.removeLayer(id);
+            drawn = [];
+            if (map.getSource('sightings')) map.removeSource('sightings');
+            if (overlay) { overlay.remove(); overlay = null; }
+        };
+        // The clustered source is the browser's own; its layers are added by hand so the source
+        // options can be rebuilt whenever the two knobs below change.
+        const cluster = (layers) => {
+            if (map.getSource('sightings')) { for (const id of drawn) if (map.getLayer(id)) map.removeLayer(id); drawn = []; map.removeSource('sightings'); }
+            map.addSource('sightings', { type: 'geojson', data: sightings, cluster: true, clusterRadius: +document.getElementById('cluster-radius').value, clusterMaxZoom: +document.getElementById('cluster-max').value });
+            layers.forEach((layer, i) => { const copy = { ...layer, id: layer.id || `cluster-${i}`, source: 'sightings' }; map.addLayer(copy); drawn.push(copy.id); });
+            tg.say(status, `${sightings.features.length} points grouped in the browser at ${document.getElementById('cluster-radius').value} pixels`);
+        };
+        const paint = () => {
+            if (mode !== 'heatmap' || !map.getLayer('coyote-heat')) return;
+            const radius = +document.getElementById('radius').value, intensity = +document.getElementById('intensity').value, opacity = +document.getElementById('opacity').value;
+            map.setPaintProperty('coyote-heat', 'heatmap-radius', radius);
+            map.setPaintProperty('coyote-heat', 'heatmap-intensity', intensity);
+            map.setPaintProperty('coyote-heat', 'heatmap-opacity', opacity);
+            map.setPaintProperty('coyote-heat', 'heatmap-color', ['interpolate', ['linear'], ['heatmap-density'], ...ramps[ramp].flat()]);
+            document.getElementById('radius-value').textContent = radius + 'px';
+            document.getElementById('intensity-value').textContent = intensity.toFixed(2);
+            document.getElementById('opacity-value').textContent = opacity.toFixed(2);
+            tg.say(status, `"coyote-heat": radius ${radius}, intensity ${intensity.toFixed(2)}, opacity ${opacity.toFixed(2)}, color ${ramp}`);
+        };
+
+        const report = () => {
+            if (mode === 'heatmap') paint();
+            else if (mode === 'cluster') tg.say(status, `${sightings.features.length} points grouped in the browser at ${document.getElementById('cluster-radius').value} pixels`);
+            else tg.say(status, 'One dot per 25,000 housing units, scattered on the server and cut into tiles');
+        };
+        const show = () => {
+            clear();
+            const layers = mode === 'heatmap' ? heatLayers(document.getElementById('weighted').checked) : mode === 'cluster' ? clusterLayers : dotLayers;
+            if (mode === 'cluster') cluster(layers);
+            else {
+                overlay = tg.vectorOverlay(map, mode === 'heatmap' ? 'coyotes' : 'dots', layers, mode === 'dots' ? { maxzoom: 8 } : {});
+            }
+            document.getElementById('where').textContent = where[mode];
+            document.getElementById('heatmap-knobs').style.display = mode === 'heatmap' ? '' : 'none';
+            document.getElementById('cluster-knobs').style.display = mode === 'cluster' ? '' : 'none';
+            document.getElementById('legend').style.display = mode === 'dots' ? '' : 'none';
+            // createMap takes the centre in metres, the way the SDK gives places; easeTo wants degrees.
+            map.easeTo({ center: tg.toLngLat(views[mode].center[0], views[mode].center[1]), zoom: views[mode].zoom, duration: 600 });
+            // The editor writes its own line when its text is replaced, so this one goes last.
+            editor.text = tg.styleText(layers);
+            report();
+        };
+
+        editor = tg.editor(document.getElementById('style'), status, tg.styleText(heatLayers(false)), (edited) => {
+            if (mode === 'cluster') cluster(edited);
+            else if (overlay) { overlay.setLayers(edited); paint(); }
+        });
+        for (const radio of document.querySelectorAll('input[name=mode]')) radio.addEventListener('change', () => { mode = radio.value; if (radio.checked) show(); });
+        document.getElementById('weighted').addEventListener('change', show);
+        for (const id of ['radius', 'intensity', 'opacity']) document.getElementById(id).addEventListener('input', paint);
+        for (const id of ['cluster-radius', 'cluster-max']) document.getElementById(id).addEventListener('input', () => {
+            document.getElementById('cluster-radius-value').textContent = document.getElementById('cluster-radius').value + 'px';
+            document.getElementById('cluster-max-value').textContent = document.getElementById('cluster-max').value;
+            if (mode === 'cluster') cluster(clusterLayers);
+        });
+        const box = document.getElementById('ramps');
+        Object.keys(ramps).forEach((name, i) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'ramp', checked: i === 0 });
+            radio.addEventListener('change', () => { ramp = name; paint(); });
+            label.append(radio, name);
+            box.appendChild(label);
+        });
+        show();
+    </script>
+</body>
+</html>

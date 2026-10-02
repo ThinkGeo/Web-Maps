@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Popups and Markers</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel" style="width:400px">
+            <div class="controls">
+                <div style="font-weight:600">Things anchored to a place, outside the tiles</div>
+                <label><input type="radio" name="mode" value="record" checked> Click a park and ask the server what is there</label>
+                <label><input type="radio" name="mode" value="pins"> Hotels with popups, and markers you drop yourself</label>
+                <div class="note" id="note" style="padding:0"></div>
+                <div class="row" id="pin-controls" style="display:none"><button class="btn" id="clear">Clear the markers</button></div>
+                <div class="status" id="count"></div>
+            </div>
+            <div class="editor" id="editor-box">
+                <div class="head">style.json - edit it; the map follows</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const notes = {
+            record: 'The parks are tiles, so the browser has only the shapes it was sent, not the records behind them. The click goes to the server, which finds the park containing that point, reads every column of its record, and the popup is ordinary markup built from the answer.',
+            pins: 'A popup and a marker are both pieces of the page the browser keeps pinned to a place, drawn outside the tiles. One popup stands open over each hotel, read from a shapefile on the server; a marker is an image whose tip sits at its own point. Click the map to drop one, and click a marker for its details.',
+        };
+        const parkLayers = [{ type: 'fill', 'source-layer': 'parks', paint: { 'fill-color': 'rgba(147,112,219,0.2)', 'fill-outline-color': '#9370DB' } }];
+
+        const map = tg.createMap({ center: [-10778100, 3915600], zoom: 13 });
+        await tg.ready(map);
+        const hotels = await tg.get('samples/tools/hotels');
+        const status = document.getElementById('status'), count = document.getElementById('count');
+        let mode = 'record', parks = null, popup = null, standing = [], markers = [], next = 1;
+
+        const forget = () => {
+            if (popup) { popup.remove(); popup = null; }
+            for (const one of standing) one.remove();
+            standing = [];
+            for (const one of markers) one.remove();
+            markers = [];
+        };
+
+        // Each marker is a MapLibre Marker with an element of its own.
+        const drop = (lngLat) => {
+            const name = 'Pin ' + next++;
+            const image = Object.assign(document.createElement('img'), { src: '../images/map-pin.svg', alt: name });
+            image.style.cssText = 'width:32px;height:40px;cursor:pointer';
+            const marker = new maplibregl.Marker({ element: image, anchor: 'bottom' }).setLngLat(lngLat).addTo(map);
+            image.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const [x, y] = tg.toMeters(lngLat[0], lngLat[1]);
+                if (popup) popup.remove();
+                popup = tg.popup(map, lngLat, `<b>${name}</b><br>${Math.round(x)}, ${Math.round(y)}`, { offset: 40 });
+            });
+            markers.push(marker);
+            tg.say(count, `${hotels.features.length} hotels, ${markers.length} marker${markers.length === 1 ? '' : 's'}.`);
+        };
+
+        const show = () => {
+            forget();
+            document.getElementById('note').textContent = notes[mode];
+            document.getElementById('pin-controls').style.display = mode === 'pins' ? '' : 'none';
+            document.getElementById('editor-box').style.display = mode === 'record' ? '' : 'none';
+            if (mode === 'record') {
+                if (!parks) parks = tg.vectorOverlay(map, 'parks', parkLayers);
+                map.easeTo({ center: tg.toLngLat(-10778100, 3915600), zoom: 12, duration: 600 });
+                tg.say(count, 'Click any park.');
+            } else {
+                if (parks) { parks.remove(); parks = null; }
+                for (const hotel of hotels.features) {
+                    standing.push(new maplibregl.Popup({ closeOnClick: false, offset: 4 }).setLngLat(hotel.geometry.coordinates).setHTML(`<div style="white-space:nowrap">${String(hotel.properties.NAME).replace(/</g, '&lt;')}</div>`).addTo(map));
+                }
+                map.easeTo({ center: tg.toLngLat(-10777290, 3908740), zoom: 13, duration: 600 });
+                drop(tg.toLngLat(-10775500, 3905800));
+            }
+        };
+
+        tg.editor(document.getElementById('style'), status, tg.styleText(parkLayers), (edited) => parks && parks.setLayers(edited));
+        map.on('click', async (event) => {
+            if (mode === 'pins') { if (popup) { popup.remove(); popup = null; } drop([event.lngLat.lng, event.lngLat.lat]); return; }
+            const found = await tg.post('samples/shapes/feature-at', { lng: event.lngLat.lng, lat: event.lngLat.lat });
+            if (popup) { popup.remove(); popup = null; }
+            if (!found.found) { tg.say(count, 'No park at that point.'); return; }
+            const escape = (raw) => String(raw).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+            popup = tg.popup(map, found.at, `<div style="font:11px Verdana,sans-serif;white-space:pre;max-height:260px;overflow:auto">${found.columns.map(column => escape(column.name) + ': ' + escape(column.value)).join('\n')}</div>`);
+            tg.say(count, `${found.columns.length} columns read off that record on the server.`);
+        });
+        document.getElementById('clear').addEventListener('click', () => { for (const one of markers) one.remove(); markers = []; if (popup) { popup.remove(); popup = null; } tg.say(count, `${hotels.features.length} hotels, no markers.`); });
+        for (const radio of document.querySelectorAll('input[name=mode]')) radio.addEventListener('change', () => { if (radio.checked) { mode = radio.value; show(); } });
+        show();
+    </script>
+</body>
+</html>

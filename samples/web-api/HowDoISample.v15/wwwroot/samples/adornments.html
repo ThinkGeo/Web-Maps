@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Adornments</title>
     <link rel="stylesheet" href="../lib/maplibre-gl.css">
     <link rel="stylesheet" href="../css/samples.css">
@@ -26,6 +27,7 @@
             <label><input type="checkbox" id="graticule"> Graticule, as tiles</label>
             <label>Pointer coordinates as <select id="format"><option value="LatLon">latitude, longitude</option><option value="DMS">degrees, minutes, seconds</option><option value="Meters">Web Mercator meters</option></select></label>
             <p>Right-drag the map: the compass turns with it, and the scale still reads the scale of the map, not of the box the turned map covers.</p>
+            <div class="status" id="status"></div>
         </aside>
     </div>
     <script src="../lib/maplibre-gl.js"></script>
@@ -47,7 +49,10 @@
             compass: () => show('compass', () => tg.compass(map, 'compass', { lean: document.getElementById('lean').checked })),
             graticule: () => show('graticule', () => tg.rasterOverlay(map, 'graticule')),
         };
-        for (const id of Object.keys(apply)) { document.getElementById(id).addEventListener('change', apply[id]); apply[id](); }
+        const status = document.getElementById('status');
+        const report = () => { const on = Object.keys(apply).filter(id => document.getElementById(id).checked); tg.say(status, on.length ? 'Drawn on the server: ' + on.join(', ') : 'Nothing over the map but the map itself.'); };
+        for (const id of Object.keys(apply)) { document.getElementById(id).addEventListener('change', () => { apply[id](); report(); }); apply[id](); }
+        report();
         document.getElementById('lean').addEventListener('change', (e) => shown.compass && shown.compass.setLean(e.target.checked));
         document.getElementById('units').addEventListener('change', apply.scale);
         document.getElementById('styled').addEventListener('change', apply.scale);

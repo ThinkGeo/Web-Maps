@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cross the Dateline</title>
     <link rel="stylesheet" href="../lib/maplibre-gl.css">
     <link rel="stylesheet" href="../css/samples.css">
@@ -14,6 +15,7 @@
             <div style="color:#333">Los Angeles &rarr; Shanghai, a great-circle route through the antimeridian, with its 100-nautical-mile corridor.</div>
             <label style="display:block;margin:8px 0 2px"><input type="radio" name="proj" value="mercator" checked> Web Mercator - the seam is at 180&deg;</label>
             <label style="display:block;margin:2px 0"><input type="radio" name="proj" value="globe"> On a globe - no seam</label>
+            <div class="status" id="status" style="margin-top:8px"></div>
             <div style="margin-top:10px;color:#555">The line is stored on the server with longitudes past -180 and never split by hand. It draws whole on both sides of the seam because the tile cut at tiles/flight/ folds it back into the world.</div>
         </div>
     </div>
@@ -31,8 +33,14 @@
             { type: 'circle', 'source-layer': 'airports', paint: { 'circle-radius': 6, 'circle-color': '#FFFFFF', 'circle-stroke-color': '#1f4fd6', 'circle-stroke-width': 3 } },
             { type: 'symbol', 'source-layer': 'airports', layout: { 'text-field': ['get', 'LABEL'], 'text-font': ['Noto Sans Bold'], 'text-anchor': 'top', 'text-offset': [0, 0.8], 'text-size': 13 }, paint: { 'text-color': '#101317', 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.5 } },
         ]);
-        const apply = () => map.setProjection({ type: document.querySelector('input[name=proj]:checked').value });
+        const status = document.getElementById('status');
+        const apply = () => {
+            const type = document.querySelector('input[name=proj]:checked').value;
+            map.setProjection({ type });
+            tg.say(status, type === 'globe' ? 'On a globe the route is one unbroken line and there is no seam to cross.' : 'Web Mercator: the seam runs down 180 degrees, and the route still draws whole across it.');
+        };
         for (const radio of document.querySelectorAll('input[name=proj]')) radio.addEventListener('change', apply);
+        apply();
     </script>
 </body>
 </html>

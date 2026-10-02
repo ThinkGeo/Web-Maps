@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Nautical Charts</title>
     <link rel="stylesheet" href="../lib/maplibre-gl.css">
     <link rel="stylesheet" href="../css/samples.css">
@@ -86,13 +87,16 @@
             document.getElementById('hazards').innerHTML = r.hazards.length ? r.hazards.map(h => `<li>${h.name} - ${h.distance} m</li>`).join('') : '<li>none</li>';
             document.getElementById('restricted').innerHTML = r.restricted.map(z => `<div><b>${z.name}</b>${z.details ? ' - ' + z.details : ''}</div>`).join('');
         };
+        // She is under way as soon as the page opens; the button is there to bring her to.
         const sail = document.getElementById('sail');
         const stop = () => { clearInterval(timer); timer = null; sail.textContent = 'Sail'; };
-        sail.addEventListener('click', () => { if (timer) stop(); else { timer = setInterval(tick, 250); sail.textContent = 'Stop'; } });
+        const start = () => { if (!timer) { timer = setInterval(tick, 250); sail.textContent = 'Stop'; } };
+        sail.addEventListener('click', () => timer ? stop() : start());
+        start();
         // A route of your own: click the vertices, double-click to finish; the ship sails it in a loop.
         document.getElementById('draw').addEventListener('click', () => {
             stop();
-            tg.draw(map, 'line', (feature) => { route = feature.geometry.coordinates.concat([feature.geometry.coordinates[0]]); at = 0; along = 0; segments = []; wake.setData(null); showRoute(); });
+            tg.draw(map, 'line', (feature) => { route = feature.geometry.coordinates.concat([feature.geometry.coordinates[0]]); at = 0; along = 0; segments = []; wake.setData(null); showRoute(); start(); });
         });
     </script>
 </body>

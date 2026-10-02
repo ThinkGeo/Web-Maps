@@ -17,6 +17,7 @@
     <div style="width:420px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
         <div style="padding:8px 8px 4px;font-weight:600">style.json - edit it; the map follows</div>
         <div style="padding:0 8px 6px;color:#555">Named places of Spain from the IGN's OGC API - Features service, read by OgcApiAsyncFeatureSource in latitude and longitude and projected to the map on the server before the tiles are cut.</div>
+        <div style="padding:0 8px 6px;color:#555;font-size:11px">Data: © <a href="https://api-features.ign.es/" target="_blank" rel="noopener">Instituto Geográfico Nacional (IGN)</a>, licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.</div>
         <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
                   style="flex:1;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre"></textarea>
         <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>

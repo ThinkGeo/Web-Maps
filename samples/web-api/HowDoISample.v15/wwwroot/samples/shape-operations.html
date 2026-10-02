@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Shape Operations</title>
     <link rel="stylesheet" href="../lib/maplibre-gl.css">
     <link rel="stylesheet" href="../css/samples.css">
@@ -22,6 +23,7 @@
                 <label id="second-label" hidden><span></span> <input type="text" id="second" style="width:80px"></label>
                 <label><input type="checkbox" id="animate"> Animate it</label>
             </div>
+            <div class="status" id="status"></div>
             <p id="legend">Orange is the shape read from the file, green what the operation makes of it, blue the area the paired operations use. Every operation runs on the server; the outcome comes back as GeoJSON.</p>
         </aside>
     </div>
@@ -54,6 +56,9 @@
             region.setData(r.region ? { type: 'Feature', geometry: r.region, properties: {} } : null);
             result.setData(r.result ? { type: 'Feature', geometry: r.result, properties: {} } : null);
             document.getElementById('union-note').textContent = r.note;
+            const parts = (shape) => !shape ? 0 : shape.type === 'GeometryCollection' ? shape.geometries.length : shape.type.startsWith('Multi') ? shape.coordinates.length : 1;
+            const many = parts(r.result);
+            tg.say(document.getElementById('status'), many ? `${operation}: ${many} ${many === 1 ? 'shape' : 'shapes'} back from the server` : `${operation}: the server returned nothing to draw`);
             if (!framed) { framed = true; tg.fit(map, r.bounds, 0); }
         };
         const choose = (name) => {

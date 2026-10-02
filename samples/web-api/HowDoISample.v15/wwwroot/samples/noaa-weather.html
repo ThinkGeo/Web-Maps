@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NOAA Weather Feeds</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="controls">
+                <div style="font-weight:600">Two live feeds, read on the server</div>
+                <label><input type="radio" name="feed" value="stations" checked> Stations and what they are reading now</label>
+                <label><input type="radio" name="feed" value="warnings"> Warnings NOAA has active right now</label>
+                <div class="note" id="note" style="padding:0"></div>
+            </div>
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        // A live service is a FeatureSource like any other: the server asks NOAA, cuts the answer
+        // into tiles, and the browser styles it without knowing where it came from.
+        const bySeverity = (alpha) => ['match', ['get', 'SEVERITY'], 'Extreme', `rgba(215,25,28,${alpha})`, 'Severe', `rgba(244,109,67,${alpha})`, 'Moderate', `rgba(253,174,97,${alpha})`, 'Minor', `rgba(171,217,233,${alpha})`, `rgba(150,150,150,${alpha})`];
+        const feeds = {
+            stations: {
+                note: 'NoaaWeatherStationFeatureSource reads the stations and their current readings on the server, and they are cut into tiles at tiles/stations/. Each dot is coloured by its Temperature column, and labelled with it past zoom 7.',
+                layers: [
+                    { type: 'circle', 'source-layer': 'stations',
+                      paint: { 'circle-radius': 4.5, 'circle-color': ['step', ['to-number', ['get', 'Temperature']], 'rgba(69,117,180,1)', 32, 'rgba(145,191,219,1)', 50, 'rgba(255,255,191,1)', 70, 'rgba(252,141,89,1)', 85, 'rgba(215,48,39,1)'],
+                               'circle-stroke-color': 'rgba(255,255,255,1)', 'circle-stroke-width': 1.5 } },
+                    { type: 'symbol', 'source-layer': 'stations', minzoom: 7,
+                      layout: { 'text-field': ['concat', ['get', 'Temperature'], '°'], 'text-font': ['Noto Sans Bold'], 'text-size': 10, 'text-offset': [0, 1.1] },
+                      paint: { 'text-color': '#333333', 'text-halo-color': '#FFFFFF', 'text-halo-width': 1 } },
+                ],
+            },
+            warnings: {
+                note: 'NoaaWeatherWarningsFeatureSource reads the active warnings on the server, served at tiles/warnings/: polygons coloured by their SEVERITY column and labelled by EVENT. On a quiet day there may be very few.',
+                layers: [
+                    { type: 'fill', 'source-layer': 'warnings', paint: { 'fill-color': bySeverity(0.4) } },
+                    { type: 'line', 'source-layer': 'warnings', paint: { 'line-color': bySeverity(1), 'line-width': 1.5 } },
+                    { type: 'symbol', 'source-layer': 'warnings', layout: { 'text-field': ['get', 'EVENT'], 'text-font': ['Noto Sans Bold'], 'text-size': 11, 'text-max-width': 16 },
+                      paint: { 'text-color': 'rgba(60,60,60,1)', 'text-halo-color': 'rgba(255,255,255,1)', 'text-halo-width': 1.5 } },
+                ],
+            },
+        };
+
+        const map = tg.createMap({ center: [-10807050, 5045070], zoom: 4 });
+        await tg.ready(map);
+        const status = document.getElementById('status');
+        let overlay = null, editor = null, feed = 'stations';
+
+        const show = () => {
+            if (overlay) overlay.remove();
+            overlay = tg.vectorOverlay(map, feed, feeds[feed].layers, { maxzoom: 8 });
+            document.getElementById('note').textContent = feeds[feed].note;
+            // Setting the editor text writes a line of its own, so ours goes after it. A live
+            // feed can take a moment: the server has to ask NOAA before it can cut the first tile.
+            editor.text = tg.styleText(feeds[feed].layers);
+            tg.say(status, 'reading the feed on the server...');
+            const count = () => { if (feed !== asked) return; const mine = map.getStyle().layers.filter(l => l.source === feed).map(l => l.id); tg.say(status, `${map.queryRenderedFeatures({ layers: mine }).length} drawn from the feed as it stands now`); };
+            const asked = feed;
+            map.on('idle', count);
+        };
+        editor = tg.editor(document.getElementById('style'), status, tg.styleText(feeds.stations.layers), (edited) => overlay && overlay.setLayers(edited));
+        for (const radio of document.querySelectorAll('input[name=feed]')) radio.addEventListener('change', () => { if (radio.checked) { feed = radio.value; show(); } });
+        show();
+    </script>
+</body>
+</html>

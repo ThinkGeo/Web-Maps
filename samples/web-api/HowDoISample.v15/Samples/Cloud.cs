@@ -220,33 +220,6 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 });
             });
 
-            // Click anywhere and TimeZoneCloudClient answers with the zone, the local time there
-            // and the zone's outline, which comes back in latitude and longitude.
-            app.MapPost("/samples/cloud/timezone", async (HttpRequest request) =>
-            {
-                var body = await Body(request);
-                var point = GeoJson.Point(body.GetProperty("lng").GetDouble(), body.GetProperty("lat").GetDouble());
-                var client = new TimeZoneCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
-                CloudTimeZoneResult result;
-                try
-                {
-                    result = await client.GetTimeZoneByCoordinateAsync(point.X, point.Y, 3857);
-                }
-                catch (Exception exception)
-                {
-                    return Results.Problem(exception.Message, statusCode: 502);
-                }
-                return Results.Json(new
-                {
-                    timeZone = result.TimeZone,
-                    localTime = result.CurrentLocalTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
-                    offset = (result.OffsetSeconds >= 0 ? "+" : "-") + TimeSpan.FromSeconds(Math.Abs(result.OffsetSeconds)).ToString(@"h\:mm"),
-                    daylightSaving = result.DaylightSavingsActive,
-                    country = result.CountryName,
-                    shape = result.Shape == null ? (JsonElement?)null : JsonDocument.Parse(result.Shape.GetGeoJson()).RootElement,
-                });
-            });
-
             // ColorCloudClient hands back a family of colours that go together, from a colour
             // given or one it picks. A family with a base colour gives several sets - one per
             // colour of the family - and the sets are read in order; a hue or quality family is
@@ -279,47 +252,6 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 }
             });
 
-            // The features behind ThinkGeo's world map asked for by a shape: MapsQueryCloudClient
-            // finds the ones containing, intersecting, overlapping, within or nearest to it.
-            app.MapPost("/samples/cloud/maps-query", async (HttpRequest request) =>
-            {
-                var body = await Body(request);
-                var shape = GeoJson.Shape(body.GetProperty("geometry"));
-                var layer = body.GetProperty("layer").GetString();
-                var kind = body.GetProperty("kind").GetString();
-                var maxResults = body.GetProperty("maxResults").GetInt32();
-                var client = new MapsQueryCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
-                CloudMapsQueryResult result;
-                try
-                {
-                    var name = layer.ToLowerInvariant().Replace("-", "");
-                    var options = new CloudMapsQuerySpatialQueryOptions { MaxResults = maxResults };
-                    switch (kind)
-                    {
-                        case "Containing": result = await client.GetFeaturesContainingAsync(name, shape, 3857, options); break;
-                        case "Nearest": result = await client.GetFeaturesNearestAsync(name, shape, 3857, maxResults); break;
-                        case "Overlapping": result = await client.GetFeaturesOverlappingAsync(name, shape, 3857, options); break;
-                        case "Within": result = await client.GetFeaturesWithinAsync(name, shape, 3857, options); break;
-                        default: result = await client.GetFeaturesIntersectingAsync(name, shape, 3857, options); break;
-                    }
-                }
-                catch (Exception exception)
-                {
-                    return Results.Problem(exception.InnerException?.Message ?? exception.Message, statusCode: 502);
-                }
-                if (result.Exception != null) return Results.Problem(result.Exception.Message, statusCode: 502);
-
-                var found = result.Features?.ToList() ?? new List<Feature>();
-                var bounds = found.Count > 0 ? MapUtil.GetBoundingBoxOfItems(found.Select(feature => feature.GetShape()).Append(shape)) : null;
-                bounds?.ScaleUp(20);
-                return Results.Json(new
-                {
-                    features = JsonDocument.Parse(GeoJson.Collection(found)).RootElement,
-                    described = found.Take(60).Select(Describe),
-                    count = found.Count,
-                    bounds = bounds == null ? null : GeoJson.Bounds(bounds),
-                });
-            });
         }
 
         private static async Task<JsonElement> Body(HttpRequest request)
@@ -342,12 +274,5 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
         }
 
         private static IEnumerable<GeoColor> Flat(Dictionary<GeoColor, System.Collections.ObjectModel.Collection<GeoColor>> sets) => sets.Values.SelectMany(set => set);
-
-        private static string Describe(Feature feature)
-        {
-            var name = feature.ColumnValues.FirstOrDefault(column => column.Key == "name" || column.Key == "NAME").Value;
-            var type = feature.ColumnValues.FirstOrDefault(column => column.Key == "type" || column.Key == "fclass" || column.Key == "kind").Value;
-            return string.IsNullOrEmpty(name) && string.IsNullOrEmpty(type) ? feature.GetWellKnownType().ToString() : $"{name} {(string.IsNullOrEmpty(type) ? "" : "(" + type + ")")}".Trim();
-        }
     }
 }

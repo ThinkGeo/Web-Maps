@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>US Demographic</title>
     <link rel="stylesheet" href="../lib/maplibre-gl.css">
     <link rel="stylesheet" href="../css/samples.css">
@@ -17,6 +18,7 @@
                 <div style="font-weight:600;margin-bottom:5px"><span id="legend-name"></span><span style="color:#888;font-weight:400" id="legend-unit"></span></div>
                 <div id="legend"></div>
             </div>
+            <div class="status" id="status" style="padding:7px 11px;border-top:1px solid #ddd"></div>
         </aside>
     </div>
     <script src="../lib/maplibre-gl.js"></script>
@@ -41,6 +43,7 @@
             document.getElementById('legend-name').textContent = c.name;
             document.getElementById('legend-unit').textContent = ` (${c.unit})`;
             const legend = [`< ${fmt(c.breaks[0], c.divisor)}`, ...c.breaks.slice(0, -1).map((b, i) => `${fmt(b, c.divisor)} – ${fmt(c.breaks[i + 1], c.divisor)}`), `≥ ${fmt(c.breaks[3], c.divisor)}`];
+            tg.say(document.getElementById('status'), `${c.name}, in ${c.unit}; the five classes come from breaks the server worked out over the whole table`);
             document.getElementById('legend').innerHTML = legend.map((text, i) => `<div style="display:flex;align-items:center;gap:7px;margin:2px 0"><span style="width:16px;height:16px;background:${colors[i]};border:1px solid #999;flex:none"></span><span>${text}</span></div>`).reverse().join('');
         };
         const list = document.getElementById('categories');

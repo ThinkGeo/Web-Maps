@@ -112,15 +112,6 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                     });
                 }
             });
-
-            // Where the chart is, for the map to start at.
-            app.MapGet("/samples/nautical/bounds", () =>
-            {
-                lock (Helm)
-                {
-                    return Results.Json(GeoJson.Bounds(Chart.Value.GetBoundingBox()));
-                }
-            });
         }
 
         private static double? Number(Feature feature, string column) =>

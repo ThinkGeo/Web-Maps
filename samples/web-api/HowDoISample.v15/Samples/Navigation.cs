@@ -30,28 +30,6 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
 
         public void MapEndpoints(IEndpointRouteBuilder app)
         {
-            // The GPS route: latitude, longitude per line of the CSV, as the line to follow, the
-            // point to start from, and a circle to arrive in.
-            app.MapGet("/samples/navigation/vehicle-route", () =>
-            {
-                var points = new List<Vertex>();
-                foreach (var line in File.ReadLines(SampleData.Path("Csv/vehicle-route.csv")))
-                {
-                    var parts = line.Split(',');
-                    if (parts.Length < 2) continue;
-                    var latitude = double.Parse(parts[0], CultureInfo.InvariantCulture);
-                    var longitude = double.Parse(parts[1], CultureInfo.InvariantCulture);
-                    points.Add(new Vertex(GeoJson.Point(longitude, latitude)));
-                }
-                var end = points[points.Count - 1];
-                var destination = new EllipseShape(new PointShape(end), 55, GeographyUnit.Meter, DistanceUnit.Meter).ToPolygon(36);
-                return Results.Text(GeoJson.Collection(new[]
-                {
-                    new Feature(new LineShape(points), new Dictionary<string, string> { ["Kind"] = "route" }),
-                    new Feature(destination, new Dictionary<string, string> { ["Kind"] = "destination" }),
-                }), "application/json");
-            });
-
             // The route through the lane map: a trace along it in the map's meters, the lane
             // instructions it passes, and what the map is.
             app.MapGet("/samples/navigation/lane-route", () =>

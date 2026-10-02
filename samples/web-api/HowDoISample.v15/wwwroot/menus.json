@@ -2,17 +2,9 @@
   {
     "id": "getting-started",
     "title": "Getting Started",
-    "description": "One shapefile on the server, cut into vector tiles and drawn by the browser, with the map's own zoom and extent limits.",
+    "description": "A shapefile on the server becomes vector tiles the browser draws with one style rule. Fit the map to the layer's extent, go to a scale, and hold it inside Frisco.",
     "source": "GettingStarted",
     "preicon": "fas fa-file",
-    "group": "Getting Started"
-  },
-  {
-    "id": "map-navigation",
-    "title": "Map Navigation",
-    "description": "Zoom, scale, centre, rotation and pitch set from code, an overview map that turns with the map, and the globe.",
-    "source": "Extending",
-    "preicon": "fas fa-location-arrow",
     "group": "Getting Started"
   },
   {
@@ -48,27 +40,27 @@
     "group": "Maps from a Service"
   },
   {
-    "id": "noaa-weather-stations",
-    "title": "NOAA Weather Stations",
-    "description": "Live weather station readings from NOAA, coloured by temperature.",
+    "id": "noaa-weather",
+    "title": "NOAA Weather Feeds",
+    "description": "NOAA's stations and its active warnings, read live on the server by a FeatureSource and cut into tiles like any file.",
     "source": "Services",
-    "preicon": "fas fa-thermometer-half",
+    "preicon": "fas fa-cloud",
     "group": "Maps from a Service"
   },
   {
-    "id": "noaa-weather-warnings",
-    "title": "NOAA Weather Warnings",
-    "description": "The warnings NOAA has active right now, coloured by severity.",
+    "id": "wms",
+    "title": "WMS",
+    "description": "A WMS draws to order: the server asks it for the exact extent of every tile, and reads the layers, formats and projections it advertises.",
     "source": "Services",
-    "preicon": "fas fa-exclamation-triangle",
+    "preicon": "fas fa-cloud",
     "group": "Maps from a Service"
   },
   {
-    "id": "load-wms",
-    "title": "WMS and WMTS",
-    "description": "A WMS layer and a WMTS layer, each requested tile by tile from its server.",
+    "id": "wmts",
+    "title": "WMTS",
+    "description": "A WMTS hands over tiles cut in advance on a fixed matrix set, so the server has to ask on the ladder each layer was cut against.",
     "source": "Services",
-    "preicon": "fas fa-server",
+    "preicon": "fas fa-cloud",
     "group": "Maps from a Service"
   },
   {
@@ -120,6 +112,14 @@
     "group": "Your Data"
   },
   {
+    "id": "lane-level-navigation",
+    "title": "Lane-Level Navigation",
+    "description": "An OpenDRIVE HD map of Wolfsburg read on the server, lane by lane, with a vehicle guided along it and the lane instructions it passes.",
+    "source": "Navigation",
+    "preicon": "fas fa-road",
+    "group": "Your Data"
+  },
+  {
     "id": "render-points-lines-and-polygons",
     "title": "Points, Lines and Polygons",
     "description": "Style and label points, lines and polygons from three shapefiles; edit the style.json and the map follows.",
@@ -152,43 +152,19 @@
     "group": "Styling"
   },
   {
-    "id": "heatmap",
-    "title": "Heatmap",
-    "description": "A heatmap over point sightings, with weight, radius, intensity and colour ramp as live controls.",
-    "source": "Styling",
-    "preicon": "fas fa-fire",
-    "group": "Styling"
-  },
-  {
-    "id": "display-cluster-points",
-    "title": "Cluster Points",
-    "description": "Hundreds of points grouped in the browser into numbered circles that split as the map zooms in.",
-    "source": "Styling",
-    "preicon": "fas fa-braille",
-    "group": "Styling"
-  },
-  {
-    "id": "create-a-multi-column-text-style",
-    "title": "Multi-Column Labels",
-    "description": "World capitals labelled with name and population from two columns by a concat expression.",
-    "source": "Styling",
-    "preicon": "fas fa-font",
-    "group": "Styling"
-  },
-  {
-    "id": "display-dot-density",
-    "title": "Dot Density",
-    "description": "Housing units as dots scattered inside each state, one per 25,000, generated once as data.",
-    "source": "Styling",
-    "preicon": "fas fa-braille",
-    "group": "Styling"
-  },
-  {
     "id": "hatch-styles",
     "title": "Hatch Styles",
     "description": "Every GeoHatchStyle drawn by AreaStyle.CreateHatchStyle and tiled across the parks as a fill pattern.",
     "source": "Styling",
     "preicon": "fas fa-th",
+    "group": "Styling"
+  },
+  {
+    "id": "too-many-points",
+    "title": "Too Many Points",
+    "description": "More points than pixels, answered three ways. A heatmap, clusters and dot density, each splitting the work between server and browser differently.",
+    "source": "Styling",
+    "preicon": "fas fa-palette",
     "group": "Styling"
   },
   {
@@ -216,22 +192,6 @@
     "group": "Styling"
   },
   {
-    "id": "vehicle-navigation",
-    "title": "Vehicle Navigation",
-    "description": "The camera follows a vehicle along a GPS route, turned to its heading and tilted, while the trail grows behind it.",
-    "source": "Navigation",
-    "preicon": "fas fa-location-arrow",
-    "group": "Styling"
-  },
-  {
-    "id": "lane-level-navigation",
-    "title": "Lane-Level Navigation",
-    "description": "An OpenDRIVE HD map of Wolfsburg drawn lane by lane while the camera follows a vehicle with lane-level instructions.",
-    "source": "Navigation",
-    "preicon": "fas fa-road",
-    "group": "Styling"
-  },
-  {
     "id": "shape-operations",
     "title": "Shape Operations",
     "description": "Buffer, union, intersect, difference, simplify, convex hull, split and snap, run on the server and animated as the parameter changes.",
@@ -256,14 +216,6 @@
     "group": "Shapes & Spatial Queries"
   },
   {
-    "id": "get-data-from-one-feature",
-    "title": "Feature Attributes",
-    "description": "Click a park and read every column its record holds, found by a point-in-polygon query.",
-    "source": "Shapes",
-    "preicon": "far fa-info-circle",
-    "group": "Shapes & Spatial Queries"
-  },
-  {
     "id": "validate-topology",
     "title": "Validate Topology",
     "description": "Twenty-five topology rules checked with TopologyValidator, each drawn with the shapes that break it.",
@@ -282,7 +234,7 @@
   {
     "id": "measure-in-projection",
     "title": "Measure in the Right Projection",
-    "description": "Web Mercator is for looking at, not for measuring in: the same park measured on the ellipsoid, in an equal-area projection, in its state plane grid and in Web Mercator, at any latitude you drag it to.",
+    "description": "Take hold of Greenland and drag it to the equator. It covers the same ground the whole way down; only what Web Mercator makes of it shrinks.",
     "source": "Projections",
     "preicon": "fas fa-globe",
     "group": "Projections"
@@ -312,11 +264,11 @@
     "group": "Map Tools & Adornments"
   },
   {
-    "id": "popups",
-    "title": "Markers and Popups",
-    "description": "Popups over Frisco's hotels read from a shapefile, and markers dropped where you click.",
+    "id": "popups-and-markers",
+    "title": "Popups and Markers",
+    "description": "Things the browser pins to a place outside the tiles, and a click that asks the server what record lies underneath.",
     "source": "Tools",
-    "preicon": "far fa-comment-alt",
+    "preicon": "fas fa-tools",
     "group": "Map Tools & Adornments"
   },
   {
@@ -325,14 +277,6 @@
     "description": "An address or place name goes to GeocodingCloudClient; every match comes back as a point with its bounds.",
     "source": "Cloud",
     "preicon": "fas fa-search-location",
-    "group": "ThinkGeo Cloud Services"
-  },
-  {
-    "id": "reverse-geocoding",
-    "title": "Reverse Geocoding",
-    "description": "Click the map and ReverseGeocodingCloudClient answers with the nearest address and the places within a radius.",
-    "source": "Cloud",
-    "preicon": "fas fa-map-pin",
     "group": "ThinkGeo Cloud Services"
   },
   {
@@ -352,14 +296,6 @@
     "group": "ThinkGeo Cloud Services"
   },
   {
-    "id": "routing-traveling-salesperson",
-    "title": "Traveling Salesperson",
-    "description": "Stops in any order go to the routing service, which answers with the shortest round trip.",
-    "source": "Cloud",
-    "preicon": "fas fa-random",
-    "group": "ThinkGeo Cloud Services"
-  },
-  {
     "id": "elevation",
     "title": "Elevation",
     "description": "A point, line or area is sampled by ElevationCloudClient; a line's samples draw as a profile.",
@@ -368,27 +304,11 @@
     "group": "ThinkGeo Cloud Services"
   },
   {
-    "id": "timezone",
-    "title": "Time Zone",
-    "description": "Click anywhere and TimeZoneCloudClient answers with the zone, the local time and the zone's outline.",
-    "source": "Cloud",
-    "preicon": "far fa-clock",
-    "group": "ThinkGeo Cloud Services"
-  },
-  {
     "id": "color-utilities",
     "title": "Color Utilities",
     "description": "ColorCloudClient hands back a family of colours that go together; six of them class Frisco's block groups.",
     "source": "Cloud",
     "preicon": "fas fa-palette",
-    "group": "ThinkGeo Cloud Services"
-  },
-  {
-    "id": "world-maps-query",
-    "title": "World Maps Query",
-    "description": "The features behind ThinkGeo's world map found by a shape you draw, with MapsQueryCloudClient.",
-    "source": "Cloud",
-    "preicon": "fas fa-layer-group",
     "group": "ThinkGeo Cloud Services"
   },
   {

@@ -30,3 +30,29 @@ html, body { height: 100%; margin: 0; font: 13px system-ui, sans-serif; color: #
 .legend { position: absolute; left: 12px; bottom: 12px; padding: 8px 10px; background: rgba(255,255,255,.92); border-radius: 4px; font: 12px system-ui, sans-serif; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
 .legend .swatch { display: inline-block; width: 14px; height: 10px; border: 1px solid #888; vertical-align: middle; margin-right: 4px; }
 .maplibregl-popup-content { font: 12px system-ui, sans-serif; }
+
+/* On a tablet the panel gives room back to the map; several pages ask for a width of their own,
+   which is why these have to insist. */
+@media (max-width: 1100px) {
+    .panel, .panel.narrow { width: 300px !important; }
+    .panel.editor-panel { width: 340px !important; }
+}
+
+/* On a phone the two sit one above the other: the map keeps the top half and the panel scrolls
+   under it. A page whose panel is an editor needs the textarea to stop growing. */
+@media (max-width: 760px), (max-height: 460px) {
+    .page { flex-direction: column; }
+    #map { flex: 1 1 auto; min-height: 50vh; }
+    .panel, .panel.narrow, .panel.editor-panel { width: auto !important; max-height: 50%; flex: 0 0 auto; border-left: 0; border-top: 1px solid #ccc; }
+    .editor { min-height: 0; }
+    .editor textarea { min-height: 120px; }
+    .panel .row { gap: 6px; }
+    .legend { left: 8px; bottom: 8px; }
+}
+
+/* Touch targets, where a finger is doing the pointing. */
+@media (pointer: coarse) {
+    .btn { padding: 7px 12px; }
+    .panel .list > div { padding: 8px 6px; }
+    .panel input[type=text], .panel input[type=number], .panel select { padding: 6px 8px; }
+}

@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Getting Started</title>
     <link rel="stylesheet" href="../lib/maplibre-gl.css">
     <link rel="stylesheet" href="../css/samples.css">
@@ -11,11 +12,13 @@
         <div id="map"></div>
         <aside class="panel narrow">
             <h2>Getting started</h2>
-            <p>The smallest map this Web API serves. Frisco's parks are read from a shapefile on the server, cut into vector tiles at tiles/getting-started/ as the map asks for them, and drawn by the browser with one style layer. Drag to pan, the wheel to zoom, right-drag to rotate.</p>
+            <p>The smallest map this Web API serves. Frisco's parks are read from a shapefile on the server, cut into vector tiles at tiles/getting-started/ as the map asks for them, and drawn by the browser with one style layer. Drag to pan, the wheel to zoom, right-drag to rotate. The readout counts both ways: the browser thinks in zoom levels and ThinkGeo in scales, and zoomForScale turns one into the other.</p>
             <div class="row"><button class="btn" id="in">Zoom in</button><button class="btn" id="out">Zoom out</button><button class="btn" id="fit">Back to the parks</button></div>
+            <div class="row"><span>Go to scale 1 :</span><input type="number" id="scale" value="20000" style="width:90px"><button class="btn" id="go-scale">Go</button></div>
             <label><input type="checkbox" id="inside"> Keep the map inside Frisco</label>
             <label><input type="checkbox" id="zooms"> Stop zooming out past 1:2,000,000 and in past 1:5,000</label>
             <pre id="readout" style="font:12px Consolas,monospace;color:#444;margin:0"></pre>
+            <div class="status" id="status"></div>
         </aside>
     </div>
     <script src="../lib/maplibre-gl.js"></script>
@@ -28,9 +31,14 @@
         const bounds = await tg.get('samples/getting-started/bounds');
         tg.fit(map, bounds, 0);
 
+        // The tiles arrive as the map asks for them; this is what the browser has in hand.
+        const status = document.getElementById('status');
+        map.on('idle', () => tg.say(status, `${map.queryRenderedFeatures({ layers: ['getting-started-0'] }).length} parks in view, from tiles the server cut when the map asked`));
+
         document.getElementById('in').addEventListener('click', () => map.zoomIn());
         document.getElementById('out').addEventListener('click', () => map.zoomOut());
         document.getElementById('fit').addEventListener('click', () => tg.fit(map, bounds, 0));
+        document.getElementById('go-scale').addEventListener('click', () => map.easeTo({ zoom: tg.zoomForScale(+document.getElementById('scale').value) }));
         // The map's own limits: a box it cannot pan out of, and the zooms it stops at, given as scales.
         document.getElementById('inside').addEventListener('change', (e) => map.setMaxBounds(e.target.checked ? [[bounds[0], bounds[1]], [bounds[2], bounds[3]]] : null));
         document.getElementById('zooms').addEventListener('change', (e) => { map.setMinZoom(e.target.checked ? tg.zoomForScale(2000000) : 0); map.setMaxZoom(e.target.checked ? tg.zoomForScale(5000) : 20); });

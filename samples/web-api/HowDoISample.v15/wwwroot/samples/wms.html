@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WMS</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        .facts { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font: 12px system-ui; }
+        .facts b { font: 12px Consolas, monospace; font-weight: 600; }
+        .names { font: 11px Consolas, monospace; color: #444; max-height: 110px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow" style="width:340px">
+            <h2>WMS</h2>
+            <p>A WMS draws to order. The server hands it the exact extent and pixel size of every tile it is cutting and gets a picture back, so any layer the service names can be drawn at any scale. The browser only ever receives PNG tiles from raster/wms-&hellip;/.</p>
+            <div id="layers" style="display:flex;flex-direction:column;gap:2px"></div>
+            <div class="row"><button class="btn" id="europe">Europe</button><button class="btn" id="alps">The Alps</button></div>
+            <div class="status" id="status"></div>
+            <div style="border-top:1px solid #ddd;padding-top:7px">
+                <div style="font-weight:600;margin-bottom:5px">What the service says about itself</div>
+                <div class="facts" id="facts"></div>
+                <div style="margin:6px 0 2px;color:#555">Every layer it advertises</div>
+                <div class="names" id="names"></div>
+            </div>
+            <p>None of that list reaches the browser. MapLibre has no WMS client, only a generic raster source, so capabilities, layer names, styles and the twenty-odd projections on offer are things only the server ever reads.</p>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const map = tg.createMap({ center: [1100000, 6000000], zoom: 5, basemap: null });
+        await tg.ready(map);
+        const status = document.getElementById('status');
+        let overlay = null;
+
+        const show = (key, name) => {
+            if (overlay) overlay.remove();
+            overlay = tg.rasterOverlay(map, 'wms-' + key);
+            tg.say(status, `${name}, drawn tile by tile on the server`);
+        };
+
+        const service = await tg.get('samples/services/wms-capabilities');
+        document.getElementById('facts').innerHTML = [
+            ['version', service.version],
+            ['layers advertised', service.layers.length],
+            ['image formats', service.formats.join(', ')],
+            ['projections offered', service.projections],
+            ['GetFeatureInfo as', service.featureInfo.join(', ')],
+        ].map(([label, value]) => `<span>${label}</span><b>${value}</b>`).join('');
+        document.getElementById('names').textContent = service.layers.map(layer => layer.name).join('\n');
+
+        const list = document.getElementById('layers');
+        service.offered.forEach((layer, i) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'layer', checked: i === 0 });
+            const title = (service.layers.find(one => one.name === layer.name) || {}).title || layer.name;
+            radio.addEventListener('change', () => show(layer.key, layer.name));
+            label.append(radio, `${layer.name} - ${title}`);
+            list.appendChild(label);
+        });
+        show(service.offered[0].key, service.offered[0].name);
+        document.getElementById('europe').addEventListener('click', () => map.easeTo({ center: tg.toLngLat(1100000, 6000000), zoom: 5 }));
+        document.getElementById('alps').addEventListener('click', () => map.easeTo({ center: tg.toLngLat(920000, 5800000), zoom: 8 }));
+    </script>
+</body>
+</html>

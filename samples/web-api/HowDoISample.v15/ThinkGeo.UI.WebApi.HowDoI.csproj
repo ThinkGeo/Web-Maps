@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -10,14 +10,16 @@
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 
+  <!-- Every package of the set is pinned to one beta: the gallery shows what that build of the
+       SDK does, and a mixed set would make it unclear which. -->
   <ItemGroup>
-    <ProjectReference Include="D:\Source\thinkgeosdk-webapi\ThinkGeo.Core\Core\ThinkGeo.Core.csproj" />
-    <ProjectReference Include="D:\Source\thinkgeosdk-webapi\ThinkGeo.UI\Web\ThinkGeo.UI.WebApi\ThinkGeo.UI.WebApi.csproj" />
-    <ProjectReference Include="D:\Source\thinkgeosdk-webapi\ThinkGeo.Core\Extensions\Gdal\ThinkGeo.Gdal.csproj" />
-    <ProjectReference Include="D:\Source\thinkgeosdk-webapi\ThinkGeo.Core\Extensions\FileGeoDatabase\ThinkGeo.FileGeoDatabase.csproj" />
-    <ProjectReference Include="D:\Source\thinkgeosdk-webapi\ThinkGeo.Core\Extensions\NauticalCharts\ThinkGeo.NauticalCharts.csproj" />
-    <ProjectReference Include="D:\Source\thinkgeosdk-webapi\ThinkGeo.Core\Extensions\PostgreSql\ThinkGeo.PostgreSql.csproj" />
-    <ProjectReference Include="D:\Source\thinkgeosdk-webapi\ThinkGeo.Core\Extensions\SqlServer\ThinkGeo.SqlServer.csproj" />
+    <PackageReference Include="ThinkGeo.Core" Version="15.0.0-beta197" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="15.0.0-beta197" />
+    <PackageReference Include="ThinkGeo.Gdal" Version="15.0.0-beta197" />
+    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.0.0-beta197" />
+    <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.0.0-beta197" />
+    <PackageReference Include="ThinkGeo.PostgreSql" Version="15.0.0-beta197" />
+    <PackageReference Include="ThinkGeo.SqlServer" Version="15.0.0-beta197" />
   </ItemGroup>
 
   <!-- The sample data is the Blazor gallery's, linked in rather than copied: the two galleries

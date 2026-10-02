@@ -1,4 +1,4 @@
-# AGENTS.md (thinkgeo-web-maps)
+﻿# AGENTS.md (thinkgeo-web-maps)
 
 Repository root: `.`
 
@@ -11,7 +11,7 @@ Repository root: `.`
 - `quick-start-guide/QuickStartGuide_Blazor/BlazorSample.sln`
 - `quick-start-guide/QuickStartGuide_WebAPI/WebApiSample.sln`
 - `samples/blazor/HowDoISample/ThinkGeo.UI.Blazor.HowDoI.sln`
-- `samples/web-api/HowDoISample/ThinkGeo.UI.WebApi.HowDoI.sln`
+- `samples/web-api/HowDoISample/ThinkGeo.UI.WebApi.HowDoI.csproj`
 
 ## 3) Main Areas
 

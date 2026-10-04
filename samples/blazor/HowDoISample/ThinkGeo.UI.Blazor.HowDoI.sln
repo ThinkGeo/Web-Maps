@@ -1,25 +1,69 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29230.61
+# Visual Studio Version 18
+VisualStudioVersion = 18.10.12224.181 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThinkGeo.UI.Blazor.HowDoI", "ThinkGeo.UI.Blazor.HowDoI.csproj", "{F28C42C7-78AB-4BB3-90F4-CB375B941F9E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkGeo.UI.Blazor", "..\..\..\..\thinkgeosdk\ThinkGeo.UI\Web\ThinkGeo.UI.Blazor\ThinkGeo.UI.Blazor.csproj", "{86A84EA5-9616-4D8F-ABCA-4272D27D194D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkGeo.Core", "..\..\..\..\thinkgeosdk\ThinkGeo.Core\Core\ThinkGeo.Core.csproj", "{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{F28C42C7-78AB-4BB3-90F4-CB375B941F9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F28C42C7-78AB-4BB3-90F4-CB375B941F9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F28C42C7-78AB-4BB3-90F4-CB375B941F9E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F28C42C7-78AB-4BB3-90F4-CB375B941F9E}.Debug|x64.Build.0 = Debug|Any CPU
+		{F28C42C7-78AB-4BB3-90F4-CB375B941F9E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F28C42C7-78AB-4BB3-90F4-CB375B941F9E}.Debug|x86.Build.0 = Debug|Any CPU
 		{F28C42C7-78AB-4BB3-90F4-CB375B941F9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F28C42C7-78AB-4BB3-90F4-CB375B941F9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F28C42C7-78AB-4BB3-90F4-CB375B941F9E}.Release|x64.ActiveCfg = Release|Any CPU
+		{F28C42C7-78AB-4BB3-90F4-CB375B941F9E}.Release|x64.Build.0 = Release|Any CPU
+		{F28C42C7-78AB-4BB3-90F4-CB375B941F9E}.Release|x86.ActiveCfg = Release|Any CPU
+		{F28C42C7-78AB-4BB3-90F4-CB375B941F9E}.Release|x86.Build.0 = Release|Any CPU
+		{86A84EA5-9616-4D8F-ABCA-4272D27D194D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86A84EA5-9616-4D8F-ABCA-4272D27D194D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86A84EA5-9616-4D8F-ABCA-4272D27D194D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{86A84EA5-9616-4D8F-ABCA-4272D27D194D}.Debug|x64.Build.0 = Debug|Any CPU
+		{86A84EA5-9616-4D8F-ABCA-4272D27D194D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{86A84EA5-9616-4D8F-ABCA-4272D27D194D}.Debug|x86.Build.0 = Debug|Any CPU
+		{86A84EA5-9616-4D8F-ABCA-4272D27D194D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86A84EA5-9616-4D8F-ABCA-4272D27D194D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86A84EA5-9616-4D8F-ABCA-4272D27D194D}.Release|x64.ActiveCfg = Release|Any CPU
+		{86A84EA5-9616-4D8F-ABCA-4272D27D194D}.Release|x64.Build.0 = Release|Any CPU
+		{86A84EA5-9616-4D8F-ABCA-4272D27D194D}.Release|x86.ActiveCfg = Release|Any CPU
+		{86A84EA5-9616-4D8F-ABCA-4272D27D194D}.Release|x86.Build.0 = Release|Any CPU
+		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Debug|x64.Build.0 = Debug|Any CPU
+		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Debug|x86.Build.0 = Debug|Any CPU
+		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Release|x64.ActiveCfg = Release|Any CPU
+		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Release|x64.Build.0 = Release|Any CPU
+		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Release|x86.ActiveCfg = Release|Any CPU
+		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2E031B2A-8A1B-43D5-BEF8-6F719481D26F}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\..\..\..\thinkgeosdk\ThinkGeo.License\ThinkGeo.License.projitems*{14fb09f4-a4cc-4fff-92cb-0fb5b4e77c49}*SharedItemsImports = 5
+		..\..\..\..\thinkgeosdk\ThinkGeo.License\ThinkGeo.License.projitems*{86a84ea5-9616-4d8f-abca-4272d27d194d}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

@@ -13,13 +13,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.Core" Version="15.0.0-beta189" />
     <PackageReference Include="ThinkGeo.Gdal" Version="15.0.0-beta189" />
-    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.0.0-beta189" />
     <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.0.0-beta189" />
     <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.0.0-beta189" />
     <PackageReference Include="ThinkGeo.PostgreSql" Version="15.0.0-beta189" />
     <PackageReference Include="ThinkGeo.SqlServer" Version="15.0.0-beta189" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\thinkgeosdk\ThinkGeo.UI\Web\ThinkGeo.UI.Blazor\ThinkGeo.UI.Blazor.csproj" />
   </ItemGroup>
 
   <ItemGroup>

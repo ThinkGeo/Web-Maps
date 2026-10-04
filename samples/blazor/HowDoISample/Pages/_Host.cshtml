@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @namespace ThinkGeo.UI.Blazor.HowDoI.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
@@ -25,92 +25,7 @@
     <script src="_framework/blazor.server.js"></script>
     <script>
         window.howDoI = {
-            outputWidth: () => document.getElementById('output').getBoundingClientRect().width,
-            bindBearingIndicator: async (mapId, indicatorId) => {
-                for (let attempt = 0; attempt < 100; attempt++) {
-                    const wrapper = window.blazorObjects && window.blazorObjects[mapId];
-                    const map = wrapper && wrapper.map;
-                    const indicator = document.getElementById(indicatorId);
-                    if (map && indicator) {
-                        window.howDoI.unbindBearingIndicator(mapId, indicatorId);
-                        const update = () => {
-                            indicator.style.transform = `rotate(${-map.getBearing()}deg)`;
-                        };
-                        window.howDoI.bearingIndicators ||= {};
-                        window.howDoI.bearingIndicators[`${mapId}:${indicatorId}`] = { map, update };
-                        map.on('rotate', update);
-                        update();
-                        return;
-                    }
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                }
-            },
-            unbindBearingIndicator: (mapId, indicatorId) => {
-                const key = `${mapId}:${indicatorId}`;
-                const binding = window.howDoI.bearingIndicators && window.howDoI.bearingIndicators[key];
-                if (binding) {
-                    binding.map.off('rotate', binding.update);
-                    delete window.howDoI.bearingIndicators[key];
-                }
-            },
-            bindNavigationBar: async (mapId, barId) => {
-                for (let attempt = 0; attempt < 100; attempt++) {
-                    const wrapper = window.blazorObjects && window.blazorObjects[mapId];
-                    const map = wrapper && wrapper.map;
-                    const bar = document.getElementById(barId);
-                    if (map && bar) {
-                        window.howDoI.unbindNavigationBar(mapId, barId);
-                        const cleanup = [];
-                        const listen = (element, eventName, handler) => {
-                            element.addEventListener(eventName, handler);
-                            cleanup.push(() => element.removeEventListener(eventName, handler));
-                        };
-                        const stop = event => event.stopPropagation();
-                        ['pointerdown', 'mousedown', 'dblclick', 'wheel'].forEach(name => listen(bar, name, stop));
-
-                        const offsets = {
-                            up: [0, 100],
-                            left: [100, 0],
-                            right: [-100, 0],
-                            down: [0, -100]
-                        };
-                        bar.querySelectorAll('[data-pan]').forEach(button => {
-                            listen(button, 'click', () => map.panBy(offsets[button.dataset.pan], { duration: 220 }));
-                        });
-                        listen(bar.querySelector('[data-home]'), 'click', () => map.easeTo({
-                            center: [-73.9856654, 40.74843661],
-                            zoom: 18,
-                            bearing: 30,
-                            duration: 500
-                        }));
-                        listen(bar.querySelector('[data-zoom="in"]'), 'click', () => map.zoomIn({ duration: 220 }));
-                        listen(bar.querySelector('[data-zoom="out"]'), 'click', () => map.zoomOut({ duration: 220 }));
-
-                        const slider = bar.querySelector('[data-zoom-slider]');
-                        slider.min = map.getMinZoom();
-                        slider.max = map.getMaxZoom();
-                        const updateSlider = () => slider.value = map.getZoom();
-                        const changeZoom = () => map.setZoom(Number(slider.value));
-                        listen(slider, 'input', changeZoom);
-                        map.on('zoom', updateSlider);
-                        cleanup.push(() => map.off('zoom', updateSlider));
-                        updateSlider();
-
-                        window.howDoI.navigationBars ||= {};
-                        window.howDoI.navigationBars[`${mapId}:${barId}`] = cleanup;
-                        return;
-                    }
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                }
-            },
-            unbindNavigationBar: (mapId, barId) => {
-                const key = `${mapId}:${barId}`;
-                const cleanup = window.howDoI.navigationBars && window.howDoI.navigationBars[key];
-                if (cleanup) {
-                    cleanup.forEach(remove => remove());
-                    delete window.howDoI.navigationBars[key];
-                }
-            }
+            outputWidth: () => document.getElementById('output').getBoundingClientRect().width
         };
     </script>
 </body>

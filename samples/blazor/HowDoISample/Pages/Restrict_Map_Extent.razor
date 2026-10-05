@@ -1,42 +1,55 @@
 @page "/restrict-map-extent"
 @using System.Collections.ObjectModel
+@using System.Globalization
 @using ThinkGeo.Core
 
-<div class="map-container">
+<div class="map-container" style="display:flex">
+    <div style="position:relative;flex:1;min-width:0">
     @* The limits are given to the map as it is created - RestrictExtent, MinimumScale and
        MaximumScale - so they hold from the first frame. Turning a checkbox sets the same limit
        again while the map runs, through SetNavigationLimitsAsync. *@
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
              Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-             Center="@(new PointShape(-10778000, 3870000))" Zoom="8"
+             Center="@Box.GetCenterPoint()" Zoom="10"
              RestrictExtent="@(restrictOn ? Box : null)"
              MinimumScale="@(minScaleOn ? MinScale : 0)"
-             MaximumScale="@(maxScaleOn ? MaxScale : double.MaxValue)">
+             MaximumScale="@(maxScaleOn ? MaxScale : double.MaxValue)"
+             OnCurrentExtentChanged="UpdateScale"
+             OnSizeChanged="UpdateViewport">
         <OverlaysSetting>
             <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                             ApiKey="@GlobalSettings.ThinkGeoApiKey" />
             <VectorTileOverlay Id="Boundary" StyleJson="@BoundaryStyle" FeatureSources="@boundary" SourceId="box" />
         </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft"
+                                UseNavigationStyle="true"
+                                CenterButtonCenter="@Box.GetCenterPoint()"
+                                CenterButtonZoom="10" />
+            </MapTools>
+        </MapToolsSetting>
     </MapView>
 
-    <div style="position:absolute;top:12px;left:12px;width:255px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
-        <div style="font-weight:600;margin-bottom:6px">Restrict the map</div>
-        <div style="color:#555;margin-bottom:8px">
-            All three limits are on. Try to pan out of the red box, or to zoom past either scale -
-            the map will not let you. Turn one off and it lets go.
-        </div>
+    <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);min-width:180px;height:30px;background:gray;color:whitesmoke;text-align:center;font:600 20px/30px system-ui;white-space:nowrap;pointer-events:none">
+        Scale: @scale.ToString("N0", CultureInfo.InvariantCulture)
+    </div>
+    </div>
 
-        <label style="display:block;margin:3px 0;cursor:pointer">
+    <div style="width:280px;flex:0 0 280px;box-sizing:border-box;margin-left:8px;padding:8px;background:dimgray;color:whitesmoke;font:14px system-ui">
+        <div style="font-size:16px;font-weight:600;margin-bottom:8px">Restrictions:</div>
+
+        <label style="display:block;margin:4px 0;cursor:pointer;white-space:nowrap">
             <input type="checkbox" checked="@restrictOn" @onchange="@(e => Toggle(() => restrictOn = (bool)e.Value))" />
-            Keep panning inside the box
+            Enable RestrictExtent
         </label>
-        <label style="display:block;margin:3px 0;cursor:pointer">
+        <label style="display:block;margin:4px 0;cursor:pointer;white-space:nowrap">
             <input type="checkbox" checked="@maxScaleOn" @onchange="@(e => Toggle(() => maxScaleOn = (bool)e.Value))" />
-            Stop zooming out past 1:5,000,000
+            Enable MaximumScale (1:500,000)
         </label>
-        <label style="display:block;margin:3px 0;cursor:pointer">
+        <label style="display:block;margin:4px 0;cursor:pointer;white-space:nowrap">
             <input type="checkbox" checked="@minScaleOn" @onchange="@(e => Toggle(() => minScaleOn = (bool)e.Value))" />
-            Stop zooming in past 1:20,000
+            Enable MinimumScale (1:10,000)
         </label>
     </div>
 </div>
@@ -52,12 +65,16 @@
 
     // Dallas / Frisco, TX, in web mercator metres (upper-left x,y then lower-right x,y).
     private static readonly RectangleShape Box = new RectangleShape(-10809000, 3900000, -10747000, 3840000);
-    private const double MaxScale = 5_000_000;
-    private const double MinScale = 20_000;
+    private const double MaxScale = 500_000;
+    private const double MinScale = 10_000;
 
     private MapView map;
     private GeoCollection<FeatureSource> boundary;
     private bool restrictOn = true, maxScaleOn = true, minScaleOn = true;
+    private double scale = MaxScale;
+    private double viewportWidth;
+    private double viewportHeight;
+    private RectangleShape currentExtent;
 
     protected override void OnInitialized()
     {
@@ -77,5 +94,35 @@
             restrictOn ? Box : null,
             minScaleOn ? MinScale : 0,
             maxScaleOn ? MaxScale : 0);
+
+        // With neither an extent nor an outer scale holding the map near Dallas, show the
+        // coarsest scale in the map's normal scale ladder, matching the desktop sample refresh.
+        if (!restrictOn && !maxScaleOn)
+        {
+            await map.ZoomToMinimumZoomAsync();
+        }
+    }
+
+    private void UpdateScale(CurrentExtentChangedMapViewEventArgs e)
+    {
+        currentExtent = e.CurrentExtent;
+        RefreshScaleReadout();
+    }
+
+    private void UpdateViewport(SizeChangedMapViewEventArgs e)
+    {
+        viewportWidth = e.Width;
+        viewportHeight = e.Height;
+        RefreshScaleReadout();
+    }
+
+    private void RefreshScaleReadout()
+    {
+        // Width/Height parameters are percentages and can be reapplied by a parent render.
+        // Use the actual CSS pixel dimensions reported by the map's size event instead.
+        if (currentExtent != null && viewportWidth > 0 && viewportHeight > 0)
+        {
+            scale = MapUtil.GetScale(GeographyUnit.Meter, currentExtent, viewportWidth, viewportHeight);
+        }
     }
 }

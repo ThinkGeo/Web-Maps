@@ -6,13 +6,32 @@
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
                  Center="@(new PointShape(-10778000, 3912000))" Zoom="11"
-                 OnCurrentExtentChanged="@(args => extent = args.CurrentExtent)">
+                 OnCurrentExtentChanged="ExtentChanged"
+                 OnCurrentExtentChanging="ExtentChanging"
+                 OnSizeChanged="SizeChanged">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
                 <VectorTileOverlay Id="Limits" StyleJson="@StyleJson" FeatureSources="@sources" SourceId="features" />
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft"
+                                    UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-10778000, 3912000))"
+                                    CenterButtonZoom="11"
+                                    CenterButtonBearing="0" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
+        @if (extent != null)
+        {
+            <div style="position:absolute;bottom:10px;left:10px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 12px;border-radius:8px;background:rgba(0,0,0,.7);color:#d1d5db;font:13px/18px system-ui;white-space:nowrap">
+                <div>@CenterReadout()</div>
+                <div>@CameraReadout()</div>
+                <div>@ExtentReadout()</div>
+            </div>
+        }
     </div>
     <div style="width:340px;display:flex;flex-direction:column;gap:10px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
         <div style="font-weight:600">Zoom to extents</div>
@@ -33,10 +52,6 @@
         <div style="display:flex;gap:6px;align-items:center">
             <span>Bearing</span><input type="range" min="0" max="359" @bind="bearing" @bind:event="oninput" @bind:after="() => map.SetBearingAsync(bearing)" style="flex:1" /><span style="width:36px">@bearing&deg;</span>
         </div>
-        @if (extent != null)
-        {
-            <div style="font:12px Consolas,monospace;color:#444;white-space:pre">@Readout()</div>
-        }
     </div>
 </div>
 
@@ -52,6 +67,12 @@
     private GeoCollection<FeatureSource> sources;
     private ShapeFileFeatureSource limits;
     private RectangleShape extent;
+    private double initialExtentWidth;
+    private double viewportWidth;
+    private double viewportHeight;
+    private double rotation;
+    private double zoom = 11;
+    private double currentScale;
     private double scale = 50000;
     private double latitude = 33.15;
     private double longitude = -96.82;
@@ -59,7 +80,7 @@
 
     protected override void OnInitialized()
     {
-        limits = new ShapeFileFeatureSource("./Data/Shapefile/FriscoCityLimitsDivided.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+        limits = new ShapeFileFeatureSource("./Data/Shapefile/City_ETJ.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
         sources = new GeoCollection<FeatureSource> { { "limits", limits } };
     }
 
@@ -74,9 +95,51 @@
 
     private Task CenterAsync() => map.SetCenterAsync(ProjectionConverter.Convert(4326, 3857, new PointShape(longitude, latitude)));
 
-    private string Readout()
+    private async Task ExtentChanged(CurrentExtentChangedMapViewEventArgs args)
+    {
+        UpdateReadout(args.CurrentExtent, await map.GetBearingAsync());
+    }
+
+    private void ExtentChanging(CurrentExtentChangingMapViewEventArgs args)
+    {
+        UpdateReadout(args.CurrentExtent, args.Bearing);
+    }
+
+    private void SizeChanged(SizeChangedMapViewEventArgs args)
+    {
+        viewportWidth = args.Width;
+        viewportHeight = args.Height;
+        UpdateScale();
+    }
+
+    private void UpdateReadout(RectangleShape currentExtent, double bearing)
+    {
+        extent = currentExtent;
+        rotation = -bearing;
+        if (initialExtentWidth <= 0)
+        {
+            initialExtentWidth = currentExtent.Width;
+        }
+
+        zoom = 11 + Math.Log(initialExtentWidth / currentExtent.Width, 2);
+        UpdateScale();
+    }
+
+    private void UpdateScale()
+    {
+        if (extent != null && viewportWidth > 0 && viewportHeight > 0)
+        {
+            currentScale = MapUtil.GetScale(GeographyUnit.Meter, extent, viewportWidth, viewportHeight);
+        }
+    }
+
+    private string CenterReadout()
     {
         var centre = ProjectionConverter.Convert(3857, 4326, extent.GetCenterPoint());
-        return FormattableString.Invariant($"centre  {centre.Y:0.00000}, {centre.X:0.00000}\nwidth   {extent.Width / 1000:0.00} km\nleft    {extent.UpperLeftPoint.X:0}\ntop     {extent.UpperLeftPoint.Y:0}\nright   {extent.LowerRightPoint.X:0}\nbottom  {extent.LowerRightPoint.Y:0}");
+        return FormattableString.Invariant($"Center Point: (Lat: {centre.Y:N4}, Lon: {centre.X:N4})");
     }
+
+    private string ExtentReadout() => FormattableString.Invariant($"Width: {extent.Width / 1000:0.00} km   Left: {extent.UpperLeftPoint.X:0}   Top: {extent.UpperLeftPoint.Y:0}   Right: {extent.LowerRightPoint.X:0}   Bottom: {extent.LowerRightPoint.Y:0}");
+
+    private string CameraReadout() => FormattableString.Invariant($"Rotation: {rotation:N0}   Zoom: {zoom:N2}   Scale: {currentScale:N0}");
 }

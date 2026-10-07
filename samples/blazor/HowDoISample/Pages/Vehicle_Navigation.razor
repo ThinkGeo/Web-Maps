@@ -16,11 +16,16 @@
             <VectorTileOverlay Id="Route" Style="@routeStyle" FeatureSources="@routeSources" SourceId="nav" />
             <VectorTileOverlay Id="Vehicle" @ref="vehicleOverlay" Style="@vehicleStyle" FeatureSources="@vehicleSources" SourceId="nav" />
         </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft"
+                                UseNavigationStyle="true"
+                                CenterButtonCenter="@start"
+                                CenterButtonZoom="17" />
+            </MapTools>
+        </MapToolsSetting>
     </MapView>
 
-    <div style="position:absolute;top:12px;left:12px">
-        <button class="btn btn-sm btn-dark" @onclick="SwitchView">@(overview ? "Tracking Mode" : "Overview Mode")</button>
-    </div>
     <div style="position:absolute;top:12px;right:12px;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
         <div style="font-weight:600;margin-bottom:6px">Camera</div>
         <label style="display:flex;align-items:center;gap:8px">
@@ -28,7 +33,10 @@
             <input type="range" min="0" max="80" value="@pitch" @oninput="PitchChanged" style="width:150px" />
             <span style="width:36px">@pitch°</span>
         </label>
-        <button class="btn btn-sm btn-light" style="margin-top:8px" @onclick="ToggleTheme">@(darkTheme ? "Light Theme" : "Dark Theme")</button>
+        <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn btn-sm btn-light" @onclick="ToggleTheme">@(darkTheme ? "Light Theme" : "Dark Theme")</button>
+            <button class="btn btn-sm btn-light" @onclick="SwitchView">@(overview ? "Tracking Mode" : "Overview Mode")</button>
+        </div>
     </div>
 </div>
 

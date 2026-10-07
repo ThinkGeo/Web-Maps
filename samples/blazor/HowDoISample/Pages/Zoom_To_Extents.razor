@@ -33,24 +33,26 @@
             </div>
         }
     </div>
-    <div style="width:340px;display:flex;flex-direction:column;gap:10px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
-        <div style="font-weight:600">Zoom to extents</div>
-        <div style="color:#555">Every way the map can be told where to look: a step in or out, a scale, the bounds of a layer, a point to centre on, a bearing. What it looks at now is read back below.</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button class="btn btn-sm btn-light" @onclick="() => map.ZoomInAsync()">Zoom in</button>
-            <button class="btn btn-sm btn-light" @onclick="() => map.ZoomOutAsync()">Zoom out</button>
-            <button class="btn btn-sm btn-light" @onclick="ZoomToLimitsAsync">The city limits</button>
+    <div style="width:420px;flex:0 0 420px;box-sizing:border-box;margin-left:8px;padding:8px;background:#f6f6f4;font:13px system-ui">
+        <div style="font-weight:600;margin-bottom:4px">style.json - edit it; the map follows</div>
+        <div style="font-weight:600">Zooming</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:4px">
+            <button class="btn btn-sm btn-outline-secondary" style="background-color:#dedede;font-size:14px;font-weight:600" @onclick="() => map.ZoomInAsync()">Zoom In</button>
+            <button class="btn btn-sm btn-outline-secondary" style="background-color:#dedede;font-size:14px;font-weight:600" @onclick="() => map.ZoomOutAsync()">Zoom Out</button>
+            <button class="btn btn-sm btn-outline-secondary" style="background-color:#dedede;font-size:14px;font-weight:600" @onclick="ZoomToScaleAsync">Zoom To Scale</button>
+            <input type="number" min="1" step="any" @bind="scale" style="min-width:0" />
         </div>
-        <div style="display:flex;gap:6px;align-items:center">
-            <span>Scale 1 :</span><input type="number" @bind="scale" style="width:90px" />
-            <button class="btn btn-sm btn-light" @onclick="() => map.ZoomToAsync(extent?.GetCenterPoint() ?? new PointShape(-10778000, 3912000), scale)">Go</button>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center">
-            <span>Centre at</span><input type="number" step="0.0001" @bind="latitude" style="width:80px" /><input type="number" step="0.0001" @bind="longitude" style="width:86px" />
-            <button class="btn btn-sm btn-light" @onclick="CenterAsync">Go</button>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center">
-            <span>Bearing</span><input type="range" min="0" max="359" @bind="bearing" @bind:event="oninput" @bind:after="() => map.SetBearingAsync(bearing)" style="flex:1" /><span style="width:36px">@bearing&deg;</span>
+
+        <div style="font-weight:600;margin-top:6px">Layer bounding box</div>
+        <button class="btn btn-sm btn-outline-secondary" style="width:100%;margin:2px 0;background-color:#dedede;font-size:14px;font-weight:600" @onclick="ZoomToLimitsAsync">Set Extent to Layer BBox</button>
+
+        <div style="font-weight:600;margin-top:6px">Center at</div>
+        <button class="btn btn-sm btn-outline-secondary" style="width:100%;margin:2px 0;background-color:#dedede;font-size:14px;font-weight:600" @onclick="CenterAsync">Center At (33.15,-96.82)</button>
+
+        <div style="font-weight:600;margin-top:6px">Rotating</div>
+        <div style="display:flex;gap:4px;align-items:center;margin:2px 0">
+            <input type="range" min="-180" max="180" step="1" value="@rotation" @oninput="RotationSliderChanged" style="flex:1;min-width:0" />
+            <input type="number" min="-180" max="180" step="1" @bind="rotation" @bind:after="ApplyRotationAsync" style="box-sizing:border-box;width:58px;flex:0 0 58px" />
         </div>
     </div>
 </div>
@@ -73,10 +75,7 @@
     private double rotation;
     private double zoom = 11;
     private double currentScale;
-    private double scale = 50000;
-    private double latitude = 33.15;
-    private double longitude = -96.82;
-    private double bearing;
+    private double scale = 10000;
 
     protected override void OnInitialized()
     {
@@ -87,13 +86,36 @@
     private async Task ZoomToLimitsAsync()
     {
         limits.Open();
-        var bounds = limits.GetBoundingBox();
-        limits.Close();
-        bounds.ScaleUp(10);
+        RectangleShape bounds;
+        try
+        {
+            bounds = limits.GetBoundingBox();
+        }
+        finally
+        {
+            limits.Close();
+        }
         await map.ZoomToExtentAsync(bounds);
     }
 
-    private Task CenterAsync() => map.SetCenterAsync(ProjectionConverter.Convert(4326, 3857, new PointShape(longitude, latitude)));
+    private async Task ZoomToScaleAsync()
+    {
+        if (scale <= 0) return;
+
+        var center = extent?.GetCenterPoint() ?? await map.GetCenterAsync();
+        await map.ZoomToAsync(center, scale, -rotation);
+    }
+
+    private Task CenterAsync() => map.SetCenterAsync(ProjectionConverter.Convert(4326, 3857, new PointShape(-96.82, 33.15)));
+
+    private async Task RotationSliderChanged(ChangeEventArgs args)
+    {
+        if (!double.TryParse(args.Value?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out rotation)) return;
+        rotation = Math.Clamp(rotation, -180, 180);
+        await ApplyRotationAsync();
+    }
+
+    private Task ApplyRotationAsync() => map.SetBearingAsync(-rotation);
 
     private async Task ExtentChanged(CurrentExtentChangedMapViewEventArgs args)
     {
@@ -115,7 +137,7 @@
     private void UpdateReadout(RectangleShape currentExtent, double bearing)
     {
         extent = currentExtent;
-        rotation = -bearing;
+        rotation = Math.Round(-bearing);
         if (initialExtentWidth <= 0)
         {
             initialExtentWidth = currentExtent.Width;

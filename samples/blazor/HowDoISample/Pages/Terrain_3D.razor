@@ -12,6 +12,14 @@
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
                 <VectorTileOverlay Id="Terrain" Style="@style" />
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft"
+                                    UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-12509000, 4330000))"
+                                    CenterButtonZoom="12" CenterButtonBearing="0" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
     </div>
     <div style="width:420px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">

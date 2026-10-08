@@ -15,9 +15,17 @@
                 <VectorTileOverlay Id="Basemap" Style="@style" />
             }
         </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft"
+                                UseNavigationStyle="true"
+                                CenterButtonCenter="@(new PointShape(-8236500, 4975050))"
+                                CenterButtonZoom="17" CenterButtonBearing="-18" />
+            </MapTools>
+        </MapToolsSetting>
     </MapView>
 
-    <div style="position:absolute;top:12px;left:12px;width:260px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+    <div style="position:absolute;top:12px;right:12px;width:260px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
         <div style="font-weight:600;margin-bottom:8px">Perspective &amp; 3D buildings</div>
 
         <label style="display:block;margin-bottom:2px">Tilt - @pitch.ToString("0")&deg;</label>

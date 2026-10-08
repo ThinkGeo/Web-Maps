@@ -1,67 +1,121 @@
 @page "/overview-map"
 @using ThinkGeo.Core
 
-<div class="map-container" style="display:flex">
-    <div style="flex:1;min-width:0;position:relative">
+<style>
+    /* Keep the overview usable at 220px while leaving its attribution available on focus or hover. */
+    #overview .maplibregl-ctrl-attrib .maplibregl-ctrl-attrib-inner { display: none; }
+    #overview .maplibregl-ctrl-attrib:hover .maplibregl-ctrl-attrib-inner,
+    #overview .maplibregl-ctrl-attrib:focus-within .maplibregl-ctrl-attrib-inner { display: block; }
+</style>
+
+<div class="map-container" style="position:relative">
         <MapView Id="main" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
                  Center="@(new PointShape(-9338030, 3300450))" Zoom="6"
-                 OnCurrentExtentChanged="@MainMoved">
+                 OnCurrentExtentChanged="@MainMoved" OnCurrentExtentChanging="@MainMoving">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
             </OverlaysSetting>
         </MapView>
-        <div style="position:absolute;right:12px;bottom:12px;width:260px;height:180px;border:2px solid #444;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.35)">
+        <button type="button" title="Reset North" aria-label="Reset North" @onclick="ResetNorthAsync"
+                style="position:absolute;left:10px;top:10px;width:40px;height:40px;padding:0;border:0;background:transparent;cursor:pointer;z-index:2">
+            <img src="images/icon_north_arrow.png" alt="" width="40" height="40"
+                 style="display:block;transform:rotate(@(-bearing)deg)" />
+        </button>
+        <div style="position:absolute;left:8px;bottom:8px;width:220px;height:220px;box-sizing:border-box;border:5px solid #333;border-radius:6px;overflow:hidden;background:#fff">
             <MapView Id="overview" @ref="overview" MapUnit="GeographyUnit.Meter"
                      Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                     Center="@(new PointShape(-9338030, 3300450))" Zoom="2" OnClick="@OverviewClicked">
+                     Center="@(new PointShape(-10502930, 4330070))" Zoom="2"
+                     OnCurrentExtentChanged="@OverviewMoved" OnClick="@OverviewClicked">
                 <OverlaysSetting>
                     <ThinkGeoCloudVectorMapsOverlay Id="OverviewBasemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                     ApiKey="@GlobalSettings.ThinkGeoApiKey" />
-                    <VectorTileOverlay Id="Frame" @ref="frameOverlay" StyleJson="@FrameStyle" FeatureSources="@sources" SourceId="frame" />
                 </OverlaysSetting>
             </MapView>
+            @if (framePoints != null)
+            {
+                <svg viewBox="0 0 210 210" preserveAspectRatio="none" aria-hidden="true"
+                     style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1">
+                    <polygon points="@framePoints" fill="rgba(255,0,0,.13)" stroke="red" stroke-width="2" />
+                    <polygon points="@starPoints" fill="red" stroke="white" stroke-width=".7" />
+                </svg>
+            }
         </div>
-    </div>
-    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
-        <div style="font-weight:600">Overview map</div>
-        <div style="color:#555">A second, small map in the corner shows where the big one is looking: the big map's extent, from its OnCurrentExtentChanged event, is drawn on the small one as a rectangle. Click the small map and the big one goes there.</div>
-    </div>
 </div>
 
 @code {
-    private const string FrameStyle = @"{
-  ""layers"": [
-    { ""type"": ""fill"", ""source-layer"": ""frame"", ""paint"": { ""fill-color"": ""rgba(215,48,31,0.15)"" } },
-    { ""type"": ""line"", ""source-layer"": ""frame"", ""paint"": { ""line-color"": ""#D7301F"", ""line-width"": 2 } }
-  ]
-}";
-
     private MapView map;
     private MapView overview;
-    private VectorTileOverlay frameOverlay;
-    private GeoCollection<FeatureSource> sources;
-    private readonly InMemoryFeatureSource frame = new InMemoryFeatureSource();
+    private RectangleShape mainExtent;
+    private RectangleShape previewExtent;
+    private string framePoints;
+    private string starPoints;
+    private double bearing;
 
-    protected override void OnInitialized()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        sources = new GeoCollection<FeatureSource> { { "frame", frame } };
+        if (!firstRender) return;
+
+        // Both child maps initialize asynchronously. Draw the frame once they are ready,
+        // even when their initial extent events arrived before the other map loaded.
+        for (var attempt = 0; attempt < 30 && (map?.IsLoaded != true || overview?.IsLoaded != true); attempt++)
+            await Task.Delay(100);
+
+        if (map?.IsLoaded == true && overview?.IsLoaded == true)
+        {
+            mainExtent = await map.GetCurrentExtentAsync();
+            await UpdateFrameAsync();
+            StateHasChanged();
+        }
     }
 
     private async Task MainMoved(CurrentExtentChangedMapViewEventArgs args)
     {
-        if (frameOverlay == null || overview?.IsLoaded != true) return;
-        frame.InternalFeatures.Clear();
-        frame.InternalFeatures.Add(new Feature(args.CurrentExtent));
-        await frameOverlay.RedrawAsync();
+        mainExtent = args.CurrentExtent;
+        bearing = await map.GetBearingAsync();
+        await UpdateFrameAsync(previewExtent);
+    }
 
-        // The small map follows when the frame would leave it.
-        var seen = await overview.GetCurrentExtentAsync();
-        if (seen != null && !seen.Contains(args.CurrentExtent.GetCenterPoint()))
+    private Task MainMoving(CurrentExtentChangingMapViewEventArgs args)
+    {
+        mainExtent = args.CurrentExtent;
+        bearing = args.Bearing;
+        return UpdateFrameAsync(previewExtent);
+    }
+
+    private Task OverviewMoved(CurrentExtentChangedMapViewEventArgs args) => UpdateFrameAsync(args.CurrentExtent);
+
+    private Task ResetNorthAsync() => map.SetBearingAsync(0);
+
+    private async Task UpdateFrameAsync(RectangleShape currentPreviewExtent = null)
+    {
+        if (mainExtent == null || overview?.IsLoaded != true) return;
+        currentPreviewExtent ??= await overview.GetCurrentExtentAsync();
+        if (currentPreviewExtent == null) return;
+
+        // Keep the selected area in the preview when the main map moves away.
+        if (!currentPreviewExtent.Contains(mainExtent.GetCenterPoint()))
         {
-            await overview.SetCenterAsync(args.CurrentExtent.GetCenterPoint());
+            await overview.SetCenterAsync(mainExtent.GetCenterPoint());
+            currentPreviewExtent = await overview.GetCurrentExtentAsync();
         }
+        previewExtent = currentPreviewExtent;
+
+        (double x, double y) Pixel(double worldX, double worldY) =>
+            (210 * (worldX - currentPreviewExtent.UpperLeftPoint.X) / currentPreviewExtent.Width,
+             210 * (currentPreviewExtent.UpperLeftPoint.Y - worldY) / currentPreviewExtent.Height);
+
+        var upperLeft = Pixel(mainExtent.UpperLeftPoint.X, mainExtent.UpperLeftPoint.Y);
+        var lowerRight = Pixel(mainExtent.LowerRightPoint.X, mainExtent.LowerRightPoint.Y);
+        var center = Pixel(mainExtent.GetCenterPoint().X, mainExtent.GetCenterPoint().Y);
+        framePoints = FormattableString.Invariant($"{upperLeft.x},{upperLeft.y} {lowerRight.x},{upperLeft.y} {lowerRight.x},{lowerRight.y} {upperLeft.x},{lowerRight.y}");
+        starPoints = string.Join(" ", Enumerable.Range(0, 10).Select(index =>
+        {
+            var angle = (index * 36 - 90) * Math.PI / 180;
+            var radius = index % 2 == 0 ? 8 : 3.5;
+            return FormattableString.Invariant($"{center.x + radius * Math.Cos(angle)},{center.y + radius * Math.Sin(angle)}");
+        }));
     }
 
     private Task OverviewClicked(ClickedMapViewEventArgs args) => map.SetCenterAsync(new PointShape(args.WorldX, args.WorldY));

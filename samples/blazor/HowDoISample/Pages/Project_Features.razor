@@ -11,26 +11,42 @@
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
                 <VectorTileOverlay Id="Reprojected" @ref="overlay" Style="@style" FeatureSources="@sources" SourceId="app" />
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft"
+                                    UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-10779580, 3915255))"
+                                    CenterButtonZoom="18" CenterButtonBearing="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@(new PointShape(-10779580, 3915255))" Zoom="18" Bearing="0" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
     </div>
-    <div style="width:320px;padding:10px;display:flex;flex-direction:column;gap:8px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
-        <div style="font-weight:600">Reprojecting Features and Coordinates</div>
-        <button class="btn btn-primary btn-sm" @onclick="ReprojectFeature">Reproject and Display a Feature</button>
-        <textarea @bind="wkt" rows="9" spellcheck="false" style="font:12px Consolas,monospace;white-space:pre;resize:vertical"></textarea>
-        <button class="btn btn-primary btn-sm" @onclick="ReprojectMultipleFeatures">Reproject and Display Multiple Features</button>
-        <div style="color:firebrick">@error</div>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;gap:8px;min-height:0;background:dimgray;color:whitesmoke;font:13px system-ui">
+        <div style="font-size:16px;font-weight:600">Reprojecting Features and Coordinates</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+            <button type="button" style="@SidebarButtonStyle" @onclick="ReprojectFeature">Reproject and Display a Feature</button>
+            <button type="button" style="@SidebarButtonStyle" @onclick="ReprojectMultipleFeatures">Reproject and Display Multiple Features</button>
+        </div>
+        <textarea @bind="wkt" spellcheck="false" wrap="soft" aria-label="WKT features"
+                  style="height:340px;flex:0 0 340px;min-width:0;width:100%;box-sizing:border-box;background:#fff;color:#222;font:12px Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;overflow-y:hidden;resize:none"></textarea>
+        <div style="color:#ffd0d0">@error</div>
     </div>
 </div>
 
 @code {
+    private const string SidebarButtonStyle = "width:100%;border:2px solid #8a8a8a;background:#f6f6f4;color:#222;padding:4px 6px;cursor:pointer;font:13px system-ui";
+
     private MapView map;
     private VectorTileOverlay overlay;
     private readonly InMemoryFeatureSource reprojected = new InMemoryFeatureSource();
     private GeoCollection<FeatureSource> sources;
     private MapStyle style;
     private string error = "";
-    private string wkt = "POINT(-96.834516 33.150083)\n"
-        + "LINESTRING(-96.83559 33.149,-96.835866046134 33.1508413556856,-96.835793626491 33.1508974965687,-96.8336008970734 33.1511063402186,-96.83356 33.15109,-96.83328 33.14922)\n"
+    private string wkt = "POINT(-96.834516 33.150083)\n\n"
+        + "LINESTRING(-96.83559 33.149,-96.835866046134 33.1508413556856,-96.835793626491 33.1508974965687,-96.8336008970734 33.1511063402186,-96.83356 33.15109,-96.83328 33.14922)\n\n"
         + "POLYGON((-96.83582 33.1508,-96.83578 33.15046,-96.83353 33.15068,-96.83358 33.15102,-96.83582 33.1508))";
 
     protected override void OnInitialized()
@@ -67,6 +83,7 @@
         var decimalDegreeFeatures = new Collection<Feature>();
         foreach (var line in wkt.Split('\n'))
         {
+            if (string.IsNullOrWhiteSpace(line)) continue;
             try
             {
                 decimalDegreeFeatures.Add(new Feature(line.Trim()));

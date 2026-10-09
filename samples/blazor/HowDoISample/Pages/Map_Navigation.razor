@@ -97,6 +97,7 @@
     private async Task ExtentChanged(CurrentExtentChangedMapViewEventArgs e)
     {
         UpdateReadout(e.CurrentExtent, await map.GetBearingAsync());
+        pitch = await map.GetPitchAsync();
     }
 
     private void ExtentChanging(CurrentExtentChangingMapViewEventArgs e)

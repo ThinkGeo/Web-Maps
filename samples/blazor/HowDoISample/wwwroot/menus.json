@@ -54,6 +54,15 @@
     "group": "Map Navigation"
   },
   {
+    "id": "cross-the-dateline",
+    "title": "Cross the Dateline",
+    "description": "A Los Angeles to Shanghai great-circle route through the antimeridian, stored with continuous longitudes past -180 and drawn whole - no seam on the globe, one at 180 degrees in Web Mercator, the same data folded back into the world at the tile cut.",
+    "href": "cross-the-dateline",
+    "source": "Cross_The_Dateline",
+    "preicon": "fas fa-plane",
+    "group": "Map Navigation"
+  },
+  {
     "id": "3d-terrain",
     "title": "3D Terrain",
     "description": "Raises the Grand Canyon from open elevation tiles and drapes aerial imagery over it, with a relief layer whose style you can edit as the map follows.",
@@ -114,15 +123,6 @@
     "href": "any-projection-satellite",
     "source": "Any_Projection_Satellite",
     "preicon": "fas fa-satellite",
-    "group": "Projections"
-  },
-  {
-    "id": "cross-the-dateline",
-    "title": "Cross the Dateline",
-    "description": "A Los Angeles to Shanghai great-circle route through the antimeridian, stored with continuous longitudes past -180 and drawn whole - no seam on the globe, one at 180 degrees in Web Mercator, the same data folded back into the world at the tile cut.",
-    "href": "cross-the-dateline",
-    "source": "Cross_The_Dateline",
-    "preicon": "fas fa-plane",
     "group": "Projections"
   },
   {

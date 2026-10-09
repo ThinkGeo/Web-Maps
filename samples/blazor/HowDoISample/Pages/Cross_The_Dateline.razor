@@ -1,42 +1,94 @@
 @page "/cross-the-dateline"
 @using System.Collections.ObjectModel
+@using System.Text.Json.Nodes
+@using Microsoft.JSInterop
 @using ThinkGeo.Core
+@inject IJSRuntime JS
+@implements IAsyncDisposable
 
-<div class="map-container">
+<style>
+    /* This flight sample has no navigation home; the center dot is visual only. */
+    .cross-dateline-map [data-thinkgeo-navigation-bar="true"] > div:first-child::after {
+        content: "";
+        position: absolute;
+        top: 25px;
+        left: 25px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #0878d1;
+        pointer-events: none;
+    }
+</style>
+
+<div class="map-container cross-dateline-map" style="display:flex">
+  <div style="flex:1;min-width:0;position:relative">
     @* The route is stored the way a navigator writes it - continuous longitudes running
        from -118 at Los Angeles, past -180 at the seam, to -238 (= 122 E) at Shanghai - and
        handed to the map as is. The globe has no seam; Web Mercator has one at 180, and the
        tile cut folds the far-side geometry back into the world so it draws whole either way. *@
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
-             Center="@(new PointShape(-20037508, 4900000))" Zoom="3"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-20037508, 3500000))" Zoom="3"
              Projection="@projection">
         <OverlaysSetting>
             <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                             ApiKey="@GlobalSettings.ThinkGeoApiKey" />
-            <VectorTileOverlay Id="Flight" Style="@style" FeatureSources="@flight" SourceId="flight" />
+            <VectorTileOverlay Id="Flight" StyleJson="@appliedStyle" FeatureSources="@flight" SourceId="flight" SharedSources="true" />
         </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true" />
+            </MapTools>
+        </MapToolsSetting>
     </MapView>
 
-    <div style="position:absolute;top:12px;left:12px;width:270px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
-        <div style="font-weight:600;margin-bottom:8px">Cross the dateline</div>
-        <div style="color:#333">Los Angeles &rarr; Shanghai, a great-circle route through the antimeridian, with its 100-nautical-mile corridor.</div>
-
-        <label style="display:block;margin:8px 0 2px;cursor:pointer">
-            <input type="radio" name="proj" checked="@(projection == MapViewProjection.WebMercator)"
-                   @onchange="@(() => projection = MapViewProjection.WebMercator)" />
-            Web Mercator - the seam is at 180&deg;
-        </label>
-        <label style="display:block;margin:2px 0;cursor:pointer">
-            <input type="radio" name="proj" checked="@(projection == MapViewProjection.VerticalPerspective)"
-                   @onchange="@(() => projection = MapViewProjection.VerticalPerspective)" />
-            On a globe - no seam
-        </label>
-
-        <div style="margin-top:10px;color:#555">
-            The line is stored with longitudes past -180 and never split by hand. It draws whole
-            on both sides of the seam because the tile cut folds it back into the world.
-        </div>
+    <div style="position:absolute;top:12px;right:12px;z-index:3;min-width:230px;max-width:270px;padding:12px 14px;background:rgba(16,19,23,.91);color:white;font:12px system-ui;border-radius:8px;box-sizing:border-box">
+        <div style="font-size:17px;font-weight:600">LAX &rarr; PVG</div>
+        <div style="color:#aab3bc;font-size:11px;margin:2px 0 9px">Los Angeles to Shanghai Pudong, great circle</div>
+        <div id="dateline-position" style="font:12px/1.35 Consolas,monospace;white-space:pre">lon -118.41  (118.41 W)<br />lat   33.94  hdg 0</div>
+        <div id="dateline-progress" style="font:12px Consolas,monospace;margin-top:5px">0 km (0%)</div>
+        <div style="color:#f7c948;margin-top:7px;line-height:1.35">@(projection == MapViewProjection.WebMercator
+            ? "Web Mercator: the seam is at 180°. The same route is folded into both sides of the world."
+            : "Globe: a sphere has no seam. The route and corridor use continuous longitudes past -180°.")</div>
     </div>
+  </div>
+
+  <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">Cross the dateline</div>
+      <div style="color:#e5e5e5;line-height:1.4;margin-bottom:10px">
+          A flight from Los Angeles to Shanghai crosses the antimeridian. The same route draws on the globe and across the Web Mercator seam.
+      </div>
+
+      <label style="display:block;margin:6px 0;cursor:pointer">
+          <input type="radio" name="proj" checked="@(projection == MapViewProjection.Globe)" @onchange="@(() => projection = MapViewProjection.Globe)" />
+          Globe
+      </label>
+      <label style="display:block;margin:6px 0;cursor:pointer">
+          <input type="radio" name="proj" checked="@(projection == MapViewProjection.WebMercator)" @onchange="@(() => projection = MapViewProjection.WebMercator)" />
+          Web Mercator (EPSG:3857)
+      </label>
+
+      <div style="border-top:1px solid #aaa;margin-top:10px;padding-top:8px">
+          <div style="font-weight:700;margin-bottom:4px">Follow the flight</div>
+          <div style="line-height:1.35;margin-bottom:6px">The aircraft follows the LAX to PVG great-circle route, with a 100-nautical-mile corridor.</div>
+          <div style="display:flex;gap:5px;margin-bottom:8px">
+              <button type="button" style="min-width:72px;border:2px solid #8a8a8a;background:#f6f6f4;padding:1px 6px;cursor:pointer" disabled="@(!flightReady)" @onclick="ToggleFlight">@(isFlying ? "Pause" : "Fly")</button>
+              <button type="button" style="min-width:72px;border:2px solid #8a8a8a;background:#f6f6f4;padding:1px 6px;cursor:pointer" disabled="@(!flightReady)" @onclick="ResetFlight">Reset</button>
+          </div>
+      </div>
+
+      <div style="border-top:1px solid #aaa;margin-top:2px;padding-top:8px;display:flex;flex-direction:column;flex:1;min-height:0">
+          <div style="font-weight:700;margin-bottom:4px">style.json - edit it; the map follows</div>
+          <textarea @bind="styleText" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                    aria-label="style.json editor"
+                    style="flex:1;min-height:0;width:100%;box-sizing:border-box;resize:none;border:1px solid #aaa;background:#fff;color:#111;padding:7px;font:11.5px/1.35 Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:hidden;overflow-y:auto"></textarea>
+          @if (!string.IsNullOrEmpty(styleStatus))
+          {
+              <div role="status" style="padding-top:5px;color:@(styleOk ? "#baf1ba" : "#ffd0b8")">@styleStatus</div>
+          }
+      </div>
+  </div>
 </div>
 
 @code {
@@ -50,9 +102,17 @@
 
     private MapView map;
     private GeoCollection<FeatureSource> flight;
-    private MapStyle style;
-    private MapViewProjection projection = MapViewProjection.WebMercator;
+    private MapViewProjection projection = MapViewProjection.Globe;
     private (double Lon, double Lat)[] route;
+    private IJSObjectReference flightModule;
+    private DotNetObjectReference<Cross_The_Dateline> flightReference;
+    private bool flightReady;
+    private bool isFlying;
+    private string styleText = FlightStyle;
+    private string appliedStyle = FlightStyle;
+    private string styleStatus = "";
+    private bool styleOk = true;
+    private int editVersion;
 
     // The route line, the corridor's two edges, and the two airports, each cut into its own
     // source-layer of the one "flight" source. A line, two lines, two labelled points.
@@ -96,7 +156,106 @@
             { "corridor", new InMemoryFeatureSource(Array.Empty<FeatureSourceColumn>(), new Collection<Feature> { new Feature(CorridorEdges()) }) },
             { "airports", airports },
         };
-        style = new MapStyle(FlightStyle);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+
+        if (map?.IsLoaded != true)
+        {
+            styleOk = false;
+            styleStatus = "Flight could not start: the map did not load.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        try
+        {
+            flightModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/cross-dateline-flight.js");
+            flightReference = DotNetObjectReference.Create(this);
+            var points = route.Select(point => new[] { point.Lon, point.Lat }).ToArray();
+            flightReady = await flightModule.InvokeAsync<bool>("initializeFlight", "map", points,
+                "/images/dateline_aircraft.svg", flightReference, 45000);
+            if (!flightReady)
+            {
+                styleOk = false;
+                styleStatus = "Flight could not start: the browser map is unavailable.";
+            }
+        }
+        catch (Exception exception)
+        {
+            styleOk = false;
+            styleStatus = "Flight could not start: " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ToggleFlight()
+    {
+        if (!flightReady || flightModule == null) return;
+        isFlying = await flightModule.InvokeAsync<bool>("toggleFlight", "map");
+    }
+
+    private async Task ResetFlight()
+    {
+        if (!flightReady || flightModule == null) return;
+        await flightModule.InvokeVoidAsync("resetFlight", "map");
+        isFlying = false;
+    }
+
+    [JSInvokable]
+    public Task FlightFinished() => InvokeAsync(() =>
+    {
+        isFlying = false;
+        StateHasChanged();
+    });
+
+    private async Task EditorChanged()
+    {
+        var current = ++editVersion;
+        await Task.Delay(400);
+        if (current != editVersion) return;
+
+        try
+        {
+            var document = JsonNode.Parse(styleText);
+            if (document?["layers"] is not JsonArray)
+                throw new InvalidOperationException("style.json needs a layers array.");
+            appliedStyle = styleText;
+            styleOk = true;
+            styleStatus = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            styleOk = false;
+            styleStatus = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (flightModule != null)
+        {
+            try
+            {
+                await flightModule.InvokeVoidAsync("disposeFlight", "map");
+                await flightModule.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // The browser circuit may already be gone.
+            }
+        }
+        flightReference?.Dispose();
     }
 
     private Feature Airport((string Code, string Name, double Lon, double Lat) airport)

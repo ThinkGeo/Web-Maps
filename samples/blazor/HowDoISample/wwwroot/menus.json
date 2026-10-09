@@ -110,7 +110,7 @@
   {
     "id": "any-projection-satellite",
     "title": "Any Projection, Satellite Imagery",
-    "description": "ThinkGeo Cloud aerial tiles warped into Robinson, Mollweide, Eckert IV and other projections as they are drawn, by a projection converter on the layer, with the classic renderer.",
+    "description": "ThinkGeo Cloud aerial imagery is reprojected into the selected projection on the server with GDAL. OpenLayers displays the resulting raster tiles; unlike the WPF v15 sample, this does not warp cached imagery on the GPU.",
     "href": "any-projection-satellite",
     "source": "Any_Projection_Satellite",
     "preicon": "fas fa-satellite",

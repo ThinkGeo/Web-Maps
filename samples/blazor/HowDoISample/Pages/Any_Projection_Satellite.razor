@@ -1,9 +1,27 @@
 ﻿@page "/any-projection-satellite"
 @using ThinkGeo.Core
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@implements IAsyncDisposable
 
-<div class="map-container" style="display:flex">
+<style>
+    /* This sample has no single navigation home; show a non-interactive center dot only here. */
+    .projection-satellite-map [data-thinkgeo-navigation-bar="true"] > div:first-child::after {
+        content: "";
+        position: absolute;
+        top: 25px;
+        left: 25px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #0878d1;
+        pointer-events: none;
+    }
+</style>
+
+<div class="map-container projection-satellite-map" style="display:flex">
     <div style="flex:1;min-width:0;position:relative">
-        @* A map in a projection of its own is drawn by the classic renderer; MapLibre draws web mercator only. *@
+        @* Raster tiles are reprojected on the server; the browser's vector renderer cannot draw these projections. *@
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter" Renderer="MapViewRenderer.OpenLayers"
                  BackgroundColor="@(GeoColor.FromHtml("#DCE8EF"))"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
@@ -11,16 +29,31 @@
             <OverlaysSetting>
                 <LayerOverlay Id="Aerial" @ref="overlay" Layers="@layers" />
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
+        <div aria-hidden="true"
+             style="position:absolute;inset:0;z-index:20;background:#DCE8EF;opacity:@(mapFaded ? "1" : "0");transition:opacity 260ms ease-in-out;pointer-events:@(changingProjection ? "auto" : "none")"></div>
     </div>
-    <div style="width:300px;padding:10px;display:flex;flex-direction:column;gap:6px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
-        <div style="font-weight:600">Satellite imagery, any projection</div>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Satellite imagery, any projection</div>
         @foreach (var choice in Choices)
         {
-            <label><input type="radio" name="projection" checked="@(chosen == choice.Key)" @onchange="@(() => Pick(choice.Key))" /> @choice.Key</label>
+            <label style="display:block;margin:4px 0;cursor:pointer"><input type="radio" name="projection" checked="@(chosen == choice.Key)" disabled="@changingProjection" @onchange="@(() => Pick(choice.Key))" /> @choice.Key</label>
         }
-        <div style="margin-top:6px;color:#555">The tiles come in Spherical Mercator; a projection converter on the layer warps every tile into the chosen projection as it is drawn on the server.</div>
-        <div style="margin-top:auto;font:11px Consolas,monospace;color:#444;word-break:break-all">@(Choices[chosen] ?? "EPSG:3857")</div>
+        @if (RegionalViews.ContainsKey(chosen))
+        {
+            <div style="color:#ffd0b8;font-size:11px;line-height:1.4;margin-top:6px">Region only: this projection is valid within the area shown. Outside it, the map may be blank or distorted.</div>
+        }
+        <div style="border-top:1px solid #aaa;margin-top:10px;padding-top:8px;color:#e5e5e5;line-height:1.4">ThinkGeo Cloud aerial tiles arrive in Web Mercator. The server uses GDAL to reproject and redraw raster tiles for each choice; OpenLayers displays the resulting images. The fade only covers tile replacement, not a GPU projection morph.</div>
+        @if (!string.IsNullOrEmpty(tileStatus))
+        {
+            <div role="status" style="color:#ffd0b8;font-size:11px;line-height:1.4;margin-top:8px">@tileStatus</div>
+        }
+        <div style="margin-top:auto;padding-top:10px;font:11px/1.4 Consolas,monospace;word-break:break-all">@(Choices[chosen] ?? "EPSG:3857")</div>
     </div>
 </div>
 
@@ -28,11 +61,22 @@
     private static readonly Dictionary<string, string> Choices = new Dictionary<string, string>
     {
         ["Spherical Mercator"] = null,
+        ["Equirectangular (degrees)"] = "+proj=eqc +lat_ts=0 +lon_0=0 +datum=WGS84 +units=m +no_defs",
         ["Robinson"] = "+proj=robin +datum=WGS84 +units=m +no_defs",
         ["Mollweide"] = "+proj=moll +datum=WGS84 +units=m +no_defs",
         ["Equal Area - Eckert IV"] = "+proj=eck4 +datum=WGS84 +units=m +no_defs",
         ["Equal Area - Cylindrical"] = "+proj=cea +datum=WGS84 +units=m +no_defs",
         ["Equal Area - Sinusoidal"] = "+proj=sinu +lon_0=0 +datum=WGS84 +units=m +no_defs",
+        ["Equal Area - Bonne"] = "+proj=bonne +lat_1=45 +lon_0=0 +datum=WGS84 +units=m +no_defs",
+        ["Equal Area - Albers Conic (US)"] = "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +datum=NAD83 +units=m +no_defs",
+        ["MGA Zone 55 (E Australia)"] = "+proj=utm +zone=55 +south +datum=WGS84 +units=m +no_defs",
+    };
+
+    // Captured from the requested OpenLayers views; preserve fractional zoom via resolution.
+    private static readonly Dictionary<string, (PointShape Center, double Resolution)> RegionalViews = new()
+    {
+        ["Equal Area - Albers Conic (US)"] = (new PointShape(1082223.6391211743, 3378521.2403990007), 48375.03011001721),
+        ["MGA Zone 55 (E Australia)"] = (new PointShape(809890.6800635774, 6287081.043522891), 31393.95441209474),
     };
 
     private MapView map;
@@ -40,6 +84,10 @@
     private readonly GeoCollection<LayerBase> layers = new GeoCollection<LayerBase>();
     private readonly AerialTilesLayer aerial = new AerialTilesLayer(GlobalSettings.ThinkGeoApiKey);
     private string chosen = "Spherical Mercator";
+    private bool mapFaded;
+    private bool changingProjection;
+    private string tileStatus;
+    private IJSObjectReference transitionModule;
 
     protected override void OnInitialized()
     {
@@ -48,12 +96,59 @@
 
     private async Task Pick(string choice)
     {
-        chosen = choice;
-        var projection = Choices[choice];
-        aerial.ProjectionConverter = projection == null ? null : new GdalProjectionConverter(3857, projection);
-        aerial.ProjectionConverter?.Open();
-        await overlay.RedrawAsync();
-        await map.ZoomToCenterAsync(2, new PointShape(0, 0));
+        if (changingProjection || choice == chosen) return;
+
+        changingProjection = true;
+        try
+        {
+            transitionModule ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/any-projection-transition.js");
+            tileStatus = null;
+            mapFaded = true;
+            StateHasChanged();
+            await Task.Delay(260);
+
+            var trackingTiles = await transitionModule.InvokeAsync<bool>("beginTileTransition", "map", 15000);
+
+            chosen = choice;
+            var projection = Choices[choice];
+            aerial.ProjectionConverter = projection == null ? null : new GdalProjectionConverter(3857, projection);
+            aerial.ProjectionConverter?.Open();
+            await overlay.RedrawAsync();
+            if (RegionalViews.TryGetValue(choice, out var view))
+            {
+                await map.ZoomToAsync(view.Center, MapUtil.GetScaleFromResolution(view.Resolution, GeographyUnit.Meter));
+            }
+            else
+            {
+                await map.ZoomToCenterAsync(2, new PointShape(0, 0));
+            }
+
+            // RedrawAsync only starts tile replacement. Keep the old image covered until
+            // OpenLayers has finished loading and drawing the new viewport's tiles.
+            var rendered = trackingTiles && await transitionModule.InvokeAsync<bool>("waitForTileTransition", "map");
+            if (!rendered)
+            {
+                tileStatus = "Map tiles are still loading; the transition timed out.";
+            }
+        }
+        finally
+        {
+            mapFaded = false;
+            changingProjection = false;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (transitionModule == null) return;
+        try
+        {
+            await transitionModule.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit may have closed before this page is disposed.
+        }
     }
 
     // ThinkGeo Cloud's aerial tiles by API key - any XYZ raster service is drawn the same way.

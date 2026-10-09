@@ -47,25 +47,25 @@
                 <div>@cameraReadout</div>
             </div>
         }
-    </div>
 
-    <div style="width:250px;flex:0 0 250px;box-sizing:border-box;margin-left:10px;padding:0 0 10px;background:dimgray;color:whitesmoke;font:13px system-ui">
-        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Camera</div>
+        <div style="position:absolute;top:160px;right:12px;width:260px;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+            <div style="font-weight:600;margin-bottom:6px">Camera</div>
 
-        <label style="display:flex;align-items:center;gap:5px;cursor:pointer">
-            <input type="checkbox" checked="@buildingsVisible" @onchange="ToggleBuildings" />
-            3D Buildings
-        </label>
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer">
+                <input type="checkbox" checked="@buildingsVisible" @onchange="ToggleBuildings" />
+                3D Buildings
+            </label>
 
-        <label style="display:flex;align-items:center;margin-top:8px">
-            <span style="margin-right:8px">Pitch</span>
-            <input type="range" min="0" max="80" step="1" value="@pitch"
-                   @oninput="PitchChanged" style="flex:1;min-width:0" />
-            <span style="width:38px;text-align:right">@pitch.ToString("0")&deg;</span>
-        </label>
+            <label style="display:flex;align-items:center;gap:8px;margin-top:8px">
+                <span>Pitch</span>
+                <input type="range" min="0" max="80" step="1" value="@pitch"
+                       @oninput="PitchChanged" style="flex:1;min-width:0" />
+                <span style="width:36px;text-align:right">@pitch.ToString("0")&deg;</span>
+            </label>
 
-        <button style="width:100%;height:28px;margin-top:10px;border:0;cursor:pointer"
-                @onclick="ToggleTheme">@(darkTheme ? "Light Theme" : "Dark Theme")</button>
+            <button class="btn btn-sm btn-light" style="margin-top:8px"
+                    @onclick="ToggleTheme">@(darkTheme ? "Light Theme" : "Dark Theme")</button>
+        </div>
     </div>
 </div>
 

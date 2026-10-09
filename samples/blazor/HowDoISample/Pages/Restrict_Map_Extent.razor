@@ -35,10 +35,9 @@
     <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);min-width:180px;height:30px;border-radius:8px;background:rgba(0,0,0,.7);color:#d1d5db;text-align:center;font:600 20px/30px system-ui;white-space:nowrap;pointer-events:none">
         Scale: @scale.ToString("N0", CultureInfo.InvariantCulture)
     </div>
-    </div>
 
-    <div style="width:280px;flex:0 0 280px;box-sizing:border-box;margin-left:8px;padding:8px;background:dimgray;color:whitesmoke;font:14px system-ui">
-        <div style="font-size:16px;font-weight:600;margin-bottom:8px">Restrictions:</div>
+    <div style="position:absolute;top:12px;right:12px;width:280px;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Restrictions:</div>
 
         <label style="display:block;margin:4px 0;cursor:pointer;white-space:nowrap">
             <input type="checkbox" checked="@restrictOn" @onchange="@(e => Toggle(() => restrictOn = (bool)e.Value))" />
@@ -52,6 +51,7 @@
             <input type="checkbox" checked="@minScaleOn" @onchange="@(e => Toggle(() => minScaleOn = (bool)e.Value))" />
             Enable MinimumScale (1:10,000)
         </label>
+    </div>
     </div>
 </div>
 

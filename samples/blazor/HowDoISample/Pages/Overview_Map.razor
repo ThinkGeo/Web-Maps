@@ -17,13 +17,19 @@
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft"
+                                    UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-9338030, 3300450))"
+                                    CenterButtonZoom="6" CenterButtonBearing="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@(new PointShape(-9338030, 3300450))" Zoom="6" Bearing="0" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
-        <button type="button" title="Reset North" aria-label="Reset North" @onclick="ResetNorthAsync"
-                style="position:absolute;left:10px;top:10px;width:40px;height:40px;padding:0;border:0;background:transparent;cursor:pointer;z-index:2">
-            <img src="images/icon_north_arrow.png" alt="" width="40" height="40"
-                 style="display:block;transform:rotate(@(-bearing)deg)" />
-        </button>
-        <div style="position:absolute;left:8px;bottom:8px;width:220px;height:220px;box-sizing:border-box;border:5px solid #333;border-radius:6px;overflow:hidden;background:#fff">
+        <div style="position:absolute;left:8px;bottom:8px;width:220px;height:220px;box-sizing:border-box;border:3px solid #333;border-radius:6px;overflow:hidden;background:#fff">
             <MapView Id="overview" @ref="overview" MapUnit="GeographyUnit.Meter"
                      Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
                      Center="@(new PointShape(-10502930, 4330070))" Zoom="2"
@@ -35,10 +41,11 @@
             </MapView>
             @if (framePoints != null)
             {
-                <svg viewBox="0 0 210 210" preserveAspectRatio="none" aria-hidden="true"
+                <svg viewBox="0 0 214 214" preserveAspectRatio="none" aria-hidden="true"
                      style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1">
                     <polygon points="@framePoints" fill="rgba(255,0,0,.13)" stroke="red" stroke-width="2" />
-                    <polygon points="@starPoints" fill="red" stroke="white" stroke-width=".7" />
+                    <image href="/images/overview_navigation_arrow.svg" x="@markerX" y="@markerY" width="20" height="20"
+                           transform="@markerTransform" />
                 </svg>
             }
         </div>
@@ -50,7 +57,9 @@
     private RectangleShape mainExtent;
     private RectangleShape previewExtent;
     private string framePoints;
-    private string starPoints;
+    private string markerX;
+    private string markerY;
+    private string markerTransform;
     private double bearing;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -65,6 +74,7 @@
         if (map?.IsLoaded == true && overview?.IsLoaded == true)
         {
             mainExtent = await map.GetCurrentExtentAsync();
+            bearing = await map.GetBearingAsync();
             await UpdateFrameAsync();
             StateHasChanged();
         }
@@ -86,8 +96,6 @@
 
     private Task OverviewMoved(CurrentExtentChangedMapViewEventArgs args) => UpdateFrameAsync(args.CurrentExtent);
 
-    private Task ResetNorthAsync() => map.SetBearingAsync(0);
-
     private async Task UpdateFrameAsync(RectangleShape currentPreviewExtent = null)
     {
         if (mainExtent == null || overview?.IsLoaded != true) return;
@@ -103,19 +111,18 @@
         previewExtent = currentPreviewExtent;
 
         (double x, double y) Pixel(double worldX, double worldY) =>
-            (210 * (worldX - currentPreviewExtent.UpperLeftPoint.X) / currentPreviewExtent.Width,
-             210 * (currentPreviewExtent.UpperLeftPoint.Y - worldY) / currentPreviewExtent.Height);
+            (214 * (worldX - currentPreviewExtent.UpperLeftPoint.X) / currentPreviewExtent.Width,
+             214 * (currentPreviewExtent.UpperLeftPoint.Y - worldY) / currentPreviewExtent.Height);
 
         var upperLeft = Pixel(mainExtent.UpperLeftPoint.X, mainExtent.UpperLeftPoint.Y);
         var lowerRight = Pixel(mainExtent.LowerRightPoint.X, mainExtent.LowerRightPoint.Y);
         var center = Pixel(mainExtent.GetCenterPoint().X, mainExtent.GetCenterPoint().Y);
         framePoints = FormattableString.Invariant($"{upperLeft.x},{upperLeft.y} {lowerRight.x},{upperLeft.y} {lowerRight.x},{lowerRight.y} {upperLeft.x},{lowerRight.y}");
-        starPoints = string.Join(" ", Enumerable.Range(0, 10).Select(index =>
-        {
-            var angle = (index * 36 - 90) * Math.PI / 180;
-            var radius = index % 2 == 0 ? 8 : 3.5;
-            return FormattableString.Invariant($"{center.x + radius * Math.Cos(angle)},{center.y + radius * Math.Sin(angle)}");
-        }));
+        markerX = FormattableString.Invariant($"{center.x - 10:0.###}");
+        markerY = FormattableString.Invariant($"{center.y - 10:0.###}");
+        // The overview remains north-up; rotate the arrow opposite the main map's bearing
+        // so its tip tracks north as the main camera turns.
+        markerTransform = FormattableString.Invariant($"rotate({-bearing:0.###} {center.x:0.###} {center.y:0.###})");
     }
 
     private Task OverviewClicked(ClickedMapViewEventArgs args) => map.SetCenterAsync(new PointShape(args.WorldX, args.WorldY));

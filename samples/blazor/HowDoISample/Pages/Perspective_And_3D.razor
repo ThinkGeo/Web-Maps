@@ -25,8 +25,8 @@
         </MapToolsSetting>
     </MapView>
 
-    <div style="position:absolute;top:12px;right:12px;width:260px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
-        <div style="font-weight:600;margin-bottom:8px">Perspective &amp; 3D buildings</div>
+    <div style="position:absolute;top:12px;right:12px;width:260px;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Perspective &amp; 3D buildings</div>
 
         <label style="display:block;margin-bottom:2px">Tilt - @pitch.ToString("0")&deg;</label>
         <input type="range" min="0" max="85" step="1" value="@pitch" style="width:100%"
@@ -36,12 +36,12 @@
         <input type="range" min="-180" max="180" step="1" value="@bearing" style="width:100%"
                @oninput="@(e => bearing = Convert.ToDouble(e.Value))" />
 
-        <div style="margin-top:8px;display:flex;gap:6px">
-            <button style="padding:2px 8px;cursor:pointer" @onclick="@(() => { pitch = 60; bearing = -20; })">Look across</button>
-            <button style="padding:2px 8px;cursor:pointer" @onclick="@(() => { pitch = 0; bearing = 0; })">Straight down</button>
+        <div style="margin-top:8px;display:flex;gap:8px">
+            <button class="btn btn-sm btn-light" @onclick="@(() => { pitch = 60; bearing = -20; })">Look across</button>
+            <button class="btn btn-sm btn-light" @onclick="@(() => { pitch = 0; bearing = 0; })">Straight down</button>
         </div>
 
-        <div style="margin-top:10px;color:#555">
+        <div style="margin-top:10px;color:#e5e5e5">
             Midtown Manhattan. The buildings rise past zoom 14, lean with the perspective and
             occlude each other. Right-drag on the map does the same as the sliders.
         </div>

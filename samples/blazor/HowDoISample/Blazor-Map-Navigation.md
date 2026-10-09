@@ -64,10 +64,10 @@ The navigation controls run directly in the browser to provide immediate feedbac
   - Browser-side event handling for continuous compass rotation and navigation bar interaction.
 - `wwwroot/images/empire_state_building.png`
   - Empire State Building marker copied from the WPF v15 sample.
-- `wwwroot/images/icon_north_arrow.png`
-  - Compass image copied from the WPF v15 sample.
-- `wwwroot/images/icon_globe_black.png`
-  - Default extent image copied from the WPF v15 sample.
+- `ThinkGeo.UI.Blazor/wwwroot/images/icon_north_arrow.svg` (SDK)
+  - Shared vector compass icon.
+- `ThinkGeo.UI.Blazor/wwwroot/images/icon_globe_black.svg` (SDK)
+  - Shared vector default-extent icon.
 
 ## Validation
 

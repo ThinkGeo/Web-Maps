@@ -34,22 +34,22 @@
             </div>
         }
     </div>
-    <div style="width:420px;flex:0 0 420px;box-sizing:border-box;margin-left:8px;background:#f6f6f4;font:13px system-ui;display:flex;flex-direction:column;min-height:0">
-        <div style="padding:8px 8px 4px;font-weight:600">style.json - edit it; the map follows</div>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;background:dimgray;color:whitesmoke;font:13px system-ui;display:flex;flex-direction:column;min-height:0">
+        <div style="padding:8px 8px 4px;font-size:16px;font-weight:600">style.json - edit it; the map follows</div>
         <div style="padding:0 8px 4px">
             <div style="font-weight:600">Zooming</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:4px">
-                <button class="btn btn-sm btn-outline-secondary" style="background-color:#dedede;font-size:14px;font-weight:600" @onclick="() => map.ZoomInAsync()">Zoom In</button>
-                <button class="btn btn-sm btn-outline-secondary" style="background-color:#dedede;font-size:14px;font-weight:600" @onclick="() => map.ZoomOutAsync()">Zoom Out</button>
-                <button class="btn btn-sm btn-outline-secondary" style="background-color:#dedede;font-size:14px;font-weight:600" @onclick="ZoomToScaleAsync">Zoom To Scale</button>
+                <button style="@SidebarButtonStyle" @onclick="() => map.ZoomInAsync()">Zoom In</button>
+                <button style="@SidebarButtonStyle" @onclick="() => map.ZoomOutAsync()">Zoom Out</button>
+                <button style="@SidebarButtonStyle" @onclick="ZoomToScaleAsync">Zoom To Scale</button>
                 <input type="number" min="1" step="any" @bind="scale" style="min-width:0" />
             </div>
 
             <div style="font-weight:600;margin-top:6px">Layer bounding box</div>
-            <button class="btn btn-sm btn-outline-secondary" style="width:100%;margin:2px 0;background-color:#dedede;font-size:14px;font-weight:600" @onclick="ZoomToLimitsAsync">Set Extent to Layer BBox</button>
+            <button style="width:100%;margin:2px 0;@SidebarButtonStyle" @onclick="ZoomToLimitsAsync">Set Extent to Layer BBox</button>
 
             <div style="font-weight:600;margin-top:6px">Center at</div>
-            <button class="btn btn-sm btn-outline-secondary" style="width:100%;margin:2px 0;background-color:#dedede;font-size:14px;font-weight:600" @onclick="CenterAsync">Center At (33.15,-96.82)</button>
+            <button style="width:100%;margin:2px 0;@SidebarButtonStyle" @onclick="CenterAsync">Center At (33.15,-96.82)</button>
 
             <div style="font-weight:600;margin-top:6px">Rotating</div>
             <div style="display:flex;gap:4px;align-items:center;margin:2px 0">
@@ -59,12 +59,14 @@
         </div>
         <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false" wrap="soft"
                   aria-label="style.json editor"
-                  style="flex:1;min-height:0;width:100%;box-sizing:border-box;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre-wrap;overflow-wrap:anywhere"></textarea>
-        <div style="padding:4px 8px 6px;color:@(styleIsValid ? "darkgreen" : "firebrick")">@styleStatus</div>
+                  style="flex:1;min-height:0;width:100%;box-sizing:border-box;background:#fff;color:#222;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre-wrap;overflow-wrap:anywhere"></textarea>
+        <div style="padding:4px 8px 6px;color:@(styleIsValid ? "#c9f5d2" : "#ffd0d0")">@styleStatus</div>
     </div>
 </div>
 
 @code {
+    private const string SidebarButtonStyle = "border:2px solid #8a8a8a;background:#f6f6f4;color:#222;padding:1px 6px;cursor:pointer;font:13px system-ui";
+
     private const string StyleJson = @"{
   ""layers"": [
     {

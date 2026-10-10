@@ -85,9 +85,9 @@
                 var mbtiles = new MbTilesVectorTileSource("./Data/Mbtiles/maplibre.mbtiles");
                 await mbtiles.OpenAsync();
                 tiles = mbtiles;
-                metadata = mbtiles.MetadataJson;
+                metadata = mbtiles.Metadata["json"];
                 stylePath = "./Data/Mbtiles/style.json";
-                bounds = await mbtiles.GetBoundingBoxAsync();
+                bounds = mbtiles.GetBoundingBox();
             }
             else
             {

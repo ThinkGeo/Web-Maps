@@ -96,10 +96,10 @@
         stadium.InternalFeatures.Add(new Feature(Stadium));
         markSources = new GeoCollection<FeatureSource> { { "measured", measured }, { "stadium", stadium } };
         markStyle = new MapStyle()
-            .AddFillLayer("measured-fill", "marks", "measured", new GeoColor(96, GeoColors.Green), GeoColors.DarkGreen, filter: StyleExpressions.GeometryType("Polygon"))
-            .AddLineLayer("measured-line", "marks", "measured", GeoColors.DarkGreen, 5f, filter: StyleExpressions.GeometryType("LineString"))
-            .AddSymbolLayer("measured-point", "marks", "measured", imageName: "measured", allowOverlap: true, filter: StyleExpressions.GeometryType("Point"))
-            .AddSymbolLayer("stadium", "marks", "stadium", imageName: "stadium", allowOverlap: true);
+            .AddFillLayer("measured-fill", "marks", "measured", new FillPaint(new GeoColor(96, GeoColors.Green), outlineColor: GeoColors.DarkGreen), filter: StyleExpressions.GeometryType(WellKnownType.Polygon))
+            .AddLineLayer("measured-line", "marks", "measured", new LinePaint(GeoColors.DarkGreen, 5f), filter: StyleExpressions.GeometryType(WellKnownType.Line))
+            .AddSymbolLayer("measured-point", "marks", "measured", new SymbolLayout(SymbolPlacement.Point, TextAnchor.Center, "Noto Sans Regular", iconAllowOverlap: true), new SymbolPaint(GeoColors.Black), imageName: "measured", filter: StyleExpressions.GeometryType(WellKnownType.Point))
+            .AddSymbolLayer("stadium", "marks", "stadium", new SymbolLayout(SymbolPlacement.Point, TextAnchor.Center, "Noto Sans Regular", iconAllowOverlap: true), new SymbolPaint(GeoColors.Black), imageName: "stadium");
         markStyle.Images.Add("stadium", PointStyle.CreateSimpleCircleStyle(GeoColors.Blue, 14, GeoColors.White, 3));
         markStyle.Images.Add("measured", PointStyle.CreateSimpleCircleStyle(GeoColors.DarkGreen, 12, GeoColors.White, 3));
     }

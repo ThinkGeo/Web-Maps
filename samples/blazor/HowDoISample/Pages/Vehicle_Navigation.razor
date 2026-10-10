@@ -141,20 +141,24 @@
         var destinationColor = darkTheme ? GeoColor.FromArgb(70, 33, 255, 143) : GeoColor.FromArgb(70, 0, 150, 60);
 
         routeStyle = new MapStyle()
-            .AddFillLayer("destination", "nav", "route", destinationColor, filter: StyleExpressions.Equal("Kind", "destination"))
-            .AddLineLayer("route", "nav", "route", routeColor, 6f, filter: StyleExpressions.Equal("Kind", "route"));
+            .AddFillLayer("destination", "nav", "route", new FillPaint(destinationColor), filter: StyleExpressions.Equal("Kind", "destination"))
+            .AddLineLayer("route", "nav", "route", new LinePaint(routeColor, 6f), filter: StyleExpressions.Equal("Kind", "route"));
 
         // The vehicle points the way it is heading; the picture turns with the map, so in
         // tracking mode - the map turned to the heading - it points up the screen.
         vehicleStyle = new MapStyle()
-            .AddLineLayer("visited", "nav", "vehicle", visitedColor, 6f, filter: StyleExpressions.Equal("Kind", "visited"))
-            .AddSymbolLayer("vehicle", "nav", "vehicle", imageName: "vehicle", allowOverlap: true,
-                filter: StyleExpressions.Equal("Kind", "vehicle"),
-                layout: new JsonObject
+            .AddLineLayer("visited", "nav", "vehicle", new LinePaint(visitedColor, 6f), filter: StyleExpressions.Equal("Kind", "visited"))
+            .AddLayer(new JsonObject
+{
+    ["id"] = "vehicle", ["type"] = "symbol", ["source"] = "nav", ["source-layer"] = "vehicle",
+    ["layout"] = new JsonObject
                 {
+        ["icon-image"] = "vehicle", ["icon-allow-overlap"] = true,
                     ["icon-rotate"] = new JsonArray("to-number", StyleExpressions.Get("Heading")),
                     ["icon-rotation-alignment"] = "map"
-                });
+                },
+    ["filter"] = StyleExpressions.Equal("Kind", "vehicle"),
+});
         vehicleStyle.Images.Add("vehicle", vehicleImage);
     }
 

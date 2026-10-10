@@ -13,13 +13,13 @@
   <!-- Every package of the set is pinned to one beta: the gallery shows what that build of the
        SDK does, and a mixed set would make it unclear which. -->
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.Core" Version="15.0.0-beta197" />
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="15.0.0-beta197" />
-    <PackageReference Include="ThinkGeo.Gdal" Version="15.0.0-beta197" />
-    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.0.0-beta197" />
-    <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.0.0-beta197" />
-    <PackageReference Include="ThinkGeo.PostgreSql" Version="15.0.0-beta197" />
-    <PackageReference Include="ThinkGeo.SqlServer" Version="15.0.0-beta197" />
+    <PackageReference Include="ThinkGeo.Core" Version="15.0.0-beta214" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="15.0.0-beta214" />
+    <PackageReference Include="ThinkGeo.Gdal" Version="15.0.0-beta214" />
+    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.0.0-beta214" />
+    <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.0.0-beta214" />
+    <PackageReference Include="ThinkGeo.PostgreSql" Version="15.0.0-beta214" />
+    <PackageReference Include="ThinkGeo.SqlServer" Version="15.0.0-beta214" />
   </ItemGroup>
 
   <!-- The sample data is the Blazor gallery's, linked in rather than copied: the two galleries

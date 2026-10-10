@@ -92,10 +92,14 @@
 
         sources = new GeoCollection<FeatureSource> { { "source", source }, { "region", region }, { "result", outcome } };
         style = new MapStyle()
-            .AddFillLayer("region", "shapes", "region", new GeoColor(32, GeoColors.Blue), GeoColors.Blue)
-            .AddFillLayer("source", "shapes", "source", GeoColors.LightOrange, paint: new JsonObject { ["fill-color"] = StyleExpressions.Get("color") })
-            .AddFillLayer("result", "shapes", "result", new GeoColor(96, GeoColors.Green))
-            .AddLineLayer("result-edge", "shapes", "result", GeoColors.DarkGreen, 2f);
+            .AddFillLayer("region", "shapes", "region", new FillPaint(new GeoColor(32, GeoColors.Blue), outlineColor: GeoColors.Blue))
+            .AddLayer(new JsonObject
+{
+    ["id"] = "source", ["type"] = "fill", ["source"] = "shapes", ["source-layer"] = "source",
+    ["paint"] = new JsonObject { ["fill-color"] = StyleExpressions.Get("color") },
+})
+            .AddFillLayer("result", "shapes", "result", new FillPaint(new GeoColor(96, GeoColors.Green)))
+            .AddLineLayer("result-edge", "shapes", "result", new LinePaint(GeoColors.DarkGreen, 2f));
         Compute();
     }
 

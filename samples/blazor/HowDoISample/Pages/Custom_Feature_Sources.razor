@@ -33,7 +33,7 @@
     {
         var route = new SimpleCsvFeatureSource("./Data/Csv/vehicle-route.csv") { ProjectionConverter = new ProjectionConverter(4326, 3857) };
         sources = new GeoCollection<FeatureSource> { { "route", route } };
-        style = new MapStyle().AddCircleLayer("points", "route", "route", GeoColors.Blue, 5f, GeoColors.White, 2f);
+        style = new MapStyle().AddCircleLayer("points", "route", "route", new CirclePaint(GeoColors.Blue, GeoColors.White, 5f, 2f));
 
         route.Open();
         bounds = route.GetBoundingBox();

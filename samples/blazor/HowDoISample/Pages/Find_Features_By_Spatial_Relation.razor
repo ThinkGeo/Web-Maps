@@ -100,10 +100,10 @@
 
         markSources = new GeoCollection<FeatureSource> { { "query", query }, { "matches", matches } };
         markStyle = new MapStyle()
-            .AddFillLayer("matches", "marks", "matches", new GeoColor(90, GeoColors.MidnightBlue), GeoColors.MidnightBlue)
-            .AddLineLayer("matches-edge", "marks", "matches", GeoColors.MidnightBlue, 2f)
-            .AddLineLayer("query-edge", "marks", "query", GeoColors.Black, 2f)
-            .AddSymbolLayer("query-point", "marks", "query", imageName: "pin", allowOverlap: true, filter: StyleExpressions.GeometryType("Point"));
+            .AddFillLayer("matches", "marks", "matches", new FillPaint(new GeoColor(90, GeoColors.MidnightBlue), outlineColor: GeoColors.MidnightBlue))
+            .AddLineLayer("matches-edge", "marks", "matches", new LinePaint(GeoColors.MidnightBlue, 2f))
+            .AddLineLayer("query-edge", "marks", "query", new LinePaint(GeoColors.Black, 2f))
+            .AddSymbolLayer("query-point", "marks", "query", new SymbolLayout(SymbolPlacement.Point, TextAnchor.Center, "Noto Sans Regular", iconAllowOverlap: true), new SymbolPaint(GeoColors.Black), imageName: "pin", filter: StyleExpressions.GeometryType(WellKnownType.Point));
         markStyle.Images.Add("pin", PointStyle.CreateSimpleCircleStyle(GeoColors.Black, 8, GeoColors.White, 2));
 
         Show();

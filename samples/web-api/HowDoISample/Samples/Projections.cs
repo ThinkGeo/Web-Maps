@@ -77,9 +77,9 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             // as if the file had always been Web Mercator.
             catalog.Vector("zoning", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("zoning", SampleData.Frisco("Zoning.shp"));
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("zoning", SampleData.Frisco("Zoning.shp"));
+                return new VectorTileOverlay(tiles);
             });
 
             // A Los Angeles to Shanghai route stored with continuous longitudes past -180, its
@@ -88,12 +88,12 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             // the seam.
             catalog.Vector("flight", () =>
             {
-                var overlay = new VectorTileOverlay();
+                var tiles = new FeatureSourceVectorTileSource();
                 var flight = new Flight();
-                overlay.FeatureSources.Add("route", new InMemoryFeatureSource(Array.Empty<FeatureSourceColumn>(), new[] { new Feature(flight.RouteLine()) }));
-                overlay.FeatureSources.Add("corridor", new InMemoryFeatureSource(Array.Empty<FeatureSourceColumn>(), new[] { new Feature(flight.CorridorEdges()) }));
-                overlay.FeatureSources.Add("airports", new InMemoryFeatureSource(new[] { new FeatureSourceColumn("LABEL") }, flight.Airports()));
-                return overlay;
+                tiles.FeatureSources.Add("route", new InMemoryFeatureSource(Array.Empty<FeatureSourceColumn>(), new[] { new Feature(flight.RouteLine()) }));
+                tiles.FeatureSources.Add("corridor", new InMemoryFeatureSource(Array.Empty<FeatureSourceColumn>(), new[] { new Feature(flight.CorridorEdges()) }));
+                tiles.FeatureSources.Add("airports", new InMemoryFeatureSource(new[] { new FeatureSourceColumn("LABEL") }, flight.Airports()));
+                return new VectorTileOverlay(tiles);
             });
         }
 
@@ -182,7 +182,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                     {
                         var canvas = GeoCanvas.CreateDefaultGeoCanvas();
                         canvas.BeginDrawing(image, extent, GeographyUnit.Meter);
-                        overlay.Draw(canvas);
+                        await overlay.DrawAsync(canvas, cancellation);
                         canvas.EndDrawing();
                         return Results.Bytes(image.GetImageBytes(GeoImageFormat.Png), "image/png");
                     }

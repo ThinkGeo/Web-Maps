@@ -364,13 +364,17 @@
 
         vehicleSources = new GeoCollection<FeatureSource> { { "vehicle", vehicle } };
         vehicleStyle = new MapStyle()
-            .AddSymbolLayer("vehicle", "features", "vehicle", imageName: "vehicle", allowOverlap: true,
-                layout: new JsonObject
+            .AddLayer(new JsonObject
+{
+    ["id"] = "vehicle", ["type"] = "symbol", ["source"] = "features", ["source-layer"] = "vehicle",
+    ["layout"] = new JsonObject
                 {
+        ["icon-image"] = "vehicle", ["icon-allow-overlap"] = true,
                     ["icon-rotate"] = new JsonArray("to-number", StyleExpressions.Get("Bearing")),
                     ["icon-rotation-alignment"] = "map",
                     ["icon-size"] = 0.5
-                });
+                },
+});
         vehicleStyle.Images.Add("vehicle", VehicleImage());
         ShowVehicle(pose);
     }

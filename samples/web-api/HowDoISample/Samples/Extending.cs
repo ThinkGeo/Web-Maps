@@ -11,9 +11,9 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
         {
             catalog.Vector("csv-route", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("route", new SimpleCsvFeatureSource(SampleData.Path("Csv/vehicle-route.csv")) { ProjectionConverter = new ProjectionConverter(4326, 3857) });
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("route", new SimpleCsvFeatureSource(SampleData.Path("Csv/vehicle-route.csv")) { ProjectionConverter = new ProjectionConverter(4326, 3857) });
+                return new VectorTileOverlay(tiles);
             });
         }
 

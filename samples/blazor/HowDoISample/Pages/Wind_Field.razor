@@ -50,7 +50,17 @@
             towards[index] = float.IsNaN(from[index]) ? float.NaN : (from[index] + 180f) % 360f;
         }
 
-        field = VectorFieldSource.FromSpeedDirection(speeds, towards, width, height, extent, new ThinkGeo.Core.Projection(proj4));
+        var flow = new FlowVector[height, width];
+        for (var row = 0; row < height; row++)
+        {
+            for (var column = 0; column < width; column++)
+            {
+                var i = (row * width) + column;
+                flow[row, column] = FlowVector.FromSpeedDirection(speeds[i], towards[i]);
+            }
+        }
+
+        field = new VectorFieldSource(flow, extent, new ThinkGeo.Core.Projection(proj4));
         status = string.Format(CultureInfo.InvariantCulture, "{0} x {1} field, 65,536 particles", width, height);
     }
 

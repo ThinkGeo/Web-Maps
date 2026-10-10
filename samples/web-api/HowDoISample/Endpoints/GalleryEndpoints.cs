@@ -43,7 +43,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI
                 try
                 {
                     response.Headers.CacheControl = "public, max-age=300";
-                    var bytes = styled != null ? await styled.RenderTileAsync(z, x, y, cancellation) : raster.GetTileImage(z, x, y, GeographyUnit.Meter);
+                    var bytes = styled != null ? await styled.RenderTileAsync(z, x, y, cancellation) : await raster.GetTileImageAsync(z, x, y, cancellation);
                     return Results.Bytes(bytes, "image/png");
                 }
                 finally
@@ -64,7 +64,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI
                 await gate.WaitAsync(cancellation);
                 try
                 {
-                    return Results.Bytes(adornment.GetImage(width, height, GeoJson.Extent(bbox), GeographyUnit.Meter), "image/png");
+                    return Results.Bytes(await adornment.GetImageAsync(width, height, GeoJson.Extent(bbox), cancellation), "image/png");
                 }
                 finally
                 {

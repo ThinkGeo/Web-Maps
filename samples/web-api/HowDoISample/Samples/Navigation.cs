@@ -19,12 +19,12 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             // thousand lane pieces, one source per layer the file names.
             catalog.Vector("lanes", () =>
             {
-                var overlay = new VectorTileOverlay();
+                var tiles = new FeatureSourceVectorTileSource();
                 foreach (var pair in Lanes.Value.Sources)
                 {
-                    overlay.FeatureSources.Add(pair.Key, pair.Value);
+                    tiles.FeatureSources.Add(pair.Key, pair.Value);
                 }
-                return overlay;
+                return new VectorTileOverlay(tiles);
             });
         }
 

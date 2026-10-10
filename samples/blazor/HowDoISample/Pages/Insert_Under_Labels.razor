@@ -55,7 +55,7 @@
         await rebuilt.ResolveAsync();
         if (wash > 0)
         {
-            rebuilt.InsertLayerAt(StyleLayerSlot.UnderLabels, new JsonObject
+            rebuilt.AddLayer(new JsonObject
             {
                 ["id"] = "wash",
                 ["type"] = "background",
@@ -64,7 +64,7 @@
                     ["background-color"] = "#FFFFFF",
                     ["background-opacity"] = wash,
                 },
-            });
+            }, StyleLayerSlot.UnderLabels);
         }
         style = rebuilt;
     }

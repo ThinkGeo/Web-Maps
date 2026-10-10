@@ -28,9 +28,9 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                     // The cutter reads a source from several threads at once, and the source says
                     // through its ConcurrentAccess whether it can be: features built in memory are
                     // read as they are, a file is copied once per thread.
-                    var overlay = new VectorTileOverlay();
-                    overlay.FeatureSources.Add("features", source);
-                    return overlay;
+                    var tiles = new FeatureSourceVectorTileSource();
+                    tiles.FeatureSources.Add("features", source);
+                    return new VectorTileOverlay(tiles);
                 });
             }
 
@@ -50,16 +50,16 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 var name = database;
                 catalog.Vector("db-" + Slug(name), () =>
                 {
-                    var overlay = new VectorTileOverlay();
-                    overlay.FeatureSources.Add("data", OpenDatabase(name));
-                    return overlay;
+                    var tiles = new FeatureSourceVectorTileSource();
+                    tiles.FeatureSources.Add("data", OpenDatabase(name));
+                    return new VectorTileOverlay(tiles);
                 });
             }
 
             foreach (var archive in Archives)
             {
                 var name = archive;
-                catalog.Vector("offline-" + name, () => new VectorTileOverlay { TileSource = OpenArchive(name) });
+                catalog.Vector("offline-" + name, () => new VectorTileOverlay(OpenArchive(name)));
             }
         }
 
@@ -86,8 +86,8 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             {
                 var tiles = OpenArchive(archive);
                 await tiles.OpenAsync();
-                var bounds = archive == "mbtiles" ? await ((MbTilesVectorTileSource)tiles).GetBoundingBoxAsync() : ((PmTilesVectorTileSource)tiles).GetBoundingBox();
-                var metadata = archive == "mbtiles" ? ((MbTilesVectorTileSource)tiles).MetadataJson : ((PmTilesVectorTileSource)tiles).MetadataJson;
+                var bounds = archive == "mbtiles" ? ((MbTilesVectorTileSource)tiles).GetBoundingBox() : ((PmTilesVectorTileSource)tiles).GetBoundingBox();
+                var metadata = archive == "mbtiles" ? ((MbTilesVectorTileSource)tiles).Metadata["json"] : ((PmTilesVectorTileSource)tiles).MetadataJson;
                 var own = await File.ReadAllTextAsync(SampleData.Path(archive == "mbtiles" ? "Mbtiles/style.json" : "Pmtiles/style.json"));
                 var result = new
                 {
@@ -168,7 +168,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
         }
 
         // Vector tiles kept in a file on the server: an MBTiles or a PMTiles archive.
-        private static IVectorTileSource OpenArchive(string archive)
+        private static IRawVectorTileSource OpenArchive(string archive)
         {
             return archive == "mbtiles"
                 ? new MbTilesVectorTileSource(SampleData.Path("Mbtiles/maplibre.mbtiles"))

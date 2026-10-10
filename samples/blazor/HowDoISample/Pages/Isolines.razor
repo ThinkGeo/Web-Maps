@@ -127,19 +127,24 @@
         var document = new MapStyle();
         if (fillBands)
         {
-            document.AddFillLayer("bands", "field", "isolines", GeoColors.Transparent, opacity: 0.45f,
-                paint: new JsonObject { ["fill-color"] = colorByLevel.DeepClone() });
+            document.AddLayer(new JsonObject
+{
+    ["id"] = "bands", ["type"] = "fill", ["source"] = "field", ["source-layer"] = "isolines",
+    ["paint"] = new JsonObject { ["fill-color"] = colorByLevel.DeepClone() },
+});
         }
-        document.AddLineLayer("lines", "field", "isolines", GeoColors.Transparent, lineWidth,
-            paint: new JsonObject { ["line-color"] = colorByLevel.DeepClone() });
+        document.AddLayer(new JsonObject
+{
+    ["id"] = "lines", ["type"] = "line", ["source"] = "field", ["source-layer"] = "isolines",
+    ["paint"] = new JsonObject { ["line-color"] = colorByLevel.DeepClone(), ["line-width"] = lineWidth },
+});
         if (showLabels)
         {
-            document.AddSymbolLayer("labels", "field", "isolines", textColumn: "label",
-                textColor: GeoColors.Black, haloColor: GeoColors.White, haloWidth: 1.5f, alongLine: true);
+            document.AddSymbolLayer("labels", "field", "isolines", new SymbolLayout(SymbolPlacement.Line, TextAnchor.Center, "Noto Sans Regular", textSize: 12f), new SymbolPaint(GeoColors.Black, GeoColors.White, 1.5f), textColumn: "label");
         }
         if (showPoints)
         {
-            document.AddCircleLayer("points", "field", "points", GeoColor.FromArgb(160, 40, 40, 40), 2.5f);
+            document.AddCircleLayer("points", "field", "points", new CirclePaint(GeoColor.FromArgb(160, 40, 40, 40), radius: 2.5f));
         }
         style = document;
 

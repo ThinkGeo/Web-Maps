@@ -244,7 +244,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
 
             if (info.ScaleBar)
             {
-                var scaleBar = new ScaleBarPrinterLayoutAsyncLayer(map) { MapUnit = GeographyUnit.Meter };
+                var scaleBar = new ScaleBarPrinterLayoutAsyncLayer(map);
                 scaleBar.SetPosition(1.6, barHeight, left + 0.8, mapBottom - gap - barHeight / 2, PrintingUnit.Inch);
                 page.Layers.Add(scaleBar);
             }

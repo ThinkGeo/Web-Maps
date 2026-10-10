@@ -40,9 +40,9 @@
         // A point is drawn from a named picture; a star has no shape of its own in the style
         // specification, so the point style is drawn once and registered under that name.
         style = new MapStyle()
-            .AddFillLayer("areas", "app", "shapes", new GeoColor(80, GeoColors.MediumPurple), GeoColors.MediumPurple)
-            .AddLineLayer("lines", "app", "shapes", GeoColors.MediumPurple, 6f, filter: StyleExpressions.GeometryType("LineString"))
-            .AddSymbolLayer("points", "app", "shapes", imageName: "star", allowOverlap: true, filter: StyleExpressions.GeometryType("Point"));
+            .AddFillLayer("areas", "app", "shapes", new FillPaint(new GeoColor(80, GeoColors.MediumPurple), outlineColor: GeoColors.MediumPurple))
+            .AddLineLayer("lines", "app", "shapes", new LinePaint(GeoColors.MediumPurple, 6f), filter: StyleExpressions.GeometryType(WellKnownType.Line))
+            .AddSymbolLayer("points", "app", "shapes", new SymbolLayout(SymbolPlacement.Point, TextAnchor.Center, "Noto Sans Regular", iconAllowOverlap: true), new SymbolPaint(GeoColors.Black), imageName: "star", filter: StyleExpressions.GeometryType(WellKnownType.Point));
         style.Images.Add("star", new PointStyle(PointSymbolType.Star, 24, GeoBrushes.MediumPurple, GeoPens.Purple));
     }
 

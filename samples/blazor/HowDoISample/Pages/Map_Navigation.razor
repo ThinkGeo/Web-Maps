@@ -185,8 +185,8 @@
 
         // Resolve both documents now, so the checkbox only swaps an already prepared style.
         await Task.WhenAll(
-            basemapWithBuildings.GetStyleLayersAsync(),
-            basemapWithoutBuildings.GetStyleLayersAsync());
+            basemapWithBuildings.ResolveAsync(),
+            basemapWithoutBuildings.ResolveAsync());
         basemapWithoutBuildings.SetLayerVisibility("buildings-3d", false);
 
         basemapStyle = buildingsVisible ? basemapWithBuildings : basemapWithoutBuildings;

@@ -955,6 +955,12 @@ pre {
     padding-left: 2.5rem;
 }
 
+.menu-group-item .sub-arrow::before {
+    display: inline-block;
+    width: 2rem;
+    text-align: center;
+}
+
 /*
  * The search box at the top of the sidebar: every word typed has to appear in a sample's
  * title, description or group, and the groups that still have samples open to show them.

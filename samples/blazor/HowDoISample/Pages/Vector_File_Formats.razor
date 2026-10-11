@@ -96,8 +96,7 @@
             case "GeoJSON":
                 return new GeoJsonFeatureSource("./Data/GeoJson/pittsburghpacity-designated-historic-districts.geojson") { ProjectionConverter = new ProjectionConverter(4326, 3857) };
             case "KML":
-                // This KML was written in the map's own meters, so it needs no conversion.
-                return new KmlGdalFeatureSource("./Data/Kml/Frisco.kml");
+                return new KmlGdalFeatureSource("./Data/Kml/Frisco.kml") { ProjectionConverter = new ProjectionConverter(4326, 3857) };
             case "GPX":
                 return new GpxFeatureSource("./Data/Gpx/Hike_Bike.gpx") { ProjectionConverter = new ProjectionConverter(4326, 3857) };
             case "MapInfo TAB":

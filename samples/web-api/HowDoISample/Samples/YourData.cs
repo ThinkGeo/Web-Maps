@@ -112,7 +112,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             {
                 case "Shapefile": return SampleData.Frisco("Hike_Bike.shp");
                 case "GeoJSON": return new GeoJsonFeatureSource(SampleData.Path("GeoJson/pittsburghpacity-designated-historic-districts.geojson")) { ProjectionConverter = new ProjectionConverter(4326, 3857) };
-                case "KML": return new KmlGdalFeatureSource(SampleData.Path("Kml/Frisco.kml"));   // written in the map's own meters
+                case "KML": return new KmlGdalFeatureSource(SampleData.Path("Kml/Frisco.kml")) { ProjectionConverter = new ProjectionConverter(4326, 3857) };
                 case "GPX": return new GpxFeatureSource(SampleData.Path("Gpx/Hike_Bike.gpx")) { ProjectionConverter = new ProjectionConverter(4326, 3857) };
                 case "MapInfo TAB": return new TabFeatureSource(SampleData.Path("Tab/City_ETJ.tab")) { ProjectionConverter = new ProjectionConverter(2276, 3857) };
                 case "TinyGeo": return new TinyGeoFeatureSource(SampleData.Path("TinyGeo/Zoning.tgeo")) { ProjectionConverter = new ProjectionConverter(2276, 3857) };

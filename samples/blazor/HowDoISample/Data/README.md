@@ -10,8 +10,8 @@ Where the data under this folder comes from.
 | `Shapefile/USStates_3857` | Display Dot Density, Dynamic Rendering | US states with 1990 census attributes, ThinkGeo sample data, Web Mercator |
 | `Csv/historical_state_population_by_year.csv` | Dynamic Rendering | US Census Bureau state population estimates, one line per state and year (public domain) |
 | `Shapefile/Parks`, `Streets`, `Hotels`, `Schools`, `Zoning`, `Hike_Bike`, `FriscoCityLimitsDivided` | Render Points, Lines and Polygons, Shapes & Spatial Queries, Hatch Styles, Migrate a Classic Layer, Setting the Projection of a Layer, Vector File Formats | City of Frisco, Texas open data (EPSG:2276) |
-| `Shapefile/Frisco_Coyote_Sightings` | Heatmap | City of Frisco coyote-sighting reports (EPSG:2276); reporter names and contacts removed, only the sighting attributes remain |
-| `Kml/Frisco.kml`, `Tab/City_ETJ`, `TinyGeo/Zoning.tgeo`, `FileGeoDatabase/zoning.gdb` | Vector File Formats, Databases | The same City of Frisco open data in KML (Web Mercator), MapInfo TAB, TinyGeo and Esri file geodatabase form |
+| `Shapefile/Frisco_Coyote_Sightings` | Heatmap | City of Frisco coyote-sighting reports (EPSG:2276) |
+| `Kml/Frisco.kml`, `Tab/City_ETJ`, `TinyGeo/Zoning.tgeo`, `FileGeoDatabase/zoning.gdb` | Vector File Formats, Databases | The same City of Frisco open data in KML, MapInfo TAB, TinyGeo and Esri file geodatabase form |
 | `Gpx/Hike_Bike.gpx` | Vector File Formats | Forty Frisco trails from `Hike_Bike.shp`, written as GPX tracks |
 | `GeoJson/pittsburghpacity-designated-historic-districts.geojson` | Vector File Formats | City of Pittsburgh designated historic districts, Western Pennsylvania Regional Data Center open data |
 | `S57/US1GC09M` | Vector File Formats | NOAA electronic navigational chart US1GC09M, Gulf of Mexico (public domain) |

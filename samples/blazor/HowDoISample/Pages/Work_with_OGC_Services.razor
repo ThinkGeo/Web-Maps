@@ -2,40 +2,61 @@
 @using System.Collections.ObjectModel
 @using ThinkGeo.Core
 
-<MapView Id="map" @ref="map"
-         Width="100"
-         Height="100"
-         MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-         Center="@(new PointShape(-11037792.463030849, 4953010.053845501))"
-         Zoom="5"
-         MapUnit="@ThinkGeo.Core.GeographyUnit.Meter">
-    <OverlaysSetting>
-        <WmsTileOverlay Id="WmsOverlay" Parameters="@parameters"
-                        ServerUris="@serverUris"
-                        TileHeight="512" TileWidth="512"></WmsTileOverlay>
-        <WmtsTileOverlay Id="WmtsOverlay"
-                         ServerUri="@wmtsUri"
-                         ActiveLayerName="ch.swisstopo.pixelkarte-farbe-pk25.noscale"
-                         ActiveStyleName="ch.swisstopo.pixelkarte-farbe-pk25.noscale"
-                         TileMatrixSetName="3857_18"
-                         OutputFormat="image/jpeg"
-                         TileHeight="256" TileWidth="256"></WmtsTileOverlay>
-    </OverlaysSetting>
-    <MapToolsSetting>
-        <MapTools>
-            <ZoomBarMapTool />
-        </MapTools>
-    </MapToolsSetting>
-</MapView>
+<div class="map-container" style="position:relative">
+    <MapView Id="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0">
+        <OverlaysSetting>
+            @if (showWmts)
+            {
+                <WmtsTileOverlay Id="WmtsOverlay"
+                                 ServerUri="@wmtsUri"
+                                 ActiveLayerName="ch.swisstopo.pixelkarte-farbe-pk25.noscale"
+                                 ActiveStyleName="ch.swisstopo.pixelkarte-farbe-pk25.noscale"
+                                 TileMatrixSetName="3857_18"
+                                 OutputFormat="image/jpeg"
+                                 TileHeight="256" TileWidth="256" />
+            }
+            else
+            {
+                <WmsTileOverlay Id="WmsOverlay" Parameters="@parameters"
+                                ServerUris="@serverUris"
+                                TileHeight="512" TileWidth="512" />
+            }
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom"
+                                CenterButtonBearing="0" CenterButtonPitch="0" />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;right:12px;width:280px;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Raster service:</div>
+        <label style="display:block;margin:4px 0;cursor:pointer;white-space:nowrap">
+            <input type="radio" name="ogc-raster-service" checked="@(!showWmts)" @onchange="@(() => showWmts = false)" />
+            WMS - mundialis OpenStreetMap
+        </label>
+        <label style="display:block;margin:4px 0;cursor:pointer;white-space:nowrap">
+            <input type="radio" name="ogc-raster-service" checked="@showWmts" @onchange="@(() => showWmts = true)" />
+            WMTS - Swisstopo Switzerland
+        </label>
+    </div>
+</div>
 
 @code {
-    MapView map;
-    Uri wmtsUri = new Uri("https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml");
-    Collection<Uri> serverUris = new Collection<Uri> { new Uri("https://ows.mundialis.de/osm/service") };
-    Dictionary<string, string> parameters = new Dictionary<string, string>
-{
-        { "layers", "OSM-WMS"},
-        { "STYLE", "default"},
-        { "CRS","EPSG:3857"}
+    private static readonly PointShape InitialCenter = new PointShape(930000, 5900000);
+    private const int InitialZoom = 11;
+
+    private bool showWmts;
+    private readonly Uri wmtsUri = new Uri("https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml");
+    private readonly Collection<Uri> serverUris = new Collection<Uri> { new Uri("https://ows.mundialis.de/osm/service") };
+    private readonly Dictionary<string, string> parameters = new Dictionary<string, string>
+    {
+        { "layers", "OSM-WMS" },
+        { "STYLE", "default" },
+        { "CRS", "EPSG:3857" }
     };
 }

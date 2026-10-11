@@ -182,7 +182,7 @@
   {
     "id": "load-wms",
     "title": "WMS & WMTS",
-    "description": "Draw an OGC web service as the map: a WMS layer (mundialis OSM) and a WMTS layer (Swisstopo) requested tile by tile from their servers.",
+    "description": "Switch between a mundialis OpenStreetMap WMS and a Swisstopo WMTS, centered on Switzerland. Each service supplies raster tiles for the map.",
     "href": "work-with-ogc-services",
     "source": "Work_with_OGC_Services",
     "preicon": "fas fa-server",

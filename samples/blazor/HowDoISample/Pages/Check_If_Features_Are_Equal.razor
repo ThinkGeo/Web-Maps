@@ -1,26 +1,48 @@
 @page "/check-if-features-are-equal"
 @using ThinkGeo.Core
+@implements IDisposable
+
+@{
+    var initialCenter = new PointShape(-10776520, 3919250);
+}
 
 <div class="map-container" style="display:flex">
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@(new PointShape(-10776520, 3919250))" Zoom="15" OnClick="@MapClicked">
+                 Center="@initialCenter" Zoom="15" Bearing="0" Pitch="0" OnClick="@MapClicked">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
                 <VectorTileOverlay Id="Zoning" @ref="overlay" Style="@style" FeatureSources="@sources" SourceId="zoning" />
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@initialCenter" CenterButtonZoom="15" CenterButtonBearing="0" CenterButtonPitch="0" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
-    </div>
-    <div style="width:320px;padding:10px;display:flex;flex-direction:column;gap:8px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
-        <div style="font-weight:600">Topologically equal</div>
-        <div style="color:#555">Click a parcel: its own outline becomes the query shape, drawn in red, and every parcel whose geometry is exactly the same - itself, and any duplicate record - is highlighted in blue.</div>
-        <div style="font-weight:600">@result</div>
+        @if (showLoading)
+        {
+            <div role="status" aria-label="Checking topological equality" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 18px;border-radius:6px;background:rgba(255,255,255,.92);box-shadow:0 1px 6px rgba(0,0,0,.25);color:#303638;font:13px system-ui">
+                    <img src="images/sample-loading-spinner.svg" alt="" width="64" height="64" />
+                    <span>@loadingMessage</span>
+                </div>
+            </div>
+        }
+        <div style="position:absolute;top:12px;right:12px;width:360px;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;text-align:left;border-radius:4px;z-index:1">
+            <div style="font-size:17px;font-weight:600;line-height:1.25;margin-bottom:8px">Check If Features Are Equal</div>
+            <div style="font-weight:400;line-height:1.4">Click a zoning parcel to use its geometry as the query shape.</div>
+            <div style="margin-top:8px;line-height:1.35;overflow-wrap:anywhere;color:@StatusColour">@status</div>
+        </div>
     </div>
 </div>
 
 @code {
+    private const string SourcePath = "./Data/Shapefile/Zoning.shp";
+
     private MapView map;
     private VectorTileOverlay overlay;
     private GeoCollection<FeatureSource> sources;
@@ -28,52 +50,157 @@
     private InMemoryFeatureSource zoning;
     private readonly InMemoryFeatureSource query = new InMemoryFeatureSource();
     private readonly InMemoryFeatureSource highlighted = new InMemoryFeatureSource();
-    private string result = "";
+    private BaseShape initialShape;
+    private bool busy = true;
+    private bool disposed;
+    private bool succeeded;
+    private bool showLoading = true;
+    private string loadingMessage = "Loading zoning features...";
+    private string status = "Preparing the initial equality query...";
+    private string StatusColour => succeeded ? "#ffca28" : "#b7bcc5";
 
     protected override void OnInitialized()
     {
-        // The parcels, read once into memory in the map's meters, are both what is drawn and
-        // what is queried.
-        var file = new ShapeFileFeatureSource("./Data/Shapefile/Zoning.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
-        file.Open();
-        zoning = new InMemoryFeatureSource(file.GetColumns(), file.GetAllFeatures(ReturningColumnsType.AllColumns));
-        file.Close();
+        var file = new ShapeFileFeatureSource(SourcePath);
+        var converter = new ProjectionConverter(3857, 2276);
+        Collection<FeatureSourceColumn> columns;
+        List<Feature> features;
+        var sourceOpened = false;
+        var converterOpened = false;
+        try
+        {
+            file.Open();
+            sourceOpened = true;
+            converter.Open();
+            converterOpened = true;
+            columns = file.GetColumns();
+            features = file.GetAllFeatures(ReturningColumnsType.AllColumns)
+                .Select(feature => converter.ConvertToInternalProjection(feature))
+                .ToList();
+        }
+        finally
+        {
+            if (converterOpened) converter.Close();
+            if (sourceOpened) file.Close();
+        }
 
-        sources = new GeoCollection<FeatureSource> { { "zoning", zoning }, { "query", query }, { "highlighted", highlighted } };
+        zoning = new InMemoryFeatureSource(columns, features);
+        zoning.BuildIndex();
+        initialShape = features.FirstOrDefault()?.GetShape();
+        sources = new GeoCollection<FeatureSource>
+        {
+            { "zoning", zoning }, { "query", query }, { "highlighted", highlighted }
+        };
         style = new MapStyle()
             .AddFillLayer("zoning", "zoning", "zoning", new FillPaint(new GeoColor(50, GeoColors.MediumPurple), outlineColor: GeoColors.MediumPurple))
             .AddFillLayer("highlighted", "zoning", "highlighted", new FillPaint(new GeoColor(90, GeoColors.MidnightBlue)))
             .AddLineLayer("highlighted-edge", "zoning", "highlighted", new LinePaint(GeoColors.MidnightBlue, 2f))
+            .AddFillLayer("query-fill", "zoning", "query", new FillPaint(new GeoColor(20, GeoColors.LightRed)))
             .AddLineLayer("query-edge", "zoning", "query", new LinePaint(GeoColors.LightRed, 3f));
-
-        zoning.Open();
-        Find(zoning.GetAllFeatures(ReturningColumnsType.NoColumns).First().GetShape());
-        zoning.Close();
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        if (disposed || map?.IsLoaded != true) return;
+
+        try
+        {
+            if (initialShape == null) throw new InvalidOperationException("The zoning shapefile contains no features.");
+            loadingMessage = "Checking topological equality...";
+            await FindAsync(initialShape);
+        }
+        catch (Exception exception)
+        {
+            status = "Could not load zoning features: " + exception.Message;
+            succeeded = false;
+        }
+        finally
+        {
+            busy = false;
+            showLoading = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose() => disposed = true;
 
     private async Task MapClicked(ClickedMapViewEventArgs args)
     {
-        zoning.Open();
-        var parcel = new QueryTools(zoning).GetFeaturesContaining(new PointShape(args.WorldX, args.WorldY), ReturningColumnsType.NoColumns).FirstOrDefault();
-        if (parcel != null)
+        if (busy || disposed) return;
+        busy = true;
+        showLoading = true;
+        succeeded = false;
+        status = "Checking the clicked location...";
+        loadingMessage = "Finding the clicked parcel...";
+        await InvokeAsync(StateHasChanged);
+        await Task.Yield();
+
+        try
         {
-            Find(parcel.GetShape());
+            zoning.Open();
+            Feature parcel;
+            try
+            {
+                parcel = new QueryTools(zoning).GetFeaturesContaining(
+                    new PointShape(args.WorldX, args.WorldY), ReturningColumnsType.NoColumns).FirstOrDefault();
+            }
+            finally
+            {
+                zoning.Close();
+            }
+
+            if (parcel == null)
+            {
+                query.InternalFeatures.Clear();
+                highlighted.InternalFeatures.Clear();
+                status = "No zoning parcel contains this location.";
+                await overlay.RedrawAsync();
+                return;
+            }
+
+            await FindAsync(parcel.GetShape());
         }
-        zoning.Close();
-        await overlay.RedrawAsync();
+        catch (Exception exception)
+        {
+            status = "The equality query failed: " + exception.Message;
+            succeeded = false;
+        }
+        finally
+        {
+            busy = false;
+            showLoading = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
+        }
     }
 
-    private void Find(BaseShape shape)
+    private async Task FindAsync(BaseShape shape)
     {
-        var equal = new QueryTools(zoning).GetFeaturesTopologicalEqual(shape, ReturningColumnsType.NoColumns).ToList();
-
         query.InternalFeatures.Clear();
         query.InternalFeatures.Add(new Feature(shape));
+
+        zoning.Open();
+        List<Feature> equal;
+        try
+        {
+            equal = new QueryTools(zoning).GetFeaturesTopologicalEqual(shape, ReturningColumnsType.NoColumns).ToList();
+        }
+        finally
+        {
+            zoning.Close();
+        }
+
         highlighted.InternalFeatures.Clear();
         foreach (var feature in equal)
         {
             highlighted.InternalFeatures.Add(feature);
         }
-        result = equal.Count + " parcel" + (equal.Count == 1 ? "" : "s") + " topologically equal to the query shape";
+        await overlay.RedrawAsync();
+        status = $"{equal.Count} parcel{(equal.Count == 1 ? "" : "s")} topologically equal to the query shape.";
+        succeeded = true;
     }
 }

@@ -245,7 +245,7 @@
   {
     "id": "timezone",
     "title": "Time Zone",
-    "description": "Click anywhere and TimeZoneCloudClient answers with the zone, the local time there and the zone's outline.",
+    "description": "Click the map to see the time zone, current local time, daylight saving status, and time zone boundary.",
     "href": "timezone",
     "source": "Timezone",
     "preicon": "far fa-clock",

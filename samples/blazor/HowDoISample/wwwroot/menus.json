@@ -308,7 +308,7 @@
   {
     "id": "offline-tiles",
     "title": "Offline Tiles",
-    "description": "Vector tiles kept in an MBTiles or PMTiles file on the server, served to the browser one tile at a time over the circuit - no tile server, no internet.",
+    "description": "Open local vector MBTiles or PMTiles, raster MBTiles or PMTiles, or a QGIS folder of z/x/y image tiles.",
     "href": "offline-tiles",
     "source": "Offline_Tiles",
     "preicon": "fas fa-archive",

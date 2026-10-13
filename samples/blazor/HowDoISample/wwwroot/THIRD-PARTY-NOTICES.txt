@@ -80,6 +80,10 @@ https://www.openstreetmap.org/copyright
 https://opendatacommons.org/licenses/odbl/
 https://protomaps.com/legal
 
+The Offline Tiles raster PMTiles and QGIS z/x/y folder are copied from the WPF
+HowDoI v15 sample and contain OpenStreetMap-derived tiles. Keep OpenStreetMap
+attribution visible when displaying those archives.
+
 
 IGN OGC API - Features data
 ---------------------------

@@ -1,34 +1,58 @@
 @page "/routing-service-area"
 @using ThinkGeo.Core
 @using System.Globalization
+@implements IDisposable
 
 <div class="map-container" style="display:flex">
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@(new PointShape(-10774380, 3907010))" Zoom="9" OnClick="@Clicked">
+                 Center="@InitialCenter" Zoom="InitialZoom" OnClick="@Clicked">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
                 <VectorTileOverlay Id="Marks" @ref="marks" StyleJson="@MarksStyle" FeatureSources="@sources" SourceId="marks" />
             </OverlaysSetting>
+            <MarkerOverlaySetting>
+                <SimpleMarkerOverlay Id="ServiceAreaCenter" @ref="centerMarkers" />
+            </MarkerOverlaySetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
-        <div style="position:absolute;right:12px;bottom:12px;padding:8px 10px;background:rgba(255,255,255,.92);border-radius:4px;font:12px system-ui;box-shadow:0 1px 4px rgba(0,0,0,.25)">
-            <div style="font-weight:600;margin-bottom:4px">Drive time from the point</div>
+        @if (showLoading)
+        {
+            <div role="status" aria-label="Calculating service area" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 18px;border-radius:6px;background:rgba(255,255,255,.92);box-shadow:0 1px 6px rgba(0,0,0,.25);color:#303638;font:13px system-ui">
+                    <img src="images/routing-service-area-loading.svg" alt="" width="64" height="64" />
+                    <span>Calculating service area...</span>
+                </div>
+            </div>
+        }
+        <div style="position:absolute;top:12px;right:12px;width:360px;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;text-align:left;border-radius:4px;z-index:1">
+            <div style="font-size:17px;font-weight:600;line-height:1.25;white-space:nowrap;margin-bottom:8px">Find the Service Area of a Location</div>
+            <div style="font-weight:400;line-height:1.4">Click On The Map To Calculate A New Service Area</div>
+            <div style="margin-top:8px;line-height:1.35;overflow-wrap:anywhere;color:@StatusColour">@status</div>
+        </div>
+        <div style="position:absolute;right:12px;bottom:38px;padding:8px 10px;background:rgba(255,255,255,.92);border-radius:4px;font:12px system-ui;box-shadow:0 1px 4px rgba(0,0,0,.25);z-index:1">
+            <div style="font-weight:600;margin-bottom:4px">Travel Times</div>
             @foreach (var (minutes, colour) in Bands)
             {
-                <div><span style="display:inline-block;width:14px;height:10px;background:@colour;border:1px solid #888;vertical-align:middle"></span> within @minutes minutes</div>
+                <div><span style="display:inline-block;width:14px;height:10px;background:@colour;border:1px solid #888;vertical-align:middle"></span> &lt;@minutes minutes</div>
             }
         </div>
-    </div>
-    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui;overflow:auto">
-        <div style="font-weight:600">Service area</div>
-        <div style="color:#555">How far a drive of 15, 30, 45 and 60 minutes reaches from a point: RoutingCloudClient.GetServiceAreaAsync answers with one polygon per limit. Click the map to ask from somewhere else.</div>
-        <div style="color:#555">@status</div>
     </div>
 </div>
 
 @code {
+    private static readonly PointShape InitialCenter = new PointShape(-10774380, 3907010);
+    private const int InitialZoom = 9;
+    private static readonly PointShape InitialSearchPoint = new PointShape(-10776836.14, 3912350.71);
+    private static readonly PointMarkerStyle CenterMarkerStyle = new PointMarkerStyle("images/routing-service-area-marker.png", 0.5, 1, 1);
+
     private static readonly (int Minutes, string Colour)[] Bands =
     {
         (15, "rgba(46,160,67,0.45)"),
@@ -47,69 +71,98 @@
               ""30"", ""rgba(240,200,40,0.45)"",
               ""45"", ""rgba(240,140,30,0.45)"",
               ""rgba(210,50,40,0.45)""],
-          ""fill-outline-color"": ""rgba(60,60,60,0.6)"" } },
-    { ""type"": ""circle"", ""source-layer"": ""center"",
-      ""paint"": { ""circle-radius"": 7, ""circle-color"": ""#1F3A93"", ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 2 } }
+          ""fill-outline-color"": ""rgba(60,60,60,0.6)"" } }
   ]
 }";
 
     private MapView map;
     private VectorTileOverlay marks;
+    private SimpleMarkerOverlay centerMarkers;
     private GeoCollection<FeatureSource> sources;
     private readonly InMemoryFeatureSource areas = new InMemoryFeatureSource(new[] { new FeatureSourceColumn("minutes") }, Array.Empty<Feature>());
-    private readonly InMemoryFeatureSource center = new InMemoryFeatureSource();
     private RoutingCloudClient client;
     private bool busy;
-    private string status = "";
+    private bool disposed;
+    private bool showLoading = true;
+    private bool calculationSucceeded;
+    private string status = "Calculating the initial service area...";
+    private string StatusColour => calculationSucceeded ? "#ffca28" : "#b7bcc5";
 
     protected override void OnInitialized()
     {
-        sources = new GeoCollection<FeatureSource> { { "areas", areas }, { "center", center } };
+        sources = new GeoCollection<FeatureSource> { { "areas", areas } };
         client = new RoutingCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
-        {
-            await Task.Delay(250);
-        }
-        await AskAsync(new PointShape(-10776836.14, 3912350.71));
-        StateHasChanged();
+        await AskAsync(InitialSearchPoint);
     }
 
-    private Task Clicked(ClickedMapViewEventArgs args) => busy ? Task.CompletedTask : AskAsync(new PointShape(args.WorldX, args.WorldY));
+    public void Dispose()
+    {
+        disposed = true;
+        client?.Dispose();
+    }
+
+    private Task Clicked(ClickedMapViewEventArgs args) => busy || disposed ? Task.CompletedTask : AskAsync(new PointShape(args.WorldX, args.WorldY));
 
     private async Task AskAsync(PointShape point)
     {
+        if (busy || disposed) return;
         busy = true;
-        status = "asking ThinkGeo Cloud...";
-        StateHasChanged();
-        center.InternalFeatures.Clear();
-        center.InternalFeatures.Add(new Feature(point));
-        areas.InternalFeatures.Clear();
-        await marks.RedrawAsync();
-
-        var limits = Bands.Select(band => TimeSpan.FromMinutes(band.Minutes)).ToList();
-        var result = await client.GetServiceAreaAsync(point, 3857, limits, new CloudRoutingGetServiceAreaOptions { DistanceUnit = DistanceUnit.Meter });
-        busy = false;
-        if (result.Exception != null)
+        showLoading = true;
+        calculationSucceeded = false;
+        status = "Calculating the service area...";
+        await InvokeAsync(StateHasChanged);
+        try
         {
-            status = result.Exception.Message;
-            return;
-        }
+            var limits = Bands.Select(band => TimeSpan.FromMinutes(band.Minutes)).ToList();
+            var result = await client.GetServiceAreaAsync(point, 3857, limits, new CloudRoutingGetServiceAreaOptions { DistanceUnit = DistanceUnit.Meter });
+            if (disposed) return;
+            if (result.Exception != null)
+            {
+                status = result.Exception.Message;
+                return;
+            }
+            var polygons = result.ServiceAreaResult?.ServiceAreas;
+            if (polygons == null || polygons.Count == 0)
+            {
+                status = "No service areas were found for this location.";
+                return;
+            }
 
-        var polygons = result.ServiceAreaResult.ServiceAreas;
-        for (var i = 0; i < polygons.Count && i < Bands.Length; i++)
+            centerMarkers.Markers.Clear();
+            centerMarkers.Markers.Add("Service area center", new Marker
+            {
+                Id = "Service area center",
+                Position = new PointShape(result.ServiceAreaResult.Waypoint.Coordinate),
+                Style = CenterMarkerStyle,
+            });
+            areas.InternalFeatures.Clear();
+            for (var i = 0; i < polygons.Count && i < Bands.Length; i++)
+            {
+                areas.InternalFeatures.Add(new Feature(polygons[i], new Dictionary<string, string> { ["minutes"] = Bands[i].Minutes.ToString(CultureInfo.InvariantCulture) }));
+            }
+            await marks.RedrawAsync();
+            await centerMarkers.RedrawAsync();
+            status = $"{polygons.Count} service areas around {point.X:0}, {point.Y:0}.";
+            calculationSucceeded = true;
+
+            var bounds = MapUtil.GetBoundingBoxOfItems(polygons);
+            bounds.ScaleUp(10);
+            await map.ZoomToExtentAsync(bounds);
+        }
+        catch (Exception exception)
         {
-            areas.InternalFeatures.Add(new Feature(polygons[i], new Dictionary<string, string> { ["minutes"] = Bands[i].Minutes.ToString(CultureInfo.InvariantCulture) }));
+            if (!disposed) status = exception.Message;
         }
-        await marks.RedrawAsync();
-        status = $"{polygons.Count} service areas around {point.X:0}, {point.Y:0}.";
-
-        var bounds = MapUtil.GetBoundingBoxOfItems(polygons);
-        bounds.ScaleUp(10);
-        await map.ZoomToExtentAsync(bounds);
+        finally
+        {
+            busy = false;
+            showLoading = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
+        }
     }
 }

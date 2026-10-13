@@ -120,10 +120,10 @@
     // Each set drawn in its colour whatever it holds: filled areas, wide lines, dots.
     private void Paint(string layer, GeoColor color)
     {
-        style.AddFillLayer(layer + "-fill", "shapes", layer, new GeoColor(50, color), color, filter: StyleExpressions.GeometryType("Polygon"))
-            .AddLineLayer(layer + "-edge", "shapes", layer, color, 2f, filter: StyleExpressions.GeometryType("Polygon"))
-            .AddLineLayer(layer + "-line", "shapes", layer, color, 3f, filter: StyleExpressions.GeometryType("LineString"))
-            .AddCircleLayer(layer + "-point", "shapes", layer, color, 6f, GeoColors.White, 1.5f, filter: StyleExpressions.GeometryType("Point"));
+        style.AddFillLayer(layer + "-fill", "shapes", layer, new FillPaint(new GeoColor(50, color), outlineColor: color), filter: StyleExpressions.GeometryType(WellKnownType.Polygon))
+            .AddLineLayer(layer + "-edge", "shapes", layer, new LinePaint(color, 2f), filter: StyleExpressions.GeometryType(WellKnownType.Polygon))
+            .AddLineLayer(layer + "-line", "shapes", layer, new LinePaint(color, 3f), filter: StyleExpressions.GeometryType(WellKnownType.Line))
+            .AddCircleLayer(layer + "-point", "shapes", layer, new CirclePaint(color, GeoColors.White, 6f, 1.5f), filter: StyleExpressions.GeometryType(WellKnownType.Point));
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

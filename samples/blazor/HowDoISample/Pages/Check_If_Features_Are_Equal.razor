@@ -41,10 +41,10 @@
 
         sources = new GeoCollection<FeatureSource> { { "zoning", zoning }, { "query", query }, { "highlighted", highlighted } };
         style = new MapStyle()
-            .AddFillLayer("zoning", "zoning", "zoning", new GeoColor(50, GeoColors.MediumPurple), GeoColors.MediumPurple)
-            .AddFillLayer("highlighted", "zoning", "highlighted", new GeoColor(90, GeoColors.MidnightBlue))
-            .AddLineLayer("highlighted-edge", "zoning", "highlighted", GeoColors.MidnightBlue, 2f)
-            .AddLineLayer("query-edge", "zoning", "query", GeoColors.LightRed, 3f);
+            .AddFillLayer("zoning", "zoning", "zoning", new FillPaint(new GeoColor(50, GeoColors.MediumPurple), outlineColor: GeoColors.MediumPurple))
+            .AddFillLayer("highlighted", "zoning", "highlighted", new FillPaint(new GeoColor(90, GeoColors.MidnightBlue)))
+            .AddLineLayer("highlighted-edge", "zoning", "highlighted", new LinePaint(GeoColors.MidnightBlue, 2f))
+            .AddLineLayer("query-edge", "zoning", "query", new LinePaint(GeoColors.LightRed, 3f));
 
         zoning.Open();
         Find(zoning.GetAllFeatures(ReturningColumnsType.NoColumns).First().GetShape());

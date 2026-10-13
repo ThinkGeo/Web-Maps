@@ -4,7 +4,7 @@
 
 <div class="map-container">
     @* A wash the map's own overlays cannot express: an overlay is always above everything,
-       labels included. A style layer can go anywhere - InsertLayerAt(StyleLayerSlot.UnderLabels)
+       labels included. A style layer can go anywhere - AddLayer with StyleLayerSlot.UnderLabels
        puts a translucent white layer above the streets and below the labels, so the map quiets
        while its names stay sharp. *@
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
@@ -55,7 +55,7 @@
         await rebuilt.ResolveAsync();
         if (wash > 0)
         {
-            rebuilt.InsertLayerAt(StyleLayerSlot.UnderLabels, new JsonObject
+            rebuilt.AddLayer(new JsonObject
             {
                 ["id"] = "wash",
                 ["type"] = "background",
@@ -64,7 +64,7 @@
                     ["background-color"] = "#FFFFFF",
                     ["background-opacity"] = wash,
                 },
-            });
+            }, StyleLayerSlot.UnderLabels);
         }
         style = rebuilt;
     }

@@ -1,11 +1,12 @@
 @page "/raster-file-formats"
 @using ThinkGeo.Core
+@implements IDisposable
 
 <div class="map-container" style="display:flex">
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@(new PointShape(-10780597, 3916063))" Zoom="14">
+                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
@@ -14,27 +15,42 @@
                     <LayerOverlay @key="format" Id="@("raster-" + Array.IndexOf(Formats, format))" Layers="@layers" />
                 }
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom"
+                                    CenterButtonBearing="0" CenterButtonPitch="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
+        @if (busy)
+        {
+            <div role="status" aria-label="Loading raster file" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:10px 16px;border-radius:6px;background:rgba(30,30,30,.85);color:white;font:13px system-ui;pointer-events:none;z-index:2">Loading @pendingFormat...</div>
+        }
     </div>
-    <div style="width:320px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
-        <div style="padding:8px 8px 4px;font-weight:600">File</div>
-        <div style="padding:0 8px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Raster File Formats</div>
+        <div style="font-weight:700;margin-bottom:4px">File</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
             @foreach (var name in Formats)
             {
-                <label><input type="radio" name="format" checked="@(format == name)" @onchange="@(() => Pick(name))" /> @name</label>
+                <label style="cursor:pointer"><input type="radio" name="format" checked="@(format == name)" disabled="@busy" @onchange="@(() => Pick(name))" /> @name</label>
             }
         </div>
-        <div style="padding:0 8px 6px;color:#555">
-            Each format has a raster layer named after it, and anything else GDAL reads goes through the base class. A file in another projection gets a GdalProjectionConverter and is warped as it is drawn.
-        </div>
-        <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>
+        <div role="status" style="margin-top:12px;font:11px/1.4 Consolas,monospace;overflow-wrap:anywhere;color:@(ok ? "#e5e5e5" : "#ffd0b8")">@status</div>
+        <div style="border-top:1px solid #aaa;margin-top:18px;padding-top:8px;color:#e5e5e5;font-size:11px;line-height:1.4">Each file is read as a raster layer over the same basemap. Image sources in geographic coordinates are projected to Web Mercator when drawn.</div>
     </div>
 </div>
 
 @code {
+    private static readonly PointShape InitialCenter = new PointShape(-10780597, 3916063);
+    private const int InitialZoom = 14;
     private static readonly string[] Formats =
     {
-        "GeoTIFF - NAIP aerial", "Plain JPEG + world file", "ECW - world imagery", "Anything else GDAL reads"
+        "GeoTIFF - NAIP aerial", "JPEG 2000 - the same aerial", "Plain JPEG + world file", "MrSID - world imagery", "ECW - world imagery", "Anything else GDAL reads"
     };
 
     private MapView map;
@@ -42,6 +58,9 @@
     private string format = Formats[0];
     private string status = "";
     private bool ok = true;
+    private bool busy;
+    private bool disposed;
+    private string pendingFormat = "";
 
     protected override void OnInitialized()
     {
@@ -55,8 +74,12 @@
     {
         switch (name)
         {
+            case "JPEG 2000 - the same aerial":
+                return new Jpeg2000GdalRasterLayer("./Data/Jp2/m_3309650_sw_14_1_20160911_20161121.jp2");
             case "Plain JPEG + world file":
                 return new GdalRasterLayer("./Data/Jpg/m_3309650_sw_14_1_20160911_20161121.jpg");
+            case "MrSID - world imagery":
+                return new MrSidGdalRasterLayer("./Data/MrSid/World.sid") { ImageSource = { ProjectionConverter = new GdalProjectionConverter(4326, 3857) } };
             case "ECW - world imagery":
                 return new EcwGdalRasterLayer("./Data/World.ecw") { ImageSource = { ProjectionConverter = new GdalProjectionConverter(4326, 3857) } };
             case "Anything else GDAL reads":
@@ -68,6 +91,11 @@
 
     private async Task Pick(string name)
     {
+        if (busy || disposed) return;
+        busy = true;
+        pendingFormat = name;
+        status = "Loading " + name + "...";
+        await InvokeAsync(StateHasChanged);
         RasterLayer layer;
         RectangleShape bounds;
         try
@@ -76,25 +104,41 @@
             bounds = await Task.Run(() =>
             {
                 layer.Open();
-                var box = layer.GetBoundingBox();
-                layer.Close();
-                return box;
+                try
+                {
+                    return layer.GetBoundingBox();
+                }
+                finally
+                {
+                    layer.Close();
+                }
             });
+            if (disposed) return;
+
+            format = name;
+            layers = new GeoCollection<LayerBase> { { "raster", layer } };
+            ok = true;
+            status = layer.GetType().Name;
+            await InvokeAsync(StateHasChanged);
+
+            if (bounds != null && bounds.Width > 0 && bounds.Height > 0)
+                await map.ZoomToExtentAsync(bounds);
         }
         catch (Exception exception)
         {
             while (exception.InnerException != null) exception = exception.InnerException;
             ok = false;
             status = "Unavailable: " + exception.Message.Split('\n')[0];
-            return;
         }
+        finally
+        {
+            busy = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
+        }
+    }
 
-        format = name;
-        layers = new GeoCollection<LayerBase> { { "raster", layer } };
-        ok = true;
-        status = layer.GetType().Name;
-        StateHasChanged();
-
-        await map.ZoomToExtentAsync(bounds);
+    public void Dispose()
+    {
+        disposed = true;
     }
 }

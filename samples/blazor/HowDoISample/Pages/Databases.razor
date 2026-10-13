@@ -1,6 +1,7 @@
 @page "/databases"
 @using ThinkGeo.Core
 @using System.Text.Json.Nodes
+@implements IDisposable
 
 <div class="map-container" style="display:flex">
     <div style="flex:1;min-width:0;position:relative">
@@ -15,23 +16,33 @@
                     <VectorTileOverlay @key="database" Id="@("data-" + Array.IndexOf(Databases_, database))" StyleJson="@applied" FeatureSources="@sources" SourceId="features" />
                 }
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
+        @if (busy)
+        {
+            <div role="status" aria-label="Loading database" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:10px 16px;border-radius:6px;background:rgba(16,19,23,.91);color:white;font:13px system-ui;pointer-events:none;z-index:2">Loading @pendingDatabase...</div>
+        }
     </div>
-    <div style="width:420px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
-        <div style="padding:8px 8px 4px;font-weight:600">Database</div>
-        <div style="padding:0 8px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Databases</div>
+        <div style="font-weight:700;margin-bottom:4px">Database</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
             @foreach (var name in Databases_)
             {
-                <label><input type="radio" name="database" checked="@(database == name)" @onchange="@(() => Pick(name))" /> @name</label>
+                <label style="cursor:pointer"><input type="radio" name="database" checked="@(database == name)" disabled="@busy" @onchange="@(() => Pick(name))" /> @name</label>
             }
         </div>
-        <div style="padding:0 8px 6px;color:#555">
-            The first three are databases you carry as a file, the last two are servers you connect to. The connection is the only line that differs; the overlay cuts the table into tiles and the style draws them.
+        <div style="border-top:1px solid #aaa;margin-top:10px;padding-top:8px;display:flex;flex-direction:column;flex:1;min-height:0">
+            <div style="font-weight:700;margin-bottom:4px">style.json - edit it; the map follows</div>
+            <textarea aria-label="style.json editor" @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                      style="flex:1;min-height:0;width:100%;box-sizing:border-box;resize:none;border:1px solid #aaa;background:#fff;color:#111;padding:7px;font:11.5px/1.35 Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:hidden;overflow-y:auto"></textarea>
+            <div role="status" style="padding-top:5px;line-height:1.3;overflow-wrap:anywhere;color:@(ok ? "#baf1ba" : "#ffd0b8")">@status</div>
+            <div style="color:#e5e5e5;font-size:11px;line-height:1.35;margin-top:5px">The first three are file databases; the last two are database servers. One style draws each source.</div>
         </div>
-        <div style="padding:6px 8px 4px;font-weight:600;border-top:1px solid #ddd">style.json - edit it; the map follows</div>
-        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
-                  style="flex:1;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre"></textarea>
-        <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>
     </div>
 </div>
 
@@ -74,6 +85,9 @@
     private string applied = StyleJson;
     private string status = "";
     private bool ok = true;
+    private bool busy;
+    private bool disposed;
+    private string pendingDatabase = "";
     private int edit;
 
     protected override void OnInitialized()
@@ -103,6 +117,11 @@
 
     private async Task Pick(string name)
     {
+        if (busy || disposed) return;
+        busy = true;
+        pendingDatabase = name;
+        status = "Loading " + name + "...";
+        await InvokeAsync(StateHasChanged);
         FeatureSource source;
         RectangleShape bounds;
         try
@@ -113,29 +132,39 @@
             bounds = await Task.Run(() =>
             {
                 source.Open();
-                var box = source.GetBoundingBox();
-                source.Close();
-                return box;
+                try
+                {
+                    return source.GetBoundingBox();
+                }
+                finally
+                {
+                    source.Close();
+                }
             });
+            if (disposed) return;
+
+            database = name;
+            sources = new GeoCollection<FeatureSource> { { "data", source } };
+            ok = true;
+            status = source.GetType().Name;
+            await InvokeAsync(StateHasChanged);
+
+            if (bounds != null && bounds.Width > 0 && bounds.Height > 0)
+            {
+                bounds.ScaleUp(20);
+                await map.ZoomToExtentAsync(bounds);
+            }
         }
         catch (Exception exception)
         {
             while (exception.InnerException != null) exception = exception.InnerException;
             ok = false;
             status = "Unavailable: " + exception.Message.Split('\n')[0];
-            return;
         }
-
-        database = name;
-        sources = new GeoCollection<FeatureSource> { { "data", source } };
-        ok = true;
-        status = source.GetType().Name;
-        StateHasChanged();
-
-        if (bounds != null && bounds.Width > 0 && bounds.Height > 0)
+        finally
         {
-            bounds.ScaleUp(20);
-            await map.ZoomToExtentAsync(bounds);
+            busy = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -144,11 +173,12 @@
     {
         var mine = ++edit;
         await Task.Delay(400);
-        if (mine != edit) return;
+        if (mine != edit || disposed) return;
 
         try
         {
-            JsonNode.Parse(styleJson);
+            if (JsonNode.Parse(styleJson) is not JsonObject document || document["layers"] is not JsonArray)
+                throw new FormatException("The style needs a layers array.");
             applied = styleJson;
             ok = true;
             status = $"applied at {DateTime.Now:HH:mm:ss}";
@@ -158,5 +188,11 @@
             ok = false;
             status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
         }
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        edit++;
     }
 }

@@ -1,11 +1,12 @@
 @page "/reverse-geocoding"
 @using ThinkGeo.Core
+@implements IDisposable
 
 <div class="map-container" style="display:flex">
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@(new PointShape(-10778720, 3915154))" Zoom="14" OnClick="@Clicked">
+                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0" OnClick="@Clicked">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
@@ -15,40 +16,76 @@
                 <PopupOverlay Id="Best">
                     <PopupSetting>
                         <Popup Id="best-match" Position="@bestAt" OffsetY="-8">
-                            <div style="font:12px system-ui;max-width:240px"><b>Best match</b><br />@bestText</div>
+                            <div style="font:12px system-ui;max-width:240px"><b>Best Match:</b><br />@bestText</div>
                         </Popup>
                     </PopupSetting>
                 </PopupOverlay>
             </PopupOverlaySetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom"
+                                    CenterButtonBearing="0" CenterButtonPitch="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
-    </div>
-    <div style="width:340px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui;overflow:auto">
-        <div style="font-weight:600">Reverse geocoding</div>
-        <div style="color:#555">A point and a search radius go to ReverseGeocodingCloudClient.SearchPointAsync, which answers with the best match and what else lies within the radius. Click the map, or type a latitude and longitude and search.</div>
-        <div style="display:flex;gap:6px;align-items:center">
-            <input @bind="coordinates" @bind:event="oninput" @onkeyup="@(args => args.Key == "Enter" ? SearchAsync() : Task.CompletedTask)" placeholder="latitude, longitude" style="flex:1;font:13px system-ui;padding:4px 6px" />
-            <button class="btn btn-sm btn-primary" @onclick="SearchAsync" disabled="@busy">Search</button>
-        </div>
-        <div style="display:flex;gap:10px;align-items:center">
-            <label>Radius <input type="number" min="10" max="2000" step="10" @bind="radius" style="width:64px" /> m</label>
-            <label>Up to <input type="number" min="1" max="50" @bind="maxResults" style="width:52px" /></label>
-        </div>
-        <div style="color:#555">@status</div>
-        @foreach (var group in nearby)
+        @if (busy)
         {
-            <div style="font-weight:600;margin-top:4px">@group.Key</div>
-            @foreach (var location in group.Value)
-            {
-                <div style="cursor:pointer;padding:4px 6px;border-bottom:1px solid #e3e3e3;background:@(location == picked ? "#eee6fb" : "transparent")" @onclick="() => PickAsync(location)">
-                    <div>@(string.IsNullOrEmpty(location.Address) ? location.LocationName : location.Address)</div>
-                    <div style="color:#888;font-size:11px">@location.LocationType, @location.DistanceFromQueryFeature.ToString("0") m @location.DirectionFromQueryFeature</div>
-                </div>
-            }
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:10px 16px;border-radius:6px;background:rgba(30,30,30,.85);color:white;font:14px system-ui;pointer-events:none">Searching...</div>
         }
+    </div>
+    <div style="position:relative;z-index:10000;width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;background:dimgray;color:whitesmoke;font:13px system-ui;display:flex;flex-direction:column;min-height:0">
+        <div style="padding:8px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:6px;row-gap:6px;align-items:center">
+            <label for="reverse-coordinates" style="grid-column:1 / -1;margin:0">Location (latitude, longitude):</label>
+            <input id="reverse-coordinates" @bind="coordinates" @bind:event="oninput" @onkeyup="@(args => args.Key == "Enter" ? SearchAsync() : Task.CompletedTask)"
+                   style="@SidebarInputStyle;grid-column:1 / -1" />
+            <label for="reverse-radius">Search Radius:</label>
+            <div style="display:flex;align-items:center;gap:4px;min-width:0">
+                <input id="reverse-radius" type="number" min="1" @bind="radius" style="@SidebarInputStyle" />
+                <span>m</span>
+            </div>
+            <label for="reverse-max">Maximum Results:</label>
+            <input id="reverse-max" type="number" min="1" max="100" @bind="maxResults" style="@SidebarInputStyle" />
+            <button style="grid-column:1 / -1;margin-top:4px;@SidebarButtonStyle" @onclick="SearchAsync" disabled="@busy">Search</button>
+            <div role="status" style="grid-column:1 / -1;min-height:18px;line-height:1.3">@status</div>
+            @if (!string.IsNullOrEmpty(bestText))
+            {
+                <div style="grid-column:1 / -1;overflow-wrap:anywhere">Best Match: @bestText</div>
+            }
+        </div>
+        <div style="display:flex;flex-direction:column;flex:1;min-height:0;margin:0 8px 8px;border-top:1px solid #aaa">
+            <div role="tablist" aria-label="Nearby results" style="display:flex;gap:2px;padding-top:6px">
+                @foreach (var category in Categories)
+                {
+                    <button type="button" role="tab" aria-selected="@(activeCategory == category)"
+                            style="flex:1;min-width:0;@SidebarButtonStyle;background:@(activeCategory == category ? "#fff" : "#c8c8c8")"
+                            @onclick="() => activeCategory = category">@category</button>
+                }
+            </div>
+            <div role="tabpanel" style="flex:1;min-height:0;overflow:auto;background:#f6f6f4;color:#222">
+                @foreach (var location in nearby[activeCategory])
+                {
+                    <div style="cursor:pointer;padding:6px 4px;border-bottom:1px solid #ccc;background:@(location == picked ? "#ded2ed" : "transparent")"
+                         @onclick="() => PickAsync(location)">
+                        <div style="font-weight:600;overflow-wrap:anywhere">@(string.IsNullOrEmpty(location.Address) ? location.LocationName : location.Address)</div>
+                        <div style="font-size:12px">Type: @location.LocationType</div>
+                    </div>
+                }
+            </div>
+        </div>
     </div>
 </div>
 
 @code {
+    private const string SidebarInputStyle = "box-sizing:border-box;width:100%;min-width:0;padding:2px 4px;background:#fff;color:#222;border:1px solid #999;font:13px system-ui";
+    private const string SidebarButtonStyle = "border:2px solid #8a8a8a;color:#222;padding:2px 4px;cursor:pointer;font:13px system-ui";
+    private static readonly PointShape InitialCenter = new PointShape(-10778720, 3915154);
+    private const int InitialZoom = 14;
+    private static readonly string[] Categories = { "Address", "Road", "Place" };
+
     private const string MarksStyle = @"{
   ""layers"": [
     { ""type"": ""fill"", ""source-layer"": ""asked"",
@@ -71,15 +108,17 @@
     private readonly InMemoryFeatureSource center = new InMemoryFeatureSource();
     private readonly InMemoryFeatureSource pickedMark = new InMemoryFeatureSource();
     private ReverseGeocodingCloudClient client;
-    private int radius = 200;
-    private int maxResults = 20;
+    private int radius = 400;
+    private int maxResults = 100;
     private bool busy;
-    private string status = "Click anywhere on the map, or search for a place by its coordinates.";
+    private bool disposed;
+    private string status = "Click the map or enter coordinates to search.";
     private string coordinates = "33.150083, -96.834516";
     private PointShape bestAt;
     private string bestText = "";
     private CloudReverseGeocodingLocation picked;
-    private readonly SortedDictionary<string, List<CloudReverseGeocodingLocation>> nearby = new SortedDictionary<string, List<CloudReverseGeocodingLocation>>();
+    private string activeCategory = "Address";
+    private readonly Dictionary<string, List<CloudReverseGeocodingLocation>> nearby = Categories.ToDictionary(category => category, _ => new List<CloudReverseGeocodingLocation>());
 
     protected override void OnInitialized()
     {
@@ -87,78 +126,128 @@
         client = new ReverseGeocodingCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
     }
 
+    public void Dispose()
+    {
+        disposed = true;
+        client?.Dispose();
+    }
+
     private Task Clicked(ClickedMapViewEventArgs args)
     {
+        if (busy || disposed) return Task.CompletedTask;
         var degrees = ProjectionConverter.Convert(3857, 4326, new PointShape(args.WorldX, args.WorldY));
         coordinates = FormattableString.Invariant($"{degrees.Y:0.000000}, {degrees.X:0.000000}");
         return AskAsync(new PointShape(args.WorldX, args.WorldY));
     }
 
-    // The box holds latitude and longitude in degrees; the service is asked in the map's meters.
-    private async Task SearchAsync()
+    private Task SearchAsync()
     {
+        if (busy || disposed) return Task.CompletedTask;
         var parts = coordinates.Split(',');
         if (parts.Length != 2
             || !double.TryParse(parts[0].Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var latitude)
             || !double.TryParse(parts[1].Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var longitude)
+            || !double.IsFinite(latitude) || !double.IsFinite(longitude)
             || Math.Abs(latitude) > 85 || Math.Abs(longitude) > 180)
         {
-            status = "Type a latitude and a longitude, separated by a comma.";
-            return;
+            status = "Enter latitude and longitude in degrees, separated by a comma.";
+            return Task.CompletedTask;
         }
-        var point = ProjectionConverter.Convert(4326, 3857, new PointShape(longitude, latitude));
-        await map.SetCenterAsync(point);
-        await AskAsync(point);
+        if (radius <= 0 || maxResults < 1 || maxResults > 100)
+        {
+            status = "Enter a positive radius and a maximum result count from 1 to 100.";
+            return Task.CompletedTask;
+        }
+        return AskAsync(ProjectionConverter.Convert(4326, 3857, new PointShape(longitude, latitude)));
     }
 
     private async Task AskAsync(PointShape point)
     {
-        if (busy) return;
+        if (busy || disposed) return;
+        if (radius <= 0 || maxResults < 1 || maxResults > 100)
+        {
+            status = "Enter a positive radius and a maximum result count from 1 to 100.";
+            return;
+        }
         busy = true;
-        status = "asking ThinkGeo Cloud...";
+        status = "Searching...";
+        bestAt = null;
+        bestText = "";
+        picked = null;
+        foreach (var list in nearby.Values) list.Clear();
         asked.InternalFeatures.Clear();
         asked.InternalFeatures.Add(new Feature(new EllipseShape(point, radius)));
         center.InternalFeatures.Clear();
         center.InternalFeatures.Add(new Feature(point));
         pickedMark.InternalFeatures.Clear();
-        nearby.Clear();
-        picked = null;
-        bestAt = null;
-        await marks.RedrawAsync();
-
-        var result = await client.SearchPointAsync(point.X, point.Y, 3857, radius, DistanceUnit.Meter, new CloudReverseGeocodingOptions { MaxResults = maxResults });
-        busy = false;
-        if (result.Exception != null)
+        try
         {
-            status = result.Exception.Message;
-            return;
-        }
-
-        if (result.BestMatchLocation != null)
-        {
-            var shape = result.BestMatchLocation.LocationFeature.GetShape();
-            bestAt = shape.GetClosestPointTo(point, GeographyUnit.Meter) ?? shape.GetCenterPoint();
-            bestText = string.IsNullOrEmpty(result.BestMatchLocation.Address) ? result.BestMatchLocation.LocationName : result.BestMatchLocation.Address;
-        }
-        foreach (var location in result.NearbyLocations ?? Enumerable.Empty<CloudReverseGeocodingLocation>())
-        {
-            var category = location.LocationCategory?.ToLowerInvariant().Contains("addresspoint") == true ? "Addresses"
-                : location.LocationCategory == "Road" || location.LocationCategory == "Rail" || location.LocationCategory == "Aeroway" || location.LocationCategory == "Waterway" ? "Roads and ways"
-                : "Places";
-            if (!nearby.TryGetValue(category, out var list))
+            await marks.RedrawAsync();
+            var result = await client.SearchPointAsync(point.X, point.Y, 3857, radius, DistanceUnit.Meter,
+                new CloudReverseGeocodingOptions { MaxResults = maxResults });
+            if (disposed) return;
+            if (result.Exception != null)
             {
-                nearby[category] = list = new List<CloudReverseGeocodingLocation>();
+                status = result.Exception.Message;
+                return;
             }
-            list.Add(location);
+            if (result.BestMatchLocation != null)
+            {
+                var shape = result.BestMatchLocation.LocationFeature.GetShape();
+                bestAt = shape.GetClosestPointTo(point, GeographyUnit.Meter) ?? shape.GetCenterPoint();
+                bestText = string.IsNullOrEmpty(result.BestMatchLocation.Address) ? result.BestMatchLocation.LocationName : result.BestMatchLocation.Address;
+            }
+            foreach (var location in result.NearbyLocations ?? Enumerable.Empty<CloudReverseGeocodingLocation>())
+            {
+                var category = location.LocationCategory?.Contains("addresspoint", StringComparison.OrdinalIgnoreCase) == true
+                    || string.Equals(location.LocationType, "address", StringComparison.OrdinalIgnoreCase) ? "Address"
+                    : location.LocationCategory is "Road" or "Rail" or "Aeroway" or "Waterway"
+                    || location.LocationType is "street" or "road" ? "Road"
+                    : "Place";
+                if (location.LocationCategory == "Intersection") continue;
+                nearby[category].Add(location);
+            }
+            status = bestAt == null ? "No address or place matches found for this location." : $"Found {nearby.Values.Sum(list => list.Count)} nearby locations.";
+            var searchArea = new EllipseShape(point, radius).GetBoundingBox();
+            searchArea.ScaleUp(2);
+            await map.ZoomToExtentAsync(searchArea);
         }
-        status = result.BestMatchLocation == null ? "Nothing within the radius." : $"{nearby.Values.Sum(list => list.Count)} nearby locations - click one.";
+        catch (Exception exception)
+        {
+            if (!disposed) status = exception.Message;
+        }
+        finally
+        {
+            busy = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task PickAsync(CloudReverseGeocodingLocation location)
     {
-        picked = location;
-        pickedMark.InternalFeatures.Clear();
-        pickedMark.InternalFeatures.Add(new Feature(location.LocationFeature.GetShape()));
-        await marks.RedrawAsync();
+        if (busy || disposed) return;
+        try
+        {
+            picked = location;
+            var shape = location.LocationFeature.GetShape();
+            pickedMark.InternalFeatures.Clear();
+            pickedMark.InternalFeatures.Add(new Feature(shape));
+            await marks.RedrawAsync();
+            var box = shape.GetBoundingBox();
+            if (box.Width > 1 && box.Height > 1)
+            {
+                box = (RectangleShape)box.CloneDeep();
+                box.ScaleUp(2);
+                await map.ZoomToExtentAsync(box);
+            }
+            else
+            {
+                await map.ZoomToAsync(shape.GetCenterPoint(), 4500);
+            }
+        }
+        catch (Exception exception)
+        {
+            if (!disposed) status = exception.Message;
+        }
     }
 }

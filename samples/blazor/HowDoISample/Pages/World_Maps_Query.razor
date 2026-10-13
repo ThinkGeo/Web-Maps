@@ -1,11 +1,12 @@
 @page "/world-maps-query"
 @using ThinkGeo.Core
+@implements IDisposable
 
 <div class="map-container" style="display:flex">
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@(new PointShape(-10779560, 3915280))" Zoom="15">
+                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
@@ -14,44 +15,63 @@
             <EditOverlaySetting>
                 <EditOverlay TrackMode="@trackMode" OnFeatureDrawn="@Drawn" />
             </EditOverlaySetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom"
+                                    CenterButtonBearing="0" CenterButtonPitch="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
+        @if (busy)
+        {
+            <div role="status" aria-label="Querying world maps" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:10px 16px;border-radius:6px;background:rgba(30,30,30,.85);color:white;font:14px system-ui;pointer-events:none;z-index:2">Querying world maps...</div>
+        }
     </div>
-    <div style="width:340px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui;overflow:auto">
-        <div style="font-weight:600">World Maps query</div>
-        <div style="color:#555">The features behind ThinkGeo's world map - buildings, roads, places and more - can be asked for by shape: MapsQueryCloudClient finds the ones containing, intersecting, overlapping, within or nearest to a shape you draw.</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <select @bind="layer" style="font:13px system-ui">
+    <div style="position:relative;z-index:10000;width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;background:dimgray;color:whitesmoke;font:13px system-ui;display:flex;flex-direction:column;min-height:0">
+        <div style="padding:8px 8px 4px;font-size:16px;font-weight:600">Query World Maps Features</div>
+        <div style="padding:0 8px 8px;display:flex;flex-direction:column;gap:5px">
+            <label for="query-layer">Query Layer:</label>
+            <select id="query-layer" @bind="layer" style="@SidebarInputStyle">
                 @foreach (var name in Layers)
                 {
                     <option value="@name">@name</option>
                 }
             </select>
-            <select @bind="kind" style="font:13px system-ui">
+            <label for="query-type">Query Type:</label>
+            <select id="query-type" @bind="kind" style="@SidebarInputStyle">
                 @foreach (var name in Kinds)
                 {
                     <option value="@name">@name</option>
                 }
             </select>
-            <label>up to <input type="number" min="1" max="500" @bind="maxResults" style="width:56px" /></label>
+            <label for="query-max">Maximum Results:</label>
+            <input id="query-max" type="number" min="10" max="1000" @bind="maxResults" @bind:event="oninput" style="@SidebarInputStyle" />
+            <button style="margin-top:5px;@SidebarButtonStyle" @onclick="() => BeginDrawAsync(BlazorTrackMode.Point)" disabled="@busy">Draw New Point And Query</button>
+            <button style="@SidebarButtonStyle" @onclick="() => BeginDrawAsync(BlazorTrackMode.LineString)" disabled="@busy">Draw New Line And Query</button>
+            <button style="@SidebarButtonStyle" @onclick="() => BeginDrawAsync(BlazorTrackMode.Polygon)" disabled="@busy">Draw New Polygon And Query</button>
+            <button style="@SidebarButtonStyle" @onclick="QueryAsync" disabled="@busy">Query Again</button>
+            <div role="status" style="min-height:18px;line-height:1.3;overflow-wrap:anywhere">@status</div>
         </div>
-        <div style="display:flex;gap:6px;align-items:center">
-            <span>Draw a</span>
-            <button class="btn btn-sm @(trackMode == BlazorTrackMode.Point ? "btn-primary" : "btn-light")" @onclick="() => trackMode = BlazorTrackMode.Point">point</button>
-            <button class="btn btn-sm @(trackMode == BlazorTrackMode.LineString ? "btn-primary" : "btn-light")" @onclick="() => trackMode = BlazorTrackMode.LineString">line</button>
-            <button class="btn btn-sm @(trackMode == BlazorTrackMode.Polygon ? "btn-primary" : "btn-light")" @onclick="() => trackMode = BlazorTrackMode.Polygon">polygon</button>
-            <button class="btn btn-sm btn-light" @onclick="QueryAsync" disabled="@busy">Ask again</button>
+        <div style="flex:1;min-height:0;overflow:auto;margin:0 8px 8px;border-top:1px solid #aaa">
+            @foreach (var feature in found.Take(1000))
+            {
+                <div style="padding:5px 4px;border-bottom:1px solid #888;font-size:12px">@Describe(feature)</div>
+            }
         </div>
-        <div style="color:#555">@status</div>
-        @foreach (var feature in found.Take(60))
-        {
-            <div style="padding:3px 6px;border-bottom:1px solid #e3e3e3;font-size:12px">@Describe(feature)</div>
-        }
     </div>
 </div>
 
 @code {
+    private const string SidebarInputStyle = "box-sizing:border-box;width:100%;min-width:0;padding:2px 4px;background:#fff;color:#222;border:1px solid #999;font:13px system-ui";
+    private const string SidebarButtonStyle = "border:2px solid #8a8a8a;background:#f6f6f4;color:#222;padding:2px 6px;cursor:pointer;font:13px system-ui";
+    private static readonly PointShape InitialCenter = new PointShape(-10778720, 3915154);
+    private const int InitialZoom = 11;
     private static readonly string[] Layers = { "Buildings", "Countries", "States", "Roads", "Rail", "Addresses", "Cities", "Land-Use", "Places", "POIs", "Transport", "Water", "Waterways" };
-    private static readonly string[] Kinds = { "Intersecting", "Containing", "Nearest", "Overlapping", "Within" };
+    private static readonly string[] Kinds = { "Containing", "Nearest", "Intersecting", "Overlapping", "Within" };
 
     private const string MarksStyle = @"{
   ""layers"": [
@@ -81,6 +101,7 @@
     private string kind = "Intersecting";
     private int maxResults = 100;
     private bool busy;
+    private bool disposed;
     private string status = "";
     private BaseShape shape = new RectangleShape(-10779877.70, 3915441.00, -10779248.97, 3915119.63);
     private List<Feature> found = new List<Feature>();
@@ -94,16 +115,28 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
         {
             await Task.Delay(250);
         }
-        await QueryAsync();
-        StateHasChanged();
+        if (!disposed && map?.IsLoaded == true) await QueryAsync();
+    }
+
+    private async Task BeginDrawAsync(BlazorTrackMode mode)
+    {
+        if (busy || disposed) return;
+        trackMode = mode;
+        shape = null;
+        asked.InternalFeatures.Clear();
+        foundShapes.InternalFeatures.Clear();
+        found.Clear();
+        status = "Draw a shape on the map to query.";
+        await marks.RedrawAsync();
     }
 
     private async Task Drawn(FeatureDrawnEditOverlayEventArgs args)
     {
+        if (busy || disposed) return;
         map.EditOverlay.Features.Clear();
         trackMode = BlazorTrackMode.None;
         shape = args.DrawnFeature.GetShape();
@@ -112,21 +145,31 @@
 
     private async Task QueryAsync()
     {
-        if (busy) return;
+        if (busy || disposed) return;
+        if (shape == null)
+        {
+            status = "Please draw a shape to use for the query.";
+            return;
+        }
+        if (maxResults < 10 || maxResults > 1000)
+        {
+            status = "Please enter a maximum result count between 10 and 1000.";
+            return;
+        }
         busy = true;
-        status = "asking ThinkGeo Cloud...";
-        StateHasChanged();
-        asked.InternalFeatures.Clear();
-        asked.InternalFeatures.Add(new Feature(shape));
-        foundShapes.InternalFeatures.Clear();
-        found.Clear();
-        await marks.RedrawAsync();
-
-        CloudMapsQueryResult result;
+        status = "Querying world maps...";
+        await InvokeAsync(StateHasChanged);
         try
         {
-            var name = layer.ToLowerInvariant().Replace("-", "");
+            asked.InternalFeatures.Clear();
+            asked.InternalFeatures.Add(new Feature(shape));
+            foundShapes.InternalFeatures.Clear();
+            found.Clear();
+            await marks.RedrawAsync();
+
+            var name = layer.ToLowerInvariant();
             var options = new CloudMapsQuerySpatialQueryOptions { MaxResults = maxResults };
+            CloudMapsQueryResult result;
             switch (kind)
             {
                 case "Containing": result = await client.GetFeaturesContainingAsync(name, shape, 3857, options); break;
@@ -135,34 +178,43 @@
                 case "Within": result = await client.GetFeaturesWithinAsync(name, shape, 3857, options); break;
                 default: result = await client.GetFeaturesIntersectingAsync(name, shape, 3857, options); break;
             }
+            if (disposed) return;
+            if (result.Exception != null)
+            {
+                status = result.Exception.Message;
+                return;
+            }
+
+            found = result.Features?.ToList() ?? new List<Feature>();
+            foreach (var feature in found)
+            {
+                foundShapes.InternalFeatures.Add(new Feature(feature.GetShape()));
+            }
+            await marks.RedrawAsync();
+            status = found.Count == 0 ? $"No {layer.ToLowerInvariant()} {kind.ToLowerInvariant()} the shape." : $"{found.Count} {layer.ToLowerInvariant()} {kind.ToLowerInvariant()} the shape.";
+
+            if (found.Count > 0)
+            {
+                var bounds = MapUtil.GetBoundingBoxOfItems(found.Select(feature => feature.GetShape()).Append(shape));
+                bounds.ScaleUp(20);
+                await map.ZoomToExtentAsync(bounds);
+            }
         }
         catch (Exception exception)
         {
+            if (!disposed) status = exception.InnerException?.Message ?? exception.Message;
+        }
+        finally
+        {
             busy = false;
-            status = exception.InnerException?.Message ?? exception.Message;
-            return;
+            if (!disposed) await InvokeAsync(StateHasChanged);
         }
-        busy = false;
-        if (result.Exception != null)
-        {
-            status = result.Exception.Message;
-            return;
-        }
+    }
 
-        found = result.Features?.ToList() ?? new List<Feature>();
-        foreach (var feature in found)
-        {
-            foundShapes.InternalFeatures.Add(new Feature(feature.GetShape()));
-        }
-        await marks.RedrawAsync();
-        status = found.Count == 0 ? $"No {layer.ToLowerInvariant()} {kind.ToLowerInvariant()} the shape." : $"{found.Count} {layer.ToLowerInvariant()} {kind.ToLowerInvariant()} the shape.";
-
-        if (found.Count > 0)
-        {
-            var bounds = MapUtil.GetBoundingBoxOfItems(found.Select(feature => feature.GetShape()).Append(shape));
-            bounds.ScaleUp(20);
-            await map.ZoomToExtentAsync(bounds);
-        }
+    public void Dispose()
+    {
+        disposed = true;
+        client?.Dispose();
     }
 
     private static string Describe(Feature feature)

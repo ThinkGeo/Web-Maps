@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net9.0-windows</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net9.0</TargetFramework>
+    <UseWPF Condition="'$(OS)' == 'Windows_NT'">true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
@@ -22,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\thinkgeosdk\ThinkGeo.UI\Web\ThinkGeo.UI.Blazor\ThinkGeo.UI.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\..\thinkgeosdk\ThinkGeo.Core\Extensions\Cad\ThinkGeo.Cad.csproj" Condition="'$(OS)' == 'Windows_NT'" />
   </ItemGroup>
 
   <ItemGroup>

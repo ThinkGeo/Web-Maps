@@ -281,7 +281,7 @@
   {
     "id": "vector-file-formats",
     "title": "Vector File Formats",
-    "description": "Open a vector file - a shapefile, GeoJSON, KML, GPX, MapInfo TAB, TinyGeo, an S-57 chart - or build features in code; reading the format is the only line that differs. The overlay cuts it into tiles and one editable style draws them all.",
+    "description": "Open a shapefile, GeoJSON, KML, GPX, MapInfo TAB, TinyGeo, CAD (DWG), GeoPDF, or S-57 chart, or build features in code. One editable style draws them all.",
     "href": "vector-file-formats",
     "source": "Vector_File_Formats",
     "preicon": "fas fa-file-alt",

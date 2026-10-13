@@ -15,19 +15,29 @@
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
                 <VectorTileOverlay Id="Shapes" @ref="overlay" Style="@style" FeatureSources="@sources" SourceId="shapes" />
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-10782000, 3911500))" CenterButtonZoom="12" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@(new PointShape(-10782000, 3911500))" Zoom="12" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
     </div>
-    <div style="width:320px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
-        <div style="padding:8px 8px 4px;font-weight:600">Operation</div>
-        <div style="padding:0 8px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Shape Operations</div>
+        <div style="font-weight:700;margin-bottom:4px">Operation</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
             @foreach (var name in Operations)
             {
-                <label><input type="radio" name="operation" checked="@(operation == name)" @onchange="@(() => Choose(name))" /> @name</label>
+                <label style="cursor:pointer"><input type="radio" name="operation" checked="@(operation == name)" @onchange="@(() => Choose(name))" /> @name</label>
             }
         </div>
         @if (operation == "Union of all the pieces")
         {
-            <div style="padding:0 8px 6px;display:flex;flex-direction:column;gap:4px">
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px">
                 <div>@unionNote</div>
                 <button class="btn btn-sm btn-primary" disabled="@merged" @onclick="@(() => Merge(true))">Merge them into one</button>
                 <button class="btn btn-sm btn-light" disabled="@(!merged)" @onclick="@(() => Merge(false))">Separate them again</button>
@@ -35,16 +45,16 @@
         }
         else if (Parameters(operation).First != null)
         {
-            <div style="padding:0 8px 6px;display:flex;flex-direction:column;gap:4px">
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
                 <label>@Parameters(operation).First <input @bind="first" @bind:event="oninput" @bind:after="Apply" style="width:80px" /></label>
                 @if (Parameters(operation).Second != null)
                 {
                     <label>@Parameters(operation).Second <input @bind="second" @bind:event="oninput" @bind:after="Apply" style="width:80px" /></label>
                 }
-                <label><input type="checkbox" checked="@animate" @onchange="@ToggleAnimation" /> Animate it</label>
+                <label style="cursor:pointer"><input type="checkbox" checked="@animate" @onchange="@ToggleAnimation" /> Animate it</label>
             </div>
         }
-        <div style="padding:0 8px 6px;color:#555">Orange is the shape read from the file, green what the operation makes of it, blue the area the paired operations use.</div>
+        <div style="border-top:1px solid #aaa;margin-top:14px;padding-top:8px;color:#e5e5e5;font-size:11px;line-height:1.4">Orange shows the source shape, green shows the operation result, and blue marks the area used by intersection and difference.</div>
     </div>
 </div>
 
@@ -77,7 +87,8 @@
     private string first = "1000";
     private string second = "3000";
     private bool merged;
-    private bool animate;
+    private bool animate = true;
+    private bool disposed;
     private double phase;
     private string unionNote = "";
     private CancellationTokenSource animation;
@@ -113,6 +124,7 @@
         var framed = new RectangleShape(bounds.UpperLeftPoint, bounds.LowerRightPoint);
         framed.ScaleUp(50);
         await map.ZoomToExtentAsync(framed);
+        StartAnimation();
     }
 
     private async Task Choose(string name)
@@ -124,8 +136,8 @@
         first = parameters.FirstValue;
         second = parameters.SecondValue;
         StopAnimation();
-        animate = false;
         await Apply();
+        StartAnimation();
     }
 
     private static (string First, string FirstValue, string Second, string SecondValue) Parameters(string name)
@@ -206,11 +218,14 @@
     {
         animate = (bool)args.Value;
         StopAnimation();
-        if (animate)
-        {
-            animation = new CancellationTokenSource();
-            _ = AnimateAsync(animation.Token);
-        }
+        StartAnimation();
+    }
+
+    private void StartAnimation()
+    {
+        if (!animate || Parameters(operation).First == null || animation != null || disposed) return;
+        animation = new CancellationTokenSource();
+        _ = AnimateAsync(animation.Token);
     }
 
     // The parameter sweeps its range and the result follows, one redraw per frame.
@@ -255,5 +270,9 @@
     private static double Number(string text, double fallback)
         => double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? value : fallback;
 
-    public void Dispose() => StopAnimation();
+    public void Dispose()
+    {
+        disposed = true;
+        StopAnimation();
+    }
 }

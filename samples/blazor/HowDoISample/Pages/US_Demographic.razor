@@ -4,6 +4,10 @@
 @using System.Text
 @using ThinkGeo.Core
 
+@{
+    var initialCenter = new PointShape(-11037792, 4953010);
+}
+
 <div class="map-container" style="display:flex">
     <div style="flex:1;min-width:0;position:relative">
         @* A choropleth the browser draws: the states are handed over once, and a step expression
@@ -11,25 +15,35 @@
            or the classing is a new document over the same data - no tile is fetched again. *@
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@(new PointShape(-11037792, 4953010))" Zoom="4">
+                 Center="@initialCenter" Zoom="4" Bearing="0" Pitch="0">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
                 <VectorTileOverlay Id="States" StyleJson="@style" FeatureSources="@states" SourceId="states" />
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@initialCenter" CenterButtonZoom="4" CenterButtonBearing="0" CenterButtonPitch="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@initialCenter" Zoom="4" Bearing="0" Pitch="0" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
     </div>
-    <div style="width:250px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12.5px system-ui">
-        <div style="padding:9px 11px;font-weight:600;border-bottom:1px solid #ddd">US census, 2010</div>
-        <div style="padding:7px 11px 3px;color:#555">Colour the states by</div>
-        <div style="padding:0 11px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0;overflow:auto">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">US Demographic Map</div>
+        <div style="color:#e5e5e5;font-size:11px;line-height:1.35;margin-bottom:8px">2010 census by state. Choose a measure to update the choropleth and its quintile legend.</div>
+        <div style="font-weight:700;margin-bottom:4px">Colour the states by</div>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px">
             @foreach (var c in Categories)
             {
                 <label style="cursor:pointer"><input type="radio" name="cat" checked="@(category == c)" @onchange="@(() => Pick(c))" /> @c.Name</label>
             }
         </div>
-        <div style="padding:7px 11px;border-top:1px solid #ddd">
-            <div style="font-weight:600;margin-bottom:5px">@category.Name<span style="color:#888;font-weight:400"> (@category.Unit)</span></div>
+        <div style="border-top:1px solid #aaa;padding-top:8px">
+            <div style="font-weight:700;margin-bottom:5px">@category.Name<span style="color:#ddd;font-weight:400"> (@category.Unit)</span></div>
             @for (var i = Colors.Length - 1; i >= 0; i--)
             {
                 <div style="display:flex;align-items:center;gap:7px;margin:2px 0">
@@ -73,9 +87,16 @@
         // Read every state's columns once, so the class breaks can be computed from the data
         // rather than guessed. 51 rows - a synchronous read is instant.
         var reader = new ShapeFileFeatureSource(CensusPath);
+        List<Feature> features;
         reader.Open();
-        var features = reader.GetAllFeatures(ReturningColumnsType.AllColumns);
-        reader.Close();
+        try
+        {
+            features = reader.GetAllFeatures(ReturningColumnsType.AllColumns).ToList();
+        }
+        finally
+        {
+            reader.Close();
+        }
 
         valuesByColumn = new Dictionary<string, double[]>();
         foreach (var c in Categories)

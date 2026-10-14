@@ -506,7 +506,7 @@
   {
     "id": "nexrad-radar",
     "title": "NEXRAD Weather Radar",
-    "description": "Live US weather radar drawn over the basemap as a raster tile source the browser reads directly, animating the last hour of the national reflectivity mosaic from the Iowa Environmental Mesonet.",
+    "description": "Live US weather radar drawn over the basemap from six georeferenced images covering the last 25 minutes, refreshed every five minutes by the Iowa Environmental Mesonet.",
     "href": "nexrad-radar",
     "source": "Nexrad_Radar",
     "preicon": "fas fa-cloud-showers-heavy",

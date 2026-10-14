@@ -1,95 +1,169 @@
 @page "/nexrad-radar"
 @using System.Globalization
+@using System.Net.Http
 @using ThinkGeo.Core
 @implements IDisposable
 
 <div class="map-container">
-    @* The radar is a raster source named in the style: a {z}/{x}/{y} tile server the browser
-       reads directly, drawn over the basemap at whatever opacity the layer asks for. Stepping
-       the frame changes the source's address, and the browser fetches the new one. *@
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
              Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-             Center="@(new PointShape(-10400000, 4800000))" Zoom="4">
+             Center="@InitialCenter" Zoom="4">
         <OverlaysSetting>
-            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Dark"
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                             ApiKey="@GlobalSettings.ThinkGeoApiKey" />
-            <VectorTileOverlay Id="Radar" StyleJson="@RadarStyle()" />
+            @if (style != null)
+            {
+                <VectorTileOverlay Id="Radar" @ref="overlay" Style="@style"
+                                   RasterTileSource="@radar" RasterSourceId="radar" />
+            }
         </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="4" />
+                <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                             Center="@InitialCenter" Zoom="4" />
+            </MapTools>
+        </MapToolsSetting>
     </MapView>
 
-    <div style="position:absolute;top:12px;left:12px;width:250px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
-        <div style="font-weight:600;margin-bottom:6px">NEXRAD weather radar</div>
-        <div style="color:#555;margin-bottom:8px">
-            Live base reflectivity over the United States, from the Iowa Environmental Mesonet.
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">NEXRAD Weather Radar</div>
+        <div style="color:#e5e5e5;line-height:1.4;margin-bottom:9px">
+            Base reflectivity over the United States from the Iowa Environmental Mesonet.
         </div>
 
         <div style="display:flex;align-items:center;gap:8px">
-            <button style="padding:2px 12px;cursor:pointer" @onclick="TogglePlay">@(playing ? "Pause" : "Play")</button>
+            <button class="btn btn-sm btn-light" style="padding:2px 12px" disabled="@(!framesLoaded)"
+                    @onclick="TogglePlay">@(playing ? "Pause" : "Play")</button>
             <span>@FrameLabel</span>
         </div>
 
-        <label style="display:block;margin:10px 0 2px">Opacity - @opacity.ToString("P0")</label>
-        <input type="range" min="20" max="100" step="5" value="@(opacity * 100)" style="width:100%"
-               @oninput="@(e => opacity = Convert.ToDouble(e.Value) / 100)" />
+        <label style="display:block;margin:10px 0 2px">Opacity - @opacity.ToString("P0", CultureInfo.InvariantCulture)</label>
+        <input aria-label="Radar opacity" type="range" min="20" max="100" step="5"
+               value="@(opacity * 100)" style="width:100%" @oninput="OpacityChanged" />
+        <div role="status" style="margin-top:8px;color:#e5e5e5;line-height:1.4">@status</div>
     </div>
 </div>
 
 @code {
-    // The Iowa Environmental Mesonet serves the national N0Q mosaic, current and every five
-    // minutes back for an hour, each as its own {z}/{x}/{y} tile set.
-    private static readonly int[] MinutesAgo = { 55, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 0 };
+    private static readonly PointShape InitialCenter = new PointShape(-10631010, 4539146);
+    private static readonly RectangleShape RadarExtent = new RectangleShape(-126, 50, -65, 23);
+    // IEM names these snapshots n0q_5 (25 minutes ago) through n0q_0 (current).
+    private static readonly int[] FrameNumbers = { 5, 4, 3, 2, 1, 0 };
+    private static readonly HttpClient Http = new HttpClient();
+    private const string FrameUrlTemplate = "https://mesonet.agron.iastate.edu/data/gis/images/4326/USCOMP/n0q_{0}.png";
 
     private MapView map;
-    private int frame = MinutesAgo.Length - 1; // start on the newest
-    private bool playing = true;
-    private double opacity = 0.7;
-    private CancellationTokenSource loop;
+    private VectorTileOverlay overlay;
+    private GeoImageRasterTileSource radar;
+    private MapStyle style;
+    private byte[][] frames;
+    private CancellationTokenSource lifetime;
+    private int frame;
+    private bool playing;
+    private bool framesLoaded;
+    private bool mapReady;
+    private bool disposed;
+    private double opacity = 0.75;
+    private string status = "Loading six radar frames...";
 
-    private string FrameLabel => MinutesAgo[frame] == 0
-        ? "now"
-        : MinutesAgo[frame].ToString(CultureInfo.InvariantCulture) + " min ago";
+    private int MinutesAgo => (FrameNumbers.Length - 1 - frame) * 5;
 
-    private string Product => MinutesAgo[frame] == 0
-        ? "nexrad-n0q-900913"
-        : "nexrad-n0q-900913-m" + MinutesAgo[frame].ToString("00", CultureInfo.InvariantCulture) + "m";
+    private string FrameLabel => !framesLoaded
+        ? "Loading..."
+        : MinutesAgo == 0
+            ? "now"
+            : MinutesAgo.ToString(CultureInfo.InvariantCulture) + " min ago";
 
-    private string RadarStyle()
+    protected override void OnInitialized()
     {
-        var url = "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/" + Product + "/{z}/{x}/{y}.png";
-        return
-            "{ \"sources\": { \"radar\": { \"type\": \"raster\", \"tiles\": [\"" + url + "\"], \"tileSize\": 256 } }," +
-            " \"layers\": [ { \"id\": \"radar\", \"type\": \"raster\", \"source\": \"radar\"," +
-            " \"paint\": { \"raster-opacity\": " + opacity.ToString("0.00", CultureInfo.InvariantCulture) + " } } ] }";
+        radar = GeoImageRasterTileSource.FromUri(FrameUrl(0), RadarExtent, new Projection(4326));
+        radar.TransparentColor = GeoColors.Black;
+        style = CreateRadarStyle(opacity);
+
+        lifetime = new CancellationTokenSource();
+        _ = LoadFramesAndAnimateAsync(lifetime.Token);
     }
 
-    protected override void OnInitialized() => Start();
-
-    private void TogglePlay()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        playing = !playing;
-        if (playing) Start(); else loop?.Cancel();
+        if (!firstRender) return;
+        for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
+            await Task.Delay(250);
+        mapReady = !disposed && map?.IsLoaded == true;
     }
 
-    private void Start()
-    {
-        loop?.Cancel();
-        loop = new CancellationTokenSource();
-        _ = RunAsync(loop.Token);
-    }
+    private static string FrameUrl(int minutesAgo) =>
+        string.Format(CultureInfo.InvariantCulture, FrameUrlTemplate, minutesAgo);
 
-    private async Task RunAsync(CancellationToken token)
+    private MapStyle CreateRadarStyle(double rasterOpacity) =>
+        new MapStyle().AddRaster(radar, new RasterPaint((float)rasterOpacity), "radar");
+
+    private async Task LoadFramesAndAnimateAsync(CancellationToken token)
     {
         try
         {
+            frames = new byte[FrameNumbers.Length][];
+            for (var index = 0; index < FrameNumbers.Length; index++)
+            {
+                frames[index] = await Http.GetByteArrayAsync(FrameUrl(FrameNumbers[index]), token);
+            }
+
+            if (disposed) return;
+            frame = FrameNumbers.Length - 1;
+            radar.Update(frames[frame]);
+            framesLoaded = true;
+            playing = true;
+            status = "Six frames, five minutes apart. Animation started.";
+            await InvokeAsync(StateHasChanged);
+
             while (!token.IsCancellationRequested)
             {
                 await Task.Delay(700, token);
-                frame = (frame + 1) % MinutesAgo.Length;
+                if (!playing || disposed) continue;
+
+                frame = (frame + 1) % frames.Length;
+                radar.Update(frames[frame]);
+                if (mapReady && overlay != null)
+                {
+                    // Change the raster source stamp so the browser requests this frame's tiles.
+                    await overlay.RedrawAsync();
+                }
                 await InvokeAsync(StateHasChanged);
             }
         }
-        catch (TaskCanceledException) { }
+        catch (OperationCanceledException) { }
+        catch (Exception exception)
+        {
+            if (disposed) return;
+            playing = false;
+            status = "Radar unavailable: " + exception.Message.Split('\n')[0];
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
-    public void Dispose() => loop?.Cancel();
+    private void TogglePlay()
+    {
+        if (framesLoaded) playing = !playing;
+    }
+
+    private void OpacityChanged(ChangeEventArgs args)
+    {
+        if (!double.TryParse(Convert.ToString(args.Value, CultureInfo.InvariantCulture), NumberStyles.Float,
+                CultureInfo.InvariantCulture, out var value)) return;
+
+        opacity = Math.Clamp(value / 100d, 0.2, 1d);
+        style = CreateRadarStyle(opacity);
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        playing = false;
+        lifetime?.Cancel();
+        lifetime?.Dispose();
+        radar?.Dispose();
+    }
 }

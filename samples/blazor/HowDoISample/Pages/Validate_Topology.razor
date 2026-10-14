@@ -1,32 +1,54 @@
 @page "/validate-topology"
 @using ThinkGeo.Core
 @using System.Collections.ObjectModel
+@implements IDisposable
 
 <div class="map-container" style="display:flex">
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@(new PointShape(50, 0))" Zoom="18">
+                 Center="@InitialCenter" Zoom="18" Bearing="0" Pitch="0">
             <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
                 <VectorTileOverlay Id="Shapes" @ref="overlay" Style="@style" FeatureSources="@sources" SourceId="shapes" />
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@InitialCenter" CenterButtonZoom="18" CenterButtonBearing="0" CenterButtonPitch="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@InitialCenter" Zoom="18" Bearing="0" Pitch="0" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
+        @if (busy)
+        {
+            <div role="status" aria-label="Validating topology" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 18px;border-radius:6px;background:rgba(255,255,255,.92);box-shadow:0 1px 6px rgba(0,0,0,.25);color:#303638;font:13px system-ui">
+                    <img src="images/sample-loading-spinner.svg" alt="" width="64" height="64" />
+                    <span>Validating topology...</span>
+                </div>
+            </div>
+        }
     </div>
-    <div style="width:340px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
-        <div style="padding:8px 8px 4px;font-weight:600">Rule</div>
-        <div style="flex:1;overflow:auto;padding:0 8px 6px;display:flex;flex-direction:column;gap:2px">
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Validate Topology</div>
+        <div style="font-weight:700;margin-bottom:4px">Rule</div>
+        <div style="flex:1;min-height:0;overflow:auto;padding:0 4px 6px;display:flex;flex-direction:column;gap:2px">
             @foreach (var group in Rules.GroupBy(r => r.Group))
             {
-                <div style="font-weight:600;color:#666;margin-top:6px">@group.Key</div>
+                <div style="font-weight:600;color:#ddd;margin-top:6px">@group.Key</div>
                 @foreach (var r in group)
                 {
-                    <label><input type="radio" name="rule" checked="@(rule == r.Name)" @onchange="@(() => Choose(r.Name))" /> @r.Name</label>
+                    <label style="cursor:pointer"><input type="radio" name="rule" checked="@(rule == r.Name)" disabled="@busy" @onchange="@(() => Choose(r.Name))" /> @r.Name</label>
                 }
             }
         </div>
-        <div style="padding:8px;border-top:1px solid #ddd">
-            <div>Blue: checked against. Green: what the rule checks. Red: what breaks it.</div>
-            <div style="font-weight:600;margin-top:6px">@result</div>
+        <div style="border-top:1px solid #aaa;margin-top:10px;padding-top:8px">
+            <div style="color:#e5e5e5;font-size:11px;line-height:1.35">Blue: checked against. Green: what the rule checks. Red: what breaks it.</div>
+            <div style="font-weight:700;margin-top:6px;color:#baf1ba">@result</div>
         </div>
     </div>
 </div>
@@ -107,6 +129,9 @@
     private readonly InMemoryFeatureSource broken = new InMemoryFeatureSource();
     private string rule = Rules[0].Name;
     private string result = "";
+    private bool busy = true;
+    private bool disposed;
+    private static readonly PointShape InitialCenter = new PointShape(50, 0);
 
     protected override void OnInitialized()
     {
@@ -133,17 +158,50 @@
         {
             await Task.Delay(250);
         }
-        await RunAsync();
+        if (!disposed)
+        {
+            try
+            {
+                await RunAsync();
+            }
+            catch (Exception ex)
+            {
+                result = "Topology validation failed: " + ex.Message;
+            }
+            finally
+            {
+                busy = false;
+                if (!disposed) await InvokeAsync(StateHasChanged);
+            }
+        }
     }
 
     private async Task Choose(string name)
     {
+        if (busy || disposed) return;
+        busy = true;
         rule = name;
-        await RunAsync();
+        result = "";
+        await InvokeAsync(StateHasChanged);
+        await Task.Yield();
+        try
+        {
+            await RunAsync();
+        }
+        catch (Exception ex)
+        {
+            result = "Topology validation failed: " + ex.Message;
+        }
+        finally
+        {
+            busy = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task RunAsync()
     {
+        if (disposed || map?.IsLoaded != true || overlay == null) return;
         var chosen = Rules.First(r => r.Name == rule);
         var subject = Wkt(chosen.Subject);
         var counterpart = chosen.Against == null ? new Collection<Feature>() : Wkt(chosen.Against);
@@ -179,4 +237,6 @@
             into.InternalFeatures.Add(feature);
         }
     }
+
+    public void Dispose() => disposed = true;
 }

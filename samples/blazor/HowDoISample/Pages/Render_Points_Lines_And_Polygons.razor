@@ -29,7 +29,7 @@
     <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
         <div style="font-size:16px;font-weight:600;margin-bottom:6px">Render Points, Lines and Polygons</div>
         <div style="color:#e5e5e5;font-size:11px;line-height:1.35;margin-bottom:8px">Edit the point, line, polygon and label layers; valid style changes update the map.</div>
-        <div style="font-weight:700;margin-bottom:4px">style.json</div>
+        <div style="font-weight:700;margin-bottom:4px">style.json - edit it; the map follows</div>
         <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
                   style="flex:1;min-height:0;width:100%;box-sizing:border-box;font:11px/1.35 Consolas,monospace;padding:7px;border:1px solid #aaa;background:#fff;color:#111;resize:none;white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:hidden;overflow-y:auto"></textarea>
         <div role="status" style="padding-top:5px;line-height:1.3;overflow-wrap:anywhere;color:@(ok ? "#baf1ba" : "#ffd0b8")">@status</div>

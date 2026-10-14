@@ -8,29 +8,72 @@
 <div class="map-container">
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
              Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-             Center="@(new PointShape(-10631010, 4539146))" Zoom="4">
+             Center="@InitialCenter" Zoom="4">
         <OverlaysSetting>
             <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light" ApiKey="@GlobalSettings.ThinkGeoApiKey" />
-            <VectorTileOverlay Id="Wind" Style="@style" />
+            @if (style != null)
+            {
+                <VectorTileOverlay Id="Wind" @ref="overlay" Style="@style" />
+            }
         </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="4" />
+            </MapTools>
+        </MapToolsSetting>
     </MapView>
-    <div style="position:absolute;top:12px;right:12px;max-width:340px;padding:10px 12px;background:rgba(255,255,255,.92);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
-        <div style="font-weight:600;margin-bottom:4px">NDFD surface wind, as streaming particles</div>
-        <div>@status</div>
-        <div style="margin-top:6px;color:#555">Tracers are advected through the field and leave fading trails, coloured by speed from blue to red. One call - MapStyle.AddParticleFlow - and the browser animates it.</div>
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Wind as a Vector Field</div>
+        <div style="color:#e5e5e5;line-height:1.4">The same NDFD field can draw animated particles or magnitude-scaled arrows.</div>
+        <label style="display:flex;align-items:center;gap:6px;margin-top:9px;cursor:pointer">
+            <input type="checkbox" checked="@arrows" @onchange="ModeChanged" /> Show arrows
+        </label>
+        <div role="status" style="margin-top:8px;color:#e5e5e5">@status</div>
     </div>
 </div>
 
 @code {
+    private static readonly PointShape InitialCenter = new PointShape(-10631010, 4539146);
+
     private MapView map;
+    private VectorTileOverlay overlay;
     private VectorFieldSource field;
     private MapStyle style;
-    private string status = "";
+    private bool arrows;
+    private string status = "Loading NDFD surface wind data...";
 
     protected override void OnInitialized()
     {
-        LoadField();
-        style = new MapStyle().AddParticleFlow(field);
+        try
+        {
+            LoadField();
+            style = new MapStyle().AddParticleFlow(field);
+            status = "NDFD surface wind - 65k particles advected, color is speed";
+        }
+        catch (Exception exception)
+        {
+            status = "Wind data unavailable: " + exception.Message.Split('\n')[0];
+        }
+    }
+
+    private async Task ModeChanged(ChangeEventArgs args)
+    {
+        arrows = args.Value is bool value && value;
+        if (style == null || overlay == null) return;
+
+        if (arrows)
+        {
+            style.RemoveParticleFlow(field).AddVectorField(field, new VectorFieldStyle { MaxArrows = 3000 });
+            status = "The same field as magnitude-scaled arrows";
+        }
+        else
+        {
+            style.RemoveVectorField(field).AddParticleFlow(field);
+            status = "NDFD surface wind - 65k particles advected, color is speed";
+        }
+
+        await overlay.RedrawAsync();
     }
 
     // Two GeoTIFF bands - wind speed and the direction it comes from - read with GDAL and

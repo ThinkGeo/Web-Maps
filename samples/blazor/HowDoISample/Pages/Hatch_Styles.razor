@@ -1,67 +1,85 @@
 @page "/hatch-styles"
 @using ThinkGeo.Core
 @using System.Text.RegularExpressions
+@using System.Text.Json.Nodes
+@using SkiaSharp
+@implements IDisposable
+
+@{
+    var initialCenter = new PointShape(-10777610, 3909120);
+}
 
 <div class="map-container" style="display:flex">
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@(new PointShape(-10777610, 3909120))" Zoom="16">
+                 Center="@initialCenter" Zoom="16">
             <OverlaysSetting>
-                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
-                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
                 <VectorTileOverlay Id="Parks" Style="@style" FeatureSources="@sources" SourceId="features" />
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@initialCenter" CenterButtonZoom="16" CenterButtonBearing="0" CenterButtonPitch="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@initialCenter" Zoom="16" Bearing="0" Pitch="0" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
     </div>
-    <div style="width:420px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
-        <div style="padding:8px 8px 4px;font-weight:600">style.json - edit it; the map follows</div>
-        <div style="padding:0 8px 6px;color:#555">Every GeoHatchStyle is drawn once by AreaStyle.CreateHatchStyle and added to the style's Images under its own name; fill-pattern picks one by that name. Choose a hatch here or type its name into the editor.</div>
-        <div style="padding:0 8px 8px;display:flex;gap:8px;align-items:center">
-            <span>Hatch</span>
-            <select value="@hatch" @onchange="HatchPicked" style="flex:1;font:12px system-ui">
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Hatch Styles</div>
+        <div style="font-size:11px;color:#e5e5e5;margin-bottom:8px;line-height:1.35">Choose a GeoHatchStyle pattern for the parks, or edit its name and other paint properties below.</div>
+        <label style="display:flex;gap:6px;align-items:center;margin-bottom:8px">Hatch
+            <select aria-label="Hatch style" value="@hatch" @onchange="HatchPicked" style="flex:1;min-width:0;font:12px system-ui">
                 @foreach (var name in Hatches)
                 {
                     <option value="@name">@name</option>
                 }
             </select>
+            <span role="img" aria-label="@($"{hatch} hatch preview")" style="@SwatchStyle"></span>
+        </label>
+        <div style="border-top:1px solid #aaa;padding-top:8px;display:flex;flex-direction:column;flex:1;min-height:0">
+            <div style="font-weight:700;margin-bottom:4px">style.json - edit it; the map follows</div>
+            <div style="font-size:11px;color:#e5e5e5;margin-bottom:6px;line-height:1.3">The swatch and map use the same SVG hatch definition from GeoHatchBrush.</div>
+            <textarea aria-label="style.json editor" @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                      style="flex:1;min-height:0;width:100%;box-sizing:border-box;resize:none;border:1px solid #aaa;background:#fff;color:#111;padding:7px;font:11.5px/1.35 Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:hidden;overflow-y:auto"></textarea>
+            <div role="status" style="padding-top:5px;line-height:1.3;overflow-wrap:anywhere;color:@(ok ? "#baf1ba" : "#ffd0b8")">@status</div>
         </div>
-        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
-                  style="flex:1;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre"></textarea>
-        <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>
     </div>
 </div>
 
 @code {
     private static readonly string[] Hatches = Enum.GetNames(typeof(GeoHatchStyle)).OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToArray();
-    private static readonly Regex Pattern = new Regex("(\"fill-pattern\"\\s*:\\s*\"hatch-)([A-Za-z0-9]+)(\")");
+    private static readonly Regex Pattern = new Regex("(\"fill-pattern\"\\s*:\\s*\")[^\"]*(\")");
 
     private const string StyleJson = @"{
   ""layers"": [
+    { ""type"": ""background"",
+      ""paint"": { ""background-color"": ""#DDE8F0"" } },
+
     { ""type"": ""fill"",
-      ""source-layer"": ""parks"",
+      ""source-layer"": ""Parks"",
       ""paint"": {
-          ""fill-pattern"": ""hatch-DiagonalCross"" }
+          ""fill-pattern"": ""hatch-cross"" }
     },
 
     { ""type"": ""line"",
-      ""source-layer"": ""parks"",
+      ""source-layer"": ""Parks"",
       ""paint"": {
-          ""line-color"": ""#3F7F45"",
-          ""line-width"": 1.5 }
+          ""line-color"": ""#0000FF"",
+          ""line-width"": 2.5 }
     },
 
     { ""type"": ""symbol"",
-      ""source-layer"": ""parks"",
-      ""minzoom"": 15,
+      ""source-layer"": ""Parks"",
       ""layout"": {
           ""text-field"": [""get"", ""NAME""],
           ""text-font"": [""Noto Sans Bold""],
-          ""text-size"": 12 },
+          ""text-size"": 11 },
       ""paint"": {
-          ""text-color"": ""#2F5F35"",
-          ""text-halo-color"": ""#FFFFFF"",
-          ""text-halo-width"": 1.5 }
+          ""text-color"": ""#145A28"" }
     }
   ]
 }";
@@ -69,37 +87,82 @@
     private MapView map;
     private GeoCollection<FeatureSource> sources;
     private MapStyle style;
-    private string hatch = "DiagonalCross";
+    private string hatch = "Cross";
+    private readonly Dictionary<string, (GeoImage Image, string DataUrl, int Width, int Height)> tiles = new();
     private string styleJson = StyleJson;
     private string status = "";
     private bool ok = true;
     private int edit;
+    private bool disposed;
+    private string SwatchStyle
+    {
+        get
+        {
+            if (!tiles.TryGetValue(hatch, out var tile)) return "display:none";
+            return $"display:inline-block;flex:0 0 44px;width:44px;height:26px;border:1px solid #aaa;background-color:white;background-image:url({tile.DataUrl});background-repeat:repeat;background-size:{tile.Width}px {tile.Height}px";
+        }
+    }
 
     protected override void OnInitialized()
     {
         sources = new GeoCollection<FeatureSource>
         {
-            { "parks", new ShapeFileFeatureSource("./Data/Shapefile/Parks.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } }
+            { "Parks", new ShapeFileFeatureSource("./Data/Shapefile/Parks.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } }
         };
+        foreach (var name in Hatches)
+        {
+            var (png, width, height) = RenderHatchTile(Enum.Parse<GeoHatchStyle>(name));
+            tiles.Add(name, (new GeoImage(png), "data:image/png;base64," + Convert.ToBase64String(png), width, height));
+        }
         style = Build(StyleJson);
     }
 
-    // The document with one pattern image per hatch: 32 pixels of each, drawn by the classic
-    // AreaStyle, which MapLibre then tiles across every park.
-    private static MapStyle Build(string json)
+    // Match the WPF v15 tile: the SDK's SVG hatch geometry at its native size, black on transparent.
+    private static (byte[] Png, int Width, int Height) RenderHatchTile(GeoHatchStyle hatchStyle)
+    {
+        var brush = new GeoHatchBrush(hatchStyle, GeoColors.Black);
+        var (svgPath, width, height) = brush.GetHatchPatternSvg(hatchStyle);
+        using var path = SKPath.ParseSvgPathData(svgPath);
+        if (path == null) throw new FormatException($"Could not draw {hatchStyle} hatch pattern.");
+        using var bitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul));
+        using var canvas = new SKCanvas(bitmap);
+        canvas.Clear(SKColors.Transparent);
+        using var pen = new SKPaint
+        {
+            Color = SKColors.Black,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 1,
+            StrokeCap = SKStrokeCap.Butt,
+            StrokeJoin = SKStrokeJoin.Miter,
+            IsAntialias = true,
+        };
+        canvas.DrawPath(path, pen);
+        using var image = SKImage.FromBitmap(bitmap);
+        using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
+        return (encoded.ToArray(), width, height);
+    }
+
+    private MapStyle Build(string json)
     {
         var built = new MapStyle(json);
-        foreach (GeoHatchStyle value in Enum.GetValues(typeof(GeoHatchStyle)))
+        foreach (var (name, tile) in tiles)
         {
-            built.Images.Add("hatch-" + value, AreaStyle.CreateHatchStyle(value, GeoColor.FromHtml("#3F7F45"), GeoColor.FromArgb(110, 180, 224, 182)), 32);
+            built.Images.Add("hatch-" + name.ToLowerInvariant(), tile.Image);
         }
         return built;
     }
 
     private Task HatchPicked(ChangeEventArgs args)
     {
-        hatch = (string)args.Value;
-        styleJson = Pattern.Replace(styleJson, match => match.Groups[1].Value + hatch + match.Groups[3].Value);
+        var selected = (string)args.Value;
+        if (!Pattern.IsMatch(styleJson))
+        {
+            ok = false;
+            status = "not applied - the style has no fill-pattern to change.";
+            return Task.CompletedTask;
+        }
+        hatch = selected;
+        styleJson = Pattern.Replace(styleJson, match => match.Groups[1].Value + "hatch-" + hatch.ToLowerInvariant() + match.Groups[2].Value);
         return EditorChanged();
     }
 
@@ -108,13 +171,19 @@
     {
         var mine = ++edit;
         await Task.Delay(400);
-        if (mine != edit) return;
+        if (disposed || mine != edit) return;
 
         try
         {
-            style = Build(styleJson);
-            var named = Pattern.Match(styleJson);
-            if (named.Success && Hatches.Contains(named.Groups[2].Value)) hatch = named.Groups[2].Value;
+            var document = JsonNode.Parse(styleJson);
+            if (document?["layers"] is not JsonArray layers || layers.Count == 0)
+                throw new FormatException("The style must contain a non-empty layers array.");
+            var nextStyle = Build(styleJson);
+            style = nextStyle;
+            var named = document["layers"]?.AsArray().Select(layer => layer?["paint"]?["fill-pattern"]?.GetValue<string>())
+                .FirstOrDefault(value => value?.StartsWith("hatch-", StringComparison.OrdinalIgnoreCase) == true);
+            var selected = Hatches.FirstOrDefault(name => string.Equals("hatch-" + name, named, StringComparison.OrdinalIgnoreCase));
+            if (selected != null) hatch = selected;
             ok = true;
             status = $"applied at {DateTime.Now:HH:mm:ss}";
         }
@@ -123,5 +192,12 @@
             ok = false;
             status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
         }
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        edit++;
+        foreach (var tile in tiles.Values) tile.Image.Dispose();
     }
 }

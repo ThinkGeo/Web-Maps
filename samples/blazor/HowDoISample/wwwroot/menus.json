@@ -470,7 +470,7 @@
   {
     "id": "hatch-styles",
     "title": "Hatch Styles",
-    "description": "Every GeoHatchStyle drawn once by AreaStyle.CreateHatchStyle, added to the style's images, and tiled across the parks by fill-pattern.",
+    "description": "Every GeoHatchStyle drawn from the SDK's SVG hatch definition into a native-size image, previewed and tiled across the parks by fill-pattern.",
     "href": "hatch-styles",
     "source": "Hatch_Styles",
     "preicon": "fas fa-th",

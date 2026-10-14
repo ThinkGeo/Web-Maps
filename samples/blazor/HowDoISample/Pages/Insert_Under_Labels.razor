@@ -1,82 +1,121 @@
 @page "/insert-under-labels"
+@using System.Globalization
 @using System.Text.Json.Nodes
 @using ThinkGeo.Core
+@implements IDisposable
 
 <div class="map-container">
-    @* A wash the map's own overlays cannot express: an overlay is always above everything,
-       labels included. A style layer can go anywhere - AddLayer with StyleLayerSlot.UnderLabels
-       puts a translucent white layer above the streets and below the labels, so the map quiets
-       while its names stay sharp. *@
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
              Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-             Center="@(new PointShape(-8238310, 4970071))" Zoom="14">
+             Center="@InitialCenter" Zoom="14">
         <OverlaysSetting>
             @if (style != null)
             {
-                <VectorTileOverlay Id="Basemap" @ref="overlay" Style="@style" />
+                <VectorTileOverlay Id="Basemap" Style="@style"
+                                   RasterTileSource="@aerial" RasterSourceId="aerial" />
             }
         </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="14" />
+            </MapTools>
+        </MapToolsSetting>
     </MapView>
 
-    <div style="position:absolute;top:12px;left:12px;width:250px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
-        <div style="font-weight:600;margin-bottom:8px">Insert a layer under the labels</div>
-
-        <label style="display:block;margin-bottom:2px">Wash - @wash.ToString("P0")</label>
-        <input type="range" min="0" max="80" step="5" value="@(wash * 100)" style="width:100%"
-               @oninput="@(e => WashChanged(Convert.ToDouble(e.Value) / 100))" />
-
-        <div style="margin-top:10px;color:#555">
-            The white layer sits above every street and below every label. Slide it up and the
-            streets fade while the names stay crisp - a place in the layer stack an overlay can
-            never reach.
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Insert a Layer Under the Labels</div>
+        <div style="color:#e5e5e5;line-height:1.4">
+            Aerial imagery, then roads, then the white wash, with labels drawn last. The wash can
+            mute the image and roads without covering place names.
         </div>
+
+        <label style="display:block;margin:10px 0 2px">White wash - @wash.ToString("P0", CultureInfo.InvariantCulture)</label>
+        <input aria-label="White wash opacity" type="range" min="0" max="90" step="5"
+               value="@(wash * 100)" style="width:100%" @oninput="WashChanged" />
+        @if (!string.IsNullOrEmpty(status))
+        {
+            <div role="status" style="margin-top:8px;color:#e5e5e5">@status</div>
+        }
     </div>
 </div>
 
 @code {
+    private static readonly PointShape InitialCenter = new PointShape(-8238310, 4970071);
+
     private MapView map;
-    private VectorTileOverlay overlay;
-    private ThinkGeoVectorTileSource source;
+    private ThinkGeoRasterTileSource aerial;
+    private ThinkGeoVectorTileSource vector;
     private MapStyle style;
-    private double wash = 0.5;
+    private double wash = 0.45;
     private int edit;
+    private bool disposed;
+    private string status = "Loading aerial imagery and street layers...";
 
     protected override async Task OnInitializedAsync()
     {
-        source = new ThinkGeoVectorTileSource(GlobalSettings.ThinkGeoApiKey);
-        await Rebuild();
+        try
+        {
+            aerial = new ThinkGeoRasterTileSource(GlobalSettings.ThinkGeoApiKey,
+                ThinkGeoCloudRasterMapsMapType.Aerial_V2_X1);
+            vector = new ThinkGeoVectorTileSource(GlobalSettings.ThinkGeoApiKey);
+            await vector.OpenAsync();
+            style = await ComposeStyleAsync(wash);
+            status = "Drag the slider to change the wash opacity.";
+        }
+        catch (Exception exception)
+        {
+            status = "Map layers unavailable: " + exception.Message.Split('\n')[0];
+        }
     }
 
-    // The street style, resolved so its layers are there to find the labels among, with the
-    // wash inserted just below them.
-    private async Task Rebuild()
+    // Keep only the vector style's roads and symbols over aerial imagery, then insert the
+    // wash immediately below its symbol layers so labels remain crisp above the wash.
+    private async Task<MapStyle> ComposeStyleAsync(double opacity)
     {
-        var rebuilt = new MapStyle(ThinkGeoVectorStyles.Light, source);
-        await rebuilt.ResolveAsync();
-        if (wash > 0)
-        {
-            rebuilt.AddLayer(new JsonObject
+        var composed = new MapStyle()
+            .AddRaster(aerial, sourceId: "aerial")
+            .AddStyle(ThinkGeoVectorStyles.Light, vector, StyleLayerType.Line, StyleLayerType.Symbol)
+            .AddLayer(new JsonObject
             {
-                ["id"] = "wash",
+                ["id"] = "white-wash",
                 ["type"] = "background",
                 ["paint"] = new JsonObject
                 {
                     ["background-color"] = "#FFFFFF",
-                    ["background-opacity"] = wash,
+                    ["background-opacity"] = opacity,
                 },
             }, StyleLayerSlot.UnderLabels);
-        }
-        style = rebuilt;
+
+        await composed.ResolveAsync();
+        return composed;
     }
 
-    // Rebuild once the slider settles, so a drag across the range is one restyle, not twenty.
-    private async Task WashChanged(double value)
+    // A short debounce keeps one style rebuild per settled slider movement.
+    private async Task WashChanged(ChangeEventArgs args)
     {
-        wash = value;
+        if (!double.TryParse(Convert.ToString(args.Value, CultureInfo.InvariantCulture), NumberStyles.Float,
+                CultureInfo.InvariantCulture, out var value)) return;
+
+        wash = Math.Clamp(value / 100d, 0, 0.9);
         var mine = ++edit;
         await Task.Delay(250);
-        if (mine != edit) return;
-        await Rebuild();
-        StateHasChanged();
+        if (disposed || mine != edit || vector == null) return;
+
+        try
+        {
+            style = await ComposeStyleAsync(wash);
+            status = "The wash sits above roads and below labels.";
+        }
+        catch (Exception exception)
+        {
+            status = "Could not update the wash: " + exception.Message.Split('\n')[0];
+        }
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        edit++;
     }
 }

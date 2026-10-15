@@ -17,12 +17,16 @@
         <MapToolsSetting>
             <MapTools>
                 <MeasureMapTool MeasureType="@measureType" />
-                <ZoomBarMapTool />
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@(new PointShape(-10770581.83051296, 3865538.8613018664))" CenterButtonZoom="15" />
+                <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                             Center="@(new PointShape(-10770581.83051296, 3865538.8613018664))" Zoom="15" />
             </MapTools>
         </MapToolsSetting>
     </MapView>
 
-    <nav class="icon-group draw-edit-tool-bar">
+    <nav class="icon-group draw-edit-tool-bar" style="top:auto;right:auto;bottom:28px;left:50%;transform:translateX(-50%);display:flex;white-space:nowrap;z-index:10" aria-label="Measure distance and area">
         <a href="javascript:void(0);" class="@GetCss(MeasureType.None)" title="None" @onclick="@(e => SetMeasureType(MeasureType.None))">
             <span>
                 <img src="images/mouse-pointer.svg" alt="None">

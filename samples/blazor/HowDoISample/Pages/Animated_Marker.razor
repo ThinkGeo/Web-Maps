@@ -1,8 +1,7 @@
 @page "/animated-marker"
 @using ThinkGeo.Core
 
-<div class="map-container" style="display:flex">
-    <div style="flex:1;min-width:0;position:relative">
+<div class="map-container">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
                  Center="@(new PointShape(-10778000, 3912000))" Zoom="12">
@@ -13,12 +12,17 @@
             <MarkerOverlaySetting>
                 <SimpleMarkerOverlay Id="Beacons" @ref="beacons" />
             </MarkerOverlaySetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-10778000, 3912000))" CenterButtonZoom="12" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
-    </div>
-    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
-        <div style="font-weight:600">Animated marker</div>
-        <div style="color:#555">The marker's image is an SVG that animates itself - rings that grow and fade, written into the file - so the browser runs the animation and the server is not involved. The button swaps the image for a still one and redraws the overlay.</div>
-        <button class="btn btn-sm btn-primary" style="align-self:flex-start" @onclick="ToggleAsync">@(animated ? "Stop" : "Start")</button>
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Animated marker</div>
+        <div style="color:#e5e5e5;line-height:1.4">The markers pulse on the map. Stop or start their animation.</div>
+        <button class="btn btn-sm btn-light" style="margin-top:9px" @onclick="ToggleAsync">@(animated ? "Stop" : "Start")</button>
     </div>
 </div>
 

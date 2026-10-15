@@ -10,14 +10,21 @@
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-10779700, 3912000))" CenterButtonZoom="14" />
+                </MapTools>
+            </MapToolsSetting>
             <AdornmentOverlaySetting>
                 <AdornmentOverlay Id="Adornments" Layers="@adornments" />
             </AdornmentOverlaySetting>
         </MapView>
     </div>
-    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
-        <div style="font-weight:600">Magnetic north</div>
-        <div style="color:#555">The MagneticDeclinationAdornmentLayer in the upper right draws true north and magnetic north for the middle of the map, with the declination between them, from the World Magnetic Model. Pan somewhere else and the arrows are drawn again for there. A LogoAdornmentLayer sits in the lower right.</div>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Magnetic North</div>
+        <div style="color:#e5e5e5;font-size:11px;line-height:1.35;margin-bottom:8px">The upper-right adornment shows true north, magnetic north, and their declination at the map center. Pan the map to see the values update.</div>
+        <div style="color:#e5e5e5;font-size:11px;line-height:1.35">The v15 sample logo appears in the lower right.</div>
     </div>
 </div>
 
@@ -37,7 +44,8 @@
         adornments = new GeoCollection<AdornmentLayer>
         {
             { "declination", declination },
-            { "logo", new LogoAdornmentLayer(new GeoImage("./wwwroot/images/thinkgeo.png")) { Location = AdornmentLocation.LowerRight } },
+            { "logo", new LogoAdornmentLayer(new GeoImage("./wwwroot/images/generic-logo.png"))
+                { Location = AdornmentLocation.LowerRight, XOffsetInPixel = -10, YOffsetInPixel = -50 } },
         };
     }
 }

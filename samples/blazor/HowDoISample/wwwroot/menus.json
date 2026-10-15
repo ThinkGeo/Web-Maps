@@ -488,7 +488,7 @@
   {
     "id": "isolines",
     "title": "Isolines",
-    "description": "Isolines over scattered readings: the field is interpolated on the server - inverse distance weighting over a grid - and traced into features there; the browser draws them, coloured, banded and labelled by level.",
+    "description": "GPU isolines over scattered mosquito readings: change the point count and interpolation settings, fill color bands, label contours, and export their geometry from the GPU field.",
     "href": "isolines",
     "source": "Isolines",
     "preicon": "fas fa-water",

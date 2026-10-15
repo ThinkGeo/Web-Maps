@@ -1,8 +1,7 @@
 @page "/popups"
 @using ThinkGeo.Core
 
-<div class="map-container" style="display:flex">
-    <div style="flex:1;min-width:0;position:relative">
+<div class="map-container">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
                  Center="@(new PointShape(-10777290, 3908740))" Zoom="14">
@@ -19,12 +18,17 @@
                     </PopupSetting>
                 </PopupOverlay>
             </PopupOverlaySetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-10777290, 3908740))" CenterButtonZoom="14" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
-    </div>
-    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
-        <div style="font-weight:600">Popups</div>
-        <div style="color:#555">A popup is a piece of the page the browser keeps anchored to a place on the map. The PopupOverlay makes one per item of its source - here the hotels of Frisco, read from a shapefile - and the content of each is ordinary markup. Close one with its corner.</div>
-        <div style="color:#555">@hotels.Count hotels.</div>
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Popups</div>
+        <div style="color:#e5e5e5;line-height:1.4">Hotel names are shown in popups anchored to their map locations. Close a popup with its corner button.</div>
+        <div role="status" style="margin-top:8px;color:#e5e5e5">@hotels.Count hotels</div>
     </div>
 </div>
 

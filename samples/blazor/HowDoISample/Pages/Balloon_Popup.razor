@@ -40,7 +40,11 @@
         </OverlaysSetting>
         <MapToolsSetting>
             <MapTools>
-                <ZoomBarMapTool />
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@(new PointShape(-10776856.935, 3912396.025))" CenterButtonZoom="19" />
+                <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                             Center="@(new PointShape(-10776856.935, 3912396.025))" Zoom="19" />
             </MapTools>
         </MapToolsSetting>
         <PopupOverlaySetting>

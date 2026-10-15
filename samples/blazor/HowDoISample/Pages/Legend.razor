@@ -1,22 +1,28 @@
 @page "/legend"
 @using ThinkGeo.Core
 
-<div class="map-container" style="display:flex">
-    <div style="flex:1;min-width:0;position:relative">
-        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
-                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@(new PointShape(-10650000, 4600000))" Zoom="3">
-            <OverlaysSetting>
-                <VectorTileOverlay Id="States" StyleJson="@StyleJson" FeatureSources="@sources" SourceId="features" />
-            </OverlaysSetting>
-            <AdornmentOverlaySetting>
-                <AdornmentOverlay Id="Adornments" Layers="@adornments" />
-            </AdornmentOverlaySetting>
-        </MapView>
-    </div>
-    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
-        <div style="font-weight:600">Legend</div>
-        <div style="color:#555">The states are classed by their 1990 population in the style. The legend in the corner is a classic LegendAdornmentLayer, one item per class with the same colours, drawn on the server by the AdornmentOverlay and laid over the map; it needs no renderer of its own.</div>
+<div class="map-container">
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@InitialCenter" Zoom="3">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            <VectorTileOverlay Id="States" StyleJson="@StyleJson" FeatureSources="@sources" SourceId="features" />
+        </OverlaysSetting>
+        <AdornmentOverlaySetting>
+            <AdornmentOverlay Id="Adornments" Layers="@adornments" />
+        </AdornmentOverlaySetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="3" />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Legend</div>
+        <div style="color:#e5e5e5;line-height:1.4">US states are coloured by 1990 population. The legend on the map shows the population range for each matching colour.</div>
     </div>
 </div>
 
@@ -40,6 +46,7 @@
   ]
 }";
 
+    private static readonly PointShape InitialCenter = new(-10650000, 4600000);
     private MapView map;
     private GeoCollection<FeatureSource> sources;
     private GeoCollection<AdornmentLayer> adornments;

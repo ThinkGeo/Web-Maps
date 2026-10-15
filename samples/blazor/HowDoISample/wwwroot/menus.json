@@ -524,7 +524,7 @@
   {
     "id": "legend",
     "title": "Legend",
-    "description": "A classic LegendAdornmentLayer, one item per class of the style, drawn on the server by the AdornmentOverlay and laid over the map.",
+    "description": "A population map of US states with a matching LegendAdornmentLayer showing the range represented by each colour.",
     "href": "legend",
     "source": "Legend",
     "preicon": "fas fa-list-ul",

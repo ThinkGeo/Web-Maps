@@ -57,7 +57,7 @@
 
         // Compiling fetches the sprite sheet and turns every paint into a delegate, so it is
         // asked for once, here, rather than read off a property that cannot wait for it.
-        await style.ResolveAsync();
+        await style.OpenAsync();
         foreach (var layer in style.StyleLayers)
         {
             // A layer with no id cannot be addressed, and two with the same id are one checkbox.

@@ -1,8 +1,7 @@
 @page "/markers"
 @using ThinkGeo.Core
 
-<div class="map-container" style="display:flex">
-    <div style="flex:1;min-width:0;position:relative">
+<div class="map-container">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
                  Center="@(new PointShape(-10777290, 3908740))" Zoom="15" OnClick="@Clicked">
@@ -25,14 +24,19 @@
                     </PopupSetting>
                 </PopupOverlay>
             </PopupOverlaySetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-10777290, 3908740))" CenterButtonZoom="15" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
-    </div>
-    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
-        <div style="font-weight:600">Markers</div>
-        <div style="color:#555">A marker is an image the browser keeps pinned to a place on the map, outside the tiles. The SimpleMarkerOverlay holds them in its Markers collection, each styled by a PointMarkerStyle; a redraw sends what changed. Click the map to drop one; click a marker for its details.</div>
-        <div style="display:flex;gap:8px;align-items:center">
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Markers</div>
+        <div style="color:#e5e5e5;line-height:1.4">Click the map to add a marker. Click a marker to see its coordinates.</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:9px">
             <button class="btn btn-sm btn-light" @onclick="ClearAsync">Clear</button>
-            <span style="color:#555">@count markers</span>
+            <span style="color:#e5e5e5">@count markers</span>
         </div>
     </div>
 </div>

@@ -6,7 +6,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI
     public static class Pictures
     {
         /// <summary>The layers drawn at an extent, fitted to the picture's size, as PNG bytes - a LayerOverlay drawn once, the way its tiles are.</summary>
-        public static byte[] OfLayers(IEnumerable<LayerBase> layers, RectangleShape extent, int width, int height, GeoColor background, GeographyUnit unit = GeographyUnit.Meter)
+        public static async Task<byte[]> OfLayersAsync(IEnumerable<LayerBase> layers, RectangleShape extent, int width, int height, GeoColor background, GeographyUnit unit = GeographyUnit.Meter)
         {
             var overlay = new LayerOverlay(layers);
             using (var image = new GeoImage(width, height))
@@ -14,7 +14,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI
                 var canvas = GeoCanvas.CreateDefaultGeoCanvas();
                 canvas.BeginDrawing(image, MapUtil.GetDrawingExtent(extent, width, height), unit);
                 canvas.Clear(new GeoSolidBrush(background));
-                overlay.Draw(canvas);
+                await overlay.DrawAsync(canvas);
                 canvas.EndDrawing();
                 return image.GetImageBytes(GeoImageFormat.Png);
             }

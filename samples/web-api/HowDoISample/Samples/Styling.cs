@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using ThinkGeo.Core;
+using ThinkGeo.Core.Styling;
 
 namespace ThinkGeo.UI.WebApi.HowDoI.Samples
 {
@@ -24,43 +25,43 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             // 3857 as they are cut. Each is the source-layer the style names.
             catalog.Vector("frisco", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("Parks", SampleData.Frisco("Parks.shp"));
-                overlay.FeatureSources.Add("Streets", SampleData.Frisco("Streets.shp"));
-                overlay.FeatureSources.Add("Hotels", SampleData.Frisco("Hotels.shp"));
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("Parks", SampleData.Frisco("Parks.shp"));
+                tiles.FeatureSources.Add("Streets", SampleData.Frisco("Streets.shp"));
+                tiles.FeatureSources.Add("Hotels", SampleData.Frisco("Hotels.shp"));
+                return new VectorTileOverlay(tiles);
             });
             catalog.Vector("countries", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("Countries02", new ShapeFileFeatureSource(SampleData.Path("Shapefile/Countries02.shp")) { ProjectionConverter = new ProjectionConverter(4326, 3857) });
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("Countries02", new ShapeFileFeatureSource(SampleData.Path("Shapefile/Countries02.shp")) { ProjectionConverter = new ProjectionConverter(4326, 3857) });
+                return new VectorTileOverlay(tiles);
             });
             catalog.Vector("states", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("states", new ShapeFileFeatureSource(SampleData.Path("usStatesCensus2010.shp")));
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("states", new ShapeFileFeatureSource(SampleData.Path("usStatesCensus2010.shp")));
+                return new VectorTileOverlay(tiles);
             });
             catalog.Vector("coyotes", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("Frisco_Coyote_Sightings", SampleData.Frisco("Frisco_Coyote_Sightings.shp"));
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("Frisco_Coyote_Sightings", SampleData.Frisco("Frisco_Coyote_Sightings.shp"));
+                return new VectorTileOverlay(tiles);
             });
             // The label lessons' data, crafted in code rather than loaded.
             catalog.Vector("lessons", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("lessons", LabelLessons());
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("lessons", LabelLessons());
+                return new VectorTileOverlay(tiles);
             });
             catalog.Vector("world", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("Countries02", new ShapeFileFeatureSource(SampleData.Path("Shapefile/Countries02.shp")) { ProjectionConverter = new ProjectionConverter(4326, 3857) });
-                overlay.FeatureSources.Add("WorldCapitals", new ShapeFileFeatureSource(SampleData.Path("Shapefile/WorldCapitals.shp")) { ProjectionConverter = new ProjectionConverter(4326, 3857) });
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("Countries02", new ShapeFileFeatureSource(SampleData.Path("Shapefile/Countries02.shp")) { ProjectionConverter = new ProjectionConverter(4326, 3857) });
+                tiles.FeatureSources.Add("WorldCapitals", new ShapeFileFeatureSource(SampleData.Path("Shapefile/WorldCapitals.shp")) { ProjectionConverter = new ProjectionConverter(4326, 3857) });
+                return new VectorTileOverlay(tiles);
             });
             // The states and, scattered inside each, one dot per 25,000 housing units of each
             // kind: the dots are generated once as data, and the style only colours them.
@@ -70,11 +71,11 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 states.Open();
                 var features = states.GetAllFeatures(new[] { "OWNER_OCC", "RENTER_OCC" });
                 states.Close();
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("USStates_3857", new ShapeFileFeatureSource(SampleData.Path("Shapefile/USStates_3857.shp")));
-                overlay.FeatureSources.Add("owner", Scatter(features, "OWNER_OCC", seed: 1));
-                overlay.FeatureSources.Add("renter", Scatter(features, "RENTER_OCC", seed: 2));
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("USStates_3857", new ShapeFileFeatureSource(SampleData.Path("Shapefile/USStates_3857.shp")));
+                tiles.FeatureSources.Add("owner", Scatter(features, "OWNER_OCC", seed: 1));
+                tiles.FeatureSources.Add("renter", Scatter(features, "RENTER_OCC", seed: 2));
+                return new VectorTileOverlay(tiles);
             });
 
             // Five classic FeatureLayers with their ZoomLevelSet styles, drawn on the server;
@@ -91,12 +92,12 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             });
             catalog.Vector("translated", () =>
             {
-                var overlay = new VectorTileOverlay();
+                var tiles = new FeatureSourceVectorTileSource();
                 foreach (var layer in Migration.ClassicLayers())
                 {
-                    overlay.FeatureSources.Add(layer.Name, layer.FeatureSource);
+                    tiles.FeatureSources.Add(layer.Name, layer.FeatureSource);
                 }
-                return overlay;
+                return new VectorTileOverlay(tiles);
             });
         }
 
@@ -171,12 +172,12 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             app.MapGet("/samples/styling/translated-style", () =>
             {
                 var (style, warnings) = Migration.Translated.Value;
-                return Results.Json(new { style = System.Text.Json.JsonDocument.Parse(style.ToJson()).RootElement, warnings, images = style.ImageEntries.Keys });
+                return Results.Json(new { style = System.Text.Json.JsonDocument.Parse(style.ToJson()).RootElement, warnings, images = style.Images.Ids });
             });
             app.MapGet("/samples/styling/translated-image/{name}", (string name) =>
             {
                 var (style, _) = Migration.Translated.Value;
-                return style.ImageEntries.TryGetValue(name, out var entry) ? Results.Bytes(entry.Image.GetImageBytes(GeoImageFormat.Png), "image/png") : Results.NotFound();
+                return style.Images.TryGetImage(name, out var image, out _) ? Results.Bytes(image.GetImageBytes(GeoImageFormat.Png), "image/png") : Results.NotFound();
             });
 
             // The 2010 census columns a choropleth can class, each with the data's own quintiles

@@ -20,7 +20,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI
         public void Vector(string id, Func<VectorTileOverlay> make)
         {
             vectorFactories[id] = make;
-            Add(id, () => { var overlay = make(); overlay.Id = id; return overlay; });
+            Add(id, () => make());
         }
 
         public void Raster(string id, Func<LayerOverlay> make) => Add(id, () => make());
@@ -47,11 +47,12 @@ namespace ThinkGeo.UI.WebApi.HowDoI
         public IEnumerable<KeyValuePair<string, FeatureSource>> FreshSources(string id)
         {
             var overlay = id != null && vectorFactories.TryGetValue(id, out var make) ? make() : null;
-            if (overlay == null) yield break;
-            var keys = overlay.FeatureSources.GetKeys();
+            var sources = (overlay?.TileSource as FeatureSourceVectorTileSource)?.FeatureSources;
+            if (sources == null) yield break;
+            var keys = sources.GetKeys();
             for (var i = 0; i < keys.Count; i++)
             {
-                yield return new KeyValuePair<string, FeatureSource>(keys[i], overlay.FeatureSources[i]);
+                yield return new KeyValuePair<string, FeatureSource>(keys[i], sources[i]);
             }
         }
 

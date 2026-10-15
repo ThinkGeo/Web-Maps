@@ -33,17 +33,17 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
         {
             catalog.Vector("us-states", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("states", new ShapeFileFeatureSource(SampleData.Path("Shapefile/USStates_3857.shp")));
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("states", new ShapeFileFeatureSource(SampleData.Path("Shapefile/USStates_3857.shp")));
+                return new VectorTileOverlay(tiles);
             });
 
             // A point at the middle of each state, with one column per year of population.
             catalog.Vector("population", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("population", Population());
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("population", Population());
+                return new VectorTileOverlay(tiles);
             });
         }
 

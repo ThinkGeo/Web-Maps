@@ -143,11 +143,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 {
                     var (layout, _) = await LayoutAsync(info);
                     using var stream = new MemoryStream();
-                    var canvas = new PdfGeoCanvas();
-                    canvas.SetPageSize(layout.Pages[0].Page);
-                    canvas.BeginDrawing(stream, layout.Pages[0].Page.GetPosition(PrintingUnit.Point), GeographyUnit.Meter);
-                    await layout.DrawAsync(canvas);
-                    canvas.EndDrawing();
+                    await layout.ExportPdfAsync(stream);
                     var bytes = stream.ToArray();
                     return Results.Json(new { url = "export/" + ExportStore.Put(bytes, "application/pdf"), name = "Frisco Zoning Plan.pdf", kilobytes = bytes.Length / 1024 });
                 }
@@ -248,7 +244,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
 
             if (info.ScaleBar)
             {
-                var scaleBar = new ScaleBarPrinterLayoutAsyncLayer(map) { MapUnit = GeographyUnit.Meter };
+                var scaleBar = new ScaleBarPrinterLayoutAsyncLayer(map);
                 scaleBar.SetPosition(1.6, barHeight, left + 0.8, mapBottom - gap - barHeight / 2, PrintingUnit.Inch);
                 page.Layers.Add(scaleBar);
             }

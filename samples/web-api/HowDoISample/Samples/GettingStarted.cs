@@ -13,9 +13,9 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             // Frisco's parks, stored in Texas state plane feet and handed out in the map's meters.
             catalog.Vector("getting-started", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("parks", SampleData.Frisco("Parks.shp"));
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("parks", SampleData.Frisco("Parks.shp"));
+                return new VectorTileOverlay(tiles);
             });
         }
 

@@ -37,40 +37,40 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             // PDOK's WFS 2.0 service.
             catalog.Vector("parcels", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("parcels", new WfsV2AsyncFeatureSource("https://service.pdok.nl/kadaster/kadastralekaart/wfs/v5_0", "kadastralekaart:Perceel")
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("parcels", new WfsV2AsyncFeatureSource("https://service.pdok.nl/kadaster/kadastralekaart/wfs/v5_0", "kadastralekaart:Perceel")
                 {
                     TimeoutInSeconds = 120,
                     Crs = "urn:ogc:def:crs:EPSG::3857",
                 });
-                return overlay;
+                return new VectorTileOverlay(tiles);
             });
 
             // Named places of Spain from the IGN's OGC API - Features service, read in latitude
             // and longitude and projected to the map before the tiles are cut.
             catalog.Vector("places", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("places", new OgcApiAsyncFeatureSource("https://api-features.ign.es", "namedplace")
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("places", new OgcApiAsyncFeatureSource("https://api-features.ign.es", "namedplace")
                 {
                     ProjectionConverter = new ProjectionConverter(4326, 3857),
                 });
-                return overlay;
+                return new VectorTileOverlay(tiles);
             });
 
             // NOAA's weather stations with their current readings, and the warnings active right
             // now: two live feeds read by their own feature sources.
             catalog.Vector("stations", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("stations", new NoaaWeatherStationFeatureSource { ProjectionConverter = new ProjectionConverter(4326, 3857) });
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("stations", new NoaaWeatherStationFeatureSource { ProjectionConverter = new ProjectionConverter(4326, 3857) });
+                return new VectorTileOverlay(tiles);
             });
             catalog.Vector("warnings", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("warnings", new NoaaWeatherWarningsFeatureSource { ProjectionConverter = new ProjectionConverter(4326, 3857) });
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("warnings", new NoaaWeatherWarningsFeatureSource { ProjectionConverter = new ProjectionConverter(4326, 3857) });
+                return new VectorTileOverlay(tiles);
             });
 
             // A WMS renders on demand: the server asks for the exact extent of every tile it is

@@ -18,9 +18,9 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             // The census block groups the Colour Utilities page classes.
             catalog.Vector("housing", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("housing", SampleData.Frisco("Frisco 2010 Census Housing Units.shp"));
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("housing", SampleData.Frisco("Frisco 2010 Census Housing Units.shp"));
+                return new VectorTileOverlay(tiles);
             });
         }
 

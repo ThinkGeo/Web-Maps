@@ -15,11 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.Gdal" Version="15.0.0-beta189" />
-    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.0.0-beta189" />
-    <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.0.0-beta189" />
-    <PackageReference Include="ThinkGeo.PostgreSql" Version="15.0.0-beta189" />
-    <PackageReference Include="ThinkGeo.SqlServer" Version="15.0.0-beta189" />
+    <PackageReference Include="ThinkGeo.Gdal" Version="15.0.0-beta214" />
+    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.0.0-beta214" />
+    <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.0.0-beta214" />
+    <PackageReference Include="ThinkGeo.PostgreSql" Version="15.0.0-beta214" />
+    <PackageReference Include="ThinkGeo.SqlServer" Version="15.0.0-beta214" />
   </ItemGroup>
 
   <ItemGroup>

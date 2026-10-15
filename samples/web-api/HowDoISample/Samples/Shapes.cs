@@ -35,15 +35,15 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
         {
             catalog.Vector("parks", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("parks", SampleData.Frisco("Parks.shp"));
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("parks", SampleData.Frisco("Parks.shp"));
+                return new VectorTileOverlay(tiles);
             });
             catalog.Vector("trails", () =>
             {
-                var overlay = new VectorTileOverlay();
-                overlay.FeatureSources.Add("trails", SampleData.Frisco("Hike_Bike.shp"));
-                return overlay;
+                var tiles = new FeatureSourceVectorTileSource();
+                tiles.FeatureSources.Add("trails", SampleData.Frisco("Hike_Bike.shp"));
+                return new VectorTileOverlay(tiles);
             });
         }
 

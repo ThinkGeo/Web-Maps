@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
 using ThinkGeo.Core;
+using ThinkGeo.Core.Styling;
 
 namespace ThinkGeo.UI.WebApi.HowDoI
 {
@@ -31,12 +32,13 @@ namespace ThinkGeo.UI.WebApi.HowDoI
             // own is given a clear one, since the renderer would otherwise start from an opaque
             // surface.
             var style = new MapStyle(Document(sourceId, layers, null, true), source);
-            var options = new CpuTileRendererOptions { TileSize = 512 };
-            if (images != null && images.Count > 0)
+            // The icons a style names ride the style itself; the renderer draws tiles on the grid's
+            // 512-pixel size.
+            foreach (var pair in images ?? Enumerable.Empty<KeyValuePair<string, GeoImage>>())
             {
-                options.AdditionalImages = images.ToDictionary(pair => pair.Key, pair => (pair.Value, 1f));
+                style.Images.Add(pair.Key, pair.Value);
             }
-            renderer = new Lazy<Task<CpuTileRenderer>>(() => CpuTileRenderer.CreateAsync(new IVectorTileSource[] { source }, style, options), LazyThreadSafetyMode.ExecutionAndPublication);
+            renderer = new Lazy<Task<CpuTileRenderer>>(() => CpuTileRenderer.CreateAsync(new IVectorTileSource[] { source }, style), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
         public async Task<byte[]> RenderTileAsync(int z, int x, int y, CancellationToken cancellation)

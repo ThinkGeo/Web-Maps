@@ -434,7 +434,7 @@
   {
     "id": "display-cluster-points",
     "title": "Display Cluster Points",
-    "description": "Hundreds of points handed to the browser and grouped there - VectorTileOverlay.Cluster turns the source into a clustered one, and the style draws each cluster as a numbered circle that splits as the map zooms in.",
+    "description": "Simulated sightings grouped in the browser. Zoom in to split numbered cluster circles into individual points, or zoom out to merge them.",
     "href": "display-cluster-points",
     "source": "Display_Cluster_Points",
     "preicon": "fas fa-braille",

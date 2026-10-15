@@ -9,18 +9,24 @@
        the view, recomputed as it changes, with no tile cut. *@
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
              Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-             Center="@(new PointShape(-10500000, 4300000))" Zoom="4">
+             Center="@InitialCenter" Zoom="4">
         <OverlaysSetting>
             <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                             ApiKey="@GlobalSettings.ThinkGeoApiKey" />
             <VectorTileOverlay Id="Sightings" StyleJson="@ClusterStyle" FeatureSources="@sightings"
                                SourceId="sightings" Cluster="true" ClusterRadius="55" ClusterMaxZoom="12" />
         </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="4" />
+            </MapTools>
+        </MapToolsSetting>
     </MapView>
 
-    <div style="position:absolute;top:12px;left:12px;width:250px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
         <div style="font-weight:600;margin-bottom:6px">Cluster points</div>
-        <div style="color:#555">
+        <div style="color:#e5e5e5;line-height:1.4">
             @count simulated sightings across the metros. Each circle is a cluster - the number is
             how many fall inside it. Zoom in and the clusters split into their own points; zoom
             out and they merge again.
@@ -76,6 +82,7 @@
     };
 
     private MapView map;
+    private static readonly PointShape InitialCenter = new(-10500000, 4300000);
     private GeoCollection<FeatureSource> sightings;
     private int count;
 

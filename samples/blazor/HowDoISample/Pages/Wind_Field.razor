@@ -8,7 +8,7 @@
 <div class="map-container">
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
              Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-             Center="@InitialCenter" Zoom="4">
+             Center="@InitialCenter" Zoom="5">
         <OverlaysSetting>
             <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light" ApiKey="@GlobalSettings.ThinkGeoApiKey" />
             @if (style != null)
@@ -19,7 +19,7 @@
         <MapToolsSetting>
             <MapTools>
                 <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
-                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="4" />
+                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="5" />
             </MapTools>
         </MapToolsSetting>
     </MapView>

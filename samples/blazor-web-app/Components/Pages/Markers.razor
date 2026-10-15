@@ -1,0 +1,109 @@
+@page "/markers"
+@using ThinkGeo.Core
+@inject IConfiguration Configuration
+
+<PageTitle>Markers</PageTitle>
+<h1 class="sample-title">Markers</h1>
+
+<div class="map-container">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10777290, 3908740))" Zoom="15" OnClick="@Clicked">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@ApiKey" />
+            </OverlaysSetting>
+            <MarkerOverlaySetting>
+                <SimpleMarkerOverlay Id="Pins" @ref="pins" OnClick="@PinClicked" />
+            </MarkerOverlaySetting>
+            <PopupOverlaySetting>
+                <PopupOverlay Id="Info">
+                    <PopupSetting>
+                        <Popup Id="pin-info" Position="@(picked?.Position)" OffsetY="-36" AutoPan="true">
+                            @if (picked != null)
+                            {
+                                <div style="font:12px system-ui;white-space:nowrap"><b>@picked.Id</b><br />@picked.Position.X.ToString("0"), @picked.Position.Y.ToString("0")</div>
+                            }
+                        </Popup>
+                    </PopupSetting>
+                </PopupOverlay>
+            </PopupOverlaySetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-10777290, 3908740))" CenterButtonZoom="15" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Markers</div>
+        <div style="color:#e5e5e5;line-height:1.4">Click the map to add a marker. Click a marker to see its coordinates.</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:9px">
+            <button class="btn btn-sm btn-light" @onclick="ClearAsync">Clear</button>
+            <span style="color:#e5e5e5">@count markers</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string ApiKey => Configuration["ThinkGeo:ApiKey"] ?? string.Empty;
+    // The pin's tip is at the bottom middle of the image: half way across, all the way down.
+    private static readonly PointMarkerStyle PinStyle = new PointMarkerStyle("images/map-pin.svg", 0.5, 1, 1);
+
+    private MapView map;
+    private SimpleMarkerOverlay pins;
+    private Marker picked;
+    private int count;
+    private int next = 1;
+
+    protected override void OnInitialized()
+    {
+        // The first marker is in place before the overlay reaches the browser.
+        Add(new PointShape(-10777290, 3908740));
+    }
+
+    private void Add(PointShape position)
+    {
+        var marker = new Marker { Id = "Pin " + next++, Position = position, Style = PinStyle };
+        // The overlay is the page's own component and is not yet bound the first time.
+        (pins?.Markers ?? pending).Add(marker.Id, marker);
+        count++;
+    }
+
+    private readonly GeoCollection<Marker> pending = new GeoCollection<Marker>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        foreach (var marker in pending)
+        {
+            pins.Markers.Add(marker.Id, marker);
+        }
+        pending.Clear();
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        await pins.RedrawAsync();
+    }
+
+    private async Task Clicked(ClickedMapViewEventArgs args)
+    {
+        Add(new PointShape(args.WorldX, args.WorldY));
+        picked = null;
+        await pins.RedrawAsync();
+    }
+
+    private void PinClicked(ClickedMarkerOverlayEventArgs args)
+    {
+        picked = pins.Markers.Contains(args.ClickedMarker.Id) ? pins.Markers[args.ClickedMarker.Id] : null;
+    }
+
+    private async Task ClearAsync()
+    {
+        pins.Markers.Clear();
+        count = 0;
+        picked = null;
+        await pins.RedrawAsync();
+    }
+}

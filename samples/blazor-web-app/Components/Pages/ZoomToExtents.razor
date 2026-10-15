@@ -1,0 +1,214 @@
+@page "/zoom-to-extents"
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+@inject IConfiguration Configuration
+
+<PageTitle>Zoom to Extents</PageTitle>
+<h1 class="sample-title">Zoom to Extents</h1>
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10778000, 3912000))" Zoom="11"
+                 OnCurrentExtentChanged="ExtentChanged"
+                 OnCurrentExtentChanging="ExtentChanging"
+                 OnSizeChanged="SizeChanged">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@ApiKey" />
+                <VectorTileOverlay Id="Limits" StyleJson="@appliedStyleJson" FeatureSources="@sources" SourceId="features" />
+            </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft"
+                                    UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-10778000, 3912000))"
+                                    CenterButtonZoom="11"
+                                    CenterButtonBearing="0" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+        @if (extent != null)
+        {
+            <div style="position:absolute;bottom:10px;left:10px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 12px;border-radius:8px;background:rgba(0,0,0,.7);color:#d1d5db;font:13px/18px system-ui;white-space:nowrap">
+                <div>@CenterReadout()</div>
+                <div>@CameraReadout()</div>
+                <div>@ExtentReadout()</div>
+            </div>
+        }
+    </div>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;background:dimgray;color:whitesmoke;font:13px system-ui;display:flex;flex-direction:column;min-height:0">
+        <div style="padding:8px 8px 4px;font-size:16px;font-weight:600">style.json - edit it; the map follows</div>
+        <div style="padding:0 8px 4px">
+            <div style="font-weight:600">Zooming</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:4px">
+                <button style="@SidebarButtonStyle" @onclick="() => map.ZoomInAsync()">Zoom In</button>
+                <button style="@SidebarButtonStyle" @onclick="() => map.ZoomOutAsync()">Zoom Out</button>
+                <button style="@SidebarButtonStyle" @onclick="ZoomToScaleAsync">Zoom To Scale</button>
+                <input type="number" min="1" step="any" @bind="scale" style="min-width:0" />
+            </div>
+
+            <div style="font-weight:600;margin-top:6px">Layer bounding box</div>
+            <button style="width:100%;margin:2px 0;@SidebarButtonStyle" @onclick="ZoomToLimitsAsync">Set Extent to Layer BBox</button>
+
+            <div style="font-weight:600;margin-top:6px">Center at</div>
+            <button style="width:100%;margin:2px 0;@SidebarButtonStyle" @onclick="CenterAsync">Center At (33.15,-96.82)</button>
+
+            <div style="font-weight:600;margin-top:6px">Rotating</div>
+            <div style="display:flex;gap:4px;align-items:center;margin:2px 0">
+                <input type="range" min="-180" max="180" step="1" value="@rotation" @oninput="RotationSliderChanged" style="flex:1;min-width:0" />
+                <input type="number" min="-180" max="180" step="1" @bind="rotation" @bind:after="ApplyRotationAsync" style="box-sizing:border-box;width:58px;flex:0 0 58px" />
+            </div>
+        </div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false" wrap="soft"
+                  aria-label="style.json editor"
+                  style="flex:1;min-height:0;width:100%;box-sizing:border-box;background:#fff;color:#222;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre-wrap;overflow-wrap:anywhere"></textarea>
+        <div style="padding:4px 8px 6px;color:@(styleIsValid ? "#c9f5d2" : "#ffd0d0")">@styleStatus</div>
+    </div>
+</div>
+
+@code {
+    private string ApiKey => Configuration["ThinkGeo:ApiKey"] ?? string.Empty;
+    private const string SidebarButtonStyle = "border:2px solid #8a8a8a;background:#f6f6f4;color:#222;padding:1px 6px;cursor:pointer;font:13px system-ui";
+
+    private const string StyleJson = @"{
+  ""layers"": [
+    {
+      ""type"": ""fill"",
+      ""source-layer"": ""limits"",
+      ""paint"": { ""fill-color"": ""rgba(65,105,225,0.12)"" }
+    },
+    {
+      ""type"": ""line"",
+      ""source-layer"": ""limits"",
+      ""paint"": { ""line-color"": ""#4169E1"", ""line-width"": 2 }
+    }
+  ]
+}";
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private ShapeFileFeatureSource limits;
+    private RectangleShape extent;
+    private double initialExtentWidth;
+    private double viewportWidth;
+    private double viewportHeight;
+    private double rotation;
+    private double zoom = 11;
+    private double currentScale;
+    private double scale = 10000;
+    private string styleJson = StyleJson;
+    private string appliedStyleJson = StyleJson;
+    private string styleStatus = "";
+    private bool styleIsValid = true;
+    private int styleEdit;
+
+    protected override void OnInitialized()
+    {
+        limits = new ShapeFileFeatureSource("./Data/Shapefile/City_ETJ.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+        sources = new GeoCollection<FeatureSource> { { "limits", limits } };
+    }
+
+    private async Task ZoomToLimitsAsync()
+    {
+        limits.Open();
+        RectangleShape bounds;
+        try
+        {
+            bounds = limits.GetBoundingBox();
+        }
+        finally
+        {
+            limits.Close();
+        }
+        await map.ZoomToExtentAsync(bounds);
+    }
+
+    private async Task ZoomToScaleAsync()
+    {
+        if (scale <= 0) return;
+
+        var center = extent?.GetCenterPoint() ?? await map.GetCenterAsync();
+        await map.ZoomToAsync(center, scale, -rotation);
+    }
+
+    private Task CenterAsync() => map.SetCenterAsync(ProjectionConverter.Convert(4326, 3857, new PointShape(-96.82, 33.15)));
+
+    private async Task RotationSliderChanged(ChangeEventArgs args)
+    {
+        if (!double.TryParse(args.Value?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out rotation)) return;
+        rotation = Math.Clamp(rotation, -180, 180);
+        await ApplyRotationAsync();
+    }
+
+    private Task ApplyRotationAsync() => map.SetBearingAsync(-rotation);
+
+    private async Task EditorChanged()
+    {
+        var currentEdit = ++styleEdit;
+        await Task.Delay(400);
+        if (currentEdit != styleEdit) return;
+
+        try
+        {
+            JsonNode.Parse(styleJson);
+            appliedStyleJson = styleJson;
+            styleIsValid = true;
+            styleStatus = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            styleIsValid = false;
+            styleStatus = "not applied - invalid JSON";
+        }
+    }
+
+    private async Task ExtentChanged(CurrentExtentChangedMapViewEventArgs args)
+    {
+        UpdateReadout(args.CurrentExtent, await map.GetBearingAsync());
+    }
+
+    private void ExtentChanging(CurrentExtentChangingMapViewEventArgs args)
+    {
+        UpdateReadout(args.CurrentExtent, args.Bearing);
+    }
+
+    private void SizeChanged(SizeChangedMapViewEventArgs args)
+    {
+        viewportWidth = args.Width;
+        viewportHeight = args.Height;
+        UpdateScale();
+    }
+
+    private void UpdateReadout(RectangleShape currentExtent, double bearing)
+    {
+        extent = currentExtent;
+        rotation = Math.Round(-bearing);
+        if (initialExtentWidth <= 0)
+        {
+            initialExtentWidth = currentExtent.Width;
+        }
+
+        zoom = 11 + Math.Log(initialExtentWidth / currentExtent.Width, 2);
+        UpdateScale();
+    }
+
+    private void UpdateScale()
+    {
+        if (extent != null && viewportWidth > 0 && viewportHeight > 0)
+        {
+            currentScale = MapUtil.GetScale(GeographyUnit.Meter, extent, viewportWidth, viewportHeight);
+        }
+    }
+
+    private string CenterReadout()
+    {
+        var centre = ProjectionConverter.Convert(3857, 4326, extent.GetCenterPoint());
+        return FormattableString.Invariant($"Center Point: (Lat: {centre.Y:N4}, Lon: {centre.X:N4})");
+    }
+
+    private string ExtentReadout() => FormattableString.Invariant($"Width: {extent.Width / 1000:0.00} km   Left: {extent.UpperLeftPoint.X:0}   Top: {extent.UpperLeftPoint.Y:0}   Right: {extent.LowerRightPoint.X:0}   Bottom: {extent.LowerRightPoint.Y:0}");
+
+    private string CameraReadout() => FormattableString.Invariant($"Rotation: {rotation:N0}   Zoom: {zoom:N2}   Scale: {currentScale:N0}");
+}

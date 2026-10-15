@@ -1,0 +1,265 @@
+﻿@page "/draw-and-modify-geometries"
+@using ThinkGeo.Core
+@using System.Xml.Linq
+@inject IConfiguration Configuration
+
+<PageTitle>Draw and Modify Geometries</PageTitle>
+<h1 class="sample-title">Draw and Modify Geometries</h1>
+
+<div class="map-container">
+    <MapView Id="map" @ref="map" Center="@(new PointShape(0, 0))"
+             Width="100"
+             Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Zoom="2" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter">
+        <EditOverlaySetting>
+            <EditOverlay TrackMode="@trackMode" OnFeatureDrawn="@OnFeatureDrawn" OnFeatureClick="@OnEditFeatureClick" />
+        </EditOverlaySetting>
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="VectorOverlay"
+                                            ApiKey="@ApiKey" />
+            @{
+                var layerCollection = new GeoCollection<ThinkGeo.Core.LayerBase>();
+                foreach (var layer in editingLayers)
+                {
+                    layerCollection.Add(layer);
+                }
+            }
+            <LayerOverlay Id="ExistingLayerOverlay" TileWidth="512" TileHeight="512"
+                          WrappingMode="WrappingMode.WrapDateline"
+                          Layers="@layerCollection"></LayerOverlay>
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@(new PointShape(0, 0))" CenterButtonZoom="2" />
+                <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                             Center="@(new PointShape(0, 0))" Zoom="2" />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+
+    <nav class="icon-group draw-edit-tool-bar" style="top:auto;right:auto;bottom:28px;left:50%;transform:translateX(-50%);display:flex;white-space:nowrap;z-index:10" aria-label="Draw and modify geometries">
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.None)" title="None" @onclick="@(e => SetTrackMode(BlazorTrackMode.None))">
+            <span>
+                <img src="images/mouse-pointer.svg" alt="None">
+            </span>
+        </a>
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.Point)" title="Point" @onclick="@(e => SetTrackMode(BlazorTrackMode.Point))">
+            <span>
+                <img src="images/map-pin.svg" alt="Point">
+            </span>
+        </a>
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.LineString)" title="Line" @onclick="@(e => SetTrackMode(BlazorTrackMode.LineString))">
+            <span>
+                <img src="images/Line-Tool.svg" alt="Line">
+            </span>
+        </a>
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.Polygon)" title="Polygon" @onclick="@(e => SetTrackMode(BlazorTrackMode.Polygon))">
+            <span>
+                <img src="images/vector-polygon.svg" alt="Polygon">
+            </span>
+        </a>
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.Circle)" title="Circle" @onclick="@(e => SetTrackMode(BlazorTrackMode.Circle))">
+            <span>
+                <img src="images/big-circle.svg" alt="Circle">
+            </span>
+        </a>
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.Modify)" title="Modify" @onclick="@HandleModify">
+            <span>
+                <img src="images/edit.svg" alt="Modify">
+            </span>
+        </a>
+        <a href="javascript:void(0);" class="@(isDeletingFeature ? "active" : string.Empty)" title="Delete" @onclick="@HandleDelete">
+            <span>
+                <img src="images/close.svg" alt="Delete">
+            </span>
+        </a>
+
+        <a href="javascript:void(0);" class="@GetCss(BlazorTrackMode.None)" title="Save" @onclick="@HandleSaveFeatures">
+            <span>
+                <img src="images/save.png" alt="Save">
+            </span>
+        </a>
+    </nav>
+</div>
+
+@code{
+    private string ApiKey => Configuration["ThinkGeo:ApiKey"] ?? string.Empty;
+    private GeoCollection<Layer> editingLayers;
+    MapView map;
+    BlazorTrackMode trackMode = BlazorTrackMode.None;
+    bool isDeletingFeature;
+
+    string accessId = Guid.NewGuid().ToString();
+
+    string GetCss(BlazorTrackMode mode) => mode == trackMode && !isDeletingFeature ? "active" : string.Empty;
+
+    protected override void OnInitialized()
+    {
+        editingLayers = new GeoCollection<Layer>();
+        InMemoryFeatureLayer drawnShapesFeatureLayer = GetDrawnShapesFeatureLayer();
+        editingLayers.Add(drawnShapesFeatureLayer);
+    }
+
+    async Task OnFeatureDrawn(FeatureDrawnEditOverlayEventArgs args)
+    {
+        args.DrawnFeature.ColumnValues["Name"] = GetDefaultFeatureName();
+        trackMode = BlazorTrackMode.None;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    string GetDefaultFeatureName()
+    {
+        int existingLayerFeatureCount = 0;
+        if (editingLayers?.Count > 0 && editingLayers[0] is InMemoryFeatureLayer editingLayer)
+        {
+            existingLayerFeatureCount = editingLayer.InternalFeatures.Count;
+        }
+
+        int editOverlayFeatureCount = map?.EditOverlay?.Features?.Count ?? 0;
+        return $"Shape {existingLayerFeatureCount + editOverlayFeatureCount}";
+    }
+
+    private InMemoryFeatureLayer GetDrawnShapesFeatureLayer()
+    {
+        InMemoryFeatureLayer shapesFeatureLayer = new InMemoryFeatureLayer(new Collection<FeatureSourceColumn>() { new FeatureSourceColumn("Name") }, new Collection<BaseShape>());
+
+        shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = AreaStyle.CreateSimpleAreaStyle(GeoColor.FromArgb(100, GeoColor.FromHtml("#1e469e")), GeoColor.FromHtml("#5799D5"));
+        shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = PointStyle.CreateSimpleCircleStyle(GeoColor.FromHtml("#2b7a05"), 14, GeoColor.FromHtml("#5799D5"));
+        shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = LineStyle.CreateSimpleLineStyle(GeoColor.FromHtml("#5799D5"), 2, true);
+        shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = TextStyle.CreateSimpleTextStyle("Name", "Arial", 12, DrawingFontStyles.Bold, GeoColors.Gray, GeoColors.White, 2);
+        shapesFeatureLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+
+        // Restore the features if have, or we will use the default features loaded from the xml file.
+        Collection<Feature> savedFeatures = GetFeatures();
+        if (!savedFeatures.Any())
+        {
+            string dataFilePath = $"./Data/Data.xml";
+            XElement xElement = XElement.Load(dataFilePath);
+            foreach (var geometryXElement in xElement.Descendants("Geometry"))
+            {
+                Feature feature = new Feature(geometryXElement.Value);
+                feature.Id = geometryXElement.Attribute("id").Value;
+                feature.ColumnValues.Add("Name", geometryXElement.Attribute("name").Value);
+                shapesFeatureLayer.InternalFeatures.Add(feature.Id, feature);
+            }
+        }
+        else
+        {
+            foreach (Feature feature in savedFeatures)
+            {
+                shapesFeatureLayer.InternalFeatures.Add(feature.Id, feature);
+            }
+        }
+        return shapesFeatureLayer;
+    }
+
+    async void ReloadData()
+    {
+        // Reload the Editing layer.
+        editingLayers.Clear();
+        InMemoryFeatureLayer drawnShapesFeatureLayer = GetDrawnShapesFeatureLayer();
+        editingLayers.Add(drawnShapesFeatureLayer);
+        await map.Overlays["ExistingLayerOverlay"].RedrawAsync();
+
+        // Clear the EditOverlay.
+        map.EditOverlay.Features.Clear();
+        await map.EditOverlay.RedrawAsync();
+        isDeletingFeature = false;
+        trackMode = BlazorTrackMode.None;
+    }
+
+    private Collection<Feature> GetFeatures()
+    {
+        Collection<Feature> features = new Collection<Feature>();
+        string jsonFilePath = $"./Data/Temp/{accessId}.json";
+        if (System.IO.File.Exists(jsonFilePath))
+        {
+            string[] geojsons = System.IO.File.ReadAllLines(jsonFilePath);
+            foreach (string geojson in geojsons)
+            {
+                features.Add(Feature.CreateFeatureFromGeoJson(geojson));
+            }
+        }
+        return features;
+    }
+
+    async Task HandleModify()
+    {
+        await MoveExistingFeaturesToEditOverlayAsync();
+        isDeletingFeature = false;
+        trackMode = BlazorTrackMode.Modify;
+    }
+
+    async Task HandleDelete()
+    {
+        await MoveExistingFeaturesToEditOverlayAsync();
+        isDeletingFeature = true;
+        trackMode = BlazorTrackMode.None;
+    }
+
+    void OnEditFeatureClick(FeatureClickedEditOverlayEventArgs e)
+    {
+        if (isDeletingFeature)
+        {
+            map.EditOverlay.Features.Remove(e.ClickedFeature);
+        }
+    }
+
+    void SetTrackMode(BlazorTrackMode mode)
+    {
+        isDeletingFeature = false;
+        trackMode = mode;
+    }
+
+    private void HandleSaveFeatures()
+    {
+        Collection<Feature> features = new Collection<Feature>();
+
+        // Add the feature in current editing layer.
+        var editingLayer = (InMemoryFeatureLayer)editingLayers[0];
+        foreach (Feature feature in editingLayer.InternalFeatures)
+        {
+            features.Add(feature);
+        }
+
+        // Deal with newly added shapes.
+        foreach (Feature feature in map.EditOverlay.Features)
+        {
+            features.Add(feature);
+        }
+
+        // Update the local saved features for a specific access id.
+        SaveFeatures(features);
+        ReloadData();
+    }
+
+    async Task MoveExistingFeaturesToEditOverlayAsync()
+    {
+        var editingLayer = (InMemoryFeatureLayer)editingLayers[0];
+        for (int i = 0; i < editingLayer.InternalFeatures.Count; i++)
+        {
+            map.EditOverlay.Features.Add(editingLayer.InternalFeatures[i]);
+        }
+        editingLayer.InternalFeatures.Clear();
+        await map.Overlays["ExistingLayerOverlay"].RedrawAsync();
+        await map.EditOverlay.RedrawAsync();
+    }
+
+    private void SaveFeatures(Collection<Feature> features)
+    {
+        string jsonFilePath = $"./Data/Temp/{accessId}.json";
+        System.IO.Directory.CreateDirectory("./Data/Temp");
+        using (StreamWriter streamWriter = new StreamWriter(jsonFilePath, false))
+        {
+
+            foreach (Feature feature in features)
+            {
+                streamWriter.WriteLine(feature.GetGeoJson());
+            }
+            streamWriter.Close();
+        }
+    }
+}

@@ -16,21 +16,28 @@
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
                 <VectorTileOverlay Id="Zoning" StyleJson="@StyleJson" FeatureSources="@sources" SourceId="features" />
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-10777700, 3912400))" CenterButtonZoom="12" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
     </div>
-    <div style="width:420px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
-        <div style="font-weight:600">Export to PDF</div>
-        <div style="color:#555">Two ways onto a page. <b>Raster</b>: the map exactly as the browser draws it comes back as a picture, through MapView.GetImageAsync, and is placed on the page - pixels. <b>Vector</b>: the extent is drawn again on the server into a PdfGeoCanvas - the ThinkGeo Cloud vector tiles styled by MvtTilesAsyncLayer, the zoning from its shapefile, the title and footer as text - so every road, parcel and label is a path or a glyph that prints sharp at any size. Either page is kept on the server for a few minutes and fetched from export/{id}.</div>
-        <input @bind="title" style="font:13px system-ui;padding:3px 6px" />
-        <div style="display:flex;gap:8px;align-items:center">
-            <button class="btn btn-sm btn-primary" @onclick="PrintRasterAsync" disabled="@busy">Print as raster</button>
-            <button class="btn btn-sm btn-primary" @onclick="PrintVectorAsync" disabled="@busy">Print as vector</button>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;gap:8px;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0;overflow:auto">
+        <div style="font-size:16px;font-weight:600">Export to PDF</div>
+        <div style="color:#e5e5e5;line-height:1.4">Export the current view as a raster image or redraw map features as a sharp vector PDF.</div>
+        <label for="pdf-title">Page title</label>
+        <input id="pdf-title" @bind="title" style="box-sizing:border-box;width:100%;font:13px system-ui;padding:3px 6px" />
+        <div style="display:flex;flex-direction:column;gap:6px">
+            <button class="btn btn-sm btn-light" @onclick="PrintRasterAsync" disabled="@busy">Print as raster</button>
+            <button class="btn btn-sm btn-light" @onclick="PrintVectorAsync" disabled="@busy">Print as vector</button>
         </div>
-        <div style="color:#555">@status</div>
+        <div role="status" style="color:#e5e5e5">@status</div>
         @if (pdfUrl != null)
         {
-            <a class="btn btn-sm btn-light" style="align-self:flex-start" download="@fileName" href="@pdfUrl">Save @fileName</a>
-            <iframe src="@pdfUrl" style="flex:1;min-height:300px;border:1px solid #ccc;background:#fff"></iframe>
+            <a class="btn btn-sm btn-light" download="@fileName" href="@pdfUrl">Save @fileName</a>
+            <iframe title="PDF preview" src="@pdfUrl" style="width:100%;flex:1;min-height:300px;border:1px solid #ccc;background:#fff"></iframe>
         }
     </div>
 </div>

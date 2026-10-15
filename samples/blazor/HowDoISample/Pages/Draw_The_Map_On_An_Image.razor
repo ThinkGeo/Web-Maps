@@ -14,14 +14,14 @@
             <div style="color:#777;font:14px system-ui">@status</div>
         }
     </div>
-    <div style="width:340px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
-        <div style="font-weight:600">Draw the map on an image</div>
-        <div style="color:#555">No map control at all: the layers are drawn straight into a GeoImage on the server with a GeoCanvas - ThinkGeo Cloud's aerial tiles underneath, Frisco's zoning on top - and the picture is kept on the server for a few minutes and fetched from export/{id} as any image is.</div>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;gap:8px;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0;overflow:auto">
+        <div style="font-size:16px;font-weight:600">Draw the map on an image</div>
+        <div style="color:#e5e5e5;line-height:1.4">Draw aerial tiles and Frisco zoning into a PNG on the server. Choose its size and draw again.</div>
         <div style="display:flex;gap:8px;align-items:center">
             <label>Size <input type="number" min="200" max="2000" step="100" @bind="size" style="width:70px" /> px</label>
-            <button class="btn btn-sm btn-primary" @onclick="DrawAsync" disabled="@busy">Draw</button>
+            <button class="btn btn-sm btn-light" @onclick="DrawAsync" disabled="@busy">Draw</button>
         </div>
-        <div style="color:#555">@status</div>
+        <div role="status" style="color:#e5e5e5">@status</div>
         @if (pngUrl != null)
         {
             <a class="btn btn-sm btn-light" style="align-self:flex-start" download="frisco-zoning.png" href="@pngUrl">Save frisco-zoning.png</a>

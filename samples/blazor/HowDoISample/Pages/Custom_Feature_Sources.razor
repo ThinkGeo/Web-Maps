@@ -3,8 +3,7 @@
 @using System.Globalization
 @using System.Collections.ObjectModel
 
-<div class="map-container" style="display:flex">
-    <div style="flex:1;min-width:0;position:relative">
+<div class="map-container">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
                  Center="@(new PointShape(-8237000, 4970000))" Zoom="13">
@@ -13,12 +12,17 @@
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
                 <VectorTileOverlay Id="Route" Style="@style" FeatureSources="@sources" SourceId="route" />
             </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-8237000, 4970000))" CenterButtonZoom="13" />
+                </MapTools>
+            </MapToolsSetting>
         </MapView>
-    </div>
-    <div style="width:320px;padding:10px;display:flex;flex-direction:column;gap:8px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
-        <div style="font-weight:600">A feature source of your own</div>
-        <div style="color:#555">SimpleCsvFeatureSource, defined at the bottom of this page, derives from FeatureSource and overrides one method: GetAllFeaturesCore reads a CSV of latitude, longitude lines. Everything else - the projection converter, the bounding box, the tile cutting, the style - is inherited, so the map treats it like any shapefile.</div>
-        <div style="color:#555">@count GPS points along a drive through Lower Manhattan.</div>
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">A feature source of your own</div>
+        <div style="color:#e5e5e5;line-height:1.4">A custom CSV feature source reads GPS points and displays them on the map.</div>
+        <div role="status" style="margin-top:8px;color:#e5e5e5">@count GPS points along a drive through Lower Manhattan</div>
     </div>
 </div>
 

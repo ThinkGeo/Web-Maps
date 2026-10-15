@@ -12,46 +12,100 @@
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
             </OverlaysSetting>
             <AdornmentOverlaySetting>
-                <AdornmentOverlay Id="Adornments" Layers="@adornments" />
+                <AdornmentOverlay Id="Adornments" @ref="adornmentOverlay" Layers="@adornments" />
             </AdornmentOverlaySetting>
             <MapToolsSetting>
                 <MapTools>
-                    <ZoomBarMapTool />
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-10778000, 3912000))" CenterButtonZoom="12" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@(new PointShape(-10778000, 3912000))" Zoom="12" />
                 </MapTools>
             </MapToolsSetting>
         </MapView>
-        <div style="position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:6px 12px;background:rgba(255,255,255,.92);border-radius:4px;font:14px Consolas,monospace;box-shadow:0 1px 4px rgba(0,0,0,.25);white-space:nowrap">@coordinates</div>
+        @if (showCoordinates)
+        {
+            <div style="position:absolute;left:50%;bottom:105px;transform:translateX(-50%);padding:6px 12px;border-radius:6px;background:rgba(0,0,0,.7);color:#d1d5db;font:13px Consolas,monospace;white-space:nowrap;pointer-events:none">@coordinates</div>
+        }
     </div>
-    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
-        <div style="font-weight:600">Map tool controls</div>
-        <div style="color:#555">The zoom bar is a map tool of the Blazor map; the scale line and the logo are adornment layers; the coordinates under the pointer come from the map's OnMouseMove event, in whichever form you pick.</div>
-        <label>Coordinates as
-            <select @bind="format" style="font:13px system-ui;margin-left:6px">
-                <option value="LatLon">latitude, longitude</option>
-                <option value="DMS">degrees, minutes, seconds</option>
-                <option value="Meters">Web Mercator meters</option>
-            </select>
-        </label>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;gap:7px;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0;overflow:auto">
+        <div style="font-size:16px;font-weight:600">Map Tool Controls</div>
+        <div style="color:#e5e5e5;font-size:11px;line-height:1.35">Show or hide the map tools and adornments. Move the pointer over the map to read its coordinates.</div>
+        <label><input type="checkbox" checked="@showZoomBar" @onchange="@(e => ToggleTool(MapToolKind.ZoomBar, e))" /> Display Pan Zoom Bar</label>
+        <label><input type="checkbox" checked="@showCompass" @onchange="@(e => ToggleTool(MapToolKind.Compass, e))" /> Display Compass</label>
+        <label><input type="checkbox" checked="@showHome" @onchange="@(e => ToggleTool(MapToolKind.Home, e))" /> Display Home</label>
+        <label><input type="checkbox" checked="@showLogo" @onchange="ToggleLogo" /> Display Logo</label>
+        <label><input type="checkbox" checked="@showScaleLine" @onchange="ToggleScaleLine" /> Display Scale Line</label>
+        <label><input type="checkbox" checked="@showCoordinates" @onchange="ToggleCoordinates" /> Display Mouse Coordinate</label>
+        <label style="margin-left:18px" for="coordinate-format">Coordinates as</label>
+        <select id="coordinate-format" @bind="format" style="margin-left:18px;width:calc(100% - 18px);box-sizing:border-box;font:13px system-ui">
+            <option value="LatLon">latitude, longitude</option>
+            <option value="DMS">degrees, minutes, seconds</option>
+            <option value="Meters">Web Mercator meters</option>
+        </select>
     </div>
 </div>
 
 @code {
     private MapView map;
+    private AdornmentOverlay adornmentOverlay;
     private GeoCollection<AdornmentLayer> adornments;
+    private ScaleLineAdornmentLayer scaleLine;
+    private LogoAdornmentLayer logo;
+    private bool showZoomBar = true;
+    private bool showCompass = true;
+    private bool showHome = true;
+    private bool showLogo = true;
+    private bool showScaleLine = true;
+    private bool showCoordinates = true;
     private string format = "LatLon";
     private string coordinates = "move the pointer over the map";
 
     protected override void OnInitialized()
     {
+        scaleLine = new ScaleLineAdornmentLayer
+            { Projection = new Projection(3857), UnitSystem = ScaleLineUnitSystem.ImperialAndMetric, YOffsetInPixel = -45 };
+        logo = new LogoAdornmentLayer(new GeoImage("./wwwroot/images/generic-logo.png"))
+            { Location = AdornmentLocation.LowerRight, XOffsetInPixel = -10, YOffsetInPixel = -50 };
         adornments = new GeoCollection<AdornmentLayer>
         {
-            { "scale", new ScaleLineAdornmentLayer { Projection = new Projection(3857), UnitSystem = ScaleLineUnitSystem.ImperialAndMetric } },
-            { "logo", new LogoAdornmentLayer(new GeoImage("./wwwroot/images/thinkgeo.png")) { Location = AdornmentLocation.LowerRight } },
+            { "scale", scaleLine },
+            { "logo", logo },
         };
     }
 
+    private async Task ToggleTool(MapToolKind tool, ChangeEventArgs args)
+    {
+        var visible = (bool)args.Value;
+        switch (tool)
+        {
+            case MapToolKind.ZoomBar: showZoomBar = visible; break;
+            case MapToolKind.Compass: showCompass = visible; break;
+            case MapToolKind.Home: showHome = visible; break;
+        }
+        await map.SetMapToolVisibilityAsync(tool, visible);
+    }
+
+    private async Task ToggleLogo(ChangeEventArgs args)
+    {
+        showLogo = (bool)args.Value;
+        logo.IsVisible = showLogo;
+        await adornmentOverlay.RedrawAsync();
+    }
+
+    private async Task ToggleScaleLine(ChangeEventArgs args)
+    {
+        showScaleLine = (bool)args.Value;
+        scaleLine.IsVisible = showScaleLine;
+        await adornmentOverlay.RedrawAsync();
+    }
+
+    private void ToggleCoordinates(ChangeEventArgs args) => showCoordinates = (bool)args.Value;
+
     private void Moved(MouseMovingMapViewEventArgs args)
     {
+        if (!showCoordinates) return;
         if (format == "Meters")
         {
             coordinates = FormattableString.Invariant($"X {args.WorldX:N0}  Y {args.WorldY:N0}");

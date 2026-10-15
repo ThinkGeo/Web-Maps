@@ -551,7 +551,7 @@
   {
     "id": "map-tool-controls",
     "title": "Map Tool Controls",
-    "description": "The zoom bar map tool, scale line and logo adornments, and the pointer's coordinates from OnMouseMove in the form you pick.",
+    "description": "Toggle pan and zoom, compass, home, logo, scale line and pointer coordinates; choose the coordinate format.",
     "href": "map-tool-controls",
     "source": "Map_Tool_Controls",
     "preicon": "fas fa-mouse-pointer",

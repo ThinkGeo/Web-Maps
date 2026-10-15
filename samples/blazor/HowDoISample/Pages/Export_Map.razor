@@ -15,16 +15,22 @@
                 <VectorTileOverlay Id="Basemap" Style="@style" />
             }
         </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@(new PointShape(-8575000, 4707000))" CenterButtonZoom="12" />
+            </MapTools>
+        </MapToolsSetting>
     </MapView>
 
-    <div style="position:absolute;top:12px;left:12px;width:250px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
         <div style="font-weight:600;margin-bottom:6px">Export the map as an image</div>
-        <div style="color:#555;margin-bottom:9px">
+        <div style="color:#e5e5e5;line-height:1.4;margin-bottom:9px">
             Move the map to the view you want, then save it. The PNG is the map's own canvas,
             read back at screen resolution.
         </div>
-        <button style="padding:4px 14px;cursor:pointer" @onclick="Download">Download PNG</button>
-        <div style="margin-top:8px;color:#2e7d32">@status</div>
+        <button class="btn btn-sm btn-light" @onclick="Download">Download PNG</button>
+        <div role="status" style="margin-top:8px;color:#e5e5e5">@status</div>
     </div>
 </div>
 

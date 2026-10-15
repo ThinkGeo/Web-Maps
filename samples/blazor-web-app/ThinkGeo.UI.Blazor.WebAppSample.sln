@@ -1,7 +1,6 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.10.12224.181 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkGeo.UI.Blazor.WebAppSample", "ThinkGeo.UI.Blazor.WebAppSample.csproj", "{BABCBD85-B269-4C98-9650-7C444E1F4FA5}"
 EndProject
@@ -58,5 +57,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\..\..\thinkgeosdk\ThinkGeo.License\ThinkGeo.License.projitems*{4ec7e4f8-8c7b-4d01-8b2a-96c7c982f461}*SharedItemsImports = 5
+		..\..\..\thinkgeosdk\ThinkGeo.License\ThinkGeo.License.projitems*{bf18fc3d-2d2f-4056-a2a5-3e7f54b0be1d}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

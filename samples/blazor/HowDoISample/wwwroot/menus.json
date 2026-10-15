@@ -533,7 +533,7 @@
   {
     "id": "scale-line-and-scale-bar",
     "title": "Scale Line and Scale Bar",
-    "description": "The classic scale line and scale bar adornments, drawn again each time the map stops moving.",
+    "description": "Projected scale line and scale bar adornments that update while the map zooms, with selectable units and text styles.",
     "href": "scale-line-and-scale-bar",
     "source": "Scale_Line_And_Scale_Bar",
     "preicon": "fas fa-ruler-horizontal",

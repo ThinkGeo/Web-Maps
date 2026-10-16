@@ -6,7 +6,7 @@
     "href": "map-navigation",
     "source": "Map_Navigation",
     "preicon": "fas fa-location-arrow",
-    "group": "Map Navigation"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "restrict-map-extent",
@@ -15,7 +15,7 @@
     "href": "restrict-map-extent",
     "source": "Restrict_Map_Extent",
     "preicon": "fas fa-compress-arrows-alt",
-    "group": "Map Navigation"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "vehicle-navigation",
@@ -51,7 +51,7 @@
     "href": "overview-map",
     "source": "Overview_Map",
     "preicon": "far fa-map",
-    "group": "Map Navigation"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "cross-the-dateline",
@@ -60,7 +60,7 @@
     "href": "cross-the-dateline",
     "source": "Cross_The_Dateline",
     "preicon": "fas fa-plane",
-    "group": "Map Navigation"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "3d-terrain",
@@ -78,7 +78,7 @@
     "href": "perspective-and-3d",
     "source": "Perspective_And_3D",
     "preicon": "fas fa-cube",
-    "group": "3D & Camera"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "the-globe",
@@ -87,7 +87,7 @@
     "href": "the-globe",
     "source": "The_Globe",
     "preicon": "fas fa-globe-europe",
-    "group": "Projections"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "project-features",
@@ -96,7 +96,7 @@
     "href": "project-features",
     "source": "Project_Features",
     "preicon": "fas fa-globe-americas",
-    "group": "Projections"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "project-a-raster",
@@ -132,7 +132,7 @@
     "href": "vector-map-providers",
     "source": "Vector_Map_Providers",
     "preicon": "fal fa-bezier-curve",
-    "group": "Maps from a Service - Vector"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "wfs",
@@ -177,7 +177,7 @@
     "href": "raster-map-providers",
     "source": "Raster_Map_Providers",
     "preicon": "fas fa-layer-group",
-    "group": "Maps from a Service - Raster"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "load-wms",
@@ -366,7 +366,7 @@
     "href": "validate-topology",
     "source": "Validate_Topology",
     "preicon": "fas fa-check-double",
-    "group": "Shapes & Spatial Queries"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "style-layer-toggles",
@@ -375,7 +375,7 @@
     "href": "style-layer-toggles",
     "source": "Style_Layer_Toggles",
     "preicon": "fas fa-layer-group",
-    "group": "Styling"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "insert-under-labels",
@@ -384,7 +384,7 @@
     "href": "insert-under-labels",
     "source": "Insert_Under_Labels",
     "preicon": "fas fa-layer-group",
-    "group": "Styling"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "render-points-lines-and-polygons",
@@ -420,7 +420,7 @@
     "href": "advanced-labels",
     "source": "Advanced_Labels",
     "preicon": "fas fa-font",
-    "group": "Styling"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "heatmap",
@@ -438,7 +438,7 @@
     "href": "display-cluster-points",
     "source": "Display_Cluster_Points",
     "preicon": "fas fa-braille",
-    "group": "Styling"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "features-two-ways",
@@ -510,7 +510,7 @@
     "href": "nexrad-radar",
     "source": "Nexrad_Radar",
     "preicon": "fas fa-cloud-showers-heavy",
-    "group": "Dynamic Data"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "dynamic-rendering",
@@ -564,7 +564,7 @@
     "href": "markers",
     "source": "Markers",
     "preicon": "fas fa-map-marker-alt",
-    "group": "Markers & Popups"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "popups",
@@ -582,7 +582,7 @@
     "href": "animated-marker",
     "source": "Animated_Marker",
     "preicon": "fas fa-broadcast-tower",
-    "group": "Markers & Popups"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "custom-feature-sources",
@@ -600,7 +600,7 @@
     "href": "mark-the-places",
     "source": "Mark_the_Places",
     "preicon": "fas fa-map-marked-alt",
-    "group": "Legacy"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "popup",
@@ -609,7 +609,7 @@
     "href": "balloon-popup",
     "source": "Balloon_Popup",
     "preicon": "far fa-comment-alt",
-    "group": "Legacy"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "draw",
@@ -627,7 +627,7 @@
     "href": "measure-distance-area",
     "source": "Measure_Distance_Area",
     "preicon": "fas fa-ruler",
-    "group": "Legacy"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "export-map",
@@ -636,7 +636,7 @@
     "href": "export-map",
     "source": "Export_Map",
     "preicon": "fas fa-camera",
-    "group": "Printing & Export"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "export-to-pdf",

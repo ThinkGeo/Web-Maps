@@ -10,8 +10,6 @@
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
                  Center="@InitialCenter" Zoom="18" Bearing="0" Pitch="0">
             <OverlaysSetting>
-                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
-                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
                 <VectorTileOverlay Id="Shapes" @ref="overlay" Style="@style" FeatureSources="@sources" SourceId="shapes" />
             </OverlaysSetting>
             <MapToolsSetting>
@@ -216,7 +214,7 @@
         result = invalid.Count == 0 ? "Nothing breaks this rule. " + chosen.Note : invalid.Count + " in red. " + chosen.Note;
 
         var bounds = MapUtil.GetBoundingBoxOfItems(counterpart.Concat(subject).Concat(invalid).Select(f => f.GetShape()));
-        bounds.ScaleUp(50);
+        bounds.ScaleUp(1.5);
         await map.ZoomToExtentAsync(bounds);
     }
 

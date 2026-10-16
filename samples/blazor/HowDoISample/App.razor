@@ -1,10 +1,55 @@
-﻿<Router AppAssembly="@typeof(Program).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-    </Found>
-    <NotFound>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p>Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ThinkGeo Web UI for Blazor Samples - Build Better Maps Faster</title>
+    <base href="/" />
+    <link rel="stylesheet" href="css/lib/bootstrap/bootstrap.min.css" />
+    <link href="css/font-awesome.min.css" rel="stylesheet" />
+    <link href="css/main.css" rel="stylesheet" />
+    <link href="css/media.css" rel="stylesheet" />
+    <link rel="icon" href="images/favicon.png" />
+    <HeadOutlet />
+</head>
+<body>
+    <Routes />
+    <script src="_framework/blazor.web.js"></script>
+    <script>
+        window.howDoI = {
+            outputWidth: () => document.getElementById('output')?.getBoundingClientRect().width ?? 0,
+            toggleMenu: () => document.getElementById('sidebar')?.classList.toggle('collapse'),
+            toggleRazor: async button => {
+                const output = document.getElementById('output');
+                const pane = document.getElementById('razor-box');
+                const splitter = document.getElementById('splitter');
+                const opening = !output.classList.contains('split');
+                output.classList.toggle('split', opening);
+                pane.style.display = opening ? '' : 'none';
+                splitter.style.display = opening ? '' : 'none';
+                button.classList.toggle('active', opening);
+                button.setAttribute('aria-pressed', String(opening));
+                if (opening && !pane.dataset.loaded) {
+                    const response = await fetch('/source/' + encodeURIComponent(button.dataset.source));
+                    document.getElementById('razor-source').textContent = response.ok
+                        ? await response.text() : 'Source unavailable.';
+                    pane.dataset.loaded = 'true';
+                }
+            },
+            beginSplit: event => {
+                const output = document.getElementById('output');
+                const startX = event.clientX;
+                const start = parseFloat(getComputedStyle(output).getPropertyValue('--code-width')) || 45;
+                const width = output.getBoundingClientRect().width;
+                const move = e => output.style.setProperty('--code-width', Math.min(85, Math.max(15, start + (e.clientX - startX) / Math.max(1, width) * 100)) + '%');
+                const stop = () => {
+                    window.removeEventListener('pointermove', move);
+                    window.removeEventListener('pointerup', stop);
+                };
+                window.addEventListener('pointermove', move);
+                window.addEventListener('pointerup', stop, { once: true });
+            }
+        };
+    </script>
+</body>
+</html>

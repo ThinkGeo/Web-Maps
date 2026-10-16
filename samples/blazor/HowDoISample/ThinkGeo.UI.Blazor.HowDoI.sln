@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.10.12224.181 stable
+VisualStudioVersion = 18.10.12224.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThinkGeo.UI.Blazor.HowDoI", "ThinkGeo.UI.Blazor.HowDoI.csproj", "{F28C42C7-78AB-4BB3-90F4-CB375B941F9E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkGeo.UI.Blazor", "..\..\..\..\thinkgeosdk\ThinkGeo.UI\Web\ThinkGeo.UI.Blazor\ThinkGeo.UI.Blazor.csproj", "{86A84EA5-9616-4D8F-ABCA-4272D27D194D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkGeo.Core", "..\..\..\..\thinkgeosdk\ThinkGeo.Core\Core\ThinkGeo.Core.csproj", "{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThinkGeo.UI.Blazor.HowDoI.Client", "..\HowDoISample.Client\ThinkGeo.UI.Blazor.HowDoI.Client.csproj", "{0AE9EF1C-EE04-49EC-956B-AB15C7CA6664}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,18 @@ Global
 		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Release|x64.Build.0 = Release|Any CPU
 		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Release|x86.ActiveCfg = Release|Any CPU
 		{14FB09F4-A4CC-4FFF-92CB-0FB5B4E77C49}.Release|x86.Build.0 = Release|Any CPU
+		{0AE9EF1C-EE04-49EC-956B-AB15C7CA6664}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AE9EF1C-EE04-49EC-956B-AB15C7CA6664}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AE9EF1C-EE04-49EC-956B-AB15C7CA6664}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0AE9EF1C-EE04-49EC-956B-AB15C7CA6664}.Debug|x64.Build.0 = Debug|Any CPU
+		{0AE9EF1C-EE04-49EC-956B-AB15C7CA6664}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0AE9EF1C-EE04-49EC-956B-AB15C7CA6664}.Debug|x86.Build.0 = Debug|Any CPU
+		{0AE9EF1C-EE04-49EC-956B-AB15C7CA6664}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AE9EF1C-EE04-49EC-956B-AB15C7CA6664}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AE9EF1C-EE04-49EC-956B-AB15C7CA6664}.Release|x64.ActiveCfg = Release|Any CPU
+		{0AE9EF1C-EE04-49EC-956B-AB15C7CA6664}.Release|x64.Build.0 = Release|Any CPU
+		{0AE9EF1C-EE04-49EC-956B-AB15C7CA6664}.Release|x86.ActiveCfg = Release|Any CPU
+		{0AE9EF1C-EE04-49EC-956B-AB15C7CA6664}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

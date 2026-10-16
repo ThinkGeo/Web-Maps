@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net9.0-windows</TargetFramework>
@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.21" />
     <PackageReference Include="ThinkGeo.Gdal" Version="15.0.0-beta214" />
     <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.0.0-beta214" />
     <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.0.0-beta214" />
@@ -23,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\HowDoISample.Client\ThinkGeo.UI.Blazor.HowDoI.Client.csproj" />
     <ProjectReference Include="..\..\..\..\thinkgeosdk\ThinkGeo.UI\Web\ThinkGeo.UI.Blazor\ThinkGeo.UI.Blazor.csproj" />
     <ProjectReference Include="..\..\..\..\thinkgeosdk\ThinkGeo.Core\Extensions\Cad\ThinkGeo.Cad.csproj" Condition="'$(OS)' == 'Windows_NT'" />
   </ItemGroup>
@@ -33,6 +35,13 @@
     </Content>
     <Content Include="Data\**" Exclude="Data\temp\**;Data\**\*.json" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <Target Name="PublishClientRazorSources" AfterTargets="Publish">
+    <ItemGroup>
+      <ClientRazorSourceFile Include="..\HowDoISample.Client\Pages\*.razor" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ClientRazorSourceFile)" DestinationFolder="$(PublishDir)ClientPages" SkipUnchangedFiles="true" />
+  </Target>
 
   <Target Name="PublishRazorSources" AfterTargets="Publish">
     <ItemGroup>

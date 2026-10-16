@@ -1,16 +1,29 @@
-﻿using System.IO;
+using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ThinkGeo.UI.Blazor.HowDoI
 {
     public class SourceCodeLoader
     {
-        public Task<string> LoadRazorCodeAsync(string sample)
+        public async Task<string> LoadRazorCodeAsync(string sample)
         {
-            var razorFile = Path.Combine(Directory.GetCurrentDirectory(), "Pages", $"{sample}.razor");
-            if (!File.Exists(razorFile)) return Task.FromResult(string.Empty);
+            if (string.IsNullOrWhiteSpace(sample) || !Regex.IsMatch(sample, "^[A-Za-z0-9_]+$"))
+                return string.Empty;
 
-            return File.ReadAllTextAsync(razorFile);
+            var root = Directory.GetCurrentDirectory();
+            var folders = new[]
+            {
+                Path.Combine(root, "Pages"),
+                Path.GetFullPath(Path.Combine(root, "..", "HowDoISample.Client", "Pages")),
+                Path.Combine(root, "ClientPages")
+            };
+            foreach (var folder in folders)
+            {
+                var file = Path.Combine(folder, sample + ".razor");
+                if (File.Exists(file)) return await File.ReadAllTextAsync(file);
+            }
+            return string.Empty;
         }
     }
 }

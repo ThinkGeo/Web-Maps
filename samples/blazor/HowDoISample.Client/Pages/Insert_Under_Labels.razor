@@ -32,7 +32,7 @@
         </div>
 
         <label style="display:block;margin:10px 0 2px">White wash - @wash.ToString("P0", CultureInfo.InvariantCulture)</label>
-        <input aria-label="White wash opacity" type="range" min="0" max="90" step="5"
+        <input aria-label="White wash opacity" type="range" min="0" max="90" step="5" disabled="@(style == null)"
                value="@(wash * 100)" style="width:100%" @oninput="WashChanged" />
         @if (!string.IsNullOrEmpty(status))
         {
@@ -53,8 +53,9 @@
     private bool disposed;
     private string status = "Loading aerial imagery and street layers...";
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!firstRender) return;
         try
         {
             aerial = new ThinkGeoRasterTileSource(GlobalSettings.ThinkGeoApiKey,
@@ -68,6 +69,7 @@
         {
             status = "Map layers unavailable: " + exception.Message.Split('\n')[0];
         }
+        if (!disposed) await InvokeAsync(StateHasChanged);
     }
 
     // Keep only the vector style's roads and symbols over aerial imagery, then insert the

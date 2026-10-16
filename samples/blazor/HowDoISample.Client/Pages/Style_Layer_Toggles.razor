@@ -33,8 +33,8 @@
         </div>
         <div style="font-weight:700;margin-bottom:4px">@layers.Count layers</div>
         <div style="display:flex;gap:6px;margin-bottom:6px">
-            <button class="btn btn-sm btn-light" style="padding:2px 8px;cursor:pointer" @onclick="@(() => SetAll(true))">All on</button>
-            <button class="btn btn-sm btn-light" style="padding:2px 8px;cursor:pointer" @onclick="@(() => SetAll(false))">All of</button>
+            <button class="btn btn-sm btn-light" style="padding:2px 8px;cursor:pointer" disabled="@(style == null)" @onclick="@(() => SetAll(true))">All on</button>
+            <button class="btn btn-sm btn-light" style="padding:2px 8px;cursor:pointer" disabled="@(style == null)" @onclick="@(() => SetAll(false))">All off</button>
         </div>
         <div style="overflow:auto;flex:1;min-height:0;padding:4px 2px">
             @foreach (var layer in layers)
@@ -59,8 +59,9 @@
     private List<StyleLayer> layers = new List<StyleLayer>();
     private readonly Dictionary<string, bool> visible = new Dictionary<string, bool>(StringComparer.Ordinal);
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!firstRender) return;
         // The basemap as a document of its own, so its layers can be listed and switched.
         style = new MapStyle(ThinkGeoVectorStyles.Light,
             new ThinkGeoVectorTileSource(GlobalSettings.ThinkGeoApiKey));
@@ -76,6 +77,7 @@
             layers.Add(layer);
             visible[layer.Id] = true;
         }
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task Toggle(string layerId, bool show)

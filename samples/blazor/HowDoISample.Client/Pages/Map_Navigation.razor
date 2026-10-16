@@ -53,18 +53,18 @@
             <div style="font-weight:600;margin-bottom:6px">Camera</div>
 
             <label style="display:flex;align-items:center;gap:5px;cursor:pointer">
-                <input type="checkbox" checked="@buildingsVisible" @onchange="ToggleBuildings" />
+                <input type="checkbox" checked="@buildingsVisible" disabled="@(basemapStyle == null)" @onchange="ToggleBuildings" />
                 3D Buildings
             </label>
 
             <label style="display:flex;align-items:center;gap:8px;margin-top:8px">
                 <span>Pitch</span>
-                <input type="range" min="0" max="80" step="1" value="@pitch"
+                <input type="range" min="0" max="80" step="1" value="@pitch" disabled="@(basemapStyle == null)"
                        @oninput="PitchChanged" style="flex:1;min-width:0" />
                 <span style="width:36px;text-align:right">@pitch.ToString("0")&deg;</span>
             </label>
 
-            <button class="btn btn-sm btn-light" style="margin-top:8px"
+            <button class="btn btn-sm btn-light" style="margin-top:8px" disabled="@(basemapStyle == null)"
                     @onclick="ToggleTheme">@(darkTheme ? "Light Theme" : "Dark Theme")</button>
         </div>
     </div>
@@ -90,9 +90,11 @@
     private bool buildingsVisible = true;
     private bool darkTheme;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!firstRender) return;
         await BuildBasemapStylesAsync();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task ExtentChanged(CurrentExtentChangedMapViewEventArgs e)

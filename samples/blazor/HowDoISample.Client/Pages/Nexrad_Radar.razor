@@ -4,6 +4,7 @@
 @using System.Net.Http
 @using ThinkGeo.Core
 @implements IDisposable
+@inject HttpClient Http
 
 <div class="map-container">
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
@@ -50,7 +51,6 @@
     private static readonly RectangleShape RadarExtent = new RectangleShape(-126, 50, -65, 23);
     // IEM names these snapshots n0q_5 (25 minutes ago) through n0q_0 (current).
     private static readonly int[] FrameNumbers = { 5, 4, 3, 2, 1, 0 };
-    private static readonly HttpClient Http = new HttpClient();
     private const string FrameUrlTemplate = "https://mesonet.agron.iastate.edu/data/gis/images/4326/USCOMP/n0q_{0}.png";
 
     private MapView map;
@@ -81,13 +81,13 @@
         radar.TransparentColor = GeoColors.Black;
         style = CreateRadarStyle(opacity);
 
-        lifetime = new CancellationTokenSource();
-        _ = LoadFramesAndAnimateAsync(lifetime.Token);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
+        lifetime = new CancellationTokenSource();
+        _ = LoadFramesAndAnimateAsync(lifetime.Token);
         for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
             await Task.Delay(250);
         mapReady = !disposed && map?.IsLoaded == true;

@@ -68,7 +68,7 @@
     [Parameter]
     public EventCallback<MenuModel> OnMenuClick { get; set; }
 
-    async void HandleOnMenuClick(MenuModel menu)
+    async Task HandleOnMenuClick(MenuModel menu)
     {
         currentMenu = menu;
         if (OnMenuClick.HasDelegate)
@@ -93,12 +93,12 @@
         }
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!isLoaded)
         {
-            HandleOnMenuClick(currentMenu);
             isLoaded = true;
+            await HandleOnMenuClick(currentMenu);
         }
     }
 

@@ -1,6 +1,7 @@
 @page "/markers"
 @rendermode InteractiveAuto
 @using ThinkGeo.Core
+@implements IDisposable
 
 <div class="map-container">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
@@ -39,6 +40,10 @@
             <button class="btn btn-sm btn-light" @onclick="ClearAsync">Clear</button>
             <span style="color:#e5e5e5">@count markers</span>
         </div>
+        @if (!string.IsNullOrEmpty(loadStatus))
+        {
+            <div role="status">@loadStatus</div>
+        }
     </div>
 </div>
 
@@ -51,6 +56,9 @@
     private Marker picked;
     private int count;
     private int next = 1;
+    private bool disposed;
+    private string loadStatus;
+    private readonly CancellationTokenSource lifetime = new CancellationTokenSource();
 
     protected override void OnInitialized()
     {
@@ -76,15 +84,25 @@
             pins.Markers.Add(marker.Id, marker);
         }
         pending.Clear();
-        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        try
         {
-            await Task.Delay(250);
+            for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
+                await Task.Delay(250, lifetime.Token);
+        }
+        catch (OperationCanceledException) when (disposed) { return; }
+        if (disposed) return;
+        if (map?.IsLoaded != true)
+        {
+            loadStatus = "The map did not finish loading. Reload the page to try again.";
+            await InvokeAsync(StateHasChanged);
+            return;
         }
         await pins.RedrawAsync();
     }
 
     private async Task Clicked(ClickedMapViewEventArgs args)
     {
+        if (disposed || map?.IsLoaded != true) return;
         Add(new PointShape(args.WorldX, args.WorldY));
         picked = null;
         await pins.RedrawAsync();
@@ -97,9 +115,17 @@
 
     private async Task ClearAsync()
     {
+        if (disposed || map?.IsLoaded != true) return;
         pins.Markers.Clear();
         count = 0;
         picked = null;
         await pins.RedrawAsync();
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        lifetime.Cancel();
+        lifetime.Dispose();
     }
 }

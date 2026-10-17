@@ -84,6 +84,7 @@
     private int year = 1950;
     private bool playing;
     private CancellationTokenSource player;
+    private bool disposed;
     private string styleJson = StyleJson;
     private string applied = StyleJson;
     private string status = "";
@@ -144,8 +145,9 @@
         return Apply(0);
     }
 
-    private async void TogglePlay()
+    private async Task TogglePlay()
     {
+        if (disposed) return;
         if (playing)
         {
             player.Cancel();
@@ -153,8 +155,9 @@
         }
 
         playing = true;
-        player = new CancellationTokenSource();
-        var token = player.Token;
+        var playback = new CancellationTokenSource();
+        player = playback;
+        var token = playback.Token;
         try
         {
             if (year >= LastYear) year = FirstYear;
@@ -163,14 +166,19 @@
             {
                 year++;
                 await ShowYear();
-                StateHasChanged();
+                if (!disposed) await InvokeAsync(StateHasChanged);
             }
         }
         catch (OperationCanceledException) { }
         finally
         {
-            playing = false;
-            StateHasChanged();
+            if (ReferenceEquals(player, playback))
+            {
+                playing = false;
+                player = null;
+            }
+            playback.Dispose();
+            if (!disposed) await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -199,6 +207,7 @@
 
     public void Dispose()
     {
+        disposed = true;
         player?.Cancel();
     }
 }

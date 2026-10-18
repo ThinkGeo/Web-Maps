@@ -52,7 +52,11 @@
         </div>
 </div>
 
+@implements IDisposable
+
 @code {
+    private bool disposed;
+    public void Dispose() => disposed = true;
     private MapView map;
     private MapView overview;
     private RectangleShape mainExtent;
@@ -69,20 +73,22 @@
 
         // Both child maps initialize asynchronously. Draw the frame once they are ready,
         // even when their initial extent events arrived before the other map loaded.
-        for (var attempt = 0; attempt < 30 && (map?.IsLoaded != true || overview?.IsLoaded != true); attempt++)
+        for (var attempt = 0; attempt < 30 && !disposed && (map?.IsLoaded != true || overview?.IsLoaded != true); attempt++)
             await Task.Delay(100);
 
-        if (map?.IsLoaded == true && overview?.IsLoaded == true)
+        if (!disposed && map?.IsLoaded == true && overview?.IsLoaded == true)
         {
             mainExtent = await map.GetCurrentExtentAsync();
+            if (disposed) return;
             bearing = await map.GetBearingAsync();
             await UpdateFrameAsync();
-            StateHasChanged();
+            if (!disposed) StateHasChanged();
         }
     }
 
     private async Task MainMoved(CurrentExtentChangedMapViewEventArgs args)
     {
+        if (disposed) return;
         mainExtent = args.CurrentExtent;
         bearing = await map.GetBearingAsync();
         await UpdateFrameAsync(previewExtent);
@@ -99,16 +105,18 @@
 
     private async Task UpdateFrameAsync(RectangleShape currentPreviewExtent = null)
     {
-        if (mainExtent == null || overview?.IsLoaded != true) return;
+        if (disposed || mainExtent == null || overview?.IsLoaded != true) return;
         currentPreviewExtent ??= await overview.GetCurrentExtentAsync();
-        if (currentPreviewExtent == null) return;
+        if (disposed || currentPreviewExtent == null) return;
 
         // Keep the selected area in the preview when the main map moves away.
         if (!currentPreviewExtent.Contains(mainExtent.GetCenterPoint()))
         {
             await overview.SetCenterAsync(mainExtent.GetCenterPoint());
+            if (disposed) return;
             currentPreviewExtent = await overview.GetCurrentExtentAsync();
         }
+        if (disposed || currentPreviewExtent == null) return;
         previewExtent = currentPreviewExtent;
 
         (double x, double y) Pixel(double worldX, double worldY) =>
@@ -126,5 +134,5 @@
         markerTransform = FormattableString.Invariant($"rotate({-bearing:0.###} {center.x:0.###} {center.y:0.###})");
     }
 
-    private Task OverviewClicked(ClickedMapViewEventArgs args) => map.SetCenterAsync(new PointShape(args.WorldX, args.WorldY));
+    private Task OverviewClicked(ClickedMapViewEventArgs args) => disposed ? Task.CompletedTask : map.SetCenterAsync(new PointShape(args.WorldX, args.WorldY));
 }

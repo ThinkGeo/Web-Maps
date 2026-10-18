@@ -62,7 +62,9 @@
                 ThinkGeoCloudRasterMapsMapType.Aerial_V2_X1);
             vector = new ThinkGeoVectorTileSource(GlobalSettings.ThinkGeoApiKey);
             await vector.OpenAsync();
-            style = await ComposeStyleAsync(wash);
+            var nextStyle = await ComposeStyleAsync(wash);
+            if (disposed) return;
+            style = nextStyle;
             status = "Drag the slider to change the wash opacity.";
         }
         catch (Exception exception)
@@ -107,7 +109,9 @@
 
         try
         {
-            style = await ComposeStyleAsync(wash);
+            var nextStyle = await ComposeStyleAsync(wash);
+            if (disposed || mine != edit) return;
+            style = nextStyle;
             status = "The wash sits above roads and below labels.";
         }
         catch (Exception exception)

@@ -153,9 +153,16 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
         {
             await Task.Delay(250);
+        }
+        if (disposed) return;
+        if (map?.IsLoaded != true)
+        {
+            result = "The map did not finish loading. Reload the page to try again.";
+            await InvokeAsync(StateHasChanged);
+            return;
         }
         if (!disposed)
         {

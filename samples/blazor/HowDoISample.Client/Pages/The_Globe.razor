@@ -62,7 +62,11 @@
     </div>
 </div>
 
+@implements IDisposable
+
 @code {
+    private bool disposed;
+    public void Dispose() => disposed = true;
     private MapView map;
     private MapViewProjection projection = MapViewProjection.Globe;
     private bool mapFaded;
@@ -120,16 +124,18 @@
 
     private async Task ChangeProjection(MapViewProjection next)
     {
-        if (changingProjection || next == projection) return;
+        if (disposed || changingProjection || next == projection) return;
 
         changingProjection = true;
         mapFaded = true;
         StateHasChanged();
         await Task.Delay(260);
+        if (disposed) return;
 
         projection = next;
         StateHasChanged();
         await Task.Delay(180);
+        if (disposed) return;
 
         mapFaded = false;
         changingProjection = false;

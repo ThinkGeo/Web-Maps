@@ -250,10 +250,11 @@
     {
         if (!firstRender || disposed) return;
 
-        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
         {
             await Task.Delay(100);
         }
+        if (disposed) return;
         try
         {
             if (map?.IsLoaded == true) await FrameLesson();

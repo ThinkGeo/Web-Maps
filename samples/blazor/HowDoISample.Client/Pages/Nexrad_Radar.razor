@@ -3,7 +3,7 @@
 @using System.Globalization
 @using System.Net.Http
 @using ThinkGeo.Core
-@implements IDisposable
+@implements IAsyncDisposable
 @inject HttpClient Http
 
 <div class="map-container">
@@ -59,6 +59,8 @@
     private MapStyle style;
     private byte[][] frames;
     private CancellationTokenSource lifetime;
+    private Task animation;
+    private Task disposal;
     private int frame;
     private bool playing;
     private bool framesLoaded;
@@ -87,7 +89,7 @@
     {
         if (!firstRender) return;
         lifetime = new CancellationTokenSource();
-        _ = LoadFramesAndAnimateAsync(lifetime.Token);
+        animation = LoadFramesAndAnimateAsync(lifetime.Token);
         for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
             await Task.Delay(250);
         mapReady = !disposed && map?.IsLoaded == true;
@@ -156,12 +158,21 @@
         style = CreateRadarStyle(opacity);
     }
 
-    public void Dispose()
+    public ValueTask DisposeAsync()
     {
+        if (disposal != null) return new ValueTask(disposal);
         disposed = true;
         playing = false;
         lifetime?.Cancel();
-        lifetime?.Dispose();
-        radar?.Dispose();
+        return new ValueTask(disposal ??= ReleaseRadarAsync());
+    }
+    private async Task ReleaseRadarAsync()
+    {
+        try
+        {
+            try { if (animation != null) await animation; }
+            finally { if (overlay != null) await overlay.DisposeAsync(); }
+        }
+        finally { lifetime?.Dispose(); radar?.Dispose(); }
     }
 }

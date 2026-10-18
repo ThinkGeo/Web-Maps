@@ -64,12 +64,18 @@ function update(state, forceHud = false) {
 
 function frame(state, now) {
     if (!state.running) return;
+    if (window.blazorObjects?.[state.mapId]?.map !== state.map) {
+        disposeFlight(state.mapId);
+        return;
+    }
     state.distance = Math.min(state.total, state.startDistance + (now - state.startedAt) * state.total / state.durationMs);
     update(state);
     if (state.distance >= state.total) {
         state.running = false;
         update(state, true);
-        state.dotNetReference.invokeMethodAsync("FlightFinished").catch(() => {});
+        state.dotNetReference.invokeMethodAsync("FlightFinished").catch(error => {
+            if (flights.get(state.mapId) === state) console.error("Flight callback failed:", error);
+        });
     } else {
         state.frameId = requestAnimationFrame(time => frame(state, time));
     }
@@ -101,7 +107,7 @@ export function initializeFlight(mapId, points, imageUrl, dotNetReference, durat
     }).setLngLat(points[0]).addTo(map);
 
     const state = {
-        points, cumulative, total, marker, dotNetReference, durationMs,
+        mapId, map, points, cumulative, total, marker, dotNetReference, durationMs,
         distance: 0, startDistance: 0, startedAt: 0, lastHud: 0,
         running: false, frameId: 0
     };
@@ -140,6 +146,6 @@ export function disposeFlight(mapId) {
     if (!state) return;
     state.running = false;
     cancelAnimationFrame(state.frameId);
-    state.marker.remove();
     flights.delete(mapId);
+    state.marker.remove();
 }

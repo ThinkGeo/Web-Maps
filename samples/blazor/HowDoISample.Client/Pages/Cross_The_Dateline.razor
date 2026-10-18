@@ -28,7 +28,7 @@
        from -118 at Los Angeles, past -180 at the seam, to -238 (= 122 E) at Shanghai - and
        handed to the map as is. The globe has no seam; Web Mercator has one at 180, and the
        tile cut folds the far-side geometry back into the world so it draws whole either way. *@
-    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+    <MapView Id="@mapId" @ref="map" MapUnit="GeographyUnit.Meter"
              Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
              Center="@(new PointShape(-20037508, 3500000))" Zoom="3"
              Projection="@projection">
@@ -93,6 +93,10 @@
 </div>
 
 @code {
+    private readonly string mapId = "dateline-" + Guid.NewGuid().ToString("N");
+    private bool disposed;
+    private Task initialization;
+    private Task disposal;
     private const double HalfWorld = 20037508.342789244;
     private const double EarthRadius = 6378137.0;
     private const double CorridorHalfWidthMeters = 100 * 1852.0;
@@ -159,29 +163,33 @@
         };
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender) return;
+    protected override Task OnAfterRenderAsync(bool firstRender)
+        => firstRender && !disposed ? (initialization = InitializeFlightAsync()) : Task.CompletedTask;
 
-        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+    private async Task InitializeFlightAsync()
+    {
+
+        for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
         {
             await Task.Delay(250);
         }
 
+        if (disposed) return;
         if (map?.IsLoaded != true)
         {
             styleOk = false;
             styleStatus = "Flight could not start: the map did not load.";
-            await InvokeAsync(StateHasChanged);
+            if (!disposed) await InvokeAsync(StateHasChanged);
             return;
         }
 
         try
         {
             flightModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/cross-dateline-flight.js");
+            if (disposed) return;
             flightReference = DotNetObjectReference.Create(this);
             var points = route.Select(point => new[] { point.Lon, point.Lat }).ToArray();
-            flightReady = await flightModule.InvokeAsync<bool>("initializeFlight", "map", points,
+            flightReady = await flightModule.InvokeAsync<bool>("initializeFlight", mapId, points,
                 "/images/dateline_aircraft.svg", flightReference, 45000);
             if (!flightReady)
             {
@@ -195,25 +203,26 @@
             styleStatus = "Flight could not start: " + exception.Message.Split('\n')[0].TrimEnd('\r');
         }
 
-        await InvokeAsync(StateHasChanged);
+        if (!disposed) await InvokeAsync(StateHasChanged);
     }
 
     private async Task ToggleFlight()
     {
-        if (!flightReady || flightModule == null) return;
-        isFlying = await flightModule.InvokeAsync<bool>("toggleFlight", "map");
+        if (disposed || !flightReady || flightModule == null) return;
+        isFlying = await flightModule.InvokeAsync<bool>("toggleFlight", mapId);
     }
 
     private async Task ResetFlight()
     {
-        if (!flightReady || flightModule == null) return;
-        await flightModule.InvokeVoidAsync("resetFlight", "map");
+        if (disposed || !flightReady || flightModule == null) return;
+        await flightModule.InvokeVoidAsync("resetFlight", mapId);
         isFlying = false;
     }
 
     [JSInvokable]
     public Task FlightFinished() => InvokeAsync(() =>
     {
+        if (disposed) return;
         isFlying = false;
         StateHasChanged();
     });
@@ -222,7 +231,7 @@
     {
         var current = ++editVersion;
         await Task.Delay(400);
-        if (current != editVersion) return;
+        if (disposed || current != editVersion) return;
 
         try
         {
@@ -242,21 +251,25 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        if (flightModule != null)
+        disposed = true;
+        return new ValueTask(disposal ??= ReleaseFlightAsync());
+    }
+
+    private async Task ReleaseFlightAsync()
+    {
+        if (initialization != null) { try { await initialization; } catch { } }
+        try
         {
-            try
+            if (flightModule != null)
             {
-                await flightModule.InvokeVoidAsync("disposeFlight", "map");
-                await flightModule.DisposeAsync();
-            }
-            catch (JSDisconnectedException)
-            {
-                // The browser circuit may already be gone.
+                try { await flightModule.InvokeVoidAsync("disposeFlight", mapId); }
+                finally { await flightModule.DisposeAsync(); }
             }
         }
-        flightReference?.Dispose();
+        catch (JSDisconnectedException) { }
+        finally { flightReference?.Dispose(); flightReference = null; flightModule = null; }
     }
 
     private Feature Airport((string Code, string Name, double Lon, double Lat) airport)

@@ -9,17 +9,27 @@
     <link href="css/font-awesome.min.css" rel="stylesheet" />
     <link href="css/main.css" rel="stylesheet" />
     <link href="css/media.css" rel="stylesheet" />
+    <link rel="stylesheet" href="lib/prism/prism-tomorrow.min.css" />
     <link rel="icon" href="images/favicon.png" />
     <HeadOutlet />
 </head>
 <body>
     <Routes />
     <script src="_framework/blazor.web.js"></script>
+    <script src="lib/prism/prism.min.js"></script>
+    <script src="lib/prism/prism-csharp.min.js"></script>
     <script>
+        Prism.hooks.add('complete', (env) => {
+          const pre = env.element.parentElement;
+          if (pre?.tagName === 'PRE') {
+            pre.removeAttribute('tabindex');
+            pre.removeAttribute('class');
+          }
+        });
         window.howDoI = {
             outputWidth: () => document.getElementById('output')?.getBoundingClientRect().width ?? 0,
             toggleMenu: () => document.getElementById('sidebar')?.classList.toggle('collapse'),
-            toggleRazor: async button => {
+            toggleRazor: async codeButton => {
                 const output = document.getElementById('output');
                 const pane = document.getElementById('razor-box');
                 const splitter = document.getElementById('splitter');
@@ -27,12 +37,16 @@
                 output.classList.toggle('split', opening);
                 pane.style.display = opening ? '' : 'none';
                 splitter.style.display = opening ? '' : 'none';
-                button.classList.toggle('active', opening);
-                button.setAttribute('aria-pressed', String(opening));
+                codeButton.classList.toggle('code-button-active', opening);
+                codeButton.setAttribute('aria-pressed', String(opening));
                 if (opening && !pane.dataset.loaded) {
-                    const response = await fetch('/source/' + encodeURIComponent(button.dataset.source));
-                    document.getElementById('razor-source').textContent = response.ok
+                    const response = await fetch('/source/' + encodeURIComponent(codeButton.dataset.source));
+                    const code = document.getElementById('razor-source');
+                    code.textContent = response.ok
                         ? await response.text() : 'Source unavailable.';
+                    if (response.ok && window.Prism && Prism.languages.csharp) {
+                        code.innerHTML = Prism.highlight(code.textContent, Prism.languages.csharp, 'csharp');
+                    }
                     pane.dataset.loaded = 'true';
                 }
             },

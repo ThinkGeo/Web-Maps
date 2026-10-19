@@ -23,32 +23,19 @@ body {
 
 /* Track */
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: #333334;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
     background: #888;
+    border-radius: 5px;
 }
 
     /* Handle on hover */
     ::-webkit-scrollbar-thumb:hover {
         background: #555;
     }
-
-.download-sample {
-    margin-right: 2rem;
-    margin-top: 4rem;
-    float: right;
-    font-size: 14px;
-    font-weight: normal;
-    color: #ffffff;
-    background-color: #666666;
-    padding: 5px 10px 5px 10px;
-    border-radius: 2px;
-    appearance: none;
-    -webkit-appearance: none !important;
-}
 
 .navbar {
     padding: 0px;
@@ -152,7 +139,7 @@ body {
     font-size: 1.5rem;
     height: 30px;
     width: 100%;
-    margin: 0 !important;
+    margin: 0 5px;
 }
 
 .sidebar hr {
@@ -179,7 +166,7 @@ body {
     top: 0;
     overflow: auto;
     width: 100%;
-    max-height: calc(100% - 60px);
+    max-height: calc(100% - 10px);
 }
 
     .nav-sidebar a {
@@ -321,10 +308,37 @@ child pages
     opacity: 1;
 }
 
+.code-button-container {
+    flex: 1;
+    display: flex;
+    justify-content:end;
+    align-items: end;
+}
+
+#code-button {
+    border: #9AA0A6 solid 1px;
+    background: #3D3D3E;
+    color: #9AA0A6;
+    border-radius: 2px;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    touch-action: manipulation;
+    font-size: 1.8rem;
+    margin-right: 1.5rem;
+    margin-bottom: 1.4rem;
+}
+
+.code-button-active {
+    border: #60B9E2 solid 1px !important;
+    color: #60B9E2 !important;
+}
+
 #child-page-title {
     width: 100%;
     height: 80px;
     color: #ffffff;
+    display: flex;
 }
 
     #child-page-title h1 {
@@ -421,25 +435,13 @@ pre {
     margin: 0;
 }
 
-.embed-footer, .embed-nav {
+.embed-footer {
     background: #3d3d3e;
 }
 
-.embed-nav {
-    font-family: initial;
-    line-height: initial;
-    font-size: initial;
-    font-weight: initial;
-    background: #3d3d3e;
-    height: 50px;
-    padding-left: 8px;
-    position: relative;
-    z-index: 2;
-    border: 1px solid #555555;
-    border-bottom: none;
-}
 
-    .embed-nav .code-types, .embed-nav .result-button-list {
+
+    .code-types, .result-button-list {
         white-space: nowrap;
         z-index: 1;
         list-style: none;
@@ -450,33 +452,33 @@ pre {
         font-size: 0;
     }
 
-        .embed-nav .code-types li, .embed-nav .result-button-list li {
+        .code-types li, .result-button-list li {
             display: inline-block;
             margin-right: 1px;
         }
 
-            .embed-nav .code-types li:first-child a, .embed-nav .result-button-list li:first-child a {
+            .code-types li:first-child a, .result-button-list li:first-child a {
                 border-top-left-radius: 2px;
                 border-bottom-left-radius: 2px;
             }
 
-            .embed-nav .code-types li:last-child a, .embed-nav .result-button-list li:last-child a {
+            .code-types li:last-child a, .result-button-list li:last-child a {
                 border-top-right-radius: 2px;
                 border-bottom-right-radius: 2px;
             }
 
-        .embed-nav .code-types a.active, .embed-nav .result-button-list a.active, .action-button.active {
+        .code-types a.active, .result-button-list a.active, .action-button.active {
             background: #888888;
             color: #ffffff;
             box-shadow: inset 0px 3px #dddddd;
         }
 
-        .embed-nav .code-types a, .embed-nav .result-button-list a, .action-button {
+        .code-types a, .result-button-list a, .action-button {
             color: #ffffff;
             background-color: #666666;
         }
 
-        .embed-nav .code-types a, .embed-nav .result-button-list a {
+        .code-types a, .result-button-list a {
             font-family: 'Lato', 'Lucida Grande', 'Lucida Sans Unicode', Tahoma, Sans-Serif;
             display: inline-block;
             -webkit-transition: background 200ms ease, -webkit-box-shadow 200ms ease;
@@ -492,7 +494,7 @@ pre {
         }
 
 #output {
-    height: calc(100% - 80px - 50px);
+    height: calc(100% - 80px);
     border: 1px solid #555555;
     display: flex;
     flex-direction: row;
@@ -510,7 +512,7 @@ pre {
         flex: 0 0 var(--code-width);
         min-width: 0;
         height: 100%;
-        overflow: auto;
+        overflow: hidden;
     }
 
     #output > .splitter {

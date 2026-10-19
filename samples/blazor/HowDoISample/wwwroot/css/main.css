@@ -249,6 +249,9 @@ body {
         font-family: "Font Awesome 5 Free" !important;
         font-weight: 900;
         vertical-align: middle;
+        display: inline-block;
+        width: 1.2rem;
+        text-align: center;
     }
 
 /*
@@ -942,6 +945,8 @@ pre {
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.06em;
+        display: inline-flex;
+        align-items: center;
     }
 
     .menu-group-title .sub-arrow::before {

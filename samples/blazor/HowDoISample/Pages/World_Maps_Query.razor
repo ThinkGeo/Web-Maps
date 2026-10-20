@@ -116,11 +116,11 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-        for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
+        if (!disposed)
         {
-            await Task.Delay(250);
+            await map.WhenReady;
+            await QueryAsync();
         }
-        if (!disposed && map?.IsLoaded == true) await QueryAsync();
     }
 
     private async Task BeginDrawAsync(BlazorTrackMode mode)

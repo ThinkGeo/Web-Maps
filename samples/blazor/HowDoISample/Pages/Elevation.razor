@@ -132,18 +132,8 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-        var deadline = DateTime.UtcNow.AddSeconds(15);
-        while (!disposed && map?.IsLoaded != true && DateTime.UtcNow < deadline)
-        {
-            await Task.Delay(100);
-        }
         if (disposed) return;
-        if (map?.IsLoaded != true)
-        {
-            status = "The map did not finish loading. Reload the page to try again.";
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
+        await map.WhenReady;
         await AskAsync(new LineShape("LINESTRING(-10776298 3912306,-10776496 3912399,-10776675 3912478,-10776890 3912516,-10777189 3912509,-10777329 3912442,-10777536 3912318,-10777664 3912174)"));
     }
 

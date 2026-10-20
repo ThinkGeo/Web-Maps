@@ -168,20 +168,8 @@
 
     private async Task InitializeFlightAsync()
     {
-
-        for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
-        {
-            await Task.Delay(250);
-        }
-
         if (disposed) return;
-        if (map?.IsLoaded != true)
-        {
-            styleOk = false;
-            styleStatus = "Flight could not start: the map did not load.";
-            if (!disposed) await InvokeAsync(StateHasChanged);
-            return;
-        }
+        await map.WhenReady;
 
         try
         {

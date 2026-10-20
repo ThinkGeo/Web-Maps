@@ -118,10 +118,7 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
-        {
-            await Task.Delay(250);
-        }
+        await map.WhenReady;
         var framed = new RectangleShape(bounds.UpperLeftPoint, bounds.LowerRightPoint);
         framed.ScaleUp(50);
         await map.ZoomToExtentAsync(framed);

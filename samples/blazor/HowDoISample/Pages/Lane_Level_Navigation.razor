@@ -384,10 +384,7 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
-        {
-            await Task.Delay(250);
-        }
+        await map.WhenReady;
 
         // The screen in pixels, from the extent the map shows at the scale it started at.
         var shown = await map.GetCurrentExtentAsync();

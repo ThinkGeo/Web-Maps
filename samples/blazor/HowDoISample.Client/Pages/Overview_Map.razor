@@ -73,11 +73,9 @@
 
         // Both child maps initialize asynchronously. Draw the frame once they are ready,
         // even when their initial extent events arrived before the other map loaded.
-        for (var attempt = 0; attempt < 30 && !disposed && (map?.IsLoaded != true || overview?.IsLoaded != true); attempt++)
-            await Task.Delay(100);
-
-        if (!disposed && map?.IsLoaded == true && overview?.IsLoaded == true)
+        if (!disposed)
         {
+            await Task.WhenAll(map.WhenReady, overview.WhenReady);
             mainExtent = await map.GetCurrentExtentAsync();
             if (disposed) return;
             bearing = await map.GetBearingAsync();
@@ -105,7 +103,8 @@
 
     private async Task UpdateFrameAsync(RectangleShape currentPreviewExtent = null)
     {
-        if (disposed || mainExtent == null || overview?.IsLoaded != true) return;
+        if (disposed || mainExtent == null || overview == null) return;
+        await overview.WhenReady;
         currentPreviewExtent ??= await overview.GetCurrentExtentAsync();
         if (disposed || currentPreviewExtent == null) return;
 

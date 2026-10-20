@@ -29,11 +29,11 @@
     <div style="position:absolute;top:12px;right:12px;width:260px;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
         <div style="font-weight:600;margin-bottom:6px">Perspective &amp; 3D buildings</div>
 
-        <label style="display:block;margin-bottom:2px">Tilt - @pitch.ToString("0")&deg;</label>
+        <label style="display:block;margin-bottom:2px">Tilt: @pitch.ToString("0")&deg;</label>
         <input type="range" min="0" max="85" step="1" value="@pitch" style="width:100%"
                @oninput="@(e => pitch = Convert.ToDouble(e.Value))" />
 
-        <label style="display:block;margin:10px 0 2px">Rotate - @bearing.ToString("0")&deg;</label>
+        <label style="display:block;margin:10px 0 2px">Rotate: @bearing.ToString("0")&deg;</label>
         <input type="range" min="-180" max="180" step="1" value="@bearing" style="width:100%"
                @oninput="@(e => bearing = Convert.ToDouble(e.Value))" />
 

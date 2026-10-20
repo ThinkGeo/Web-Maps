@@ -91,7 +91,7 @@
     private async Task Toggle(Action set)
     {
         set();
-        if (map?.IsLoaded != true) return;
+        await map.WhenReady;
         await map.SetNavigationLimitsAsync(
             restrictOn ? Box : null,
             minScaleOn ? MinScale : 0,

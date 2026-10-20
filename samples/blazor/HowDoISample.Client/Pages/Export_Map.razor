@@ -48,7 +48,7 @@
 
     private async Task Download()
     {
-        if (map?.IsLoaded != true) return;
+        await map.WhenReady;
         await map.ExportImageAsync("thinkgeo-map.png");
         status = $"saved thinkgeo-map.png at {DateTime.Now:HH:mm:ss}";
     }

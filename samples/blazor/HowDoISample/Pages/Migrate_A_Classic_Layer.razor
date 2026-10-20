@@ -114,7 +114,8 @@
         }
 
         var target = fromClassic ? newMap : classicMap;
-        if (target?.IsLoaded != true) return;
+        if (target == null) return;
+        await target.WhenReady;
         if (fromClassic) expectedOnNew = extent; else expectedOnClassic = extent;
         await target.ZoomToExtentAsync(extent);
     }

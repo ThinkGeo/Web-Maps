@@ -105,9 +105,10 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
+        await map.WhenReady;
         for (var attempt = 0; attempt < 20 && !disposed; attempt++)
         {
-            if (map?.IsLoaded == true && overlay != null)
+            if (overlay != null)
             {
                 try
                 {

@@ -90,9 +90,11 @@
         if (!firstRender) return;
         lifetime = new CancellationTokenSource();
         animation = LoadFramesAndAnimateAsync(lifetime.Token);
-        for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
-            await Task.Delay(250);
-        mapReady = !disposed && map?.IsLoaded == true;
+        if (!disposed)
+        {
+            await map.WhenReady;
+            mapReady = true;
+        }
     }
 
     private static string FrameUrl(int minutesAgo) =>

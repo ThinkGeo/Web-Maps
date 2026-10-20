@@ -25,10 +25,6 @@
         <div style="font-weight:600;margin-bottom:6px">Animated marker</div>
         <div style="color:#e5e5e5;line-height:1.4">The markers pulse on the map. Stop or start their animation.</div>
         <button class="btn btn-sm btn-light" style="margin-top:9px" @onclick="ToggleAsync">@(animated ? "Stop" : "Start")</button>
-        @if (!string.IsNullOrEmpty(loadStatus))
-        {
-            <div role="status">@loadStatus</div>
-        }
     </div>
 </div>
 
@@ -46,8 +42,6 @@
     private SimpleMarkerOverlay beacons;
     private bool animated = true;
     private bool disposed;
-    private string loadStatus;
-    private readonly CancellationTokenSource lifetime = new CancellationTokenSource();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -56,25 +50,15 @@
         {
             beacons.Markers.Add(id, new Marker { Id = id, Position = at, Style = Pulsing });
         }
-        try
-        {
-            for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
-                await Task.Delay(250, lifetime.Token);
-        }
-        catch (OperationCanceledException) when (disposed) { return; }
         if (disposed) return;
-        if (map?.IsLoaded != true)
-        {
-            loadStatus = "The map did not finish loading. Reload the page to try again.";
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
+        await map.WhenReady;
         await beacons.RedrawAsync();
     }
 
     private async Task ToggleAsync()
     {
-        if (disposed || map?.IsLoaded != true) return;
+        if (disposed) return;
+        await map.WhenReady;
         animated = !animated;
         foreach (var marker in beacons.Markers)
         {
@@ -86,7 +70,5 @@
     public void Dispose()
     {
         disposed = true;
-        lifetime.Cancel();
-        lifetime.Dispose();
     }
 }

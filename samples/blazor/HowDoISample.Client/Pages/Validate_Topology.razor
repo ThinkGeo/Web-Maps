@@ -153,17 +153,8 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-        for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
-        {
-            await Task.Delay(250);
-        }
         if (disposed) return;
-        if (map?.IsLoaded != true)
-        {
-            result = "The map did not finish loading. Reload the page to try again.";
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
+        await map.WhenReady;
         if (!disposed)
         {
             try
@@ -207,7 +198,8 @@
 
     private async Task RunAsync()
     {
-        if (disposed || map?.IsLoaded != true || overlay == null) return;
+        if (disposed || overlay == null) return;
+        await map.WhenReady;
         var chosen = Rules.First(r => r.Name == rule);
         var subject = Wkt(chosen.Subject);
         var counterpart = chosen.Against == null ? new Collection<Feature>() : Wkt(chosen.Against);

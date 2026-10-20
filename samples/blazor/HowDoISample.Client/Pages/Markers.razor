@@ -6,7 +6,8 @@
 <div class="map-container">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@(new PointShape(-10777290, 3908740))" Zoom="15" OnClick="@Clicked">
+                 Center="@(new PointShape(-10777290, 3908740))" Zoom="15"
+                 OnClick="@Clicked" OnReady="@MapReadyAsync">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
@@ -40,10 +41,6 @@
             <button class="btn btn-sm btn-light" @onclick="ClearAsync">Clear</button>
             <span style="color:#e5e5e5">@count markers</span>
         </div>
-        @if (!string.IsNullOrEmpty(loadStatus))
-        {
-            <div role="status">@loadStatus</div>
-        }
     </div>
 </div>
 
@@ -57,8 +54,6 @@
     private int count;
     private int next = 1;
     private bool disposed;
-    private string loadStatus;
-    private readonly CancellationTokenSource lifetime = new CancellationTokenSource();
 
     protected override void OnInitialized()
     {
@@ -76,33 +71,20 @@
 
     private readonly GeoCollection<Marker> pending = new GeoCollection<Marker>();
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task MapReadyAsync()
     {
-        if (!firstRender) return;
         foreach (var marker in pending)
         {
             pins.Markers.Add(marker.Id, marker);
         }
         pending.Clear();
-        try
-        {
-            for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
-                await Task.Delay(250, lifetime.Token);
-        }
-        catch (OperationCanceledException) when (disposed) { return; }
-        if (disposed) return;
-        if (map?.IsLoaded != true)
-        {
-            loadStatus = "The map did not finish loading. Reload the page to try again.";
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
         await pins.RedrawAsync();
     }
 
     private async Task Clicked(ClickedMapViewEventArgs args)
     {
-        if (disposed || map?.IsLoaded != true) return;
+        if (disposed) return;
+        await map.WhenReady;
         Add(new PointShape(args.WorldX, args.WorldY));
         picked = null;
         await pins.RedrawAsync();
@@ -115,7 +97,8 @@
 
     private async Task ClearAsync()
     {
-        if (disposed || map?.IsLoaded != true) return;
+        if (disposed) return;
+        await map.WhenReady;
         pins.Markers.Clear();
         count = 0;
         picked = null;
@@ -125,7 +108,5 @@
     public void Dispose()
     {
         disposed = true;
-        lifetime.Cancel();
-        lifetime.Dispose();
     }
 }

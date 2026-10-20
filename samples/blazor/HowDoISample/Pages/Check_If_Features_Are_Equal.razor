@@ -103,11 +103,8 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-        for (var attempt = 0; attempt < 80 && !disposed && map?.IsLoaded != true; attempt++)
-        {
-            await Task.Delay(250);
-        }
-        if (disposed || map?.IsLoaded != true) return;
+        if (disposed) return;
+        await map.WhenReady;
 
         try
         {

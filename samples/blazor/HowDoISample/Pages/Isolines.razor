@@ -9,7 +9,8 @@
 
 <div class="map-container">
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter" Width="100" Height="100"
-             MapViewSizeUnitType="MapViewSizeUnitType.Percentage" Center="@center" Zoom="12">
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage" Center="@center" Zoom="12"
+             OnReady="MapReadyAsync">
         <OverlaysSetting>
             <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                             ApiKey="@GlobalSettings.ThinkGeoApiKey" />
@@ -102,10 +103,8 @@
         ApplyOptions();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task MapReadyAsync()
     {
-        if (!firstRender) return;
-        await map.WhenReady;
         for (var attempt = 0; attempt < 20 && !disposed; attempt++)
         {
             if (overlay != null)

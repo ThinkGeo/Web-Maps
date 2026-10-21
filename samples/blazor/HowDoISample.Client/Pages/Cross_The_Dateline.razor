@@ -31,7 +31,7 @@
     <MapView Id="@mapId" @ref="map" MapUnit="GeographyUnit.Meter"
              Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
              Center="@(new PointShape(-20037508, 3500000))" Zoom="3"
-             Projection="@projection">
+             Projection="@projection" OnReady="MapReadyAsync">
         <OverlaysSetting>
             <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                             ApiKey="@GlobalSettings.ThinkGeoApiKey" />
@@ -163,14 +163,12 @@
         };
     }
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
-        => firstRender && !disposed ? (initialization = InitializeFlightAsync()) : Task.CompletedTask;
+    private Task MapReadyAsync()
+        => !disposed ? (initialization = InitializeFlightAsync()) : Task.CompletedTask;
 
     private async Task InitializeFlightAsync()
     {
         if (disposed) return;
-        await map.WhenReady;
-
         try
         {
             flightModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/cross-dateline-flight.js");

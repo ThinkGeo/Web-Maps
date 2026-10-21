@@ -13,7 +13,8 @@
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@initialCenter" Zoom="14" Bearing="0" Pitch="0" OnClick="@MapClicked">
+                 Center="@initialCenter" Zoom="14" Bearing="0" Pitch="0" OnClick="@MapClicked"
+                 OnReady="MapReadyAsync">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
@@ -133,12 +134,10 @@
         markStyle.Images.Add("measured", PointStyle.CreateSimpleCircleStyle(GeoColors.DarkGreen, 12, GeoColors.White, 3));
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task MapReadyAsync()
     {
-        if (!firstRender) return;
         if (!disposed)
         {
-            await map.WhenReady;
             await ShowAsync();
             await InvokeAsync(StateHasChanged);
         }

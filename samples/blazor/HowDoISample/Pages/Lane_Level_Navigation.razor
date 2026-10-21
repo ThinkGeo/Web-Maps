@@ -10,7 +10,8 @@
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter" ZoomScales="@zoomScales"
              BackgroundColor="@(GeoColor.FromHtml("#101317"))"
              Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-             Center="@start" Zoom="19" Pitch="58">
+             Center="@start" Zoom="19" Pitch="58"
+             OnReady="MapReadyAsync">
         <OverlaysSetting>
             <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Dark" ApiKey="@GlobalSettings.ThinkGeoApiKey" />
             @if (laneMap != null)
@@ -381,11 +382,8 @@
         ShowVehicle(pose);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task MapReadyAsync()
     {
-        if (!firstRender) return;
-        await map.WhenReady;
-
         // The screen in pixels, from the extent the map shows at the scale it started at.
         var shown = await map.GetCurrentExtentAsync();
         var resolution = MapUtil.GetResolutionFromScale(map.ZoomScales[map.Zoom - 1], GeographyUnit.Meter);

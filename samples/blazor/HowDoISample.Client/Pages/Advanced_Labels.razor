@@ -15,7 +15,8 @@
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@initialCenter" Zoom="12" Bearing="0" Pitch="0">
+                 Center="@initialCenter" Zoom="12" Bearing="0" Pitch="0"
+                 OnReady="MapReadyAsync">
             <OverlaysSetting>
                 <VectorTileOverlay Id="Lessons" Style="@style" FeatureSources="@sources" SourceId="lessons" />
             </OverlaysSetting>
@@ -246,14 +247,12 @@
         style = Compose(lesson);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task MapReadyAsync()
     {
-        if (!firstRender || disposed) return;
-
         if (disposed) return;
+
         try
         {
-            await map.WhenReady;
             await FrameLesson();
         }
         catch (Exception exception)

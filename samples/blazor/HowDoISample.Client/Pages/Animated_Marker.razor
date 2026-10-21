@@ -6,7 +6,8 @@
 <div class="map-container">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@(new PointShape(-10778000, 3912000))" Zoom="12">
+                 Center="@(new PointShape(-10778000, 3912000))" Zoom="12"
+                 OnReady="MapReadyAsync">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
@@ -43,15 +44,13 @@
     private bool animated = true;
     private bool disposed;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task MapReadyAsync()
     {
-        if (!firstRender) return;
         foreach (var (id, at) in Places)
         {
             beacons.Markers.Add(id, new Marker { Id = id, Position = at, Style = Pulsing });
         }
         if (disposed) return;
-        await map.WhenReady;
         await beacons.RedrawAsync();
     }
 

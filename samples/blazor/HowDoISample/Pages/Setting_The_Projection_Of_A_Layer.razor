@@ -7,7 +7,7 @@
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@(new PointShape(-10778770, 3915250))" Zoom="12">
+                 Center="@(new PointShape(-10778770, 3915250))" Zoom="12" OnReady="MapReadyAsync">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
@@ -66,10 +66,8 @@
         bounds.ScaleUp(50);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task MapReadyAsync()
     {
-        if (!firstRender) return;
-        await map.WhenReady;
         await map.ZoomToExtentAsync(bounds);
     }
 

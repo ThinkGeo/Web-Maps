@@ -7,7 +7,7 @@
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0">
+                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0" OnReady="MapReadyAsync">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
@@ -113,12 +113,10 @@
         client = new MapsQueryCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task MapReadyAsync()
     {
-        if (!firstRender) return;
         if (!disposed)
         {
-            await map.WhenReady;
             await QueryAsync();
         }
     }

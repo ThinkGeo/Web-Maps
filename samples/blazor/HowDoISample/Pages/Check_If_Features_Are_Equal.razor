@@ -11,6 +11,7 @@
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 OnReady="MapReadyAsync"
                  Center="@initialCenter" Zoom="15" Bearing="0" Pitch="0" OnClick="@MapClicked">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
@@ -100,11 +101,9 @@
             .AddLineLayer("query-edge", "zoning", "query", new LinePaint(GeoColors.LightRed, 3f));
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task MapReadyAsync()
     {
-        if (!firstRender) return;
         if (disposed) return;
-        await map.WhenReady;
 
         try
         {

@@ -10,7 +10,8 @@
 <div class="map-container">
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
              Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-             Center="@start" Zoom="17" Pitch="@pitch">
+             Center="@start" Zoom="17" Pitch="@pitch"
+             OnReady="MapReadyAsync">
         <OverlaysSetting>
             <ThinkGeoCloudVectorMapsOverlay Id="Basemap" ApiKey="@GlobalSettings.ThinkGeoApiKey"
                                             MapType="@(darkTheme ? ThinkGeoCloudVectorMapsMapType.Dark : ThinkGeoCloudVectorMapsMapType.Light)" />
@@ -81,10 +82,8 @@
         BuildStyles();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task MapReadyAsync()
     {
-        if (!firstRender) return;
-        await map.WhenReady;
         _ = DriveAsync(driving.Token);
     }
 

@@ -8,7 +8,8 @@
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@InitialCenter" Zoom="18" Bearing="0" Pitch="0">
+                 Center="@InitialCenter" Zoom="18" Bearing="0" Pitch="0"
+                 OnReady="MapReadyAsync">
             <OverlaysSetting>
                 <VectorTileOverlay Id="Shapes" @ref="overlay" Style="@style" FeatureSources="@sources" SourceId="shapes" />
             </OverlaysSetting>
@@ -150,26 +151,21 @@
             .AddCircleLayer(layer + "-point", "shapes", layer, new CirclePaint(color, GeoColors.White, 6f, 1.5f), filter: StyleExpressions.GeometryType(WellKnownType.Point));
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task MapReadyAsync()
     {
-        if (!firstRender) return;
         if (disposed) return;
-        await map.WhenReady;
-        if (!disposed)
+        try
         {
-            try
-            {
-                await RunAsync();
-            }
-            catch (Exception ex)
-            {
-                result = "Topology validation failed: " + ex.Message;
-            }
-            finally
-            {
-                busy = false;
-                if (!disposed) await InvokeAsync(StateHasChanged);
-            }
+            await RunAsync();
+        }
+        catch (Exception ex)
+        {
+            result = "Topology validation failed: " + ex.Message;
+        }
+        finally
+        {
+            busy = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
         }
     }
 

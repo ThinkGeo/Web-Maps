@@ -10,7 +10,8 @@
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@InitialCenter" Zoom="12" Bearing="0" Pitch="0">
+                 Center="@InitialCenter" Zoom="12" Bearing="0" Pitch="0"
+                 OnReady="MapReadyAsync">
             <OverlaysSetting>
                 @if (style != null)
                 {
@@ -98,13 +99,8 @@
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task MapReadyAsync()
     {
-        if (!firstRender) return;
-        if (!disposed)
-        {
-            await map.WhenReady;
-        }
         if (!disposed && bounds != null)
             await map.ZoomToExtentAsync(bounds);
     }

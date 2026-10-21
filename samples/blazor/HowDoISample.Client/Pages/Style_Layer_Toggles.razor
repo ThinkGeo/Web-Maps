@@ -32,9 +32,11 @@
             it draws, so hiding costs no recompile and no tile is fetched again.
         </div>
         <div style="font-weight:700;margin-bottom:4px">@layers.Count layers</div>
-        <div style="display:flex;gap:6px;margin-bottom:6px">
-            <button class="btn btn-sm btn-light" style="padding:2px 8px;cursor:pointer" disabled="@(style == null)" @onclick="@(() => SetAll(true))">All on</button>
-            <button class="btn btn-sm btn-light" style="padding:2px 8px;cursor:pointer" disabled="@(style == null)" @onclick="@(() => SetAll(false))">All off</button>
+        <div style="display:flex;gap:6px;margin-bottom:6px;padding: 2px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                <input type="checkbox" checked="@visible.Values.All(v => v)" disabled="@(style == null)" @onchange="@(e => SetAll((bool)e.Value))" />
+                All
+            </label>
         </div>
         <div style="overflow:auto;flex:1;min-height:0;padding:4px 2px">
             @foreach (var layer in layers)

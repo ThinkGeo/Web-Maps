@@ -37,7 +37,7 @@
         <div style="padding:8px 8px 4px;font-size:16px;font-weight:600">Using Cloud Projection Services</div>
         <div style="padding:0 8px 4px;line-height:1.35">Enter WKT in latitude and longitude (EPSG:4326), then project it to the map's Web Mercator coordinates (EPSG:3857).</div>
         <textarea @bind="wkt" spellcheck="false" aria-label="WKT input"
-                  style="width:100%;min-height:150px;box-sizing:border-box;background:#fff;color:#222;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:vertical;white-space:pre-wrap;overflow-wrap:anywhere"></textarea>
+                  style="min-height:150px;box-sizing:border-box;background:#fff;color:#222;font:11.5px Consolas,monospace;margin:0px 8px;border:0;border-top:1px solid #ccc;resize:vertical;white-space:pre-wrap;overflow-wrap:anywhere"></textarea>
         <div style="padding:6px 8px 0">
             <button style="width:100%;@SidebarButtonStyle" @onclick="ProjectPointAsync" disabled="@busy">Reproject and Display a Feature</button>
             <button style="width:100%;margin-top:6px;@SidebarButtonStyle" @onclick="ProjectAsync" disabled="@busy">Reproject and Display Multiple Features</button>

@@ -180,6 +180,8 @@ body {
 #menu-bar > li > a {
     font-size: 1.4rem;
     padding-top: 1.5rem;
+    cursor: pointer;
+    user-select: none;
 }
 
 #menu-bar > ul {
@@ -409,6 +411,10 @@ pre {
     height: 100%;
 }
 
+    pre::-webkit-scrollbar-corner {
+        background: #333334;
+    }
+
 .pre-numbering {
     position: absolute;
     top: 0;
@@ -550,6 +556,7 @@ pre {
     padding: 4px 8px;
     opacity: 0.7;
     white-space: nowrap;
+    display: inline-block;
 }
 
 .tooltip-measure {
@@ -935,7 +942,6 @@ pre {
  * label on a darker band, and the samples are indented under it.
  */
 .menu-group-title {
-    cursor: pointer;
     background-color: #333334;
 }
 

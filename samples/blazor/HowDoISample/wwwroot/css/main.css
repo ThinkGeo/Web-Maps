@@ -556,7 +556,6 @@ pre {
     padding: 4px 8px;
     opacity: 0.7;
     white-space: nowrap;
-    display: inline-block;
 }
 
 .tooltip-measure {
@@ -568,6 +567,11 @@ pre {
     background-color: #ffcc33;
     color: black;
     border: 1px solid white;
+    left: 0;
+    position: absolute;
+    top: 0;
+    transition: opacity .2s;
+    will-change: transform;
 }
 
     .tooltip-measure:before,

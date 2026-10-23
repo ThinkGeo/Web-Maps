@@ -60,7 +60,7 @@
         </div>
         <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false" wrap="soft"
                   aria-label="style.json editor"
-                  style="flex:1;min-height:0;width:100%;box-sizing:border-box;background:#fff;color:#222;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre-wrap;overflow-wrap:anywhere"></textarea>
+                  style="flex:1;min-height:0;margin:0 8px;box-sizing:border-box;background:#fff;color:#222;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre-wrap;overflow-wrap:anywhere"></textarea>
         <div style="padding:4px 8px 6px;color:@(styleIsValid ? "#c9f5d2" : "#ffd0d0")">@styleStatus</div>
     </div>
 </div>

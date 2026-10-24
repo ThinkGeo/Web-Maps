@@ -2,31 +2,6 @@
 @rendermode InteractiveAuto
 @using ThinkGeo.Core
 
-<style>
-    .ol-popup-closer:after {
-        color: #ffe0e0;
-    }
-
-    .ol-popup:after {
-        border-top-color: black;
-        left: 185px;
-    }
-
-    .ol-popup:before {
-        border-top-color: #cccccc;
-        border-width: 11px;
-        margin-left: -11px;
-        left: 185px;
-    }
-
-    .ol-popup {
-        background-color: #040404;
-        color: #ffffff;
-        min-width: 370px;
-        left: -185px;
-    }
-</style>
-
 <div class="map-container">
     <MapView Id="map" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter"
              Width="100"

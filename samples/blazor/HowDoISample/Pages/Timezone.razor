@@ -22,7 +22,7 @@
             <PopupOverlaySetting>
                 <PopupOverlay Id="Info">
                     <PopupSetting>
-                        <Popup Id="zone" Position="@askedAt" OffsetY="-8" AutoPan="true">
+                        <Popup @key="askedAt" Id="zone" Position="@askedAt" OffsetY="-8" AutoPan="true">
                             @if (result != null)
                             {
                                 <div style="font:12px system-ui;line-height:1.4;min-width:180px">

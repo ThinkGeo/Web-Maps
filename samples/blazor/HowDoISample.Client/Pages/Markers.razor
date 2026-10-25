@@ -45,9 +45,6 @@
 </div>
 
 @code {
-    // The pin's tip is at the bottom middle of the image: half way across, all the way down.
-    private static readonly PointMarkerStyle PinStyle = new PointMarkerStyle("images/map-pin.svg", 0.5, 1, 1);
-
     private MapView map;
     private SimpleMarkerOverlay pins;
     private Marker picked;
@@ -63,7 +60,7 @@
 
     private void Add(PointShape position)
     {
-        var marker = new Marker { Id = "Pin " + next++, Position = position, Style = PinStyle };
+        var marker = new Marker { Id = "Pin " + next++, Position = position };
         // The overlay is the page's own component and is not yet bound the first time.
         (pins?.Markers ?? pending).Add(marker.Id, marker);
         count++;

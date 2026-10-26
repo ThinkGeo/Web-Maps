@@ -42,7 +42,7 @@
                 <div style="font-weight:600;color:#ddd;margin-top:6px">@group.Key</div>
                 @foreach (var r in group)
                 {
-                    <label style="cursor:pointer"><input type="radio" name="rule" checked="@(rule == r.Name)" disabled="@busy" @onchange="@(() => Choose(r.Name))" /> @r.Name</label>
+                    <label style="cursor:pointer"><input type="radio" name="rule" checked="@(rule == r)" disabled="@busy" @onchange="@(() => Choose(r))" /> @r.Name</label>
                 }
             }
         </div>
@@ -127,7 +127,7 @@
     private readonly InMemoryFeatureSource against = new InMemoryFeatureSource();
     private readonly InMemoryFeatureSource checkedShapes = new InMemoryFeatureSource();
     private readonly InMemoryFeatureSource broken = new InMemoryFeatureSource();
-    private string rule = Rules[0].Name;
+    private Rule rule = Rules[0];
     private string result = "";
     private bool busy = true;
     private bool disposed;
@@ -169,11 +169,11 @@
         }
     }
 
-    private async Task Choose(string name)
+    private async Task Choose(Rule selectedRule)
     {
         if (busy || disposed) return;
         busy = true;
-        rule = name;
+        rule = selectedRule;
         result = "";
         await InvokeAsync(StateHasChanged);
         await Task.Yield();
@@ -196,7 +196,7 @@
     {
         if (disposed || overlay == null) return;
         await map.WhenReady;
-        var chosen = Rules.First(r => r.Name == rule);
+        var chosen = rule;
         var subject = Wkt(chosen.Subject);
         var counterpart = chosen.Against == null ? new Collection<Feature>() : Wkt(chosen.Against);
         var invalid = chosen.Broken(subject, counterpart);

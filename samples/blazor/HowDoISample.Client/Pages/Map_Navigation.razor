@@ -9,13 +9,13 @@
         @* Pan, zoom, rotate and tilt are built into the map. The readout follows the view. *@
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@EmpireStateBuildingPosition" Zoom="12" Bearing="@InitialBearing" Pitch="@pitch"
+                 Center="@EmpireStateBuildingPosition" Zoom="@InitialZoom" Bearing="@InitialBearing" Pitch="@pitch"
                  OnCurrentExtentChanged="ExtentChanged"
                  OnCurrentExtentChanging="ExtentChanging">
             <OverlaysSetting>
                 @if (basemapStyle != null)
                 {
-                    <VectorTileOverlay Id="Basemap" Style="@basemapStyle" />
+                    <VectorTileOverlay Id="Basemap" @ref="basemapOverlay" Style="@basemapStyle" />
                 }
             </OverlaysSetting>
             <MapToolsSetting>
@@ -24,10 +24,12 @@
                                     UseNavigationStyle="true"
                                     CenterButtonCenter="@EmpireStateBuildingPosition"
                                     CenterButtonZoom="19"
-                                    CenterButtonBearing="@InitialBearing" />
+                                    CenterButtonBearing="@InitialBearing"
+                                    CenterButtonPitch="@InitialPitch" />
                     <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
                     <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
-                                 Center="@EmpireStateBuildingPosition" Scale="100000" Bearing="@InitialBearing" />
+                                 Center="@EmpireStateBuildingPosition" Zoom="@InitialZoom"
+                                 Bearing="@InitialBearing" Pitch="@InitialPitch" />
                 </MapTools>
             </MapToolsSetting>
             <MarkerOverlaySetting>
@@ -72,6 +74,8 @@
 
 @code {
     private const double InitialBearing = 30;
+    private const int InitialZoom = 16;
+    private const double InitialPitch = 45;
 
     private static readonly PointShape EmpireStateBuildingPosition =
         ProjectionConverter.Convert(4326, 3857, new PointShape(-73.9856654, 40.74843661));
@@ -80,20 +84,19 @@
         new PointMarkerStyle("images/empire_state_building.png", 0.5, 1, 0.1);
 
     private MapView map;
+    private VectorTileOverlay basemapOverlay;
     private MapStyle basemapStyle;
-    private MapStyle basemapWithBuildings;
-    private MapStyle basemapWithoutBuildings;
     private string coordinateReadout = "";
     private string cameraReadout = "";
     private double initialExtentWidth;
-    private double pitch;
+    private double pitch = InitialPitch;
     private bool buildingsVisible = true;
     private bool darkTheme;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-        await BuildBasemapStylesAsync();
+        await BuildBasemapStyleAsync();
         await InvokeAsync(StateHasChanged);
     }
 
@@ -121,9 +124,9 @@
             initialExtentWidth = currentExtent.Width;
         }
 
-        var zoom = 12 + Math.Log(initialExtentWidth / currentExtent.Width, 2);
-        var initialScale = map.ZoomScales[11];
-        var scale = initialScale / Math.Pow(2, zoom - 12);
+        var zoom = InitialZoom + Math.Log(initialExtentWidth / currentExtent.Width, 2);
+        var initialScale = map.ZoomScales[InitialZoom - 1];
+        var scale = initialScale / Math.Pow(2, zoom - InitialZoom);
         var rotation = -bearing;
         cameraReadout = string.Format(
             CultureInfo.InvariantCulture,
@@ -138,34 +141,27 @@
         pitch = double.Parse((string)e.Value, CultureInfo.InvariantCulture);
     }
 
-    private void ToggleBuildings(ChangeEventArgs e)
+    private async Task ToggleBuildings(ChangeEventArgs e)
     {
         buildingsVisible = (bool)e.Value;
-        basemapStyle = buildingsVisible ? basemapWithBuildings : basemapWithoutBuildings;
+        basemapStyle.SetLayerVisibility("buildings-3d", buildingsVisible);
+        await basemapOverlay.RedrawAsync();
     }
 
     private async Task ToggleTheme()
     {
         darkTheme = !darkTheme;
-        await BuildBasemapStylesAsync();
+        await BuildBasemapStyleAsync();
     }
 
-    private async Task BuildBasemapStylesAsync()
+    private async Task BuildBasemapStyleAsync()
     {
         var styleUri = darkTheme ? ThinkGeoVectorStyles.Dark : ThinkGeoVectorStyles.Light;
-        basemapWithBuildings = new MapStyle(
+        var style = new MapStyle(
             styleUri,
             new ThinkGeoVectorTileSource(GlobalSettings.ThinkGeoApiKey));
-        basemapWithoutBuildings = new MapStyle(
-            styleUri,
-            new ThinkGeoVectorTileSource(GlobalSettings.ThinkGeoApiKey));
-
-        // Resolve both documents now, so the checkbox only swaps an already prepared style.
-        await Task.WhenAll(
-            basemapWithBuildings.ResolveAsync(),
-            basemapWithoutBuildings.ResolveAsync());
-        basemapWithoutBuildings.SetLayerVisibility("buildings-3d", false);
-
-        basemapStyle = buildingsVisible ? basemapWithBuildings : basemapWithoutBuildings;
+        await style.ResolveAsync();
+        style.SetLayerVisibility("buildings-3d", buildingsVisible);
+        basemapStyle = style;
     }
 }

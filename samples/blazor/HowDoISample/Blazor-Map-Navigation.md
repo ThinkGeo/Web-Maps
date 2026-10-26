@@ -5,7 +5,8 @@ This document summarizes the changes made to the Blazor **Map Navigation** sampl
 ## Initial Map View
 
 - Centered the map on the Empire State Building at latitude `40.74843661` and longitude `-73.9856654`.
-- Set the initial Blazor zoom level to `12`.
+- Set the initial Blazor zoom level to `16` and pitch to `45` degrees so the
+  building extrusions are visible when the sample opens.
 - Set the initial bearing to `30` degrees, which corresponds to the WPF rotation value of `-30` degrees.
 - Added an Empire State Building marker using the image copied from the WPF v15 sample.
 
@@ -29,7 +30,9 @@ Added a camera panel on the right side of the map with the following controls:
 - **Pitch** slider with a range from 0 to 80 degrees.
 - **Dark Theme / Light Theme** button for switching the vector map style.
 
-The 3D building styles are prepared in advance so that switching the checkbox does not require rebuilding the style during every interaction.
+The 3D Buildings checkbox changes the `buildings-3d` layer visibility in the
+current style and redraws the existing overlay. It keeps the rest of the map
+visible and avoids preparing two copies of the same basemap style.
 
 ## Compass
 
@@ -42,7 +45,7 @@ The 3D building styles are prepared in advance so that switching the checkbox do
 
 - Copied the original globe image from the WPF v15 sample.
 - Positioned it directly below the compass.
-- Clicking the globe returns the map to the Empire State Building at scale `100,000` and bearing `30` degrees, matching the WPF v15 default view.
+- Clicking the globe returns the map to the Empire State Building at zoom `16`, bearing `30` degrees, and pitch `45` degrees.
 
 ## Navigation Bar
 

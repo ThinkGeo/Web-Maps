@@ -8,7 +8,7 @@
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@(new PointShape(-10780300, 3915800))" Zoom="12">
+                 Center="@InitialCenter" Zoom="InitialZoom">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
@@ -19,7 +19,9 @@
             </OverlaysSetting>
             <MapToolsSetting>
                 <MapTools>
-                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true" />
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom"
+                                    CenterButtonBearing="0" CenterButtonPitch="0" />
                 </MapTools>
             </MapToolsSetting>
         </MapView>
@@ -48,6 +50,9 @@
 </div>
 
 @code {
+    private static readonly PointShape InitialCenter = new PointShape(-10780300, 3915800);
+    private const int InitialZoom = 12;
+
     private const string StyleJson = @"{
   ""layers"": [
     { ""type"": ""fill"",

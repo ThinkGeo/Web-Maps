@@ -54,7 +54,13 @@
 
             <div style="font-weight:600;margin-top:6px">Rotating</div>
             <div style="display:flex;gap:4px;align-items:center;margin:2px 0">
-                <input type="range" min="-180" max="180" step="1" value="@rotation" @oninput="RotationSliderChanged" style="flex:1;min-width:0" />
+                <input type="range" min="-180" max="180" step="1" value="@rotation"
+                       @onpointerdown="@(() => rotationSliderActive = true)"
+                       @onpointerup="@(() => rotationSliderActive = false)"
+                       @onchange="@(() => rotationSliderActive = false)"
+                       @onpointercancel="@(() => rotationSliderActive = false)"
+                       @onblur="@(() => rotationSliderActive = false)"
+                       @oninput="RotationSliderChanged" style="flex:1;min-width:0" />
                 <input type="number" min="-180" max="180" step="1" @bind="rotation" @bind:after="ApplyRotationAsync" style="box-sizing:border-box;width:58px;flex:0 0 58px" />
             </div>
         </div>
@@ -91,6 +97,7 @@
     private double viewportWidth;
     private double viewportHeight;
     private double rotation;
+    private bool rotationSliderActive;
     private double zoom = 11;
     private double currentScale;
     private double scale = 10000;
@@ -180,7 +187,14 @@
     private void UpdateReadout(RectangleShape currentExtent, double bearing)
     {
         extent = currentExtent;
-        rotation = Math.Round(-bearing);
+        if (!rotationSliderActive)
+        {
+            var mapRotation = Math.Round(-bearing);
+            // Both ends of the slider draw the same camera angle. Keep the end the user chose.
+            rotation = Math.Abs(mapRotation) == 180
+                ? (rotation >= 0 ? 180 : -180)
+                : mapRotation;
+        }
         if (initialExtentWidth <= 0)
         {
             initialExtentWidth = currentExtent.Width;

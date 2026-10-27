@@ -62,6 +62,11 @@
             <label style="display:flex;align-items:center;gap:8px;margin-top:8px">
                 <span>Pitch</span>
                 <input type="range" min="0" max="80" step="1" value="@pitch" disabled="@(basemapStyle == null)"
+                       @onpointerdown="@(() => pitchSliderActive = true)"
+                       @onpointerup="@(() => pitchSliderActive = false)"
+                       @onchange="@(() => pitchSliderActive = false)"
+                       @onpointercancel="@(() => pitchSliderActive = false)"
+                       @onblur="@(() => pitchSliderActive = false)"
                        @oninput="PitchChanged" style="flex:1;min-width:0" />
                 <span style="width:36px;text-align:right">@pitch.ToString("0")&deg;</span>
             </label>
@@ -90,6 +95,7 @@
     private string cameraReadout = "";
     private double initialExtentWidth;
     private double pitch = InitialPitch;
+    private bool pitchSliderActive;
     private bool buildingsVisible = true;
     private bool darkTheme;
 
@@ -105,7 +111,7 @@
         await map.WhenReady;
 
         UpdateReadout(e.CurrentExtent, await map.GetBearingAsync());
-        pitch = await map.GetPitchAsync();
+        if (!pitchSliderActive) pitch = await map.GetPitchAsync();
     }
 
     private void ExtentChanging(CurrentExtentChangingMapViewEventArgs e)

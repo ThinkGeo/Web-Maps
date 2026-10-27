@@ -1,0 +1,50 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+@if (loading)
+{
+    <div @ref="indicator" role="status" aria-label="@Label" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 18px;border-radius:6px;background:rgba(255,255,255,.92);box-shadow:0 1px 6px rgba(0,0,0,.25);color:#303638;font:13px system-ui">
+            <img src="images/sample-loading-spinner.svg" alt="" width="64" height="64" />
+            <span>@Label</span>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public string MapId { get; set; } = "";
+    [Parameter, EditorRequired] public string SourceId { get; set; } = "";
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+
+    private readonly CancellationTokenSource disposal = new();
+    private ElementReference indicator;
+    private IJSObjectReference? module;
+    private bool loading = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        try
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>("import", disposal.Token, "./js/vector-source-loading.js");
+            await module.InvokeVoidAsync("waitForSource", disposal.Token, indicator, MapId, SourceId);
+            if (disposal.IsCancellationRequested) return;
+            loading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (OperationCanceledException) when (disposal.IsCancellationRequested) { }
+        catch (JSDisconnectedException) { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await disposal.CancelAsync();
+        if (module is not null)
+        {
+            try { await module.DisposeAsync(); }
+            catch (JSDisconnectedException) { }
+        }
+        disposal.Dispose();
+    }
+}

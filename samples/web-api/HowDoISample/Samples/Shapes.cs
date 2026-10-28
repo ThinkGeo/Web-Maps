@@ -302,6 +302,42 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 });
             });
 
+            // SQL over the zoning shapefile's attribute table: the shapefile read through GDAL,
+            // whose OGR runs the SQL, and ExecuteQuery on that source. The rows come back as a
+            // table, and the parcels the rows belong to as the matches, by their FID.
+            app.MapGet("/samples/shapes/sql", (string sql) =>
+            {
+                GdalManager.ConfigureGdal();
+                var zoning = new GdalFeatureSource(SampleData.Path("Shapefile/Zoning.shp")) { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+                zoning.Open();
+                try
+                {
+                    var table = zoning.ExecuteQuery(sql ?? "");
+                    var columns = table.Columns.Cast<System.Data.DataColumn>().Select(column => column.ColumnName).ToList();
+                    var all = table.Rows.Cast<System.Data.DataRow>().ToList();
+                    var rows = all.Take(200).Select(row => row.ItemArray.Select(value => value?.ToString()).ToArray()).ToList();
+                    var idColumn = columns.FindIndex(column => string.Equals(column, "FID", StringComparison.OrdinalIgnoreCase));
+                    var found = idColumn < 0
+                        ? new Collection<Feature>()
+                        : zoning.GetFeaturesByIds(all.Select(row => row[idColumn]?.ToString()).Where(id => !string.IsNullOrEmpty(id)), ReturningColumnsType.NoColumns);
+                    return Results.Json(new
+                    {
+                        columns,
+                        rows,
+                        matches = Json(GeoJson.Collection(found)),
+                        result = all.Count + " rows" + (rows.Count < all.Count ? ", the first " + rows.Count + " shown" : "") + (idColumn < 0 ? "; select FID to see the parcels" : ", " + found.Count + " parcels"),
+                    });
+                }
+                catch (Exception exception)
+                {
+                    return Results.Problem(exception.Message, statusCode: 400);
+                }
+                finally
+                {
+                    zoning.Close();
+                }
+            });
+
             // A filled circle with a white rim, drawn by a PointStyle: the picture the pages pin.
             app.MapGet("/samples/shapes/circle.png", (string fill, int size) =>
                 Results.Bytes(Pictures.OfStyle(PointStyle.CreateSimpleCircleStyle(GeoColor.FromHtml("#" + fill), size, GeoColors.White, 2), size + 6, size + 6), "image/png"));

@@ -53,12 +53,15 @@
             { type: 'line', paint: { 'line-color': '#000000', 'line-width': 2 } },
             { type: 'symbol', filter: ['==', ['geometry-type'], 'Point'], layout: { 'icon-image': 'pin', 'icon-allow-overlap': true } },
         ]);
-        let relation = relations[0], seed = null, cancel = null;
+        let relation = relations[0], seed = null, cancel = null, asked = 0;
         const escape = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
-        // The query goes to the server, which runs it on the shapefile with QueryTools.
+        // The query goes to the server, which runs it on the shapefile with QueryTools. Only
+        // the answer to the latest question is shown.
         const run = async (geometry) => {
+            const ticket = ++asked;
             const r = await tg.post('samples/shapes/relation', { relation, geometry, radius: +document.getElementById('radius').value });
+            if (ticket !== asked) return;
             seed = r.query;
             query.setData({ type: 'Feature', geometry: r.query, properties: {} });
             matches.setData(r.matches);
@@ -68,8 +71,10 @@
         // parcels they belong to are the matches.
         const sql = async () => {
             const grid = document.getElementById('grid');
+            const ticket = ++asked;
             try {
                 const r = await tg.get('samples/shapes/sql?sql=' + encodeURIComponent(document.getElementById('sql').value));
+                if (ticket !== asked) return;
                 grid.innerHTML = `<table><tr>${r.columns.map(c => `<th>${escape(c)}</th>`).join('')}</tr>${r.rows.map(row => `<tr>${row.map(v => `<td>${escape(v)}</td>`).join('')}</tr>`).join('')}</table>`;
                 query.setData(null);
                 matches.setData(r.matches);
@@ -77,6 +82,10 @@
             } catch (e) {
                 grid.innerHTML = `<div style="color:#b00020">${escape(e.message)}</div>`;
             }
+        };
+        // A drawn shape is queried and the pen is handed back for the next one.
+        const pen = (mode) => {
+            cancel = tg.draw(map, mode, (feature) => { run(feature.geometry); pen(mode); });
         };
         const choose = (name) => {
             relation = name;
@@ -93,7 +102,7 @@
             const frame = frames[name] || [[-10779430, 3914970], 18060];
             map.easeTo({ center: tg.toLngLat(frame[0][0], frame[0][1]), zoom: tg.zoomForScale(frame[1]) });
             if (sqlQuery) { sql(); return; }
-            if (!pointQuery) cancel = tg.draw(map, lineQuery ? 'line' : 'polygon', (feature) => { run(feature.geometry); choose(name); });
+            if (!pointQuery) pen(lineQuery ? 'line' : 'polygon');
             run(null);
         };
         map.on('click', (e) => { if (relation === 'Containing' || relation === 'Within a distance') run({ type: 'Point', coordinates: [e.lngLat.lng, e.lngLat.lat] }); });

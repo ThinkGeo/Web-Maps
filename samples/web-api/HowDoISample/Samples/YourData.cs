@@ -99,7 +99,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                     style = own,
                     bare = BareStyle(metadata),
                 };
-                ((IDisposable)tiles).Dispose();
+                (tiles as IDisposable)?.Dispose();
                 return Results.Json(result);
             });
         }

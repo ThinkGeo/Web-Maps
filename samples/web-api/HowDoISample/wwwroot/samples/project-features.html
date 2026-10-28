@@ -18,7 +18,7 @@
                 <label><input type="radio" name="what" value="layer"> A whole layer - a converter on its source</label>
             </div>
             <div id="shapes-box" class="controls">
-                <div class="row"><span>From EPSG</span><input type="number" id="epsg" value="4326" style="width:80px"><button class="btn primary" id="go">Reproject</button></div>
+                <div class="row"><span>From EPSG:4326 (longitude, latitude)</span><button class="btn primary" id="go">Reproject</button></div>
                 <textarea id="wkt" rows="7" spellcheck="false" style="font:12px Consolas,monospace;white-space:pre;resize:vertical"></textarea>
                 <div class="status" id="status"></div>
                 <pre id="converted" style="font:11px Consolas,monospace;color:#444;white-space:pre-wrap;word-break:break-all;margin:0"></pre>
@@ -54,7 +54,7 @@
         const reproject = async () => {
             const status = document.getElementById('status');
             try {
-                const result = await tg.post('samples/projections/reproject', { epsg: +document.getElementById('epsg').value, wkt: document.getElementById('wkt').value });
+                const result = await tg.post('samples/projections/reproject', { epsg: 4326, wkt: document.getElementById('wkt').value });
                 shapes.setData(result.features);
                 document.getElementById('converted').textContent = result.converted.join('\n');
                 tg.say(status, `${result.converted.length} shapes converted, now in the map's metres`);

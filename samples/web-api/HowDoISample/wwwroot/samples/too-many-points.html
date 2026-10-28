@@ -105,8 +105,8 @@
             if (map.getSource('sightings')) map.removeSource('sightings');
             if (overlay) { overlay.remove(); overlay = null; }
         };
-        // The clustered source is the browser's own; its layers are added by hand so the source
-        // options can be rebuilt whenever the two knobs below change.
+        // The clustered source is the browser's own; its layers are added by hand, and the two
+        // knobs below change its options.
         const cluster = (layers) => {
             if (map.getSource('sightings')) { for (const id of drawn) if (map.getLayer(id)) map.removeLayer(id); drawn = []; map.removeSource('sightings'); }
             map.addSource('sightings', { type: 'geojson', data: sightings, cluster: true, clusterRadius: +document.getElementById('cluster-radius').value, clusterMaxZoom: +document.getElementById('cluster-max').value });
@@ -159,7 +159,11 @@
         for (const id of ['cluster-radius', 'cluster-max']) document.getElementById(id).addEventListener('input', () => {
             document.getElementById('cluster-radius-value').textContent = document.getElementById('cluster-radius').value + 'px';
             document.getElementById('cluster-max-value').textContent = document.getElementById('cluster-max').value;
-            if (mode === 'cluster') cluster(clusterLayers);
+            // The source regroups in place; rebuilding it would empty the map until it loaded again.
+            if (mode === 'cluster') {
+                map.getSource('sightings').setClusterOptions({ cluster: true, clusterRadius: +document.getElementById('cluster-radius').value, clusterMaxZoom: +document.getElementById('cluster-max').value });
+                report();
+            }
         });
         const box = document.getElementById('ramps');
         Object.keys(ramps).forEach((name, i) => {

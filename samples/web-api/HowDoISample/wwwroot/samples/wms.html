@@ -27,7 +27,7 @@
                 <div style="margin:6px 0 2px;color:#555">Every layer it advertises</div>
                 <div class="names" id="names"></div>
             </div>
-            <p>None of that list reaches the browser. MapLibre has no WMS client, only a generic raster source, so capabilities, layer names, styles and the twenty-odd projections on offer are things only the server ever reads.</p>
+            <p>None of this reaches the browser. MapLibre has no WMS client, only a generic raster source, so the capabilities, layer names, styles and the twenty-odd projections on offer are read by the server alone.</p>
         </aside>
     </div>
     <script src="../lib/maplibre-gl.js"></script>
@@ -45,7 +45,10 @@
             tg.say(status, `${name}, drawn tile by tile on the server`);
         };
 
-        const service = await tg.get('samples/services/wms-capabilities');
+        const service = await tg.get('samples/services/wms-capabilities').catch((e) => {
+            tg.say(status, 'The WMS did not answer the server; try again later.', false);
+            throw e;
+        });
         document.getElementById('facts').innerHTML = [
             ['version', service.version],
             ['layers advertised', service.layers.length],

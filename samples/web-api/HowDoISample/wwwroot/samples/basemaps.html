@@ -21,7 +21,7 @@
             </div>
             <div style="font-weight:600;margin-top:4px">Raster tiles</div>
             <div id="raster" style="display:flex;flex-direction:column;gap:2px"></div>
-            <p>A vector basemap is a style URL: ThinkGeo Maps' light and dark are two styles over the same keyed tiles, and Mapbox, Esri or TomTom are their style URL with your key. A raster basemap is an XYZ address declared as a raster source, which is how Azure Maps, Google Maps, HERE and the rest are served too. The browser fetches either; the server has no part in it.</p>
+            <p>A vector basemap is a style URL: ThinkGeo Maps' light and dark are two styles over the same vector tiles, and Mapbox, Esri or TomTom work the same way, with their style URL and your key. A raster basemap is an XYZ tile URL declared as a raster source, which is how Azure Maps, Google Maps, HERE and others are served too. The browser fetches either directly; the server has no part in it.</p>
             <div id="status" style="margin-top:auto;font:11px Consolas,monospace;color:#444;word-break:break-all"></div>
         </aside>
     </div>
@@ -41,7 +41,7 @@
             'ThinkGeo Cloud - Light': { tiles: cloud('light', 'png'), tileSize: 512 },
             'ThinkGeo Cloud - Dark': { tiles: cloud('dark', 'png'), tileSize: 512 },
             'ThinkGeo Cloud - Aerial': { tiles: cloud('aerial', 'jpeg'), tileSize: 512 },
-            'ThinkGeo Cloud - Hybrid': { tiles: cloud('hybrid', 'png'), tileSize: 512 },
+            'ThinkGeo Cloud - Hybrid': { tiles: cloud('hybrid', 'jpeg'), tileSize: 512 },
             'OpenStreetMap': { tiles: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', tileSize: 256, attribution: '© OpenStreetMap contributors' },
         };
         const map = tg.createMap({ center: [-10779700, 3912000], zoom: 15, pitch: 45 });
@@ -64,7 +64,17 @@
             layers: [{ id: 'tiles', type: 'raster', source: 'tiles' }],
         }, p.tiles.replace(tg.apiKey, '{key}'))));
         document.getElementById('custom-radio').addEventListener('change', () => document.getElementById('custom-box').style.display = 'flex');
-        document.getElementById('load').addEventListener('click', () => { const url = document.getElementById('custom').value.trim(); show(url, url); });
+        // A style made for one region or a few zoom levels, like MapLibre's demo tiles, says
+        // where to look; the map goes there.
+        document.getElementById('load').addEventListener('click', () => {
+            const url = document.getElementById('custom').value.trim();
+            map.once('style.load', () => {
+                const { center, zoom, bearing, pitch } = map.getStyle();
+                if (center) map.jumpTo({ center, zoom, bearing, pitch });
+            });
+            map.setStyle(url, { diff: false });
+            status.textContent = url;
+        });
         status.textContent = styles['ThinkGeo Maps - Light'];
     </script>
 </body>

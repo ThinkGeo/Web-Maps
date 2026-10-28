@@ -103,7 +103,7 @@
     }
 
     // Pan or zoom one map and the other follows. The move it is given comes back as its own
-    // extent-changed event; that echo is recognised and not sent back.
+    // extent-changed event; that echo is recognized and not sent back.
     private async Task Mirror(bool fromClassic, RectangleShape extent)
     {
         var expectedHere = fromClassic ? expectedOnClassic : expectedOnNew;

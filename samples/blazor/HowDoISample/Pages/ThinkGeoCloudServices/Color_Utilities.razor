@@ -35,9 +35,9 @@
         }
         <div style="position:absolute;right:12px;bottom:40px;padding:8px 10px;background:rgba(255,255,255,.92);border-radius:4px;font:12px system-ui;box-shadow:0 1px 4px rgba(0,0,0,.25)">
             <div style="font-weight:600;margin-bottom:4px">Housing units per block group</div>
-            @for (var i = 0; i < colours.Count; i++)
+            @for (var i = 0; i < colors.Count; i++)
             {
-                <div><span style="display:inline-block;width:14px;height:10px;background:@colours[i];border:1px solid #888;vertical-align:middle"></span> @(i == colours.Count - 1 ? $"over {Breaks[i]}" : $"{Breaks[i]} to {Breaks[i + 1]}")</div>
+                <div><span style="display:inline-block;width:14px;height:10px;background:@colors[i];border:1px solid #888;vertical-align:middle"></span> @(i == colors.Count - 1 ? $"{Breaks[i]} and above" : $"{Breaks[i]} to under {Breaks[i + 1]}")</div>
             }
         </div>
     </div>
@@ -111,7 +111,7 @@
         "Tetrad" => "Get a family of colors based on a harmonious tetrad of hues.",
         _ => "Get a family of colors based on a harmonious triad of hues."
     };
-    private List<string> colours = new List<string>();
+    private List<string> colors = new List<string>();
     private string styleJson = Style(new[] { "#EEEEEE" });
 
     protected override void OnInitialized()
@@ -165,14 +165,14 @@
         {
             var got = await ColoursAsync(family, picked, Breaks.Length);
             if (disposed) return;
-            var palette = got.Take(Breaks.Length).Reverse().Select(colour => $"#{colour.R:X2}{colour.G:X2}{colour.B:X2}").ToList();
+            var palette = got.Take(Breaks.Length).Reverse().Select(color => $"#{color.R:X2}{color.G:X2}{color.B:X2}").ToList();
             if (palette.Count != Breaks.Length) throw new InvalidOperationException("The color service returned too few colors.");
-            colours = palette;
+            colors = palette;
             styleJson = Style(palette);
             await InvokeAsync(StateHasChanged);
             if (housingOverlay != null) await housingOverlay.RedrawAsync();
             generated = true;
-            status = $"{colours.Count} colours in the {family.ToLowerInvariant()} family.";
+            status = $"{colors.Count} colors in the {family.ToLowerInvariant()} family.";
         }
         catch (Exception exception)
         {
@@ -192,25 +192,25 @@
         client?.Dispose();
     }
 
-    // A family with a base colour gives several sets - one per colour of the family - and
+    // A family with a base color gives several sets - one per color of the family - and
     // the sets are read in order; a hue or quality family is one set.
-    private async Task<IEnumerable<GeoColor>> ColoursAsync(string name, GeoColor colour, int count)
+    private async Task<IEnumerable<GeoColor>> ColoursAsync(string name, GeoColor color, int count)
     {
         switch (name)
         {
-            case "Hue": return colour == null ? await client.GetColorsInHueFamilyAsync(count) : await client.GetColorsInHueFamilyAsync(colour, count);
-            case "Quality": return colour == null ? await client.GetColorsInQualityFamilyAsync(count) : await client.GetColorsInQualityFamilyAsync(colour, count);
-            case "Analogous": return Flat(colour == null ? await client.GetColorsInAnalogousFamilyAsync(count) : await client.GetColorsInAnalogousFamilyAsync(colour, count));
-            case "Complementary": return Flat(colour == null ? await client.GetColorsInComplementaryFamilyAsync(count) : await client.GetColorsInComplementaryFamilyAsync(colour, count));
-            case "Contrasting": return Flat(colour == null ? await client.GetColorsInContrastingFamilyAsync(count) : await client.GetColorsInContrastingFamilyAsync(colour, count));
-            case "Tetrad": return Flat(colour == null ? await client.GetColorsInTetradFamilyAsync(count) : await client.GetColorsInTetradFamilyAsync(colour, count));
-            default: return Flat(colour == null ? await client.GetColorsInTriadFamilyAsync(count) : await client.GetColorsInTriadFamilyAsync(colour, count));
+            case "Hue": return color == null ? await client.GetColorsInHueFamilyAsync(count) : await client.GetColorsInHueFamilyAsync(color, count);
+            case "Quality": return color == null ? await client.GetColorsInQualityFamilyAsync(count) : await client.GetColorsInQualityFamilyAsync(color, count);
+            case "Analogous": return Flat(color == null ? await client.GetColorsInAnalogousFamilyAsync(count) : await client.GetColorsInAnalogousFamilyAsync(color, count));
+            case "Complementary": return Flat(color == null ? await client.GetColorsInComplementaryFamilyAsync(count) : await client.GetColorsInComplementaryFamilyAsync(color, count));
+            case "Contrasting": return Flat(color == null ? await client.GetColorsInContrastingFamilyAsync(count) : await client.GetColorsInContrastingFamilyAsync(color, count));
+            case "Tetrad": return Flat(color == null ? await client.GetColorsInTetradFamilyAsync(count) : await client.GetColorsInTetradFamilyAsync(color, count));
+            default: return Flat(color == null ? await client.GetColorsInTriadFamilyAsync(count) : await client.GetColorsInTriadFamilyAsync(color, count));
         }
     }
 
     private static IEnumerable<GeoColor> Flat(Dictionary<GeoColor, Collection<GeoColor>> sets) => sets.Values.SelectMany(set => set);
 
-    // The block groups classed by H_UNITS: a step expression with one colour per break.
+    // The block groups classed by H_UNITS: a step expression with one color per break.
     private static string Style(IReadOnlyList<string> palette)
     {
         if (palette.Count < 2)
@@ -225,13 +225,13 @@
         return Fill(@"[""step"", [""to-number"", [""get"", ""H_UNITS""]], " + steps + "]");
     }
 
-    private static string Fill(string colour)
+    private static string Fill(string color)
     {
         return @"{
   ""layers"": [
     { ""type"": ""fill"", ""source-layer"": ""housing"",
       ""paint"": {
-          ""fill-color"": " + colour + @",
+          ""fill-color"": " + color + @",
           ""fill-opacity"": 0.75,
           ""fill-outline-color"": ""rgba(80,80,80,0.6)"" } }
   ]

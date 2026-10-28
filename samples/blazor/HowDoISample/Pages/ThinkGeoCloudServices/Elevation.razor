@@ -88,9 +88,9 @@
     { ""type"": ""line"", ""source-layer"": ""asked"",
       ""paint"": { ""line-color"": ""#1E5ADC"", ""line-width"": 2 } },
     { ""type"": ""circle"", ""source-layer"": ""samples"",
-      ""paint"": { ""circle-radius"": 5, ""circle-color"": COLOUR, ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 1 } },
+      ""paint"": { ""circle-radius"": 5, ""circle-color"": COLOR, ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 1 } },
     { ""type"": ""circle"", ""source-layer"": ""selected"",
-      ""paint"": { ""circle-radius"": 11, ""circle-color"": COLOUR, ""circle-opacity"": 0.25, ""circle-stroke-color"": COLOUR, ""circle-stroke-width"": 3 } },
+      ""paint"": { ""circle-radius"": 11, ""circle-color"": COLOR, ""circle-opacity"": 0.25, ""circle-stroke-color"": COLOR, ""circle-stroke-width"": 3 } },
     { ""type"": ""symbol"", ""source-layer"": ""samples"", ""minzoom"": 16,
       ""layout"": { ""text-field"": [""get"", ""feet""], ""text-font"": [""Noto Sans Bold""], ""text-size"": 10, ""text-offset"": [0, -1], ""text-anchor"": ""bottom"" },
       ""paint"": { ""text-color"": ""#333333"", ""text-halo-color"": ""#FFFFFF"", ""text-halo-width"": 1 } }
@@ -109,7 +109,7 @@
     private bool busy;
     private bool disposed;
     private string status = "Choose Point, Line or Area and draw on the map.";
-    private string marksStyle = StyleTemplate.Replace("COLOUR", "\"#1F3A93\"");
+    private string marksStyle = StyleTemplate.Replace("COLOR", "\"#1F3A93\"");
     private List<CloudElevationPointResult> samples = new List<CloudElevationPointResult>();
     private double average, highest, lowest;
     private string profile;
@@ -221,7 +221,7 @@
                 samplePoints.InternalFeatures.Add(new Feature(sample.Point, new Dictionary<string, string> { ["feet"] = sample.Elevation.ToString("0", CultureInfo.InvariantCulture) }));
             }
             await marks.RedrawAsync();
-            marksStyle = StyleTemplate.Replace("COLOUR", highest - lowest < 0.5 ? "\"#1F3A93\"" : FormattableString.Invariant(
+            marksStyle = StyleTemplate.Replace("COLOR", highest - lowest < 0.5 ? "\"#1F3A93\"" : FormattableString.Invariant(
                 $"[\"interpolate\", [\"linear\"], [\"to-number\", [\"get\", \"feet\"]], {lowest:0.#}, \"#2C7BB6\", {(lowest + highest) / 2:0.#}, \"#FFFFBF\", {highest:0.#}, \"#D7191C\"]"));
             await InvokeAsync(StateHasChanged);
             await marks.RedrawAsync();

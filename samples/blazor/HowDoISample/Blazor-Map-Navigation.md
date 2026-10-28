@@ -61,7 +61,7 @@ The navigation controls run directly in the browser to provide immediate feedbac
 
 ## Files Changed
 
-- `Pages/Map_Navigation.razor`
+- `../HowDoISample.Client/Pages/WebAssemblyCompatible/Map_Navigation.razor`
   - Map configuration, marker, readout, camera controls, compass, default extent button, and navigation bar.
 - `Pages/_Host.cshtml`
   - Browser-side event handling for continuous compass rotation and navigation bar interaction.

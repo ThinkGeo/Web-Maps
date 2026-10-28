@@ -55,7 +55,7 @@ namespace ThinkGeo.UI.Blazor.HowDoI
                 Id = "Poland",
                 Position = new PointShape(2130029.085362, 6821808.652036),
                 Style = new PointMarkerStyle("images/country/poland.png", 0.5, 1.0, 0.4),
-                Description = ", officially the Republic of Poland, is a country located in Central Europe. It is divided into 16 administrative subdivisions, covering an area of 312,696 square kilometres, and has a largely temperate seasonal climate."
+                Description = ", officially the Republic of Poland, is a country located in Central Europe. It is divided into 16 administrative subdivisions, covering an area of 312,696 square kilometers, and has a largely temperate seasonal climate."
             });
 
             result.Add(new MarkerPlaceModel

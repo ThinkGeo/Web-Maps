@@ -155,7 +155,7 @@
   {
     "id": "noaa-weather-stations",
     "title": "NOAA Weather Stations",
-    "description": "NOAA's weather stations and their current readings, read live by NoaaWeatherStationFeatureSource and coloured by temperature.",
+    "description": "NOAA's weather stations and their current readings, read live by NoaaWeatherStationFeatureSource and colored by temperature.",
     "href": "noaa-weather-stations",
     "source": "NOAA_Weather_Stations",
     "preicon": "fas fa-thermometer-half",
@@ -164,7 +164,7 @@
   {
     "id": "noaa-weather-warnings",
     "title": "NOAA Weather Warnings",
-    "description": "The warnings NOAA has active right now, read by NoaaWeatherWarningsFeatureSource and coloured by severity.",
+    "description": "The warnings NOAA has active right now, read by NoaaWeatherWarningsFeatureSource and colored by severity.",
     "href": "noaa-weather-warnings",
     "source": "NOAA_Weather_Warnings",
     "preicon": "fas fa-exclamation-triangle",
@@ -263,7 +263,7 @@
   {
     "id": "color-utilities",
     "title": "Color Utilities",
-    "description": "ColorCloudClient hands back a family of colours that go together; six of them class Frisco's census block groups by housing units.",
+    "description": "ColorCloudClient returns a coordinated palette of six colors to classify Frisco's census block groups by housing units.",
     "href": "color-utilities",
     "source": "Color_Utilities",
     "preicon": "fas fa-palette",
@@ -299,7 +299,7 @@
   {
     "id": "databases",
     "title": "Databases",
-    "description": "Open a table from a database - SQLite, a GeoPackage, an Esri file geodatabase, PostgreSQL / PostGIS or SQL Server; the connection is the only line that differs.",
+    "description": "Compare tables from SQLite, a GeoPackage, an Esri file geodatabase, PostgreSQL / PostGIS and SQL Server. Each uses its own feature source and projection settings.",
     "href": "databases",
     "source": "Databases",
     "preicon": "fas fa-database",
@@ -407,7 +407,7 @@
   {
     "id": "us-demographic",
     "title": "US Demographic Map",
-    "description": "A choropleth of the 2010 US census - each state coloured by the class its value falls in, with the breaks taken from the data. A step expression on the chosen column, drawn in the browser, with a legend read from the same breaks.",
+    "description": "A choropleth of the 2010 US census - each state colored by the class its value falls in, with the breaks taken from the data. A step expression on the chosen column, drawn in the browser, with a legend read from the same breaks.",
     "href": "us-demographic",
     "source": "US_Demographic",
     "preicon": "fas fa-fill-drip",
@@ -461,7 +461,7 @@
   {
     "id": "display-dot-density",
     "title": "Display Dot Density",
-    "description": "Owner- and renter-occupied housing as dots scattered inside each state, one per 25,000 units, generated once as data and coloured by the style.",
+    "description": "Owner- and renter-occupied housing as dots scattered inside each state, one per 25,000 units, generated once as data and colored by the style.",
     "href": "display-dot-density",
     "source": "Display_Dot_Density",
     "preicon": "fas fa-braille",
@@ -497,7 +497,7 @@
   {
     "id": "wind-field",
     "title": "Wind as a Vector Field",
-    "description": "NDFD surface wind read from two GeoTIFF bands with GDAL and drawn as a field of arrows, each turned where the wind goes and sized and coloured by speed.",
+    "description": "NDFD surface wind read from two GeoTIFF bands with GDAL and drawn as a field of arrows, each turned where the wind goes and sized and colored by speed.",
     "href": "wind-field",
     "source": "Wind_Field",
     "preicon": "fas fa-wind",
@@ -515,7 +515,7 @@
   {
     "id": "dynamic-rendering",
     "title": "Dynamic Rendering",
-    "description": "State populations since 1900 as circles that grow and change colour as a year slider moves; the features travel once and only the style expressions change.",
+    "description": "State populations since 1900 as circles that grow and change color as a year slider moves; the features travel once and only the style expressions change.",
     "href": "dynamic-rendering",
     "source": "Dynamic_Rendering",
     "preicon": "fas fa-chart-line",
@@ -524,7 +524,7 @@
   {
     "id": "legend",
     "title": "Legend",
-    "description": "A population map of US states with a matching LegendAdornmentLayer showing the range represented by each colour.",
+    "description": "A population map of US states with a matching LegendAdornmentLayer showing the range represented by each color.",
     "href": "legend",
     "source": "Legend",
     "preicon": "fas fa-list-ul",

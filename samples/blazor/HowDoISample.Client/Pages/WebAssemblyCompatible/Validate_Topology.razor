@@ -142,7 +142,7 @@
         Paint("broken", GeoColors.Red);
     }
 
-    // Each set drawn in its colour whatever it holds: filled areas, wide lines, dots.
+    // Each set drawn in its color whatever it holds: filled areas, wide lines, dots.
     private void Paint(string layer, GeoColor color)
     {
         style.AddFillLayer(layer + "-fill", "shapes", layer, new FillPaint(new GeoColor(50, color), outlineColor: color), filter: StyleExpressions.GeometryType(WellKnownType.Polygon))

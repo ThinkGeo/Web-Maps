@@ -96,7 +96,7 @@
             var here = 40 + random.Next(45);
             for (var i = 0; i < here; i++)
             {
-                // A gaussian scatter, tens of kilometres wide, around the metro.
+                // A gaussian scatter, tens of kilometers wide, around the metro.
                 var x = mx + Gaussian(random) * 90000;
                 var y = my + Gaussian(random) * 90000;
                 features.Add(new Feature(new PointShape(x, y)));

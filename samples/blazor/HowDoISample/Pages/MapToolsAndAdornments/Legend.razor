@@ -23,12 +23,12 @@
     </MapView>
     <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
         <div style="font-weight:600;margin-bottom:6px">Legend</div>
-        <div style="color:#e5e5e5;line-height:1.4">US states are coloured by 1990 population. The legend on the map shows the population range for each matching colour.</div>
+        <div style="color:#e5e5e5;line-height:1.4">US states are colored by 1990 population. The legend on the map shows the population range for each matching color.</div>
     </div>
 </div>
 
 @code {
-    private static readonly (double From, string Colour, GeoColor Fill)[] Classes =
+    private static readonly (double From, string Color, GeoColor Fill)[] Classes =
     {
         (0, "#B0C4DE", GeoColor.FromHtml("#B0C4DE")),
         (2_000_000, "#87CEFA", GeoColor.FromHtml("#87CEFA")),

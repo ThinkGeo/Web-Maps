@@ -40,9 +40,9 @@
         </div>
         <div style="position:absolute;right:12px;bottom:38px;padding:8px 10px;background:rgba(255,255,255,.92);border-radius:4px;font:12px system-ui;box-shadow:0 1px 4px rgba(0,0,0,.25);z-index:1">
             <div style="font-weight:600;margin-bottom:4px">Travel Times</div>
-            @foreach (var (minutes, colour) in Bands)
+            @foreach (var (minutes, color) in Bands)
             {
-                <div><span style="display:inline-block;width:14px;height:10px;background:@colour;border:1px solid #888;vertical-align:middle"></span> &lt;@minutes minutes</div>
+                <div><span style="display:inline-block;width:14px;height:10px;background:@color;border:1px solid #888;vertical-align:middle"></span> &lt;@minutes minutes</div>
             }
         </div>
     </div>
@@ -54,7 +54,7 @@
     private static readonly PointShape InitialSearchPoint = new PointShape(-10776836.14, 3912350.71);
     private static readonly PointMarkerStyle CenterMarkerStyle = new PointMarkerStyle("images/routing-service-area-marker.png", 0.5, 1, 1);
 
-    private static readonly (int Minutes, string Colour)[] Bands =
+    private static readonly (int Minutes, string Color)[] Bands =
     {
         (15, "rgba(46,160,67,0.45)"),
         (30, "rgba(240,200,40,0.45)"),

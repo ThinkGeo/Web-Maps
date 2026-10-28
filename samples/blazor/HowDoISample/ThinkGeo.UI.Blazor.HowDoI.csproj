@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Pages\*.razor">
+    <Content Update="Pages\**\*.razor">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Data\**" Exclude="Data\temp\**;Data\**\*.json" CopyToPublishDirectory="PreserveNewest" />
@@ -38,14 +38,14 @@
 
   <Target Name="PublishClientRazorSources" AfterTargets="Publish">
     <ItemGroup>
-      <ClientRazorSourceFile Include="..\HowDoISample.Client\Pages\*.razor" />
+      <ClientRazorSourceFile Include="..\HowDoISample.Client\Pages\**\*.razor" />
     </ItemGroup>
     <Copy SourceFiles="@(ClientRazorSourceFile)" DestinationFolder="$(PublishDir)ClientPages" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="PublishRazorSources" AfterTargets="Publish">
     <ItemGroup>
-      <RazorSourceFile Include="Pages\*.razor" />
+      <RazorSourceFile Include="Pages\**\*.razor" />
     </ItemGroup>
     <Copy SourceFiles="@(RazorSourceFile)" DestinationFolder="$(PublishDir)Pages" SkipUnchangedFiles="true" />
   </Target>

@@ -27,8 +27,10 @@ namespace ThinkGeo.UI.Blazor.HowDoI
             };
             foreach (var folder in folders)
             {
-                var file = Path.Combine(folder, sample + ".razor");
-                if (File.Exists(file)) return await File.ReadAllTextAsync(file);
+                if (!Directory.Exists(folder)) continue;
+
+                foreach (var file in Directory.EnumerateFiles(folder, sample + ".razor", SearchOption.AllDirectories))
+                    return await File.ReadAllTextAsync(file);
             }
             return string.Empty;
         }

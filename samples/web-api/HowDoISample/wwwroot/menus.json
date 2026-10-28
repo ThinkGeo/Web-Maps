@@ -2,7 +2,7 @@
   {
     "id": "getting-started",
     "title": "Getting Started",
-    "description": "A shapefile on the server becomes vector tiles the browser draws with one style rule. Fit the map to the layer's extent, go to a scale, and hold it inside Frisco.",
+    "description": "A shapefile on the server is served as vector tiles the browser draws with one style rule. Fit the map to the layer's extent, go to a scale, and keep it inside Frisco.",
     "source": "GettingStarted",
     "preicon": "fas fa-file",
     "group": "Getting Started"

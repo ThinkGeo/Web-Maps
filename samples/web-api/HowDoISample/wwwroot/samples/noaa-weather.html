@@ -33,7 +33,7 @@
         const bySeverity = (alpha) => ['match', ['get', 'SEVERITY'], 'Extreme', `rgba(215,25,28,${alpha})`, 'Severe', `rgba(244,109,67,${alpha})`, 'Moderate', `rgba(253,174,97,${alpha})`, 'Minor', `rgba(171,217,233,${alpha})`, `rgba(150,150,150,${alpha})`];
         const feeds = {
             stations: {
-                note: 'NoaaWeatherStationFeatureSource reads the stations and their current readings on the server, and they are cut into tiles at tiles/stations/. Each dot is coloured by its Temperature column, and labelled with it past zoom 7.',
+                note: 'NoaaWeatherStationFeatureSource reads the stations and their current readings on the server, and they are cut into tiles at tiles/stations/. Each dot is coloured by its Temperature column and labelled with the temperature past zoom 7.',
                 layers: [
                     { type: 'circle', 'source-layer': 'stations',
                       paint: { 'circle-radius': 4.5, 'circle-color': ['step', ['to-number', ['get', 'Temperature']], 'rgba(69,117,180,1)', 32, 'rgba(145,191,219,1)', 50, 'rgba(255,255,191,1)', 70, 'rgba(252,141,89,1)', 85, 'rgba(215,48,39,1)'],
@@ -44,7 +44,7 @@
                 ],
             },
             warnings: {
-                note: 'NoaaWeatherWarningsFeatureSource reads the active warnings on the server, served at tiles/warnings/: polygons coloured by their SEVERITY column and labelled by EVENT. On a quiet day there may be very few.',
+                note: 'NoaaWeatherWarningsFeatureSource reads the active warnings on the server, served at tiles/warnings/: polygons coloured by their SEVERITY column and labelled by EVENT. On a quiet day there may be very few active warnings.',
                 layers: [
                     { type: 'fill', 'source-layer': 'warnings', paint: { 'fill-color': bySeverity(0.4) } },
                     { type: 'line', 'source-layer': 'warnings', paint: { 'line-color': bySeverity(1), 'line-width': 1.5 } },

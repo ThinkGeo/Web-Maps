@@ -13,7 +13,7 @@
         <aside class="panel editor-panel">
             <div class="editor">
                 <div class="head">style.json - edit it; the map follows</div>
-                <div class="note">Cadastral parcels of the Netherlands from PDOK's WFS 2.0 service. The server asks the service for the features each tile needs, cuts them at tiles/parcels/, and the browser draws the tiles; the service is never called from the browser.</div>
+                <div class="note">Cadastral parcels of the Netherlands from PDOK's WFS 2.0 service. The server asks the service for the features each tile needs and cuts them into vector tiles at tiles/parcels/; the browser draws the tiles and never calls the WFS itself.</div>
                 <textarea id="style" spellcheck="false"></textarea>
                 <div class="status" id="status"></div>
             </div>

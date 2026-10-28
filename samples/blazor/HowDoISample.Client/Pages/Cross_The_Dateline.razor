@@ -7,21 +7,6 @@
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
-<style>
-    /* This flight sample has no navigation home; the center dot is visual only. */
-    .cross-dateline-map [data-thinkgeo-navigation-bar="true"] > div:first-child::after {
-        content: "";
-        position: absolute;
-        top: 25px;
-        left: 25px;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #0878d1;
-        pointer-events: none;
-    }
-</style>
-
 <div class="map-container cross-dateline-map" style="display:flex">
   <div style="flex:1;min-width:0;position:relative">
     @* The route is stored the way a navigator writes it - continuous longitudes running
@@ -30,7 +15,7 @@
        tile cut folds the far-side geometry back into the world so it draws whole either way. *@
     <MapView Id="@mapId" @ref="map" MapUnit="GeographyUnit.Meter"
              Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-             Center="@(new PointShape(-20037508, 3500000))" Zoom="3"
+             Center="@InitialCenter" Zoom="InitialZoom"
              Projection="@projection" OnReady="MapReadyAsync">
         <OverlaysSetting>
             <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
@@ -39,7 +24,9 @@
         </OverlaysSetting>
         <MapToolsSetting>
             <MapTools>
-                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true" />
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom"
+                                CenterButtonBearing="0" CenterButtonPitch="0" />
             </MapTools>
         </MapToolsSetting>
     </MapView>
@@ -93,6 +80,8 @@
 </div>
 
 @code {
+    private static readonly PointShape InitialCenter = new PointShape(-20037508, 3500000);
+    private const int InitialZoom = 3;
     private readonly string mapId = "dateline-" + Guid.NewGuid().ToString("N");
     private bool disposed;
     private Task initialization;

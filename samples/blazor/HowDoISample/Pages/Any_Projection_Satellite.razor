@@ -5,21 +5,6 @@
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
-<style>
-    /* This sample has no single navigation home; show a non-interactive center dot only here. */
-    .projection-satellite-map [data-thinkgeo-navigation-bar="true"] > div:first-child::after {
-        content: "";
-        position: absolute;
-        top: 25px;
-        left: 25px;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #0878d1;
-        pointer-events: none;
-    }
-</style>
-
 <div class="map-container projection-satellite-map" style="display:flex">
     <div style="flex:1;min-width:0;position:relative">
         @* Raster tiles are reprojected on the server; the browser's vector renderer cannot draw these projections. *@
@@ -36,6 +21,9 @@
                 </MapTools>
             </MapToolsSetting>
         </MapView>
+        <button type="button" aria-label="Return to the selected projection center" title="Return to the selected projection center"
+                @onclick="ResetCurrentViewAsync" disabled="@changingProjection"
+                style="position:absolute;top:35px;left:35px;width:8px;height:8px;padding:0;border:0;border-radius:50%;background:#0878d1;cursor:pointer;z-index:3"></button>
         <div aria-hidden="true"
              style="position:absolute;inset:0;z-index:20;background:#DCE8EF;opacity:@(mapFaded ? "1" : "0");transition:opacity 260ms ease-in-out;pointer-events:@(changingProjection ? "auto" : "none")"></div>
     </div>
@@ -115,14 +103,7 @@
             aerial.ProjectionConverter = projection == null ? null : new GdalProjectionConverter(3857, projection);
             aerial.ProjectionConverter?.Open();
             await overlay.RedrawAsync();
-            if (RegionalViews.TryGetValue(choice, out var view))
-            {
-                await map.ZoomToAsync(view.Center, MapUtil.GetScaleFromResolution(view.Resolution, GeographyUnit.Meter));
-            }
-            else
-            {
-                await map.ZoomToCenterAsync(2, new PointShape(0, 0));
-            }
+            await ZoomToDefaultViewAsync(choice);
 
             // RedrawAsync only starts tile replacement. Keep the old image covered until
             // OpenLayers has finished loading and drawing the new viewport's tiles.
@@ -137,6 +118,21 @@
             mapFaded = false;
             changingProjection = false;
         }
+    }
+
+    private async Task ResetCurrentViewAsync()
+    {
+        if (changingProjection) return;
+        await map.WhenReady;
+        await ZoomToDefaultViewAsync(chosen);
+    }
+
+    private Task ZoomToDefaultViewAsync(string choice)
+    {
+        if (RegionalViews.TryGetValue(choice, out var view))
+            return map.ZoomToAsync(view.Center, MapUtil.GetScaleFromResolution(view.Resolution, GeographyUnit.Meter));
+
+        return map.ZoomToCenterAsync(2, new PointShape(0, 0));
     }
 
     public async ValueTask DisposeAsync()

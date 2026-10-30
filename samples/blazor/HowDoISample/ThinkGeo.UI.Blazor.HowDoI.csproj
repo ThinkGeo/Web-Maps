@@ -21,11 +21,11 @@
     <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.0.0-beta214" />
     <PackageReference Include="ThinkGeo.PostgreSql" Version="15.0.0-beta214" />
     <PackageReference Include="ThinkGeo.SqlServer" Version="15.0.0-beta214" />
+    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.0.0-beta244" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\HowDoISample.Client\ThinkGeo.UI.Blazor.HowDoI.Client.csproj" />
-    <ProjectReference Include="..\..\..\..\thinkgeosdk\ThinkGeo.UI\Web\ThinkGeo.UI.Blazor\ThinkGeo.UI.Blazor.csproj" />
     <ProjectReference Include="..\..\..\..\thinkgeosdk\ThinkGeo.Core\Extensions\Cad\ThinkGeo.Cad.csproj" Condition="'$(OS)' == 'Windows_NT'" />
   </ItemGroup>
 

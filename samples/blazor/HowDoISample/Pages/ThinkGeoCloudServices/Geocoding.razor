@@ -37,24 +37,6 @@
             <label for="geocoding-max">Maximum Results:</label>
             <input id="geocoding-max" type="number" min="1" max="100" @bind="maxResults" style="@SidebarInputStyle" />
 
-            <label for="geocoding-match">SearchType:</label>
-            <select id="geocoding-match" @bind="searchType" style="@SidebarInputStyle">
-                <option value="Fuzzy">Fuzzy</option>
-                <option value="Exact">Exact</option>
-            </select>
-            <div style="grid-column:1 / -1;font-size:12px;line-height:1.3">@(searchType == "Fuzzy" ? "(Returns both exact and approximate matches for the search address)" : "(Returns exact matches only for the search address)")</div>
-
-            <label for="geocoding-type">LocationType:</label>
-            <select id="geocoding-type" @bind="locationType" style="@SidebarInputStyle">
-                <option value="Default">Default</option>
-                <option value="Address">Address</option>
-                <option value="Street">Street</option>
-                <option value="City">City</option>
-                <option value="County">County</option>
-                <option value="Zipcode">Zipcode</option>
-                <option value="State">State</option>
-            </select>
-
             <button style="grid-column:1 / -1;margin-top:4px;@SidebarButtonStyle" @onclick="SearchAsync" disabled="@busy">Search</button>
             <div role="status" style="grid-column:1 / -1;min-height:18px;line-height:1.3">@status</div>
         </div>
@@ -98,8 +80,6 @@
     private GeocodingCloudClient client;
     private string searchText = "6101 Frisco Square Blvd, Frisco, TX 75034";
     private int maxResults = 100;
-    private string searchType = "Fuzzy";
-    private string locationType = "Default";
     private bool busy;
     private string status = "";
     private List<CloudGeocodingLocation> found = new List<CloudGeocodingLocation>();
@@ -137,8 +117,6 @@
             var options = new CloudGeocodingOptions
             {
                 MaxResults = maxResults,
-                FuzzyMatch = searchType == "Fuzzy",
-                LocationType = locationType == "Default" ? null : locationType,
                 ResultProjectionInSrid = 3857,
                 BBox = await map.GetCurrentExtentAsync()
             };
@@ -149,8 +127,8 @@
                 return;
             }
 
-            found = result.Locations?.Where(MatchesSelectedLocationType).ToList() ?? new List<CloudGeocodingLocation>();
-            status = $"Found {found.Count} matching locations.";
+            found = result.Locations?.ToList() ?? new List<CloudGeocodingLocation>();
+            status = $"Found {found.Count} locations.";
             hits.InternalFeatures.Clear();
             foreach (var location in found)
             {
@@ -172,15 +150,6 @@
         {
             busy = false;
         }
-    }
-
-    private bool MatchesSelectedLocationType(CloudGeocodingLocation location)
-    {
-        if (locationType == "Default") return true;
-        if (string.Equals(location.LocationType, locationType, StringComparison.OrdinalIgnoreCase)) return true;
-        return locationType == "Zipcode" &&
-               (string.Equals(location.LocationType, "PostalCode", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(location.LocationType, "Postcode", StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task PickAsync(CloudGeocodingLocation location)

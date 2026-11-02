@@ -65,7 +65,8 @@
         const measure = async (lngLat) => {
             const r = await tg.post('samples/shapes/measure', { measurement, lng: lngLat && lngLat[0], lat: lngLat && lngLat[1], startingOffset: +document.getElementById('offset').value || 500, runLength: +document.getElementById('run').value || 1000, startingPoint: document.getElementById('from').value });
             measured.setData(r.drawn);
-            stadium.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: r.stadium }, properties: {} });
+            // The stadium is only part of the measurement that runs to it.
+            stadium.setData(measurement === 'Shortest line to the stadium' ? { type: 'Feature', geometry: { type: 'Point', coordinates: r.stadium }, properties: {} } : null);
             document.getElementById('result').textContent = r.result;
             if (r.bounds) tg.fit(map, r.bounds, 0);
         };

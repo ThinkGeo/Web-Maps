@@ -103,8 +103,12 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                         // while the shape is within it, the line is moved so that it starts on the
                         // shape's closest point, the classic snap; the circle is the reach.
                         const double reachInMeters = 400;
+                        // The gap is measured from the shape itself, not from its bounding box: on
+                        // the box's east edge the shape can still be well over the reach away, and
+                        // then no gap in the sweep ever reached it.
                         var box = shape.GetBoundingBox();
-                        var start = new PointShape(box.MaxX + first, box.GetCenterPoint().Y);
+                        var anchor = shape.GetClosestPointTo(new PointShape(box.MaxX + 1, box.GetCenterPoint().Y), GeographyUnit.Meter);
+                        var start = new PointShape(anchor.X + first, anchor.Y);
                         var probe = new LineShape(new Collection<Vertex> { new Vertex(start), new Vertex(start.X + 1500, start.Y + 600) });
                         region = start.Buffer(reachInMeters, GeographyUnit.Meter, DistanceUnit.Meter);
                         if (shape.GetDistanceTo(start, GeographyUnit.Meter, DistanceUnit.Meter) <= reachInMeters)
@@ -344,9 +348,10 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
 
             // One topology rule checked on crafted shapes: blue is what is checked against,
             // green what the rule checks, red what breaks it.
-            app.MapGet("/samples/shapes/topology", (string rule) =>
+            app.MapGet("/samples/shapes/topology", (string rule, string group) =>
             {
-                var chosen = Topology.Rules.FirstOrDefault(candidate => candidate.Name == rule) ?? Topology.Rules[0];
+                // Lines and Polygons each have a "Must not overlap": the group tells them apart.
+                var chosen = Topology.Rules.FirstOrDefault(candidate => candidate.Name == rule && (group == null || candidate.Group == group)) ?? Topology.Rules[0];
                 var subject = Topology.Wkt(chosen.Subject);
                 var counterpart = chosen.Against == null ? new Collection<Feature>() : Topology.Wkt(chosen.Against);
                 var invalid = chosen.Broken(subject, counterpart);

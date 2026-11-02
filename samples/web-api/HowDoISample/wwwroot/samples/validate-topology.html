@@ -37,8 +37,8 @@
         const broken = paint('broken', '#FF0000', 'rgba(255,0,0,0.2)');
         const list = document.getElementById('rules');
         let listed = false;
-        const run = async (rule) => {
-            const r = await tg.get('samples/shapes/topology?rule=' + encodeURIComponent(rule || ''));
+        const run = async (rule, group) => {
+            const r = await tg.get('samples/shapes/topology?rule=' + encodeURIComponent(rule || '') + '&group=' + encodeURIComponent(group || ''));
             if (!listed) {
                 listed = true;
                 let group = null;
@@ -46,7 +46,7 @@
                     if (item.group !== group) { group = item.group; const head = document.createElement('div'); head.style.cssText = 'font-weight:600;color:#666;margin-top:6px'; head.textContent = group; list.appendChild(head); }
                     const label = document.createElement('label');
                     const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'rule', checked: item.name === r.rules[0].name });
-                    radio.addEventListener('change', () => run(item.name));
+                    radio.addEventListener('change', () => run(item.name, item.group));
                     label.append(radio, item.name);
                     list.appendChild(label);
                 }

@@ -30,9 +30,12 @@
 
         // The archive is opened on the server; its metadata says which layers it holds and how
         // far it reaches. Both styles name the overlay serving it as their only source.
+        let asked = 0;
         const open = async (zoomTo) => {
+            const mine = ++asked;
             try {
                 const info = await tg.get('samples/your-data/offline/' + archive);
+                if (mine !== asked) return; // a later choice overtook this one
                 const own = document.getElementById('own').checked;
                 const style = JSON.parse(own ? info.style : info.bare);
                 const source = { type: 'vector', tiles: [tg.root + info.tiles], minzoom: info.minzoom, maxzoom: info.maxzoom };

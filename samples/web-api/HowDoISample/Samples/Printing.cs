@@ -45,11 +45,13 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                     var height = Math.Clamp((int)Math.Round(size * extent.Height / extent.Width), 1, 4000);
                     using var picture = new GeoImage(width, height);
                     var drawingExtent = MapUtil.GetDrawingExtent(extent, width, height);
-                    var features = await basemap.GetFeaturesInsideBoundingBoxAsync(drawingExtent, MapUtil.GetScale(GeographyUnit.Meter, drawingExtent, width, height), CancellationToken.None);
                     var canvas = GeoCanvas.CreateDefaultGeoCanvas();
                     canvas.BeginDrawing(picture, drawingExtent, GeographyUnit.Meter);
                     var labels = new Collection<SimpleCandidate>();
-                    basemap.Draw(canvas, features, labels);
+                    // The layer's own draw, not its features handed to Draw: only the layer's draw
+                    // paints the style's background, and without it the picture is transparent
+                    // where the style has only a colour, and half-transparent where its fills are.
+                    await basemap.DrawAsync(canvas, labels);
                     canvas.Flush();
                     zoning.Draw(canvas, labels);
                     canvas.EndDrawing();

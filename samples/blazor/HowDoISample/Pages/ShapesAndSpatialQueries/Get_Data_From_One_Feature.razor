@@ -8,6 +8,22 @@
     var initialCenter = new PointShape(-10778100, 3915600);
 }
 
+<style>
+    .popup-content {
+        font: 11px Verdana,sans-serif;
+        white-space: pre;
+        max-height: 260px;
+        overflow: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+    @@supports (-moz-appearance: none) {
+        .popup-content {
+            padding-bottom: 10px;
+        }
+    }
+</style>
+
 <div class="map-container" style="display:flex">
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
@@ -22,7 +38,9 @@
                 <PopupOverlay Id="Info" PopupSource="@picked">
                     <PopupSetting Context="park">
                         <Popup Id="park-info" Position="@(((Feature)park).GetShape().GetCenterPoint())">
-                            <div style="font:11px Verdana,sans-serif;white-space:pre;max-height:260px;overflow:auto">@Describe((Feature)park)</div>
+                            <div class="popup-content">
+                                @Describe((Feature)park)
+                            </div>
                         </Popup>
                     </PopupSetting>
                 </PopupOverlay>

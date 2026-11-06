@@ -218,7 +218,7 @@
         public override bool IsOpen => true;
         public override Task OpenAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
-        protected override Task<byte[]> GetTileImageCoreAsync(int zoom, int x, int y, CancellationToken cancellationToken)
+        protected override Task<byte[]> GetTileImageAsyncCore(int zoom, long x, long y, CancellationToken cancellationToken)
         {
             var path = Path.Combine(root, zoom.ToString(), x.ToString(), y + ".jpg");
             return Task.FromResult(File.Exists(path) ? File.ReadAllBytes(path) : null);

@@ -87,7 +87,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 var tiles = OpenArchive(archive);
                 await tiles.OpenAsync();
                 var bounds = archive == "mbtiles" ? ((MbTilesVectorTileSource)tiles).GetBoundingBox() : ((PmTilesVectorTileSource)tiles).GetBoundingBox();
-                var metadata = archive == "mbtiles" ? ((MbTilesVectorTileSource)tiles).Metadata["json"] : ((PmTilesVectorTileSource)tiles).MetadataJson;
+                var metadata = archive == "mbtiles" ? ((MbTilesVectorTileSource)tiles).MetadataJson : ((PmTilesVectorTileSource)tiles).MetadataJson;
                 var own = await File.ReadAllTextAsync(SampleData.Path(archive == "mbtiles" ? "Mbtiles/style.json" : "Pmtiles/style.json"));
                 var result = new
                 {

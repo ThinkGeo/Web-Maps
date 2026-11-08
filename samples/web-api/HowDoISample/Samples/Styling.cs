@@ -361,7 +361,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 var zoomScales = new ZoomLevelSet().GetScales();
                 foreach (var layer in layers)
                 {
-                    var translation = FeatureLayerTranslator.Translate(layer, source, zoomScales);
+                    var translation = FeatureLayerTranslator.TranslateInto(layer, source, zoomScales);
                     style.AddFeatureLayer(translation);
                     warnings.AddRange(translation.Warnings);
                     warnings.AddRange(translation.JsonWarnings);

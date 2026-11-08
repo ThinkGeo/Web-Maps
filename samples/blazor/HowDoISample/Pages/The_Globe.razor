@@ -6,7 +6,7 @@
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
              Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
              Center="@(new PointShape(0, 2000000))" Zoom="2"
-             Projection="@projection">
+             DisplayProjection="@projection">
         <OverlaysSetting>
             <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                             ApiKey="@GlobalSettings.ThinkGeoApiKey" />
@@ -17,13 +17,13 @@
         <div style="font-weight:600;margin-bottom:8px">The globe</div>
 
         <label style="display:block;margin:4px 0;cursor:pointer">
-            <input type="radio" name="projection" checked="@(projection == MapViewProjection.VerticalPerspective)"
-                   @onchange="@(() => projection = MapViewProjection.VerticalPerspective)" />
+            <input type="radio" name="projection" checked="@(projection == DisplayProjection.VerticalPerspective)"
+                   @onchange="@(() => projection = DisplayProjection.VerticalPerspective)" />
             A ball
         </label>
         <label style="display:block;margin:4px 0;cursor:pointer">
-            <input type="radio" name="projection" checked="@(projection == MapViewProjection.WebMercator)"
-                   @onchange="@(() => projection = MapViewProjection.WebMercator)" />
+            <input type="radio" name="projection" checked="@(projection == DisplayProjection.WebMercator)"
+                   @onchange="@(() => projection = DisplayProjection.WebMercator)" />
             Flat - web mercator, what it unrolls into
         </label>
 
@@ -39,5 +39,5 @@
 
 @code {
     private MapView map;
-    private MapViewProjection projection = MapViewProjection.VerticalPerspective;
+    private DisplayProjection projection = DisplayProjection.VerticalPerspective;
 }

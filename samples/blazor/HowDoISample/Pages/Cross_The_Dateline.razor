@@ -9,7 +9,7 @@
        tile cut folds the far-side geometry back into the world so it draws whole either way. *@
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
              Center="@(new PointShape(-20037508, 4900000))" Zoom="3"
-             Projection="@projection">
+             DisplayProjection="@projection">
         <OverlaysSetting>
             <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                             ApiKey="@GlobalSettings.ThinkGeoApiKey" />
@@ -22,13 +22,13 @@
         <div style="color:#333">Los Angeles &rarr; Shanghai, a great-circle route through the antimeridian, with its 100-nautical-mile corridor.</div>
 
         <label style="display:block;margin:8px 0 2px;cursor:pointer">
-            <input type="radio" name="proj" checked="@(projection == MapViewProjection.WebMercator)"
-                   @onchange="@(() => projection = MapViewProjection.WebMercator)" />
+            <input type="radio" name="proj" checked="@(projection == DisplayProjection.WebMercator)"
+                   @onchange="@(() => projection = DisplayProjection.WebMercator)" />
             Web Mercator - the seam is at 180&deg;
         </label>
         <label style="display:block;margin:2px 0;cursor:pointer">
-            <input type="radio" name="proj" checked="@(projection == MapViewProjection.VerticalPerspective)"
-                   @onchange="@(() => projection = MapViewProjection.VerticalPerspective)" />
+            <input type="radio" name="proj" checked="@(projection == DisplayProjection.VerticalPerspective)"
+                   @onchange="@(() => projection = DisplayProjection.VerticalPerspective)" />
             On a globe - no seam
         </label>
 
@@ -51,7 +51,7 @@
     private MapView map;
     private GeoCollection<FeatureSource> flight;
     private MapStyle style;
-    private MapViewProjection projection = MapViewProjection.WebMercator;
+    private DisplayProjection projection = DisplayProjection.WebMercator;
     private (double Lon, double Lat)[] route;
 
     // The route line, the corridor's two edges, and the two airports, each cut into its own

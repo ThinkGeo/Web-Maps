@@ -8,6 +8,7 @@
        handed to the map as is. The globe has no seam; Web Mercator has one at 180, and the
        tile cut folds the far-side geometry back into the world so it draws whole either way. *@
     <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
              Center="@(new PointShape(-20037508, 4900000))" Zoom="3"
              DisplayProjection="@projection">
         <OverlaysSetting>

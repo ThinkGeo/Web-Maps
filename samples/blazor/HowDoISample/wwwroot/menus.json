@@ -74,7 +74,7 @@
   {
     "id": "the-globe",
     "title": "The Globe",
-    "description": "The same vector tiles drawn as a ball. Setting MapView.Projection eases between globe, web mercator and vertical perspective; the tiles never leave web mercator and none is fetched again.",
+    "description": "The same vector tiles drawn as a ball. Setting MapView.DisplayProjection eases between globe, web mercator and vertical perspective; the tiles never leave web mercator and none is fetched again.",
     "href": "the-globe",
     "source": "The_Globe",
     "preicon": "fas fa-globe-europe",

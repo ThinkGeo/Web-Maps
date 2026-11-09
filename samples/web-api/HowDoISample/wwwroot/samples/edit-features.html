@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit and Save Features</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        .btn.on { background: #1a73e8; border-color: #1a73e8; color: #fff; }
+        #name { flex: 1; min-width: 0; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow">
+            <p>Click a park to reshape, rename or delete it, or draw a new one. Save writes your changes into your own copy of the shapefile.</p>
+            <div class="row"><button class="btn on" id="select">Select</button><button class="btn" id="polygon">Draw a park</button></div>
+            <div class="row"><input type="text" id="name" placeholder="Name" disabled><button class="btn" id="delete" disabled>Delete</button></div>
+            <div class="row"><button class="btn primary" id="save" disabled>Save</button><button class="btn" id="reset">Start over</button></div>
+            <div class="status" id="status"></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script src="../lib/terra-draw.js"></script>
+    <script src="../lib/terra-draw-maplibre-gl-adapter.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const { TerraDraw, TerraDrawPolygonMode, TerraDrawSelectMode } = terraDraw;
+        const { TerraDrawMapLibreGLAdapter } = terraDrawMaplibreGlAdapter;
+
+        // Each visitor edits a copy of their own on the server, found again by this id.
+        let session = null;
+        try { session = localStorage.getItem('howdoi-edit-session'); } catch { }
+        if (!session) {
+            session = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
+            try { localStorage.setItem('howdoi-edit-session', session); } catch { }
+        }
+
+        const map = tg.createMap({ center: [-10778500, 3915500], zoom: 14 });
+        await tg.ready(map);
+
+        // The parks are an ordinary layer; only the one being edited is handed to Terra Draw.
+        const shown = tg.geojsonOverlay(map, 'parks', [
+            { id: 'parks-fill', type: 'fill', paint: { 'fill-color': '#4CAF50', 'fill-opacity': 0.35 } },
+            { id: 'parks-line', type: 'line', paint: { 'line-color': '#2E7D32', 'line-width': 1.5 } },
+            { id: 'parks-picked', type: 'line', filter: ['==', ['get', 'pid'], ''], paint: { 'line-color': '#1a73e8', 'line-width': 3 } },
+        ]);
+        let created = 0;
+        const draw = new TerraDraw({
+            adapter: new TerraDrawMapLibreGLAdapter({ map }),
+            idStrategy: { isValidId: (id) => typeof id === 'string' && id.length > 0, getId: () => 'new-' + ++created },
+            modes: [
+                new TerraDrawPolygonMode({ styles: { fillColor: '#4CAF50', outlineColor: '#2E7D32', fillOpacity: 0.35 } }),
+                // dragEventThrottle 0: every pointer move moves the vertex; the default drops one in five.
+                new TerraDrawSelectMode({ dragEventThrottle: 0, flags: { polygon: { feature: { draggable: true, coordinates: { midpoints: true, draggable: true, deletable: true } } } } }),
+            ],
+        });
+        draw.start();
+
+        const status = document.getElementById('status');
+        const nameBox = document.getElementById('name');
+        let parks = new Map(), saved = new Set(), reshaped = new Set(), renamed = new Set(), deleted = new Set();
+        let picked = null, editing = null, before = null;
+
+        const round = (c) => Array.isArray(c[0]) ? c.map(round) : c.map(v => Math.round(v * 1e9) / 1e9);
+        // A shapefile's polygons come back as multipolygons; one in a single part is a plain polygon.
+        const single = (g) => g.type === 'MultiPolygon' && g.coordinates.length === 1 ? { type: 'Polygon', coordinates: g.coordinates[0] } : g;
+        const show = () => {
+            shown.setData({ type: 'FeatureCollection', features: [...parks].filter(([id]) => id !== editing).map(([id, p]) => ({ type: 'Feature', geometry: p.geometry, properties: { pid: id } })) });
+            map.setFilter('parks-picked', ['==', ['get', 'pid'], picked || '']);
+            count();
+        };
+        const count = () => {
+            const n = new Set([...reshaped, ...renamed, ...[...parks.keys()].filter(id => !saved.has(id))]).size + deleted.size;
+            document.getElementById('save').disabled = n === 0;
+            if (n) tg.say(status, `${n} unsaved change${n > 1 ? 's' : ''}`);
+        };
+
+        // Takes the park being edited back from Terra Draw, noting whether its shape changed.
+        const putBack = () => {
+            if (editing) {
+                const feature = draw.getSnapshotFeature(editing);
+                if (feature && JSON.stringify(feature.geometry) !== before) {
+                    parks.get(editing).geometry = feature.geometry;
+                    reshaped.add(editing);
+                }
+                draw.clear();
+                editing = null;
+            }
+        };
+        const pick = (id) => {
+            putBack();
+            picked = id;
+            nameBox.disabled = document.getElementById('delete').disabled = !id;
+            nameBox.value = id ? parks.get(id).name : '';
+            const park = id && parks.get(id);
+            if (park && park.geometry.type === 'Polygon') {
+                const results = draw.addFeatures([{ id, type: 'Feature', geometry: park.geometry, properties: { mode: 'polygon' } }]);
+                if (results[0].valid) {
+                    editing = id;
+                    before = JSON.stringify(draw.getSnapshotFeature(id).geometry);
+                    draw.selectFeature(id);
+                }
+            }
+            show();
+        };
+
+        const load = async () => {
+            putBack();
+            const data = await tg.get('samples/editing/parks?session=' + session);
+            parks = new Map(data.features.map(f => [String(f.id), { geometry: single({ ...f.geometry, coordinates: round(f.geometry.coordinates) }), name: f.properties.NAME || '' }]));
+            saved = new Set(parks.keys()); reshaped = new Set(); renamed = new Set(); deleted = new Set();
+            picked = null;
+            pick(null);
+            tg.say(status, `${parks.size} parks`);
+        };
+
+        const mode = (name) => {
+            if (name === 'polygon') pick(null);
+            draw.setMode(name);
+            document.getElementById('select').classList.toggle('on', name === 'select');
+            document.getElementById('polygon').classList.toggle('on', name === 'polygon');
+        };
+        document.getElementById('select').addEventListener('click', () => mode('select'));
+        document.getElementById('polygon').addEventListener('click', () => mode('polygon'));
+
+        // A click on a park picks it; a click on nothing lets go. Clicks on what Terra Draw holds are its own.
+        map.on('click', (e) => {
+            if (draw.getMode() !== 'select') return;
+            const own = map.getStyle().layers.filter(l => l.id.startsWith('td-')).map(l => l.id);
+            if (editing && map.queryRenderedFeatures(e.point, { layers: own }).length) return;
+            const hit = map.queryRenderedFeatures(e.point, { layers: ['parks-fill'] })[0];
+            pick(hit ? hit.properties.pid : null);
+        });
+        draw.on('change', (ids, type) => {
+            if (!editing || type !== 'update' || !ids.includes(editing)) return;
+            const feature = draw.getSnapshotFeature(editing);
+            if (feature && JSON.stringify(feature.geometry) !== before) reshaped.add(editing);
+            count();
+        });
+        draw.on('finish', (id, context) => {
+            if (context?.action !== 'draw') return;
+            // Once Terra Draw is done with the drawing, the new park joins the others.
+            setTimeout(() => {
+                const feature = draw.getSnapshotFeature(id);
+                draw.clear();
+                parks.set(id, { geometry: feature.geometry, name: 'New park' });
+                mode('select');
+                pick(id);
+            });
+        });
+        nameBox.addEventListener('input', () => { if (picked) { parks.get(picked).name = nameBox.value; renamed.add(picked); show(); } });
+        document.getElementById('delete').addEventListener('click', () => {
+            const id = picked;
+            pick(null);
+            parks.delete(id); reshaped.delete(id); renamed.delete(id);
+            if (saved.has(id)) deleted.add(id);
+            show();
+        });
+
+        document.getElementById('save').addEventListener('click', async () => {
+            putBack();
+            const edit = (id) => ({ id, name: parks.get(id).name, ...(reshaped.has(id) || !saved.has(id) ? { geometry: parks.get(id).geometry } : {}) });
+            const body = {
+                session,
+                added: [...parks.keys()].filter(id => !saved.has(id)).map(edit),
+                updated: [...new Set([...reshaped, ...renamed])].filter(id => saved.has(id) && parks.has(id)).map(edit),
+                deleted: [...deleted],
+            };
+            tg.say(status, 'saving...');
+            const result = await tg.post('samples/editing/save', body);
+            await load();
+            tg.say(status, `${result.saved} change${result.saved === 1 ? '' : 's'} saved` + (result.failed ? `, ${result.failed} failed` : ''), !result.failed);
+        });
+        document.getElementById('reset').addEventListener('click', async () => {
+            await tg.post('samples/editing/reset', { session });
+            await load();
+        });
+
+        mode('select');
+        await load();
+    </script>
+</body>
+</html>

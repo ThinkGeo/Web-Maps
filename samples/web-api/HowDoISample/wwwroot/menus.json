@@ -16,6 +16,22 @@
     "group": "Getting Started"
   },
   {
+    "id": "tile-cache",
+    "title": "Cache Tiles",
+    "description": "Raster or vector tiles from the server's cache or the browser's, against making them every time.",
+    "source": "Caching",
+    "preicon": "fas fa-hdd",
+    "group": "Getting Started"
+  },
+  {
+    "id": "leaflet-and-openlayers",
+    "title": "Leaflet and OpenLayers",
+    "description": "The same server under Leaflet and OpenLayers: PNG tiles, vector tiles and GeoJSON.",
+    "source": "Clients",
+    "preicon": "fas fa-columns",
+    "group": "Getting Started"
+  },
+  {
     "id": "basemaps",
     "title": "Basemaps",
     "description": "Vector basemaps from a style URL, raster basemaps from an XYZ URL.",
@@ -101,6 +117,14 @@
     "description": "A FeatureSource of your own that reads a CSV.",
     "source": "Extending",
     "preicon": "fas fa-puzzle-piece",
+    "group": "Your Data"
+  },
+  {
+    "id": "edit-features",
+    "title": "Edit and Save Features",
+    "description": "Draw and reshape parks in the browser; the server saves them into a shapefile.",
+    "source": "Editing",
+    "preicon": "fas fa-pencil-alt",
     "group": "Your Data"
   },
   {
@@ -301,14 +325,6 @@
     "description": "Elevation of a point, line or area; a line draws a profile.",
     "source": "Cloud",
     "preicon": "fas fa-mountain",
-    "group": "ThinkGeo Cloud Services"
-  },
-  {
-    "id": "color-utilities",
-    "title": "Color Utilities",
-    "description": "Colour schemes from ThinkGeo Cloud used to class data.",
-    "source": "Cloud",
-    "preicon": "fas fa-palette",
     "group": "ThinkGeo Cloud Services"
   },
   {

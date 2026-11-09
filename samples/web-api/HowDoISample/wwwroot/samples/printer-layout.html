@@ -42,7 +42,7 @@
     <script type="module">
         import * as tg from '../js/tg.js';
 
-        const accessId = crypto.randomUUID();
+        const accessId = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
         const status = document.getElementById('status'), picture = document.getElementById('picture'), sheet = document.getElementById('sheet'), pan = document.getElementById('pan'), moving = document.getElementById('moving');
         // The sheet as last drawn: its size in points, where the map sits on it, and the extent the map shows.
         let page = null, extent = null, drag = { dx: 0, dy: 0, zoom: 1, ox: 0, oy: 0 }, busy = false, queued = null;

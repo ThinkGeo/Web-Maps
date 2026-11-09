@@ -30,6 +30,9 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             new GettingStarted(),
             new NauticalCharts(),
             new PrinterLayout(),
+            new Caching(),
+            new Clients(),
+            new Editing(),
         };
     }
 }

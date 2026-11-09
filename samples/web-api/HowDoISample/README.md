@@ -14,8 +14,8 @@ ThinkGeo.Core serves what the browser cannot make itself:
   interpolated fields, PDF and image export - each a small JSON route under `samples/...`.
 
 Every sample is one page under `wwwroot/samples/` and, when it needs the server, one class under
-`Samples/`; the gallery shows both beside the map. The Legacy group carries the classic WebAPI
-samples over onto the same routes.
+`Samples/`; the gallery shows both beside the map. `Infrastructure/` is the gallery itself: its
+routes, the overlay catalog and the sample data paths.
 
 ## Run it
 
@@ -23,6 +23,5 @@ samples over onto the same routes.
 dotnet run
 ```
 
-then open the address it prints. The sample data is the Blazor gallery's, linked in through the
-project file and copied next to the binaries on build; the Legacy group's own data lives under
-`Data/Legacy`.
+then open the address it prints. The sample data is under `Data/` and is copied next to the
+binaries on build.

@@ -66,7 +66,6 @@
     private ElevationCloudClient client;
     private BlazorTrackMode trackMode = BlazorTrackMode.None;
     private int interval = 50;
-    private bool busy;
     private string status = "Choose Point, Line or Area and draw on the map.";
     private string marksStyle = StyleTemplate.Replace("COLOUR", "\"#1F3A93\"");
     private List<CloudElevationPointResult> samples = new List<CloudElevationPointResult>();
@@ -110,7 +109,6 @@
 
     private async Task AskAsync(BaseShape shape)
     {
-        busy = true;
         status = "asking ThinkGeo Cloud...";
         StateHasChanged();
         asked.InternalFeatures.Clear();
@@ -145,11 +143,9 @@
         }
         catch (Exception exception)
         {
-            busy = false;
             status = exception.Message;
             return;
         }
-        busy = false;
 
         foreach (var sample in samples)
         {

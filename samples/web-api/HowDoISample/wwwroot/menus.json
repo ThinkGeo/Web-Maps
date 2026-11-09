@@ -282,7 +282,7 @@
   {
     "id": "adornments",
     "title": "Adornments",
-    "description": "Legend, scale bar, compass, logo and graticule drawn on the server.",
+    "description": "Legend, scale bar and compass drawn on the server.",
     "source": "Tools",
     "preicon": "fas fa-tools",
     "group": "Map Tools & Adornments"

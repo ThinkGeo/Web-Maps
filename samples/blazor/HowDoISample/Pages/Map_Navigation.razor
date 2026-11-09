@@ -105,6 +105,7 @@
     private double pitch;
     private bool buildingsVisible = true;
     private bool darkTheme;
+    private bool bound;
 
     protected override async Task OnInitializedAsync()
     {
@@ -117,6 +118,7 @@
         {
             await JS.InvokeVoidAsync("howDoI.bindBearingIndicator", "map", "map-navigation-compass");
             await JS.InvokeVoidAsync("howDoI.bindNavigationBar", "map", "map-navigation-bar");
+            bound = true;
         }
     }
 
@@ -192,8 +194,10 @@
         basemapStyle = buildingsVisible ? basemapWithBuildings : basemapWithoutBuildings;
     }
 
+    // The prerendered copy of the page never rendered in a browser, so it has nothing to unbind.
     public async ValueTask DisposeAsync()
     {
+        if (!bound) return;
         try
         {
             await JS.InvokeVoidAsync("howDoI.unbindBearingIndicator", "map", "map-navigation-compass");

@@ -270,15 +270,6 @@
     "group": "ThinkGeo Cloud Services"
   },
   {
-    "id": "world-maps-query",
-    "title": "World Maps Query",
-    "description": "The features behind ThinkGeo's world map asked for by a shape you draw: containing, intersecting, overlapping, within or nearest, with MapsQueryCloudClient.",
-    "href": "world-maps-query",
-    "source": "World_Maps_Query",
-    "preicon": "fas fa-layer-group",
-    "group": "ThinkGeo Cloud Services"
-  },
-  {
     "id": "vector-file-formats",
     "title": "Vector File Formats",
     "description": "Open a vector file - a shapefile, GeoJSON, KML, GPX, MapInfo TAB, TinyGeo, an S-57 chart - or build features in code; reading the format is the only line that differs. The overlay cuts it into tiles and one editable style draws them all.",

@@ -26,4 +26,5 @@ Where the data under this folder comes from.
 | `Shapefile/Frisco 2010 Census Housing Units` | Color Utilities | Frisco census block groups with 2010 housing-unit counts, City of Frisco open data (EPSG:2276) |
 | `Pmtiles/frisco.pmtiles`, `style.json` | Offline Tiles | Frisco cut from Protomaps (OpenStreetMap data, ODbL) with the Protomaps light style |
 | `Mbtiles/maplibre.mbtiles`, `style.json` | Offline Tiles | The MapLibre demo tiles of the world (Natural Earth, public domain) with the MapLibre demo style |
+| `Mbtiles/test.mbtiles`, `Pmtiles/stamen_toner.pmtiles`, `OSM_Tiles_z0-z5_Created_By_QGIS.zip` | Offline Tiles | Raster tile samples copied from WPF HowDoI v15; the latter two contain OpenStreetMap-derived cartography |
 | `Data.xml` | Draw and Modify Geometries | Hand-drawn sample shapes |

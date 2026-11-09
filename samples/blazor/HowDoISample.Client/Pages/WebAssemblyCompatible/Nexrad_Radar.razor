@@ -1,0 +1,180 @@
+@page "/nexrad-radar"
+@rendermode InteractiveAuto
+@using System.Globalization
+@using System.Net.Http
+@using ThinkGeo.Core
+@implements IAsyncDisposable
+@inject HttpClient Http
+
+<div class="map-container">
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@InitialCenter" Zoom="4">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            @if (style != null)
+            {
+                <VectorTileOverlay Id="Radar" @ref="overlay" Style="@style"
+                                   RasterTileSource="@radar" RasterSourceId="radar" />
+            }
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="4" />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">NEXRAD Weather Radar</div>
+        <div style="color:#e5e5e5;line-height:1.4;margin-bottom:9px">
+            Base reflectivity over the United States from the Iowa Environmental Mesonet.
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px">
+            <button class="btn btn-sm btn-light" style="padding:2px 12px" disabled="@(!framesLoaded)"
+                    @onclick="TogglePlay">@(playing ? "Pause" : "Play")</button>
+            <span>@FrameLabel</span>
+        </div>
+
+        <label style="display:block;margin:10px 0 2px">Opacity - @opacity.ToString("P0", CultureInfo.InvariantCulture)</label>
+        <input aria-label="Radar opacity" type="range" min="20" max="100" step="5"
+               value="@(opacity * 100)" style="width:100%" @oninput="OpacityChanged" />
+        <div role="status" style="margin-top:8px;color:#e5e5e5;line-height:1.4">@status</div>
+    </div>
+</div>
+
+@code {
+    private static readonly PointShape InitialCenter = new PointShape(-10631010, 4539146);
+    private static readonly RectangleShape RadarExtent = new RectangleShape(-126, 50, -65, 23);
+    // IEM names these snapshots n0q_5 (25 minutes ago) through n0q_0 (current).
+    private static readonly int[] FrameNumbers = { 5, 4, 3, 2, 1, 0 };
+    private const string FrameUrlTemplate = "https://mesonet.agron.iastate.edu/data/gis/images/4326/USCOMP/n0q_{0}.png";
+
+    private MapView map;
+    private VectorTileOverlay overlay;
+    private GeoImageRasterTileSource radar;
+    private MapStyle style;
+    private byte[][] frames;
+    private CancellationTokenSource lifetime;
+    private Task animation;
+    private Task disposal;
+    private int frame;
+    private bool playing;
+    private bool framesLoaded;
+    private bool mapReady;
+    private bool disposed;
+    private double opacity = 0.75;
+    private string status = "Loading six radar frames...";
+
+    private int MinutesAgo => (FrameNumbers.Length - 1 - frame) * 5;
+
+    private string FrameLabel => !framesLoaded
+        ? "Loading..."
+        : MinutesAgo == 0
+            ? "now"
+            : MinutesAgo.ToString(CultureInfo.InvariantCulture) + " min ago";
+
+    protected override void OnInitialized()
+    {
+        radar = GeoImageRasterTileSource.FromUri(FrameUrl(0), RadarExtent, new Projection(4326));
+        radar.TransparentColor = GeoColors.Black;
+        style = CreateRadarStyle(opacity);
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        lifetime = new CancellationTokenSource();
+        animation = LoadFramesAndAnimateAsync(lifetime.Token);
+        if (!disposed)
+        {
+            await map.WhenReady;
+            mapReady = true;
+        }
+    }
+
+    private static string FrameUrl(int minutesAgo) =>
+        string.Format(CultureInfo.InvariantCulture, FrameUrlTemplate, minutesAgo);
+
+    private MapStyle CreateRadarStyle(double rasterOpacity) =>
+        new MapStyle().AddRaster(radar, new RasterPaint((float)rasterOpacity), "radar");
+
+    private async Task LoadFramesAndAnimateAsync(CancellationToken token)
+    {
+        try
+        {
+            frames = new byte[FrameNumbers.Length][];
+            for (var index = 0; index < FrameNumbers.Length; index++)
+            {
+                frames[index] = await Http.GetByteArrayAsync(FrameUrl(FrameNumbers[index]), token);
+            }
+
+            if (disposed) return;
+            frame = FrameNumbers.Length - 1;
+            radar.Update(frames[frame]);
+            framesLoaded = true;
+            playing = true;
+            status = "Six frames, five minutes apart. Animation started.";
+            await InvokeAsync(StateHasChanged);
+
+            while (!token.IsCancellationRequested)
+            {
+                await Task.Delay(700, token);
+                if (!playing || disposed) continue;
+
+                frame = (frame + 1) % frames.Length;
+                radar.Update(frames[frame]);
+                if (mapReady && overlay != null)
+                {
+                    // Change the raster source stamp so the browser requests this frame's tiles.
+                    await overlay.RedrawAsync();
+                }
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception exception)
+        {
+            if (disposed) return;
+            playing = false;
+            status = "Radar unavailable: " + exception.Message.Split('\n')[0];
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void TogglePlay()
+    {
+        if (framesLoaded) playing = !playing;
+    }
+
+    private void OpacityChanged(ChangeEventArgs args)
+    {
+        if (!double.TryParse(Convert.ToString(args.Value, CultureInfo.InvariantCulture), NumberStyles.Float,
+                CultureInfo.InvariantCulture, out var value)) return;
+
+        opacity = Math.Clamp(value / 100d, 0.2, 1d);
+        style = CreateRadarStyle(opacity);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        if (disposal != null) return new ValueTask(disposal);
+        disposed = true;
+        playing = false;
+        lifetime?.Cancel();
+        return new ValueTask(disposal ??= ReleaseRadarAsync());
+    }
+    private async Task ReleaseRadarAsync()
+    {
+        try
+        {
+            try { if (animation != null) await animation; }
+            finally { if (overlay != null) await overlay.DisposeAsync(); }
+        }
+        finally { lifetime?.Dispose(); radar?.Dispose(); }
+    }
+}

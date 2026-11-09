@@ -1,0 +1,136 @@
+@page "/restrict-map-extent"
+@rendermode InteractiveAuto
+@using System.Collections.ObjectModel
+@using System.Globalization
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="position:relative;flex:1;min-width:0">
+    @* The limits are given to the map as it is created - RestrictExtent, MinimumScale and
+       MaximumScale - so they hold from the first frame. Turning a checkbox sets the same limit
+       again while the map runs, through SetNavigationLimitsAsync. *@
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@Box.GetCenterPoint()" Zoom="10"
+             RestrictExtent="@(restrictOn ? Box : null)"
+             MinimumScale="@(minScaleOn ? MinScale : 0)"
+             MaximumScale="@(maxScaleOn ? MaxScale : double.MaxValue)"
+             OnCurrentExtentChanged="UpdateScale"
+             OnCurrentExtentChangedInAnimation="UpdateScaleWhileMoving"
+             OnSizeChanged="UpdateViewport">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            <VectorTileOverlay Id="Boundary" StyleJson="@BoundaryStyle" FeatureSources="@boundary" SourceId="box" />
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft"
+                                UseNavigationStyle="true"
+                                CenterButtonCenter="@Box.GetCenterPoint()"
+                                CenterButtonZoom="10" />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+
+    <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);min-width:180px;height:30px;border-radius:8px;background:rgba(0,0,0,.7);color:#d1d5db;text-align:center;font:600 20px/30px system-ui;white-space:nowrap;pointer-events:none">
+        Scale: @scale.ToString("N0", CultureInfo.InvariantCulture)
+    </div>
+
+    <div style="position:absolute;top:12px;right:12px;width:280px;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Restrictions:</div>
+
+        <label style="display:block;margin:4px 0;cursor:pointer;white-space:nowrap">
+            <input type="checkbox" checked="@restrictOn" @onchange="@(e => Toggle(() => restrictOn = (bool)e.Value))" />
+            Enable RestrictExtent
+        </label>
+        <label style="display:block;margin:4px 0;cursor:pointer;white-space:nowrap">
+            <input type="checkbox" checked="@maxScaleOn" @onchange="@(e => Toggle(() => maxScaleOn = (bool)e.Value))" />
+            Enable MaximumScale (1:500,000)
+        </label>
+        <label style="display:block;margin:4px 0;cursor:pointer;white-space:nowrap">
+            <input type="checkbox" checked="@minScaleOn" @onchange="@(e => Toggle(() => minScaleOn = (bool)e.Value))" />
+            Enable MinimumScale (1:10,000)
+        </label>
+    </div>
+    </div>
+</div>
+
+@code {
+    // A red outline of the restricted extent, drawn with the map so it stays sharp as it zooms.
+    private const string BoundaryStyle = @"{
+  ""layers"": [
+    { ""type"": ""line"", ""source-layer"": ""box"",
+      ""paint"": { ""line-color"": ""rgba(200,0,0,0.85)"", ""line-width"": 2 } }
+  ]
+}";
+
+    // Dallas / Frisco, TX, in web mercator metres (upper-left x,y then lower-right x,y).
+    private static readonly RectangleShape Box = new RectangleShape(-10809000, 3900000, -10747000, 3840000);
+    private const double MaxScale = 500_000;
+    private const double MinScale = 10_000;
+
+    private MapView map;
+    private GeoCollection<FeatureSource> boundary;
+    private bool restrictOn = true, maxScaleOn = true, minScaleOn = true;
+    private double scale = MaxScale;
+    private double viewportWidth;
+    private double viewportHeight;
+    private RectangleShape currentExtent;
+
+    protected override void OnInitialized()
+    {
+        var box = new InMemoryFeatureSource(
+            Array.Empty<FeatureSourceColumn>(),
+            new Collection<Feature> { new Feature(Box.GetWellKnownBinary(), "box") });
+        boundary = new GeoCollection<FeatureSource> { { "box", box } };
+    }
+
+    // The limits are on from creation through the bound parameters; a toggle re-applies them
+    // while the map runs.
+    private async Task Toggle(Action set)
+    {
+        set();
+        await map.WhenReady;
+        await map.SetNavigationLimitsAsync(
+            restrictOn ? Box : null,
+            minScaleOn ? MinScale : 0,
+            maxScaleOn ? MaxScale : 0);
+
+        // With neither an extent nor an outer scale holding the map near Dallas, show the
+        // coarsest scale in the map's normal scale ladder, matching the desktop sample refresh.
+        if (!restrictOn && !maxScaleOn)
+        {
+            await map.ZoomToMinimumZoomAsync();
+        }
+    }
+
+    private void UpdateScale(CurrentExtentChangedMapViewEventArgs e)
+    {
+        currentExtent = e.CurrentExtent;
+        RefreshScaleReadout();
+    }
+
+    private void UpdateScaleWhileMoving(CurrentExtentChangedInAnimationMapViewEventArgs e)
+    {
+        currentExtent = e.CurrentExtent;
+        RefreshScaleReadout();
+    }
+
+    private void UpdateViewport(SizeChangedMapViewEventArgs e)
+    {
+        viewportWidth = e.Width;
+        viewportHeight = e.Height;
+        RefreshScaleReadout();
+    }
+
+    private void RefreshScaleReadout()
+    {
+        // Width/Height parameters are percentages and can be reapplied by a parent render.
+        // Use the actual CSS pixel dimensions reported by the map's size event instead.
+        if (currentExtent != null && viewportWidth > 0 && viewportHeight > 0)
+        {
+            scale = MapUtil.GetScale(GeographyUnit.Meter, currentExtent, viewportWidth, viewportHeight);
+        }
+    }
+}

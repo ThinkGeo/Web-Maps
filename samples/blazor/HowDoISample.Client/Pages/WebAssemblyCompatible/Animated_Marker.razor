@@ -1,0 +1,73 @@
+@page "/animated-marker"
+@rendermode InteractiveAuto
+@using ThinkGeo.Core
+@implements IDisposable
+
+<div class="map-container">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10778000, 3912000))" Zoom="12"
+                 OnReady="MapReadyAsync">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            </OverlaysSetting>
+            <MarkerOverlaySetting>
+                <SimpleMarkerOverlay Id="Beacons" @ref="beacons" />
+            </MarkerOverlaySetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-10778000, 3912000))" CenterButtonZoom="12" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Animated marker</div>
+        <div style="color:#e5e5e5;line-height:1.4">The markers pulse on the map. Stop or start their animation.</div>
+        <button class="btn btn-sm btn-light" style="margin-top:9px" @onclick="ToggleAsync">@(animated ? "Stop" : "Start")</button>
+    </div>
+</div>
+
+@code {
+    private static readonly PointMarkerStyle Pulsing = new PointMarkerStyle("images/beacon.svg", 0.5, 0.5, 1);
+    private static readonly PointMarkerStyle Still = new PointMarkerStyle("images/beacon-still.svg", 0.5, 0.5, 1);
+    private static readonly (string Id, PointShape At)[] Places =
+    {
+        ("north", new PointShape(-10777932, 3912260)),
+        ("south", new PointShape(-10779100, 3909300)),
+        ("east", new PointShape(-10775200, 3911000)),
+    };
+
+    private MapView map;
+    private SimpleMarkerOverlay beacons;
+    private bool animated = true;
+    private bool disposed;
+
+    private async Task MapReadyAsync()
+    {
+        foreach (var (id, at) in Places)
+        {
+            beacons.Markers.Add(id, new Marker { Id = id, Position = at, Style = Pulsing });
+        }
+        if (disposed) return;
+        await beacons.RedrawAsync();
+    }
+
+    private async Task ToggleAsync()
+    {
+        if (disposed) return;
+        await map.WhenReady;
+        animated = !animated;
+        foreach (var marker in beacons.Markers)
+        {
+            marker.Style = animated ? Pulsing : Still;
+        }
+        await beacons.RedrawAsync();
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+    }
+}

@@ -1,0 +1,102 @@
+@page "/style-layer-toggles"
+@rendermode InteractiveAuto
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-8234000, 4970000))" Zoom="14">
+            <OverlaysSetting>
+                @if (style != null)
+                {
+                    <VectorTileOverlay Id="Basemap" @ref="overlay" Style="@style" />
+                }
+            </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-8234000, 4970000))" CenterButtonZoom="14" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@(new PointShape(-8234000, 4970000))" Zoom="14" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+    </div>
+
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Style layer visibility</div>
+        <div style="color:#e5e5e5;font-size:11px;line-height:1.35;margin-bottom:8px">
+            Turn any of them off. The document records it and the map skips that layer as
+            it draws, so hiding costs no recompile and no tile is fetched again.
+        </div>
+        <div style="font-weight:700;margin-bottom:4px">@layers.Count layers</div>
+        <div style="display:flex;gap:6px;margin-bottom:6px;padding: 2px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                <input type="checkbox" checked="@visible.Values.All(v => v)" disabled="@(style == null)" @onchange="@(e => SetAll((bool)e.Value))" />
+                All
+            </label>
+        </div>
+        <div style="overflow:auto;flex:1;min-height:0;padding:4px 2px">
+            @foreach (var layer in layers)
+            {
+                <label style="display:flex;align-items:center;gap:6px;padding:1px 0;cursor:pointer">
+                    <input type="checkbox" checked="@visible[layer.Id]"
+                           @onchange="@(e => Toggle(layer.Id, (bool)e.Value))" />
+                    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="@layer.Id">
+                        @layer.Id
+                        <span style="color:#c5c5c5">(@layer.Type)</span>
+                    </span>
+                </label>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private VectorTileOverlay overlay;
+    private MapStyle style;
+    private List<StyleLayer> layers = new List<StyleLayer>();
+    private readonly Dictionary<string, bool> visible = new Dictionary<string, bool>(StringComparer.Ordinal);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        // The basemap as a document of its own, so its layers can be listed and switched.
+        style = new MapStyle(ThinkGeoVectorStyles.Light,
+            new ThinkGeoVectorTileSource(GlobalSettings.ThinkGeoApiKey));
+
+        // Compiling fetches the sprite sheet and turns every paint into a delegate, so it is
+        // asked for once, here, rather than read off a property that cannot wait for it.
+        await style.OpenAsync();
+        foreach (var layer in style.StyleLayers)
+        {
+            // A layer with no id cannot be addressed, and two with the same id are one checkbox.
+            if (string.IsNullOrEmpty(layer.Id) || visible.ContainsKey(layer.Id)) continue;
+
+            layers.Add(layer);
+            visible[layer.Id] = true;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Toggle(string layerId, bool show)
+    {
+        visible[layerId] = show;
+        style.SetLayerVisibility(layerId, show);
+        await overlay.RedrawAsync();
+    }
+
+    private async Task SetAll(bool show)
+    {
+        foreach (var layer in layers)
+        {
+            visible[layer.Id] = show;
+            style.SetLayerVisibility(layer.Id, show);
+        }
+
+        await overlay.RedrawAsync();
+    }
+}

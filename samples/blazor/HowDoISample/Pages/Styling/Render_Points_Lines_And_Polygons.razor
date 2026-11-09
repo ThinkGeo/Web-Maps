@@ -1,0 +1,155 @@
+﻿@page "/render-points-lines-and-polygons"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+@implements IDisposable
+
+@{
+    var initialCenter = new PointShape(-10777290, 3908740);
+}
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@initialCenter" Zoom="16" Bearing="0" Pitch="0">
+            <OverlaysSetting>
+                <VectorTileOverlay Id="Frisco" StyleJson="@applied" FeatureSources="@sources" SourceId="features" />
+            </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@initialCenter" CenterButtonZoom="16" CenterButtonBearing="0" CenterButtonPitch="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@initialCenter" Zoom="16" Bearing="0" Pitch="0" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+    </div>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Render Points, Lines and Polygons</div>
+        <div style="color:#e5e5e5;font-size:11px;line-height:1.35;margin-bottom:8px">Edit the point, line, polygon and label layers; valid style changes update the map.</div>
+        <div style="font-weight:700;margin-bottom:4px">style.json - edit it; the map follows</div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                  style="flex:1;min-height:0;width:100%;box-sizing:border-box;font:11px/1.35 Consolas,monospace;padding:7px;border:1px solid #aaa;background:#fff;color:#111;resize:none;white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:hidden;overflow-y:auto"></textarea>
+        <div role="status" style="padding-top:5px;line-height:1.3;overflow-wrap:anywhere;color:@(ok ? "#baf1ba" : "#ffd0b8")">@status</div>
+    </div>
+</div>
+
+@code {
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""background"",
+      ""paint"": { ""background-color"": ""#EAE8E2"" } },
+
+    { ""type"": ""fill"",
+      ""source-layer"": ""Parks"",
+      ""paint"": {
+          ""fill-color"": ""#B4E0B6"",
+          ""fill-outline-color"": ""#696969"" }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""Streets"",
+      ""paint"": {
+          ""line-color"": ""#696969"",
+          ""line-width"": 6 }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""Streets"",
+      ""paint"": {
+          ""line-color"": ""#F5F5F5"",
+          ""line-width"": 4 }
+    },
+
+    { ""type"": ""circle"",
+      ""source-layer"": ""Hotels"",
+      ""paint"": {
+          ""circle-radius"": 4,
+          ""circle-color"": ""#A52A2A"" }
+    },
+
+    { ""type"": ""symbol"",
+      ""source-layer"": ""Streets"",
+      ""layout"": {
+          ""symbol-placement"": ""line"",
+          ""text-field"": [""get"", ""FULL_NAME""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 11 },
+      ""paint"": { ""text-color"": ""#191970"" }
+    },
+
+    { ""type"": ""symbol"",
+      ""source-layer"": ""Parks"",
+      ""layout"": {
+          ""text-field"": [""get"", ""NAME""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 11 },
+      ""paint"": { ""text-color"": ""#006400"" }
+    },
+
+    { ""type"": ""symbol"",
+      ""source-layer"": ""Hotels"",
+      ""layout"": {
+          ""text-field"": [""get"", ""NAME""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 11,
+          ""text-offset"": [0, 0.5],
+          ""text-anchor"": ""top"" },
+      ""paint"": { ""text-color"": ""#8B0000"" }
+    }
+  ]
+}";
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private string styleJson = StyleJson;
+    private string applied = StyleJson;
+    private string status = "";
+    private bool ok = true;
+    private int edit;
+
+    // The shapefiles are in Texas North Central feet (EPSG:2276); reprojected to the map's 3857
+    // as they are cut into tiles. Each is the source-layer the style names.
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource>
+        {
+            { "Parks", new ShapeFileFeatureSource("./Data/Shapefile/Parks.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } },
+            { "Streets", new ShapeFileFeatureSource("./Data/Shapefile/Streets.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } },
+            { "Hotels", new ShapeFileFeatureSource("./Data/Shapefile/Hotels.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } },
+        };
+    }
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit || disposed) return;
+
+        try
+        {
+            if (JsonNode.Parse(styleJson) is not JsonObject document || document["layers"] is not JsonArray)
+                throw new FormatException("The style needs a layers array.");
+            applied = styleJson;
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+
+    private bool disposed;
+
+    public void Dispose()
+    {
+        disposed = true;
+        edit++;
+    }
+}

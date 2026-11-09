@@ -21,8 +21,8 @@
 
         @foreach (var group in Shown.Where(m => !string.IsNullOrEmpty(m.Group)).GroupBy(m => m.Group))
         {
-            <li class="menu-group @(IsOpen(group.Key) ? "open" : "")">
-                <a class="menu-group-title" @onclick="@(e => Toggle(group.Key))">
+            <li class="menu-group-title menu-group @(IsOpen(group.Key) ? "open" : "")">
+                <a @onclick="@(e => Toggle(group.Key))">
                     <span class="sub-arrow @(IsOpen(group.Key) ? "fas fa-chevron-down" : "fas fa-chevron-right")">@group.Key</span>
                 </a>
             </li>
@@ -68,7 +68,7 @@
     [Parameter]
     public EventCallback<MenuModel> OnMenuClick { get; set; }
 
-    async void HandleOnMenuClick(MenuModel menu)
+    async Task HandleOnMenuClick(MenuModel menu)
     {
         currentMenu = menu;
         if (OnMenuClick.HasDelegate)
@@ -93,12 +93,12 @@
         }
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!isLoaded)
         {
-            HandleOnMenuClick(currentMenu);
             isLoaded = true;
+            await HandleOnMenuClick(currentMenu);
         }
     }
 

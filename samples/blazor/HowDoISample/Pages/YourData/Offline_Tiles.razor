@@ -1,0 +1,227 @@
+@page "/offline-tiles"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+@using System.IO.Compression
+@using System.Text
+@using System.Text.Json
+@implements IDisposable
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@InitialCenter" Zoom="12" Bearing="0" Pitch="0"
+                 OnReady="MapReadyAsync">
+            <OverlaysSetting>
+                @if (style != null)
+                {
+                    <VectorTileOverlay @key="version" Id="@("tiles-" + version)" Style="@style"
+                                       RasterTileSource="@rasterSource" RasterSourceId="offline-raster" />
+                }
+            </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@InitialCenter" CenterButtonZoom="12" CenterButtonBearing="0" CenterButtonPitch="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@InitialCenter" Zoom="12" Bearing="0" Pitch="0" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+        @if (busy)
+        {
+            <div role="status" aria-label="Loading offline tiles" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:10px 16px;border-radius:6px;background:rgba(30,30,30,.85);color:white;font:13px system-ui;pointer-events:none;z-index:2">Loading @pendingArchive...</div>
+        }
+        @if (archive == Archives[3] || archive == Archives[4])
+        {
+            <div style="position:absolute;left:8px;bottom:5px;padding:2px 5px;background:rgba(255,255,255,.85);color:#222;font:11px system-ui;pointer-events:none;z-index:1">© OpenStreetMap contributors</div>
+        }
+    </div>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Offline Tiles</div>
+        <div style="font-weight:700;margin-bottom:4px">Archive</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+            @foreach (var name in Archives)
+            {
+                <label style="cursor:pointer"><input type="radio" name="archive" checked="@(archive == name)" disabled="@busy" @onchange="@(() => Pick(name))" /> @name</label>
+            }
+        </div>
+        @if (IsVector(archive))
+        {
+            <label style="margin-top:10px;cursor:pointer"><input type="checkbox" checked="@ownStyle" disabled="@busy" @onchange="@(args => ChangeStyle((bool)args.Value))" /> Draw with its style.json</label>
+        }
+        <div role="status" style="margin-top:12px;font:11px/1.4 Consolas,monospace;overflow-wrap:anywhere;color:@(ok ? "#e5e5e5" : "#ffd0b8")">@status</div>
+        <div style="border-top:1px solid #aaa;margin-top:18px;padding-top:8px;color:#e5e5e5;font-size:11px;line-height:1.4">Vector archives need a style to draw their geometry. Raster archives and the QGIS folder contain finished image tiles. Tiles are read from local files as the map requests them.</div>
+    </div>
+</div>
+
+@code {
+    private static readonly PointShape InitialCenter = new PointShape(-10777700, 3912400);
+    private static readonly string[] Archives =
+    {
+        "Vector MBTiles + style.json", "Vector PMTiles + style.json", "Raster MBTiles",
+        "Raster PMTiles", "A folder of z/x/y tiles from QGIS"
+    };
+
+    private const string BareLayer = @",
+    { ""type"": ""fill"", ""source-layer"": ""LAYER"", ""filter"": [""=="", [""geometry-type""], ""Polygon""],
+      ""paint"": { ""fill-color"": ""rgba(90,140,200,0.35)"", ""fill-outline-color"": ""#2A4A7A"" } },
+    { ""type"": ""line"", ""source-layer"": ""LAYER"", ""filter"": [""=="", [""geometry-type""], ""LineString""],
+      ""paint"": { ""line-color"": ""#2A4A7A"", ""line-width"": 1 } },
+    { ""type"": ""circle"", ""source-layer"": ""LAYER"", ""filter"": [""=="", [""geometry-type""], ""Point""],
+      ""paint"": { ""circle-radius"": 4, ""circle-color"": ""#C0392B"", ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 1.5 } }";
+
+    private MapView map;
+    private MapStyle style;
+    private RasterTileSource rasterSource;
+    private RectangleShape bounds;
+    private int version;
+    private string archive = Archives[0];
+    private bool ownStyle = true;
+    private string status = "";
+    private bool ok = true;
+    private bool busy;
+    private bool disposed;
+    private string pendingArchive = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await OpenAsync(archive, ownStyle);
+        }
+        catch (Exception exception)
+        {
+            while (exception.InnerException != null) exception = exception.InnerException;
+            ok = false;
+            status = "Unavailable: " + exception.Message.Split('\n')[0];
+        }
+    }
+
+    private async Task MapReadyAsync()
+    {
+        if (!disposed && bounds != null)
+            await map.ZoomToExtentAsync(bounds);
+    }
+
+    private static bool IsVector(string name) => name.StartsWith("Vector", StringComparison.Ordinal);
+
+    private Task Pick(string name) => Switch(name, ownStyle);
+
+    private Task ChangeStyle(bool value) => Switch(archive, value);
+
+    private async Task Switch(string name, bool useStyle)
+    {
+        if (busy || disposed) return;
+        busy = true;
+        pendingArchive = name;
+        status = "Loading " + name + "...";
+        await InvokeAsync(StateHasChanged);
+        try
+        {
+            await OpenAsync(name, useStyle);
+            if (disposed) return;
+            archive = name;
+            ownStyle = useStyle;
+            ok = true;
+            await InvokeAsync(StateHasChanged);
+            if (bounds != null) await map.ZoomToExtentAsync(bounds);
+        }
+        catch (Exception exception)
+        {
+            while (exception.InnerException != null) exception = exception.InnerException;
+            ok = false;
+            status = "Unavailable: " + exception.Message.Split('\n')[0];
+        }
+        finally
+        {
+            busy = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task OpenAsync(string name, bool useStyle)
+    {
+        MapStyle nextStyle;
+        RasterTileSource nextRaster = null;
+        RectangleShape nextBounds;
+        string nextStatus;
+
+        if (name == Archives[0])
+        {
+            var tiles = new MbTilesVectorTileSource("./Data/Mbtiles/maplibre.mbtiles");
+            await tiles.OpenAsync();
+            var metadata = tiles.MetadataJson ?? "{}";
+            nextStyle = new MapStyle().AddStyle(useStyle ? "./Data/Mbtiles/style.json" : BareStyle(metadata), tiles);
+            nextBounds = tiles.GetBoundingBox();
+            nextStatus = Describe(tiles);
+        }
+        else if (name == Archives[1])
+        {
+            var tiles = new PmTilesVectorTileSource("./Data/Pmtiles/frisco.pmtiles");
+            await tiles.OpenAsync();
+            nextStyle = new MapStyle().AddStyle(useStyle ? "./Data/Pmtiles/style.json" : BareStyle(tiles.MetadataJson), tiles);
+            nextBounds = tiles.GetBoundingBox();
+            nextStatus = Describe(tiles);
+        }
+        else
+        {
+            if (name == Archives[2]) nextRaster = new MbTilesRasterTileSource("./Data/Mbtiles/test.mbtiles");
+            else if (name == Archives[3]) nextRaster = new PmTilesRasterTileSource("./Data/Pmtiles/stamen_toner.pmtiles");
+            else
+            {
+                var folder = Path.Combine(Path.GetTempPath(), "thinkgeo-howdoi-qgis-tiles");
+                var zip = Path.GetFullPath("./Data/OSM_Tiles_z0-z5_Created_By_QGIS.zip");
+                if (!Directory.Exists(folder) || !File.Exists(Path.Combine(folder, "0", "0", "0.jpg")))
+                    ZipFile.ExtractToDirectory(zip, folder, overwriteFiles: true);
+                nextRaster = new FolderRasterTileSource(folder, 5);
+            }
+            await nextRaster.OpenAsync();
+            nextStyle = new MapStyle().AddRaster(nextRaster, sourceId: "offline-raster");
+            nextBounds = MaxExtents.SphericalMercator;
+            nextStatus = $"{nextRaster.GetType().Name}, zoom {nextRaster.MinDataZoom} to {nextRaster.MaxDataZoom}.";
+        }
+
+        if (disposed) return;
+        style = nextStyle;
+        rasterSource = nextRaster;
+        bounds = nextBounds;
+        status = nextStatus;
+        version++;
+    }
+
+    private static string Describe(IVectorTileSource tiles) => $"{tiles.GetType().Name}, zoom {tiles.MinDataZoom} to {tiles.MaxDataZoom}.";
+
+    private static string BareStyle(string metadata)
+    {
+        var layers = new StringBuilder(@"{ ""layers"": [
+    { ""type"": ""background"", ""paint"": { ""background-color"": ""#F0F0EC"" } }");
+        using var document = JsonDocument.Parse(metadata);
+        foreach (var declared in document.RootElement.GetProperty("vector_layers").EnumerateArray())
+            layers.Append(BareLayer.Replace("LAYER", declared.GetProperty("id").GetString()));
+        return layers.Append(" ] }").ToString();
+    }
+
+    public void Dispose() => disposed = true;
+
+    private sealed class FolderRasterTileSource : RasterTileSource
+    {
+        private readonly string root;
+
+        public FolderRasterTileSource(string root, int maxZoom)
+        {
+            this.root = root;
+            SetDataZoomRange(0, maxZoom);
+        }
+
+        public override bool IsOpen => true;
+        public override Task OpenAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        protected override Task<byte[]> GetTileImageAsyncCore(int zoom, long x, long y, CancellationToken cancellationToken)
+        {
+            var path = Path.Combine(root, zoom.ToString(), x.ToString(), y + ".jpg");
+            return Task.FromResult(File.Exists(path) ? File.ReadAllBytes(path) : null);
+        }
+    }
+}

@@ -1,0 +1,352 @@
+@page "/cross-the-dateline"
+@rendermode InteractiveAuto
+@using System.Collections.ObjectModel
+@using System.Text.Json.Nodes
+@using Microsoft.JSInterop
+@using ThinkGeo.Core
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="map-container cross-dateline-map" style="display:flex">
+  <div style="flex:1;min-width:0;position:relative">
+    @* The route is stored the way a navigator writes it - continuous longitudes running
+       from -118 at Los Angeles, past -180 at the seam, to -238 (= 122 E) at Shanghai - and
+       handed to the map as is. The globe has no seam; Web Mercator has one at 180, and the
+       tile cut folds the far-side geometry back into the world so it draws whole either way. *@
+    <MapView Id="@mapId" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@InitialCenter" Zoom="InitialZoom"
+             DisplayProjection="@projection" OnReady="MapReadyAsync">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            <VectorTileOverlay Id="Flight" StyleJson="@appliedStyle" FeatureSources="@flight" SourceId="flight" />
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom"
+                                CenterButtonBearing="0" CenterButtonPitch="0" />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;right:12px;z-index:3;min-width:230px;max-width:270px;padding:12px 14px;background:rgba(16,19,23,.91);color:white;font:12px system-ui;border-radius:8px;box-sizing:border-box">
+        <div style="font-size:17px;font-weight:600">LAX &rarr; PVG</div>
+        <div style="color:#aab3bc;font-size:11px;margin:2px 0 9px">Los Angeles to Shanghai Pudong, great circle</div>
+        <div id="dateline-position" style="font:12px/1.35 Consolas,monospace;white-space:pre">lon -118.41  (118.41 W)<br />lat   33.94  hdg 0</div>
+        <div id="dateline-progress" style="font:12px Consolas,monospace;margin-top:5px">0 km (0%)</div>
+        <div style="color:#f7c948;margin-top:7px;line-height:1.35">@(projection == DisplayProjection.WebMercator
+            ? "Web Mercator: the seam is at 180°. The same route is folded into both sides of the world."
+            : "Globe: a sphere has no seam. The route and corridor use continuous longitudes past -180°.")</div>
+    </div>
+  </div>
+
+  <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">Cross the dateline</div>
+      <div style="color:#e5e5e5;line-height:1.4;margin-bottom:10px">
+          A flight from Los Angeles to Shanghai crosses the antimeridian. The same route draws on the globe and across the Web Mercator seam.
+      </div>
+
+      <label style="display:block;margin:6px 0;cursor:pointer">
+          <input type="radio" name="proj" checked="@(projection == DisplayProjection.Globe)" @onchange="@(() => projection = DisplayProjection.Globe)" />
+          Globe
+      </label>
+      <label style="display:block;margin:6px 0;cursor:pointer">
+          <input type="radio" name="proj" checked="@(projection == DisplayProjection.WebMercator)" @onchange="@(() => projection = DisplayProjection.WebMercator)" />
+          Web Mercator (EPSG:3857)
+      </label>
+
+      <div style="border-top:1px solid #aaa;margin-top:10px;padding-top:8px">
+          <div style="font-weight:700;margin-bottom:4px">Follow the flight</div>
+          <div style="line-height:1.35;margin-bottom:6px">The aircraft follows the LAX to PVG great-circle route, with a 100-nautical-mile corridor.</div>
+          <div style="display:flex;gap:5px;margin-bottom:8px">
+              <button type="button" style="min-width:72px;border:2px solid #8a8a8a;background:#f6f6f4;padding:1px 6px;cursor:pointer" disabled="@(!flightReady)" @onclick="ToggleFlight">@(isFlying ? "Pause" : "Fly")</button>
+              <button type="button" style="min-width:72px;border:2px solid #8a8a8a;background:#f6f6f4;padding:1px 6px;cursor:pointer" disabled="@(!flightReady)" @onclick="ResetFlight">Reset</button>
+          </div>
+      </div>
+
+      <div style="border-top:1px solid #aaa;margin-top:2px;padding-top:8px;display:flex;flex-direction:column;flex:1;min-height:0">
+          <div style="font-weight:700;margin-bottom:4px">style.json - edit it; the map follows</div>
+          <textarea @bind="styleText" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                    aria-label="style.json editor"
+                    style="flex:1;min-height:0;width:100%;box-sizing:border-box;resize:none;border:1px solid #aaa;background:#fff;color:#111;padding:7px;font:11.5px/1.35 Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:hidden;overflow-y:auto"></textarea>
+          @if (!string.IsNullOrEmpty(styleStatus))
+          {
+              <div role="status" style="padding-top:5px;color:@(styleOk ? "#baf1ba" : "#ffd0b8")">@styleStatus</div>
+          }
+      </div>
+  </div>
+</div>
+
+@code {
+    private static readonly PointShape InitialCenter = new PointShape(-20037508, 3500000);
+    private const int InitialZoom = 3;
+    private readonly string mapId = "dateline-" + Guid.NewGuid().ToString("N");
+    private bool disposed;
+    private Task initialization;
+    private Task disposal;
+    private const double HalfWorld = 20037508.342789244;
+    private const double EarthRadius = 6378137.0;
+    private const double CorridorHalfWidthMeters = 100 * 1852.0;
+    private const int RouteSamples = 360;
+
+    private static readonly (string Code, string Name, double Lon, double Lat) Origin = ("LAX", "Los Angeles", -118.408, 33.942);
+    private static readonly (string Code, string Name, double Lon, double Lat) Destination = ("PVG", "Shanghai Pudong", 121.805, 31.143);
+
+    private MapView map;
+    private GeoCollection<FeatureSource> flight;
+    private DisplayProjection projection = DisplayProjection.Globe;
+    private (double Lon, double Lat)[] route;
+    private IJSObjectReference flightModule;
+    private DotNetObjectReference<Cross_The_Dateline> flightReference;
+    private bool flightReady;
+    private bool isFlying;
+    private string styleText = FlightStyle;
+    private string appliedStyle = FlightStyle;
+    private string styleStatus = "";
+    private bool styleOk = true;
+    private int editVersion;
+
+    // The route line, the corridor's two edges, and the two airports, each cut into its own
+    // source-layer of the one "flight" source. A line, two lines, two labeled points.
+    private const string FlightStyle = @"{
+  ""layers"": [
+    { ""type"": ""line"", ""source-layer"": ""corridor"",
+      ""paint"": { ""line-color"": ""rgba(31,79,214,0.5)"", ""line-width"": 1.5, ""line-dasharray"": [3, 2] } },
+    { ""type"": ""line"", ""source-layer"": ""route"",
+      ""paint"": { ""line-color"": ""#1f4fd6"", ""line-width"": 3 } },
+    { ""type"": ""circle"", ""source-layer"": ""airports"",
+      ""paint"": { ""circle-radius"": 6, ""circle-color"": ""#FFFFFF"", ""circle-stroke-color"": ""#1f4fd6"", ""circle-stroke-width"": 3 } },
+    { ""type"": ""symbol"", ""source-layer"": ""airports"",
+      ""layout"": {
+          ""text-field"": [""get"", ""LABEL""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-anchor"": ""top"",
+          ""text-offset"": [0, 0.8],
+          ""text-size"": 13 },
+      ""paint"": {
+          ""text-color"": ""#101317"",
+          ""text-halo-color"": ""#FFFFFF"",
+          ""text-halo-width"": 1.5 }
+    }
+  ]
+}";
+
+    protected override void OnInitialized()
+    {
+        route = GreatCircle(Origin.Lon, Origin.Lat, Destination.Lon, Destination.Lat, RouteSamples);
+
+        var airports = new InMemoryFeatureSource(
+            new[] { new FeatureSourceColumn("LABEL") },
+            new Collection<Feature>
+            {
+                Airport(Origin), Airport(Destination),
+            });
+
+        flight = new GeoCollection<FeatureSource>
+        {
+            { "route", new InMemoryFeatureSource(Array.Empty<FeatureSourceColumn>(), new Collection<Feature> { new Feature(RouteLine()) }) },
+            { "corridor", new InMemoryFeatureSource(Array.Empty<FeatureSourceColumn>(), new Collection<Feature> { new Feature(CorridorEdges()) }) },
+            { "airports", airports },
+        };
+    }
+
+    private Task MapReadyAsync()
+        => !disposed ? (initialization = InitializeFlightAsync()) : Task.CompletedTask;
+
+    private async Task InitializeFlightAsync()
+    {
+        if (disposed) return;
+        try
+        {
+            flightModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/cross-dateline-flight.js");
+            if (disposed) return;
+            flightReference = DotNetObjectReference.Create(this);
+            var points = route.Select(point => new[] { point.Lon, point.Lat }).ToArray();
+            flightReady = await flightModule.InvokeAsync<bool>("initializeFlight", mapId, points,
+                "/images/dateline_aircraft.svg", flightReference, 45000);
+            if (!flightReady)
+            {
+                styleOk = false;
+                styleStatus = "Flight could not start: the browser map is unavailable.";
+            }
+        }
+        catch (Exception exception)
+        {
+            styleOk = false;
+            styleStatus = "Flight could not start: " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+
+        if (!disposed) await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ToggleFlight()
+    {
+        if (disposed || !flightReady || flightModule == null) return;
+        isFlying = await flightModule.InvokeAsync<bool>("toggleFlight", mapId);
+    }
+
+    private async Task ResetFlight()
+    {
+        if (disposed || !flightReady || flightModule == null) return;
+        await flightModule.InvokeVoidAsync("resetFlight", mapId);
+        isFlying = false;
+    }
+
+    [JSInvokable]
+    public Task FlightFinished() => InvokeAsync(() =>
+    {
+        if (disposed) return;
+        isFlying = false;
+        StateHasChanged();
+    });
+
+    private async Task EditorChanged()
+    {
+        var current = ++editVersion;
+        await Task.Delay(400);
+        if (disposed || current != editVersion) return;
+
+        try
+        {
+            var document = JsonNode.Parse(styleText);
+            if (document?["layers"] is not JsonArray)
+                throw new InvalidOperationException("style.json needs a layers array.");
+            appliedStyle = styleText;
+            styleOk = true;
+            styleStatus = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            styleOk = false;
+            styleStatus = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        disposed = true;
+        return new ValueTask(disposal ??= ReleaseFlightAsync());
+    }
+
+    private async Task ReleaseFlightAsync()
+    {
+        if (initialization != null) { try { await initialization; } catch { } }
+        try
+        {
+            if (flightModule != null)
+            {
+                try { await flightModule.InvokeVoidAsync("disposeFlight", mapId); }
+                finally { await flightModule.DisposeAsync(); }
+            }
+        }
+        catch (JSDisconnectedException) { }
+        finally { flightReference?.Dispose(); flightReference = null; flightModule = null; }
+    }
+
+    private Feature Airport((string Code, string Name, double Lon, double Lat) airport)
+    {
+        var (x, y) = Meters(airport.Lon, airport.Lat);
+        var feature = new Feature(new PointShape(x, y));
+        feature.ColumnValues["LABEL"] = airport.Code + "  " + airport.Name;
+        return feature;
+    }
+
+    private LineShape RouteLine()
+    {
+        var line = new LineShape();
+        foreach (var (lon, lat) in route)
+        {
+            var (x, y) = Meters(lon, lat);
+            line.Vertices.Add(new Vertex(x, y));
+        }
+        return line;
+    }
+
+    // The two edges of a band 100 nautical miles either side of the route. The offsets are
+    // geodesic and the longitudes stay continuous, like the route's.
+    private MultilineShape CorridorEdges()
+    {
+        var left = new LineShape();
+        var right = new LineShape();
+        for (var i = 0; i < route.Length; i++)
+        {
+            var here = route[i];
+            var heading = i < route.Length - 1 ? Bearing(here, route[i + 1]) : Bearing(route[i - 1], here);
+            var l = Destination_(here, heading - 90, CorridorHalfWidthMeters);
+            var (lx, ly) = Meters(l.Lon, l.Lat);
+            left.Vertices.Add(new Vertex(lx, ly));
+            var r = Destination_(here, heading + 90, CorridorHalfWidthMeters);
+            var (rx, ry) = Meters(r.Lon, r.Lat);
+            right.Vertices.Add(new Vertex(rx, ry));
+        }
+        return new MultilineShape(new[] { left, right });
+    }
+
+    // Points along the great circle, evenly spaced in arc length, with longitudes made
+    // continuous from the origin onward (no jump at the antimeridian).
+    private static (double Lon, double Lat)[] GreatCircle(double aLon, double aLat, double bLon, double bLat, int count)
+    {
+        var p = ToUnit(aLon, aLat);
+        var q = ToUnit(bLon, bLat);
+        var dot = Math.Max(-1, Math.Min(1, p.X * q.X + p.Y * q.Y + p.Z * q.Z));
+        var omega = Math.Acos(dot);
+        var sinOmega = Math.Sin(omega);
+        var result = new (double Lon, double Lat)[count + 1];
+        var previousLon = aLon;
+        for (var i = 0; i <= count; i++)
+        {
+            var t = (double)i / count;
+            var k1 = Math.Sin((1 - t) * omega) / sinOmega;
+            var k2 = Math.Sin(t * omega) / sinOmega;
+            var x = k1 * p.X + k2 * q.X;
+            var y = k1 * p.Y + k2 * q.Y;
+            var z = k1 * p.Z + k2 * q.Z;
+            var lat = Math.Asin(Math.Max(-1, Math.Min(1, z))) * 180 / Math.PI;
+            var lon = Math.Atan2(y, x) * 180 / Math.PI;
+            while (lon - previousLon > 180) lon -= 360;
+            while (lon - previousLon < -180) lon += 360;
+            result[i] = (lon, lat);
+            previousLon = lon;
+        }
+        return result;
+    }
+
+    private static (double X, double Y, double Z) ToUnit(double lon, double lat)
+    {
+        var la = lat * Math.PI / 180;
+        var lo = lon * Math.PI / 180;
+        return (Math.Cos(la) * Math.Cos(lo), Math.Cos(la) * Math.Sin(lo), Math.Sin(la));
+    }
+
+    private static double Bearing((double Lon, double Lat) a, (double Lon, double Lat) b)
+    {
+        var la1 = a.Lat * Math.PI / 180;
+        var la2 = b.Lat * Math.PI / 180;
+        var dLon = (b.Lon - a.Lon) * Math.PI / 180;
+        var y = Math.Sin(dLon) * Math.Cos(la2);
+        var x = Math.Cos(la1) * Math.Sin(la2) - Math.Sin(la1) * Math.Cos(la2) * Math.Cos(dLon);
+        return (Math.Atan2(y, x) * 180 / Math.PI + 360) % 360;
+    }
+
+    // The point a distance along a bearing, longitude kept continuous with the start.
+    private static (double Lon, double Lat) Destination_((double Lon, double Lat) from, double bearingDegrees, double meters)
+    {
+        var la1 = from.Lat * Math.PI / 180;
+        var brng = bearingDegrees * Math.PI / 180;
+        var delta = meters / EarthRadius;
+        var la2 = Math.Asin(Math.Sin(la1) * Math.Cos(delta) + Math.Cos(la1) * Math.Sin(delta) * Math.Cos(brng));
+        var dLon = Math.Atan2(Math.Sin(brng) * Math.Sin(delta) * Math.Cos(la1), Math.Cos(delta) - Math.Sin(la1) * Math.Sin(la2));
+        return (from.Lon + dLon * 180 / Math.PI, la2 * 180 / Math.PI);
+    }
+
+    // Web Mercator meters; a longitude past +/-180 lands past the world edge on purpose.
+    private static (double X, double Y) Meters(double lon, double lat)
+    {
+        var clamped = Math.Max(-85.05, Math.Min(85.05, lat));
+        return (lon / 180 * HalfWorld, EarthRadius * Math.Log(Math.Tan(Math.PI / 4 + clamped * Math.PI / 360)));
+    }
+}

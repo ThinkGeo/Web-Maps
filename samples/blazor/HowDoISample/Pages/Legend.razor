@@ -1,0 +1,69 @@
+@page "/legend"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10650000, 4600000))" Zoom="3">
+            <OverlaysSetting>
+                <VectorTileOverlay Id="States" StyleJson="@StyleJson" FeatureSources="@sources" SourceId="features" />
+            </OverlaysSetting>
+            <AdornmentOverlaySetting>
+                <AdornmentOverlay Id="Adornments" Layers="@adornments" />
+            </AdornmentOverlaySetting>
+        </MapView>
+    </div>
+    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Legend</div>
+        <div style="color:#555">The states are classed by their 1990 population in the style. The legend in the corner is a classic LegendAdornmentLayer, one item per class with the same colours, drawn on the server by the AdornmentOverlay and laid over the map; it needs no renderer of its own.</div>
+    </div>
+</div>
+
+@code {
+    private static readonly (double From, string Colour, GeoColor Fill)[] Classes =
+    {
+        (0, "#B0C4DE", GeoColor.FromHtml("#B0C4DE")),
+        (2_000_000, "#87CEFA", GeoColor.FromHtml("#87CEFA")),
+        (6_000_000, "#4169E1", GeoColor.FromHtml("#4169E1")),
+        (12_000_000, "#00008B", GeoColor.FromHtml("#00008B")),
+    };
+
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""background"", ""paint"": { ""background-color"": ""#DDE8F0"" } },
+    { ""type"": ""fill"", ""source-layer"": ""states"",
+      ""paint"": {
+          ""fill-color"": [""step"", [""to-number"", [""get"", ""POP1990""]],
+              ""#B0C4DE"", 2000000, ""#87CEFA"", 6000000, ""#4169E1"", 12000000, ""#00008B""],
+          ""fill-outline-color"": ""#696969"" } }
+  ]
+}";
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private GeoCollection<AdornmentLayer> adornments;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "states", new ShapeFileFeatureSource("./Data/Shapefile/USStates_3857.shp") } };
+
+        var legend = new LegendAdornmentLayer
+        {
+            Title = new LegendItem { TextStyle = new TextStyle("Population 1990", new GeoFont("Arial", 10, DrawingFontStyles.Bold), GeoBrushes.Black) },
+            Location = AdornmentLocation.LowerRight,
+        };
+        for (var i = 0; i < Classes.Length; i++)
+        {
+            var text = i == Classes.Length - 1
+                ? FormattableString.Invariant($"over {Classes[i].From / 1_000_000:0}M")
+                : FormattableString.Invariant($"{Classes[i].From / 1_000_000:0}M to {Classes[i + 1].From / 1_000_000:0}M");
+            legend.LegendItems.Add(new LegendItem
+            {
+                ImageStyle = new AreaStyle(GeoPens.DimGray, new GeoSolidBrush(Classes[i].Fill)),
+                TextStyle = new TextStyle(text, new GeoFont("Arial", 9), GeoBrushes.Black),
+            });
+        }
+        adornments = new GeoCollection<AdornmentLayer> { { "legend", legend } };
+    }
+}

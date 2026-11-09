@@ -1,0 +1,34 @@
+﻿@page "/project-a-raster"
+@using ThinkGeo.Core
+
+<div class="map-container">
+    @* The map picks its own renderer: a layer drawn in a projection of its own is the classic
+       renderer's work, because MapLibre draws web mercator only. *@
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             BackgroundColor="@(GeoColor.FromHtml("#89d3f0"))"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@center" Zoom="2">
+        <OverlaysSetting>
+            <LayerOverlay Id="World" Layers="@layers" />
+        </OverlaysSetting>
+    </MapView>
+</div>
+
+@code {
+    private MapView map;
+    private readonly GeoCollection<LayerBase> layers = new GeoCollection<LayerBase>();
+    private PointShape center;
+
+    // The raster is stored in World Geodetic System (4326); a projection converter on its
+    // image source warps every tile into US National Atlas Equal Area (9311) as it is drawn.
+    protected override void OnInitialized()
+    {
+        var worldRasterLayer = new GeoTiffRasterLayer("./Data/GeoTiff/World.tif");
+        worldRasterLayer.ImageSource.ProjectionConverter = new GdalProjectionConverter(4326, 9311);
+        layers.Add("World", worldRasterLayer);
+
+        worldRasterLayer.Open();
+        center = worldRasterLayer.GetBoundingBox().GetCenterPoint();
+        worldRasterLayer.Close();
+    }
+}

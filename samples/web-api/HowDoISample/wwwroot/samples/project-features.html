@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Reproject Your Data</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel">
+            <div class="controls">
+                <label><input type="radio" name="what" value="shapes" checked> Shapes I hold - a converter called on them</label>
+                <label><input type="radio" name="what" value="layer"> A whole layer - a converter on its source</label>
+            </div>
+            <div id="shapes-box" class="controls">
+                <div class="row"><span>From EPSG:4326 (longitude, latitude)</span><button class="btn primary" id="go">Reproject</button></div>
+                <textarea id="wkt" rows="7" spellcheck="false" style="font:12px Consolas,monospace;white-space:pre;resize:vertical"></textarea>
+                <div class="status" id="status"></div>
+                <pre id="converted" style="font:11px Consolas,monospace;color:#444;white-space:pre-wrap;word-break:break-all;margin:0"></pre>
+            </div>
+            <div id="layer-box" class="editor" style="display:none">
+                <div class="head">style.json - edit it; the map follows</div>
+                <div class="note">The zoning file is in EPSG:2276 feet; a converter on its source reprojects it.</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="style-status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        document.getElementById('wkt').value = 'POINT(-96.834516 33.150083)\n'
+            + 'LINESTRING(-96.83559 33.149,-96.835866046134 33.1508413556856,-96.835793626491 33.1508974965687,-96.8336008970734 33.1511063402186,-96.83356 33.15109,-96.83328 33.14922)\n'
+            + 'POLYGON((-96.83582 33.1508,-96.83578 33.15046,-96.83353 33.15068,-96.83358 33.15102,-96.83582 33.1508))';
+
+        const map = tg.createMap({ center: [-10779580, 3915255], zoom: 18 });
+        await tg.ready(map);
+        // A point is drawn from a named picture; a star has no shape of its own in the style
+        // specification, so a PointStyle draws it once on the server and it is registered here.
+        map.addImage('star', (await map.loadImage(tg.root + 'samples/projections/star.png')).data);
+        const shapes = tg.geojsonOverlay(map, 'shapes', [
+            { type: 'fill', filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': 'rgba(147,112,219,0.31)', 'fill-outline-color': '#9370DB' } },
+            { type: 'line', filter: ['==', ['geometry-type'], 'LineString'], paint: { 'line-color': '#9370DB', 'line-width': 6 } },
+            { type: 'symbol', filter: ['==', ['geometry-type'], 'Point'], layout: { 'icon-image': 'star', 'icon-allow-overlap': true } },
+        ]);
+
+        // The shapes the page holds, put through the converter on the server.
+        const reproject = async () => {
+            const status = document.getElementById('status');
+            try {
+                const result = await tg.post('samples/projections/reproject', { epsg: 4326, wkt: document.getElementById('wkt').value });
+                shapes.setData(result.features);
+                document.getElementById('converted').textContent = result.converted.join('\n');
+                tg.say(status, `${result.converted.length} shapes converted, now in the map's metres`);
+                tg.fit(map, result.bounds, 60);
+            } catch (e) {
+                tg.say(status, e.message, false);
+            }
+        };
+        document.getElementById('go').addEventListener('click', reproject);
+
+        // The layer whose source carries the converter: nothing else about it says so.
+        const layers = [{ type: 'fill', 'source-layer': 'zoning', paint: { 'fill-color': 'rgba(147,112,219,0.2)', 'fill-outline-color': '#9370DB' } }];
+        let zoning = null;
+        tg.editor(document.getElementById('style'), document.getElementById('style-status'), tg.styleText(layers), (edited) => zoning && zoning.setLayers(edited));
+
+        const pick = async () => {
+            const asLayer = document.querySelector('input[name=what]:checked').value === 'layer';
+            document.getElementById('shapes-box').style.display = asLayer ? 'none' : '';
+            document.getElementById('layer-box').style.display = asLayer ? '' : 'none';
+            shapes.setData(asLayer ? null : shapes.data);
+            if (asLayer) {
+                if (!zoning) zoning = tg.vectorOverlay(map, 'zoning', layers);
+                tg.fit(map, await tg.get('samples/projections/zoning-bounds'), 0);
+            } else {
+                if (zoning) { zoning.remove(); zoning = null; }
+                await reproject();
+            }
+        };
+        for (const radio of document.querySelectorAll('input[name=what]')) radio.addEventListener('change', pick);
+        await pick();
+    </script>
+</body>
+</html>

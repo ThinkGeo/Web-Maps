@@ -1,0 +1,198 @@
+@page "/features-two-ways"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex;flex-direction:column">
+
+    <div style="display:flex;gap:8px;align-items:center;padding:6px 8px;font:13px system-ui;background:#1b1b1b;color:#ddd">
+        <button class="btn btn-sm btn-light" style="white-space:nowrap" @onclick="ToggleZoneB">@(hidden == null ? "Hide \"Zone B\"" : "Show \"Zone B\"")</button>
+        <span style="margin-left:auto;color:#aaa">The same features on both maps. Hide a zone and watch the network tab: the classic map fetches its tiles again, the new one redraws from what the browser already holds.</span>
+    </div>
+
+    <div style="display:flex;flex:1;min-height:0">
+
+        <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+            <div style="padding:4px 8px;font:12px system-ui;background:#2a2a2a;color:#f88">
+                Classic: LayerOverlay, drawn on the server
+            </div>
+            <div style="flex:1;min-height:0">
+                <MapView Id="classicMap" MapUnit="GeographyUnit.Meter"
+                         Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                         Center="@(new PointShape(-10778354, 3915324))" Zoom="15">
+                    <OverlaysSetting>
+                        <ThinkGeoCloudRasterMapsOverlay Id="Basemap" MapType="ThinkGeoCloudRasterMapsMapType.Light_V2_X1"
+                                                        ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                        <LayerOverlay Id="Features" @ref="classicOverlay" Layers="@classicLayers" />
+                    </OverlaysSetting>
+                </MapView>
+            </div>
+        </div>
+
+        <div style="flex:1;display:flex;flex-direction:column;min-width:0;border-left:2px solid #444">
+            <div style="padding:4px 8px;font:12px system-ui;background:#2a2a2a;color:#8f8">
+                New: MapStyle, drawn in the browser from the same features
+            </div>
+            <div style="flex:1;min-height:0">
+                <MapView Id="newMap" MapUnit="GeographyUnit.Meter"
+                         Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                         Center="@(new PointShape(-10778354, 3915324))" Zoom="15">
+                    <OverlaysSetting>
+                        <ThinkGeoCloudRasterMapsOverlay Id="Basemap" MapType="ThinkGeoCloudRasterMapsMapType.Light_V2_X1"
+                                                        ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                        <VectorTileOverlay Id="Features" Style="@style" FeatureSources="@sources" SourceId="app" />
+                    </OverlaysSetting>
+                </MapView>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    private static readonly FeatureSourceColumn[] Columns = { new FeatureSourceColumn("Name"), new FeatureSourceColumn("Kind") };
+
+    // One symbol per kind of marker, used by both maps: the classic one draws it, the new one
+    // is handed the drawing as an image and picks it by name.
+    private static readonly Dictionary<string, PointStyle> Symbols = new Dictionary<string, PointStyle>
+    {
+        ["Depot"] = new PointStyle(PointSymbolType.Square, 16, new GeoSolidBrush(GeoColor.FromHtml("#E07B00")), new GeoPen(GeoColors.White, 2)),
+        ["Site"] = new PointStyle(PointSymbolType.Circle, 13, new GeoSolidBrush(GeoColor.FromHtml("#3060C8")), new GeoPen(GeoColors.White, 2)),
+        ["Vehicle"] = new PointStyle(PointSymbolType.Triangle, 16, new GeoSolidBrush(GeoColor.FromHtml("#2E8B3A")), new GeoPen(GeoColors.White, 2)),
+    };
+
+    private readonly ProjectionConverter toMeters = new ProjectionConverter(4326, 3857);
+    private LayerOverlay classicOverlay;
+    private GeoCollection<LayerBase> classicLayers;
+    private InMemoryFeatureLayer zones;
+    private GeoCollection<FeatureSource> sources;
+    private MapStyle style;
+    private string hidden;
+
+    // A hidden zone is a filter on the layers that draw zones; the data is not touched.
+    private const string FeatureStyle = @"{
+  ""layers"": [
+    { ""type"": ""fill"", ""source-layer"": ""zones"",
+      ""filter"": [""!="", [""get"", ""Name""], ""{hidden}""],
+      ""paint"": { ""fill-color"": ""rgba(65,105,225,0.25)"" } },
+
+    { ""type"": ""line"", ""source-layer"": ""zones"",
+      ""filter"": [""!="", [""get"", ""Name""], ""{hidden}""],
+      ""paint"": { ""line-color"": ""#4169E1"", ""line-width"": 1.5 } },
+
+    { ""type"": ""line"", ""source-layer"": ""routes"",
+      ""paint"": { ""line-color"": ""#B22222"", ""line-width"": 3 } },
+
+    { ""type"": ""symbol"", ""source-layer"": ""routes"",
+      ""layout"": {
+          ""symbol-placement"": ""line"",
+          ""text-field"": [""get"", ""Name""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 11 },
+      ""paint"": { ""text-color"": ""#B22222"", ""text-halo-color"": ""#FFFFFF"", ""text-halo-width"": 1.5 } },
+
+    { ""type"": ""symbol"", ""source-layer"": ""zone-labels"",
+      ""filter"": [""!="", [""get"", ""Name""], ""{hidden}""],
+      ""layout"": {
+          ""text-field"": [""get"", ""Name""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 12 },
+      ""paint"": { ""text-color"": ""#1F3A93"", ""text-halo-color"": ""#FFFFFF"", ""text-halo-width"": 1.5 } },
+
+    { ""type"": ""symbol"", ""source-layer"": ""markers"",
+      ""layout"": {
+          ""icon-image"": [""get"", ""Kind""],
+          ""text-field"": [""get"", ""Name""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 11,
+          ""text-anchor"": ""top"",
+          ""text-offset"": [0, 1] },
+      ""paint"": { ""text-color"": ""#222222"", ""text-halo-color"": ""#FFFFFF"", ""text-halo-width"": 1.5 } }
+  ]
+}";
+
+    // The application's features - zones and routes it drew, markers it placed - written in
+    // longitude and latitude and kept in the map's meters. Built once; the classic map gets
+    // them as layers, the new map as sources.
+    protected override void OnInitialized()
+    {
+        toMeters.Open();
+
+        var zoneFeatures = new[]
+        {
+            Named("Zone A", "POLYGON((-96.834 33.158, -96.826 33.1575, -96.8255 33.152, -96.833 33.1515, -96.834 33.158))"),
+            Named("Zone B", "POLYGON((-96.822 33.1585, -96.813 33.159, -96.8125 33.153, -96.8215 33.1525, -96.822 33.1585))"),
+            Named("Zone C", "POLYGON((-96.834 33.148, -96.824 33.1485, -96.8235 33.1425, -96.8335 33.142, -96.834 33.148))"),
+            Named("Service Radius", new EllipseShape(new PointShape(-96.815, 33.145), 350, GeographyUnit.DecimalDegree, DistanceUnit.Meter).ToPolygon().GetWellKnownText()),
+        };
+        var routeFeatures = new[]
+        {
+            Named("Route 1", "LINESTRING(-96.836 33.1505, -96.829 33.151, -96.8235 33.1495, -96.818 33.151, -96.811 33.150)"),
+            Named("Route 2", "LINESTRING(-96.8245 33.161, -96.824 33.155, -96.8225 33.1495, -96.8235 33.144, -96.822 33.139)"),
+        };
+        var markerFeatures = new[]
+        {
+            Named("Depot", "POINT(-96.832 33.1565)", "Depot"),
+            Named("Site 1", "POINT(-96.8145 33.1575)", "Site"),
+            Named("Site 2", "POINT(-96.8315 33.1445)", "Site"),
+            Named("Site 3", "POINT(-96.8128 33.1432)", "Site"),
+            Named("Truck 7", "POINT(-96.8185 33.1509)", "Vehicle"),
+        };
+
+        zones = Layer(zoneFeatures);
+        zones.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoPen(GeoColor.FromHtml("#4169E1"), 1.5f), new GeoSolidBrush(GeoColor.FromArgb(64, 65, 105, 225)));
+        zones.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = new TextStyle("Name", new GeoFont("Arial", 12, DrawingFontStyles.Bold), new GeoSolidBrush(GeoColor.FromHtml("#1F3A93"))) { HaloPen = new GeoPen(GeoColors.White, 2) };
+
+        var routes = Layer(routeFeatures);
+        routes.ZoomLevelSet.ZoomLevel01.DefaultLineStyle = new LineStyle(new GeoPen(GeoColor.FromHtml("#B22222"), 3));
+        routes.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = new TextStyle("Name", new GeoFont("Arial", 11, DrawingFontStyles.Bold), new GeoSolidBrush(GeoColor.FromHtml("#B22222"))) { HaloPen = new GeoPen(GeoColors.White, 2), SplineType = SplineType.StandardSplining };
+
+        var markers = Layer(markerFeatures);
+        var byKind = new ValueStyle { ColumnName = "Kind" };
+        foreach (var (kind, symbol) in Symbols) byKind.ValueItems.Add(new ValueItem(kind, symbol));
+        markers.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(byKind);
+        markers.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(new TextStyle("Name", new GeoFont("Arial", 11, DrawingFontStyles.Bold), new GeoSolidBrush(GeoColor.FromHtml("#222222"))) { HaloPen = new GeoPen(GeoColors.White, 2), TextPlacement = TextPlacement.Lower });
+
+        classicLayers = new GeoCollection<LayerBase> { { "zones", zones }, { "routes", routes }, { "markers", markers } };
+
+        // A zone's name rides on its own point, so it is placed once per zone rather than once
+        // per tile the zone is cut into.
+        sources = new GeoCollection<FeatureSource>
+        {
+            { "zones", new InMemoryFeatureSource(Columns, zoneFeatures) },
+            { "zone-labels", new InMemoryFeatureSource(Columns, zoneFeatures.Select(zone => new Feature(zone.GetShape().GetCenterPoint(), zone.ColumnValues))) },
+            { "routes", new InMemoryFeatureSource(Columns, routeFeatures) },
+            { "markers", new InMemoryFeatureSource(Columns, markerFeatures) },
+        };
+        style = Style(null);
+    }
+
+    // Classic: the zone leaves the layer and the overlay redraws - every tile on screen is
+    // rendered on the server again and fetched again.
+    // New: the filter changes and the browser redraws from the features it already holds.
+    private async Task ToggleZoneB()
+    {
+        hidden = hidden == null ? "Zone B" : null;
+
+        zones.FeatureIdsToExclude.Clear();
+        if (hidden != null) zones.FeatureIdsToExclude.Add(hidden);
+        await classicOverlay.RedrawAsync();
+
+        style = Style(hidden);
+    }
+
+    private static MapStyle Style(string hiddenZone)
+    {
+        var mapStyle = new MapStyle(FeatureStyle.Replace("{hidden}", hiddenZone ?? ""));
+        foreach (var (kind, symbol) in Symbols) mapStyle.Images.Add(kind, symbol);
+        return mapStyle;
+    }
+
+    private Feature Named(string name, string wkt, string kind = "")
+        => toMeters.ConvertToExternalProjection(new Feature(wkt, name, new Dictionary<string, string> { ["Name"] = name, ["Kind"] = kind }));
+
+    private static InMemoryFeatureLayer Layer(IEnumerable<Feature> features)
+    {
+        var layer = new InMemoryFeatureLayer(Columns, features);
+        layer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+        return layer;
+    }
+}

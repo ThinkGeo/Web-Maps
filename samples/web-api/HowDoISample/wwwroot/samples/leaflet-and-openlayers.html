@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Leaflet and OpenLayers</title>
+    <link rel="stylesheet" href="../lib/leaflet.css">
+    <link rel="stylesheet" href="../lib/ol.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        #maps { flex: 1; min-width: 0; display: flex; }
+        .side { flex: 1; min-width: 0; position: relative; }
+        .side + .side { border-left: 2px solid #444; }
+        .side .map { position: absolute; inset: 0; background: #EAE8E2; }
+        .tag { position: absolute; right: 10px; top: 10px; z-index: 1000; padding: 4px 8px; background: rgba(255,255,255,.92); border-radius: 4px; font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+        @media (max-width: 760px) {
+            #maps { flex-direction: column; }
+            .side + .side { border-left: 0; border-top: 2px solid #444; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div id="maps">
+            <div class="side"><div id="leaflet" class="map"></div><div class="tag">Leaflet: PNG tiles + GeoJSON</div></div>
+            <div class="side"><div id="openlayers" class="map"></div><div class="tag">OpenLayers: PNG tiles + vector tiles</div></div>
+        </div>
+        <aside class="panel narrow">
+            <p>The same server under two other map libraries. Click a park.</p>
+            <div class="status" id="status"></div>
+        </aside>
+    </div>
+    <script src="../lib/leaflet.js"></script>
+    <script src="../lib/ol.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const status = document.getElementById('status');
+        const center = [-10779000, 3913500], zoom = 14;
+        const parkStyle = { stroke: '#2E7D32', fill: 'rgba(76,175,80,0.35)' };
+
+        // Leaflet: the server's PNG tiles, and the parks as GeoJSON.
+        const leaflet = L.map('leaflet', { center: tg.toLngLat(...center).reverse(), zoom, zoomSnap: 0, preferCanvas: true, attributionControl: false });
+        L.tileLayer(`${tg.root}raster/clients-frisco/{z}/{x}/{y}.png`, { tileSize: 512, zoomOffset: -1, maxZoom: 20 }).addTo(leaflet);
+        const parks = await tg.get('samples/clients/parks');
+        L.geoJSON(parks, {
+            style: { color: parkStyle.stroke, weight: 1.5, fillColor: '#4CAF50', fillOpacity: 0.35 },
+            onEachFeature: (feature, layer) => layer.on('click', () => tg.say(status, `Leaflet: ${feature.properties.NAME}`)),
+        }).addTo(leaflet);
+
+        // OpenLayers: the same PNG tiles, and the parks as vector tiles.
+        const openlayers = new ol.Map({
+            target: 'openlayers',
+            layers: [
+                new ol.layer.Tile({ source: new ol.source.XYZ({ url: `${tg.root}raster/clients-frisco/{z}/{x}/{y}.png`, tileSize: 512 }) }),
+                new ol.layer.VectorTile({
+                    source: new ol.source.VectorTile({ format: new ol.format.MVT(), url: `${tg.root}tiles/parks/{z}/{x}/{y}.mvt` }),
+                    style: new ol.style.Style({ stroke: new ol.style.Stroke({ color: parkStyle.stroke, width: 1.5 }), fill: new ol.style.Fill({ color: parkStyle.fill }) }),
+                }),
+            ],
+            view: new ol.View({ center, zoom }),
+        });
+        openlayers.on('singleclick', (e) => openlayers.forEachFeatureAtPixel(e.pixel, (feature) => { tg.say(status, `OpenLayers: ${feature.get('NAME')}`); return true; }));
+
+        // The map being used leads, the other follows.
+        let leader = 'leaflet';
+        for (const [id, name] of [['leaflet', 'leaflet'], ['openlayers', 'openlayers']]) {
+            for (const type of ['pointerdown', 'wheel', 'touchstart']) document.getElementById(id).addEventListener(type, () => { leader = name; }, { capture: true, passive: true });
+        }
+        const toOpenLayers = () => {
+            const c = leaflet.getCenter();
+            openlayers.getView().setCenter(tg.toMeters(c.lng, c.lat));
+            openlayers.getView().setZoom(leaflet.getZoom());
+        };
+        const toLeaflet = () => {
+            const [lng, lat] = tg.toLngLat(...openlayers.getView().getCenter());
+            leaflet.setView([lat, lng], openlayers.getView().getZoom(), { animate: false });
+        };
+        leaflet.on('move', () => { if (leader === 'leaflet') toOpenLayers(); });
+        openlayers.getView().on(['change:center', 'change:resolution'], () => { if (leader === 'openlayers') toLeaflet(); });
+        new ResizeObserver(() => { leaflet.invalidateSize({ animate: false }); if (leader === 'openlayers') toLeaflet(); else toOpenLayers(); }).observe(document.getElementById('leaflet'));
+        window.maps = { leaflet, openlayers };   // handy in the console
+    </script>
+</body>
+</html>

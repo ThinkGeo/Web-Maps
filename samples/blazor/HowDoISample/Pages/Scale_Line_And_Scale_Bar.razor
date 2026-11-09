@@ -1,0 +1,77 @@
+@page "/scale-line-and-scale-bar"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10778000, 3912000))" Zoom="12">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            </OverlaysSetting>
+            <AdornmentOverlaySetting>
+                <AdornmentOverlay Id="Adornments" @ref="adornmentOverlay" Layers="@adornments" />
+            </AdornmentOverlaySetting>
+        </MapView>
+    </div>
+    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Scale line and scale bar</div>
+        <div style="color:#555">Two classic adornment layers in the lower left: the line reads the scale in both unit systems or one, the bar is drawn 50 pixels above it. The AdornmentOverlay draws them again on the server each time the map stops moving, so they always say the scale of what is shown.</div>
+        <label>Units
+            <select @onchange="UnitsChanged" style="font:13px system-ui;margin-left:6px">
+                <option value="ImperialAndMetric">imperial and metric</option>
+                <option value="MetricAndNauticalMile">metric and nautical miles</option>
+                <option value="NauticalMileAndImperial">nautical miles and imperial</option>
+                <option value="Default">the default</option>
+            </select>
+        </label>
+        <label><input type="checkbox" @onchange="TextStylesChanged" /> the line's own text styles: blue italic above, red below</label>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private AdornmentOverlay adornmentOverlay;
+    private GeoCollection<AdornmentLayer> adornments;
+    private ScaleLineAdornmentLayer scaleLine;
+
+    protected override void OnInitialized()
+    {
+        var projection = new Projection(3857);
+        scaleLine = new ScaleLineAdornmentLayer
+        {
+            Projection = projection,
+            BackgroundMask = AreaStyle.CreateSimpleAreaStyle(GeoColors.LightBlue, GeoColors.Red),
+            UnitSystem = ScaleLineUnitSystem.ImperialAndMetric,
+        };
+        var scaleBar = new ScaleBarAdornmentLayer
+        {
+            YOffsetInPixel = -50,
+            Projection = projection,
+            BackgroundMask = AreaStyle.CreateSimpleAreaStyle(GeoColors.LightBlue, GeoColors.Red),
+        };
+        adornments = new GeoCollection<AdornmentLayer> { { "line", scaleLine }, { "bar", scaleBar } };
+    }
+
+    private Task UnitsChanged(ChangeEventArgs args)
+    {
+        scaleLine.UnitSystem = Enum.Parse<ScaleLineUnitSystem>((string)args.Value);
+        return adornmentOverlay.RedrawAsync();
+    }
+
+    private Task TextStylesChanged(ChangeEventArgs args)
+    {
+        if ((bool)args.Value)
+        {
+            scaleLine.AboveLabelTextStyle = new TextStyle(string.Empty, new GeoFont("Arial", 16, DrawingFontStyles.Italic), GeoBrushes.Blue) { TextPlacement = TextPlacement.Left, YOffsetInPixel = -2 };
+            scaleLine.BelowLabelTextStyle = new TextStyle(string.Empty, new GeoFont("Arial", 16), GeoBrushes.Red) { TextPlacement = TextPlacement.Left, YOffsetInPixel = 2 };
+        }
+        else
+        {
+            scaleLine.AboveLabelTextStyle = null;
+            scaleLine.BelowLabelTextStyle = null;
+        }
+        return adornmentOverlay.RedrawAsync();
+    }
+}

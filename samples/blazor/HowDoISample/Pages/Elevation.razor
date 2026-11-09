@@ -1,0 +1,179 @@
+@page "/elevation"
+@using ThinkGeo.Core
+@using System.Globalization
+@using System.Text
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10776981, 3912345))" Zoom="15">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Marks" @ref="marks" StyleJson="@marksStyle" FeatureSources="@sources" SourceId="marks" />
+            </OverlaysSetting>
+            <EditOverlaySetting>
+                <EditOverlay TrackMode="@trackMode" OnFeatureDrawn="@Drawn" />
+            </EditOverlaySetting>
+        </MapView>
+    </div>
+    <div style="width:340px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui;overflow:auto">
+        <div style="font-weight:600">Elevation</div>
+        <div style="color:#555">A point, a line or an area drawn on the map goes to ElevationCloudClient; a line or an area is sampled every few meters and each sample comes back with its height.</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-sm @(trackMode == BlazorTrackMode.Point ? "btn-primary" : "btn-light")" @onclick="() => trackMode = BlazorTrackMode.Point">Point</button>
+            <button class="btn btn-sm @(trackMode == BlazorTrackMode.LineString ? "btn-primary" : "btn-light")" @onclick="() => trackMode = BlazorTrackMode.LineString">Line</button>
+            <button class="btn btn-sm @(trackMode == BlazorTrackMode.Polygon ? "btn-primary" : "btn-light")" @onclick="() => trackMode = BlazorTrackMode.Polygon">Area</button>
+            <label>every <input type="number" min="10" max="500" step="10" @bind="interval" style="width:56px" /> m</label>
+        </div>
+        <div style="color:#555">@status</div>
+        @if (profile != null)
+        {
+            <svg viewBox="0 0 320 130" style="width:100%;background:#fff;border:1px solid #ddd">
+                <polyline points="@profile" fill="rgba(31,58,147,0.15)" stroke="#1F3A93" stroke-width="1.5" />
+                <text x="4" y="12" font-size="10" fill="#555">@highest.ToString("0") ft</text>
+                <text x="4" y="126" font-size="10" fill="#555">@lowest.ToString("0") ft</text>
+            </svg>
+        }
+        @if (samples.Count > 0)
+        {
+            <div style="color:#555">Average @average.ToString("0.0") ft, highest @highest.ToString("0.0") ft, lowest @lowest.ToString("0.0") ft, @samples.Count samples.</div>
+        }
+    </div>
+</div>
+
+@code {
+    private const string StyleTemplate = @"{
+  ""layers"": [
+    { ""type"": ""fill"", ""source-layer"": ""asked"",
+      ""paint"": { ""fill-color"": ""rgba(30,90,220,0.08)"" } },
+    { ""type"": ""line"", ""source-layer"": ""asked"",
+      ""paint"": { ""line-color"": ""#1E5ADC"", ""line-width"": 2 } },
+    { ""type"": ""circle"", ""source-layer"": ""samples"",
+      ""paint"": { ""circle-radius"": 5, ""circle-color"": COLOUR, ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 1 } },
+    { ""type"": ""symbol"", ""source-layer"": ""samples"", ""minzoom"": 16,
+      ""layout"": { ""text-field"": [""get"", ""feet""], ""text-font"": [""Noto Sans Bold""], ""text-size"": 10, ""text-offset"": [0, -1], ""text-anchor"": ""bottom"" },
+      ""paint"": { ""text-color"": ""#333333"", ""text-halo-color"": ""#FFFFFF"", ""text-halo-width"": 1 } }
+  ]
+}";
+
+    private MapView map;
+    private VectorTileOverlay marks;
+    private GeoCollection<FeatureSource> sources;
+    private readonly InMemoryFeatureSource asked = new InMemoryFeatureSource();
+    private readonly InMemoryFeatureSource samplePoints = new InMemoryFeatureSource(new[] { new FeatureSourceColumn("feet") }, Array.Empty<Feature>());
+    private ElevationCloudClient client;
+    private BlazorTrackMode trackMode = BlazorTrackMode.None;
+    private int interval = 50;
+    private bool busy;
+    private string status = "Choose Point, Line or Area and draw on the map.";
+    private string marksStyle = StyleTemplate.Replace("COLOUR", "\"#1F3A93\"");
+    private List<CloudElevationPointResult> samples = new List<CloudElevationPointResult>();
+    private double average, highest, lowest;
+    private string profile;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "asked", asked }, { "samples", samplePoints } };
+        client = new ElevationCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        await AskAsync(new LineShape("LINESTRING(-10776298 3912306,-10776496 3912399,-10776675 3912478,-10776890 3912516,-10777189 3912509,-10777329 3912442,-10777536 3912318)"));
+        StateHasChanged();
+    }
+
+    private async Task Drawn(FeatureDrawnEditOverlayEventArgs args)
+    {
+        map.EditOverlay.Features.Clear();
+        trackMode = BlazorTrackMode.None;
+        var shape = args.DrawnFeature.GetShape();
+        if (shape is LineShape line && line.GetLength(GeographyUnit.Meter, DistanceUnit.Kilometer) > 5)
+        {
+            status = "That line is longer than 5 km; draw a shorter one.";
+            return;
+        }
+        if (shape is PolygonShape polygon && polygon.GetArea(GeographyUnit.Meter, AreaUnit.SquareKilometers) > 5)
+        {
+            status = "That area is larger than 5 square km; draw a smaller one.";
+            return;
+        }
+        await AskAsync(shape);
+    }
+
+    private async Task AskAsync(BaseShape shape)
+    {
+        busy = true;
+        status = "asking ThinkGeo Cloud...";
+        StateHasChanged();
+        asked.InternalFeatures.Clear();
+        asked.InternalFeatures.Add(new Feature(shape));
+        samplePoints.InternalFeatures.Clear();
+        await marks.RedrawAsync();
+
+        try
+        {
+            switch (shape)
+            {
+                case PointShape point:
+                    var feet = await client.GetElevationOfPointAsync(point.X, point.Y, 3857);
+                    samples = new List<CloudElevationPointResult> { new CloudElevationPointResult(feet, point) };
+                    average = highest = lowest = feet;
+                    break;
+                case LineShape line:
+                    var alongLine = await client.GetElevationOfLineAsync(line, 3857, interval, DistanceUnit.Meter);
+                    samples = alongLine.ElevationPoints.ToList();
+                    average = alongLine.AverageElevation;
+                    highest = alongLine.HighestElevationPoint.Elevation;
+                    lowest = alongLine.LowestElevationPoint.Elevation;
+                    break;
+                case AreaBaseShape area:
+                    var acrossArea = await client.GetElevationOfAreaAsync(area, 3857, interval, DistanceUnit.Meter);
+                    samples = acrossArea.ElevationPoints.ToList();
+                    average = acrossArea.AverageElevation;
+                    highest = acrossArea.HighestElevationPoint.Elevation;
+                    lowest = acrossArea.LowestElevationPoint.Elevation;
+                    break;
+            }
+        }
+        catch (Exception exception)
+        {
+            busy = false;
+            status = exception.Message;
+            return;
+        }
+        busy = false;
+
+        foreach (var sample in samples)
+        {
+            samplePoints.InternalFeatures.Add(new Feature(sample.Point, new Dictionary<string, string> { ["feet"] = sample.Elevation.ToString("0", CultureInfo.InvariantCulture) }));
+        }
+        marksStyle = StyleTemplate.Replace("COLOUR", highest - lowest < 0.5 ? "\"#1F3A93\"" : FormattableString.Invariant(
+            $"[\"interpolate\", [\"linear\"], [\"to-number\", [\"get\", \"feet\"]], {lowest:0.#}, \"#2C7BB6\", {(lowest + highest) / 2:0.#}, \"#FFFFBF\", {highest:0.#}, \"#D7191C\"]"));
+        await marks.RedrawAsync();
+
+        profile = shape is LineShape && samples.Count > 1 ? Profile() : null;
+        status = $"{samples.Count} samples.";
+    }
+
+    // The samples along the line as a polyline in a 320 x 130 box: distance across, height up.
+    private string Profile()
+    {
+        var span = Math.Max(1, highest - lowest);
+        var points = new StringBuilder("4,126 ");
+        for (var i = 0; i < samples.Count; i++)
+        {
+            var x = 4 + (312d * i / (samples.Count - 1));
+            var y = 122 - (108 * (samples[i].Elevation - lowest) / span);
+            points.Append(FormattableString.Invariant($"{x:0.#},{y:0.#} "));
+        }
+        return points.Append("316,126").ToString();
+    }
+}

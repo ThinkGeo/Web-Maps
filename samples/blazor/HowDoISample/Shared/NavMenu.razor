@@ -1,14 +1,40 @@
-﻿@inject MenuService menuService
+@inject MenuService menuService
 @inject NavigationManager navigationManager
 
 <ul id="menu-bar" class="nav nav-sidebar">
     @if (menus != null)
     {
-        @foreach (var menu in menus)
+        <li class="sidebar-search">
+            <input id="sidebar-search" type="search" placeholder="Search samples" @bind="Filter" @bind:event="oninput" />
+            @if (terms.Length > 0)
+            {
+                <span class="hits">@Shown.Count() of @menus.Count</span>
+            }
+        </li>
+
+        @foreach (var menu in Shown.Where(m => string.IsNullOrEmpty(m.Group)))
         {
             <li class="@(GetCss(menu.Id))">
                 <NavLink @key="menu" href="@menu.Href" @onclick="@(e => HandleOnMenuClick(menu))" Match="NavLinkMatch.All"><span class="sub-arrow @menu.Preicon">@menu.Title</span></NavLink>
             </li>
+        }
+
+        @foreach (var group in Shown.Where(m => !string.IsNullOrEmpty(m.Group)).GroupBy(m => m.Group))
+        {
+            <li class="menu-group @(IsOpen(group.Key) ? "open" : "")">
+                <a class="menu-group-title" @onclick="@(e => Toggle(group.Key))">
+                    <span class="sub-arrow @(IsOpen(group.Key) ? "fas fa-chevron-down" : "fas fa-chevron-right")">@group.Key</span>
+                </a>
+            </li>
+            @if (IsOpen(group.Key) || terms.Length > 0)
+            {
+                @foreach (var menu in group)
+                {
+                    <li class="menu-group-item @(GetCss(menu.Id))">
+                        <NavLink @key="menu" href="@menu.Href" @onclick="@(e => HandleOnMenuClick(menu))" Match="NavLinkMatch.All"><span class="sub-arrow @menu.Preicon">@menu.Title</span></NavLink>
+                    </li>
+                }
+            }
         }
     }
 </ul>
@@ -17,6 +43,27 @@
     private List<MenuModel> menus;
     private bool isLoaded;
     private MenuModel currentMenu;
+    private readonly HashSet<string> openGroups = new HashSet<string>();
+    private string filter = "";
+    private string[] terms = Array.Empty<string>();
+
+    private string Filter
+    {
+        get => filter;
+        set
+        {
+            filter = value ?? "";
+            terms = filter.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        }
+    }
+
+    // Every word typed has to appear somewhere in a sample's title, description or group;
+    // while a search is on, the groups that still have samples show them all.
+    private IEnumerable<MenuModel> Shown => terms.Length == 0
+        ? menus
+        : menus.Where(menu => terms.All(term => Has(menu.Title, term) || Has(menu.Description, term) || Has(menu.Group, term)));
+
+    private static bool Has(string text, string term) => !string.IsNullOrEmpty(text) && text.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0;
 
     [Parameter]
     public EventCallback<MenuModel> OnMenuClick { get; set; }
@@ -38,6 +85,12 @@
         var queryStringIndex = currentUri.IndexOf('?');
         var currentPath = queryStringIndex == -1 ? currentUri.Substring(lastSlashIndex) : currentUri.Substring(lastSlashIndex, queryStringIndex - lastSlashIndex);
         currentMenu = menus.FirstOrDefault(p => currentPath == p.Href) ?? menus[0];
+
+        // The group the current sample sits in starts open, so a link into a sample lands on it.
+        if (!string.IsNullOrEmpty(currentMenu.Group))
+        {
+            openGroups.Add(currentMenu.Group);
+        }
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -49,9 +102,18 @@
         }
     }
 
+    private bool IsOpen(string group) => openGroups.Contains(group);
+
+    private void Toggle(string group)
+    {
+        if (!openGroups.Remove(group))
+        {
+            openGroups.Add(group);
+        }
+    }
+
     string GetCss(string menuId)
     {
         return currentMenu?.Id == menuId ? "active" : string.Empty;
     }
-
 }

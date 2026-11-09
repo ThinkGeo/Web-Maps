@@ -1,0 +1,100 @@
+@page "/markers"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10777290, 3908740))" Zoom="15" OnClick="@Clicked">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            </OverlaysSetting>
+            <MarkerOverlaySetting>
+                <SimpleMarkerOverlay Id="Pins" @ref="pins" OnClick="@PinClicked" />
+            </MarkerOverlaySetting>
+            <PopupOverlaySetting>
+                <PopupOverlay Id="Info">
+                    <PopupSetting>
+                        <Popup Id="pin-info" Position="@(picked?.Position)" OffsetY="-36" AutoPan="true">
+                            @if (picked != null)
+                            {
+                                <div style="font:12px system-ui;white-space:nowrap"><b>@picked.Id</b><br />@picked.Position.X.ToString("0"), @picked.Position.Y.ToString("0")</div>
+                            }
+                        </Popup>
+                    </PopupSetting>
+                </PopupOverlay>
+            </PopupOverlaySetting>
+        </MapView>
+    </div>
+    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Markers</div>
+        <div style="color:#555">A marker is an image the browser keeps pinned to a place on the map, outside the tiles. The SimpleMarkerOverlay holds them in its Markers collection, each styled by a PointMarkerStyle; a redraw sends what changed. Click the map to drop one; click a marker for its details.</div>
+        <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-sm btn-light" @onclick="ClearAsync">Clear</button>
+            <span style="color:#555">@count markers</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    // The pin's tip is at the bottom middle of the image: half way across, all the way down.
+    private static readonly PointMarkerStyle PinStyle = new PointMarkerStyle("images/map-pin.svg", 0.5, 1, 1);
+
+    private MapView map;
+    private SimpleMarkerOverlay pins;
+    private Marker picked;
+    private int count;
+    private int next = 1;
+
+    protected override void OnInitialized()
+    {
+        // The first marker is in place before the overlay reaches the browser.
+        Add(new PointShape(-10777290, 3908740));
+    }
+
+    private void Add(PointShape position)
+    {
+        var marker = new Marker { Id = "Pin " + next++, Position = position, Style = PinStyle };
+        // The overlay is the page's own component and is not yet bound the first time.
+        (pins?.Markers ?? pending).Add(marker.Id, marker);
+        count++;
+    }
+
+    private readonly GeoCollection<Marker> pending = new GeoCollection<Marker>();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        foreach (var marker in pending)
+        {
+            pins.Markers.Add(marker.Id, marker);
+        }
+        pending.Clear();
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        await pins.RedrawAsync();
+    }
+
+    private async Task Clicked(ClickedMapViewEventArgs args)
+    {
+        Add(new PointShape(args.WorldX, args.WorldY));
+        picked = null;
+        await pins.RedrawAsync();
+    }
+
+    private void PinClicked(ClickedMarkerOverlayEventArgs args)
+    {
+        picked = pins.Markers.Contains(args.ClickedMarker.Id) ? pins.Markers[args.ClickedMarker.Id] : null;
+    }
+
+    private async Task ClearAsync()
+    {
+        pins.Markers.Clear();
+        count = 0;
+        picked = null;
+        await pins.RedrawAsync();
+    }
+}

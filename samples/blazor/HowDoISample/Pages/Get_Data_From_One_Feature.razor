@@ -1,0 +1,102 @@
+@page "/get-data-from-one-feature"
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10778100, 3915600))" Zoom="13" OnClick="@MapClicked">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Parks" StyleJson="@applied" FeatureSources="@sources" SourceId="features" />
+            </OverlaysSetting>
+            <PopupOverlaySetting>
+                <PopupOverlay Id="Info" PopupSource="@picked">
+                    <PopupSetting Context="park">
+                        <Popup Id="park-info" Position="@(((Feature)park).GetShape().GetCenterPoint())">
+                            <div style="font:11px Verdana,sans-serif;white-space:pre;max-height:260px;overflow:auto">@Describe((Feature)park)</div>
+                        </Popup>
+                    </PopupSetting>
+                </PopupOverlay>
+            </PopupOverlaySetting>
+        </MapView>
+    </div>
+    <div style="width:420px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
+        <div style="padding:8px 8px 6px;font-weight:600">Click a park to see every column its record holds</div>
+        <div style="padding:6px 8px 4px;font-weight:600;border-top:1px solid #ddd">style.json - edit it; the map follows</div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                  style="flex:1;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre"></textarea>
+        <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>
+    </div>
+</div>
+
+@code {
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""fill"",
+      ""source-layer"": ""parks"",
+      ""paint"": {
+          ""fill-color"": ""rgba(147,112,219,0.2)"",
+          ""fill-outline-color"": ""#9370DB"" }
+    }
+  ]
+}";
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private ShapeFileFeatureSource parks;
+    private readonly List<Feature> picked = new List<Feature>();
+    private string styleJson = StyleJson;
+    private string applied = StyleJson;
+    private string status = "";
+    private bool ok = true;
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource>
+        {
+            { "parks", new ShapeFileFeatureSource("./Data/Shapefile/Parks.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } }
+        };
+        parks = new ShapeFileFeatureSource("./Data/Shapefile/Parks.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+    }
+
+    private void MapClicked(ClickedMapViewEventArgs args)
+    {
+        parks.Open();
+        var park = new QueryTools(parks).GetFeaturesContaining(new PointShape(args.WorldX, args.WorldY), ReturningColumnsType.AllColumns).FirstOrDefault();
+        parks.Close();
+
+        picked.Clear();
+        if (park != null)
+        {
+            picked.Add(park);
+        }
+    }
+
+    private static string Describe(Feature feature)
+        => string.Join("\n", feature.ColumnValues.Select(column => column.Key + ": " + column.Value));
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit) return;
+
+        try
+        {
+            JsonNode.Parse(styleJson);
+            applied = styleJson;
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+}

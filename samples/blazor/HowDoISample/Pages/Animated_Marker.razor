@@ -1,0 +1,62 @@
+@page "/animated-marker"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10778000, 3912000))" Zoom="12">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            </OverlaysSetting>
+            <MarkerOverlaySetting>
+                <SimpleMarkerOverlay Id="Beacons" @ref="beacons" />
+            </MarkerOverlaySetting>
+        </MapView>
+    </div>
+    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Animated marker</div>
+        <div style="color:#555">The marker's image is an SVG that animates itself - rings that grow and fade, written into the file - so the browser runs the animation and the server is not involved. The button swaps the image for a still one and redraws the overlay.</div>
+        <button class="btn btn-sm btn-primary" style="align-self:flex-start" @onclick="ToggleAsync">@(animated ? "Stop" : "Start")</button>
+    </div>
+</div>
+
+@code {
+    private static readonly PointMarkerStyle Pulsing = new PointMarkerStyle("images/beacon.svg", 0.5, 0.5, 1);
+    private static readonly PointMarkerStyle Still = new PointMarkerStyle("images/beacon-still.svg", 0.5, 0.5, 1);
+    private static readonly (string Id, PointShape At)[] Places =
+    {
+        ("north", new PointShape(-10777932, 3912260)),
+        ("south", new PointShape(-10779100, 3909300)),
+        ("east", new PointShape(-10775200, 3911000)),
+    };
+
+    private MapView map;
+    private SimpleMarkerOverlay beacons;
+    private bool animated = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        foreach (var (id, at) in Places)
+        {
+            beacons.Markers.Add(id, new Marker { Id = id, Position = at, Style = Pulsing });
+        }
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        await beacons.RedrawAsync();
+    }
+
+    private async Task ToggleAsync()
+    {
+        animated = !animated;
+        foreach (var marker in beacons.Markers)
+        {
+            marker.Style = animated ? Pulsing : Still;
+        }
+        await beacons.RedrawAsync();
+    }
+}

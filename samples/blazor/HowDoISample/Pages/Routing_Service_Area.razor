@@ -1,0 +1,115 @@
+@page "/routing-service-area"
+@using ThinkGeo.Core
+@using System.Globalization
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10774380, 3907010))" Zoom="9" OnClick="@Clicked">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Marks" @ref="marks" StyleJson="@MarksStyle" FeatureSources="@sources" SourceId="marks" />
+            </OverlaysSetting>
+        </MapView>
+        <div style="position:absolute;right:12px;bottom:12px;padding:8px 10px;background:rgba(255,255,255,.92);border-radius:4px;font:12px system-ui;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+            <div style="font-weight:600;margin-bottom:4px">Drive time from the point</div>
+            @foreach (var (minutes, colour) in Bands)
+            {
+                <div><span style="display:inline-block;width:14px;height:10px;background:@colour;border:1px solid #888;vertical-align:middle"></span> within @minutes minutes</div>
+            }
+        </div>
+    </div>
+    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui;overflow:auto">
+        <div style="font-weight:600">Service area</div>
+        <div style="color:#555">How far a drive of 15, 30, 45 and 60 minutes reaches from a point: RoutingCloudClient.GetServiceAreaAsync answers with one polygon per limit. Click the map to ask from somewhere else.</div>
+        <div style="color:#555">@status</div>
+    </div>
+</div>
+
+@code {
+    private static readonly (int Minutes, string Colour)[] Bands =
+    {
+        (15, "rgba(46,160,67,0.45)"),
+        (30, "rgba(240,200,40,0.45)"),
+        (45, "rgba(240,140,30,0.45)"),
+        (60, "rgba(210,50,40,0.45)"),
+    };
+
+    private const string MarksStyle = @"{
+  ""layers"": [
+    { ""type"": ""fill"", ""source-layer"": ""areas"",
+      ""layout"": { ""fill-sort-key"": [""-"", 100, [""to-number"", [""get"", ""minutes""]]] },
+      ""paint"": {
+          ""fill-color"": [""match"", [""get"", ""minutes""],
+              ""15"", ""rgba(46,160,67,0.45)"",
+              ""30"", ""rgba(240,200,40,0.45)"",
+              ""45"", ""rgba(240,140,30,0.45)"",
+              ""rgba(210,50,40,0.45)""],
+          ""fill-outline-color"": ""rgba(60,60,60,0.6)"" } },
+    { ""type"": ""circle"", ""source-layer"": ""center"",
+      ""paint"": { ""circle-radius"": 7, ""circle-color"": ""#1F3A93"", ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 2 } }
+  ]
+}";
+
+    private MapView map;
+    private VectorTileOverlay marks;
+    private GeoCollection<FeatureSource> sources;
+    private readonly InMemoryFeatureSource areas = new InMemoryFeatureSource(new[] { new FeatureSourceColumn("minutes") }, Array.Empty<Feature>());
+    private readonly InMemoryFeatureSource center = new InMemoryFeatureSource();
+    private RoutingCloudClient client;
+    private bool busy;
+    private string status = "";
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "areas", areas }, { "center", center } };
+        client = new RoutingCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        await AskAsync(new PointShape(-10776836.14, 3912350.71));
+        StateHasChanged();
+    }
+
+    private Task Clicked(ClickedMapViewEventArgs args) => busy ? Task.CompletedTask : AskAsync(new PointShape(args.WorldX, args.WorldY));
+
+    private async Task AskAsync(PointShape point)
+    {
+        busy = true;
+        status = "asking ThinkGeo Cloud...";
+        StateHasChanged();
+        center.InternalFeatures.Clear();
+        center.InternalFeatures.Add(new Feature(point));
+        areas.InternalFeatures.Clear();
+        await marks.RedrawAsync();
+
+        var limits = Bands.Select(band => TimeSpan.FromMinutes(band.Minutes)).ToList();
+        var result = await client.GetServiceAreaAsync(point, 3857, limits, new CloudRoutingGetServiceAreaOptions { DistanceUnit = DistanceUnit.Meter });
+        busy = false;
+        if (result.Exception != null)
+        {
+            status = result.Exception.Message;
+            return;
+        }
+
+        var polygons = result.ServiceAreaResult.ServiceAreas;
+        for (var i = 0; i < polygons.Count && i < Bands.Length; i++)
+        {
+            areas.InternalFeatures.Add(new Feature(polygons[i], new Dictionary<string, string> { ["minutes"] = Bands[i].Minutes.ToString(CultureInfo.InvariantCulture) }));
+        }
+        await marks.RedrawAsync();
+        status = $"{polygons.Count} service areas around {point.X:0}, {point.Y:0}.";
+
+        var bounds = MapUtil.GetBoundingBoxOfItems(polygons);
+        bounds.ScaleUp(10);
+        await map.ZoomToExtentAsync(bounds);
+    }
+}

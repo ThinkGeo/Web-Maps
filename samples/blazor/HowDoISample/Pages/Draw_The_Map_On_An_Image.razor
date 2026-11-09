@@ -1,0 +1,81 @@
+@page "/draw-the-map-on-an-image"
+@using ThinkGeo.Core
+@using System.Collections.ObjectModel
+@using ThinkGeo.UI.Blazor.HowDoI.Shared
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;background:#e9e9e6;overflow:auto">
+        @if (pngUrl != null)
+        {
+            <img src="@pngUrl" style="max-width:100%;max-height:100%;box-shadow:0 1px 6px rgba(0,0,0,.3)" alt="The map drawn on an image" />
+        }
+        else
+        {
+            <div style="color:#777;font:14px system-ui">@status</div>
+        }
+    </div>
+    <div style="width:340px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Draw the map on an image</div>
+        <div style="color:#555">No map control at all: the layers are drawn straight into a GeoImage on the server with a GeoCanvas - ThinkGeo Cloud's aerial tiles underneath, Frisco's zoning on top - and the picture is kept on the server for a few minutes and fetched from export/{id} as any image is.</div>
+        <div style="display:flex;gap:8px;align-items:center">
+            <label>Size <input type="number" min="200" max="2000" step="100" @bind="size" style="width:70px" /> px</label>
+            <button class="btn btn-sm btn-primary" @onclick="DrawAsync" disabled="@busy">Draw</button>
+        </div>
+        <div style="color:#555">@status</div>
+        @if (pngUrl != null)
+        {
+            <a class="btn btn-sm btn-light" style="align-self:flex-start" download="frisco-zoning.png" href="@pngUrl">Save frisco-zoning.png</a>
+        }
+    </div>
+</div>
+
+@code {
+    private int size = 800;
+    private bool busy;
+    private string status = "";
+    private string pngUrl;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await DrawAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task DrawAsync()
+    {
+        busy = true;
+        status = "drawing...";
+        StateHasChanged();
+        try
+        {
+            var zoning = new ShapeFileFeatureLayer("./Data/Shapefile/Zoning.shp") { FeatureSource = { ProjectionConverter = new ProjectionConverter(2276, 3857) } };
+            zoning.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoPen(GeoColors.Blue, 1.5f), new GeoSolidBrush(GeoColor.FromArgb(40, GeoColors.Blue)));
+            zoning.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+            zoning.Open();
+
+            var aerial = new ThinkGeoRasterMapsAsyncLayer(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret, ThinkGeoCloudRasterMapsMapType.Aerial_V2_X1);
+            await aerial.OpenAsync();
+
+            var picture = new GeoImage(size, size);
+            var canvas = GeoCanvas.CreateDefaultGeoCanvas();
+            canvas.BeginDrawing(picture, MapUtil.GetDrawingExtent(zoning.GetBoundingBox(), size, size), GeographyUnit.Meter);
+            var labels = new Collection<SimpleCandidate>();
+            await aerial.DrawAsync(canvas, labels);
+            canvas.Flush();
+            zoning.Draw(canvas, labels);
+            canvas.EndDrawing();
+            zoning.Close();
+
+            pngUrl = "export/" + ExportStore.Put(picture.GetImageBytes(GeoImageFormat.Png), "image/png");
+            status = $"{size} by {size} pixels.";
+        }
+        catch (Exception exception)
+        {
+            status = exception.Message;
+        }
+        busy = false;
+    }
+}

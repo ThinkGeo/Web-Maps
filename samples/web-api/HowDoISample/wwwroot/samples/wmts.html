@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WMTS</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        .facts { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font: 12px system-ui; }
+        .facts b { font: 12px Consolas, monospace; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow" style="width:340px">
+            <div id="layers" style="display:flex;flex-direction:column;gap:2px"></div>
+            <div class="row"><button class="btn" id="bern">Bern</button><button class="btn" id="matterhorn">The Matterhorn</button></div>
+            <div class="status" id="status"></div>
+            <div style="border-top:1px solid #ddd;padding-top:7px">
+                <div style="font-weight:600;margin-bottom:5px">What the service says about itself</div>
+                <div class="facts" id="facts"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const map = tg.createMap({ center: [825000, 5930000], zoom: 10, basemap: null });
+        await tg.ready(map);
+        const status = document.getElementById('status');
+        let overlay = null;
+
+        const show = (layer) => {
+            if (overlay) overlay.remove();
+            overlay = tg.rasterOverlay(map, 'wmts-' + layer.key);
+            const set = (service.matrixSets.find(one => one.name === layer.matrixSet) || {});
+            tg.say(status, `${layer.name} on ${layer.matrixSet}, ${set.levels} levels, ${layer.format}`);
+        };
+
+        const service = await tg.get('samples/services/wmts-capabilities');
+        document.getElementById('facts').innerHTML = [
+            ['layers advertised', service.layers],
+            ['matrix sets', service.matrixSets.length],
+            ['levels per set', service.matrixSets.map(set => `${set.name.replace('3857_', '')}:${set.levels}`).join('  ')],
+        ].map(([label, value]) => `<span>${label}</span><b>${value}</b>`).join('');
+
+        const list = document.getElementById('layers');
+        service.offered.forEach((layer, i) => {
+            const label = document.createElement('label');
+            const radio = Object.assign(document.createElement('input'), { type: 'radio', name: 'layer', checked: i === 0 });
+            radio.addEventListener('change', () => show(layer));
+            label.append(radio, `${layer.name.replace('ch.swisstopo.', '')} - ${layer.matrixSet}`);
+            list.appendChild(label);
+        });
+        show(service.offered[0]);
+        document.getElementById('bern').addEventListener('click', () => map.easeTo({ center: tg.toLngLat(825000, 5930000), zoom: 10 }));
+        document.getElementById('matterhorn').addEventListener('click', () => map.easeTo({ center: tg.toLngLat(850500, 5779500), zoom: 13 }));
+    </script>
+</body>
+</html>

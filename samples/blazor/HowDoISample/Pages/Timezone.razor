@@ -1,0 +1,111 @@
+@page "/timezone"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10618080, 4557170))" Zoom="4" OnClick="@Clicked">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Marks" @ref="marks" StyleJson="@MarksStyle" FeatureSources="@sources" SourceId="marks" />
+            </OverlaysSetting>
+            <PopupOverlaySetting>
+                <PopupOverlay Id="Info">
+                    <PopupSetting>
+                        <Popup Id="zone" Position="@askedAt" OffsetY="-8">
+                            <div style="font:12px system-ui;white-space:nowrap">@((MarkupString)popupHtml)</div>
+                        </Popup>
+                    </PopupSetting>
+                </PopupOverlay>
+            </PopupOverlaySetting>
+        </MapView>
+    </div>
+    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui;overflow:auto">
+        <div style="font-weight:600">Time zone</div>
+        <div style="color:#555">Click anywhere: the point goes to TimeZoneCloudClient.GetTimeZoneByCoordinateAsync, which answers with the zone, the local time there and the zone's outline.</div>
+        <div style="color:#555">@status</div>
+    </div>
+</div>
+
+@code {
+    private const string MarksStyle = @"{
+  ""layers"": [
+    { ""type"": ""fill"", ""source-layer"": ""zone"",
+      ""paint"": { ""fill-color"": ""rgba(147,112,219,0.22)"", ""fill-outline-color"": ""#9370DB"" } },
+    { ""type"": ""line"", ""source-layer"": ""zone"",
+      ""paint"": { ""line-color"": ""#9370DB"", ""line-width"": 1.5 } },
+    { ""type"": ""circle"", ""source-layer"": ""asked"",
+      ""paint"": { ""circle-radius"": 6, ""circle-color"": ""#6A3DB8"", ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 2 } }
+  ]
+}";
+
+    private MapView map;
+    private VectorTileOverlay marks;
+    private GeoCollection<FeatureSource> sources;
+    private readonly InMemoryFeatureSource zone = new InMemoryFeatureSource();
+    private readonly InMemoryFeatureSource asked = new InMemoryFeatureSource();
+    private TimeZoneCloudClient client;
+    private bool busy;
+    private string status = "";
+    private PointShape askedAt;
+    private string popupHtml = "";
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "zone", zone }, { "asked", asked } };
+        client = new TimeZoneCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        await AskAsync(new PointShape(-10779572.80, 3915268.68));
+        StateHasChanged();
+    }
+
+    private Task Clicked(ClickedMapViewEventArgs args) => busy ? Task.CompletedTask : AskAsync(new PointShape(args.WorldX, args.WorldY));
+
+    private async Task AskAsync(PointShape point)
+    {
+        busy = true;
+        status = "asking ThinkGeo Cloud...";
+        StateHasChanged();
+        asked.InternalFeatures.Clear();
+        asked.InternalFeatures.Add(new Feature(point));
+        await marks.RedrawAsync();
+
+        CloudTimeZoneResult result;
+        try
+        {
+            result = await client.GetTimeZoneByCoordinateAsync(point.X, point.Y, 3857);
+        }
+        catch (Exception exception)
+        {
+            busy = false;
+            status = exception.Message;
+            return;
+        }
+        busy = false;
+
+        askedAt = point;
+        popupHtml = $"<b>{result.TimeZone}</b><br />Local time {result.CurrentLocalTime:yyyy-MM-dd HH:mm}<br />UTC{(result.OffsetSeconds >= 0 ? "+" : "-")}{TimeSpan.FromSeconds(Math.Abs(result.OffsetSeconds)):h\\:mm}, daylight saving {(result.DaylightSavingsActive ? "on" : "off")}";
+        status = $"{result.TimeZone}, {result.CountryName}.";
+
+        zone.InternalFeatures.Clear();
+        if (result.Shape != null)
+        {
+            // The outline comes back in latitude and longitude; the map is in meters.
+            var converter = new ProjectionConverter(4326, 3857);
+            converter.Open();
+            zone.InternalFeatures.Add(new Feature(converter.ConvertToExternalProjection(result.Shape)));
+            converter.Close();
+        }
+        await marks.RedrawAsync();
+    }
+}

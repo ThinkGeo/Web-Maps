@@ -1,0 +1,54 @@
+@page "/perspective-and-3d"
+@using ThinkGeo.Core
+
+<div class="map-container">
+    @* The tilt is the map's own: right-drag tilts and rotates, the wheel zooms, and the two
+       sliders set the same Pitch and Bearing from code. The buildings are a fill-extrusion
+       layer already in the street style, so a tilted camera is all it takes to raise them. *@
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@(new PointShape(-8236500, 4975050))" Zoom="17"
+             Pitch="@pitch" Bearing="@bearing">
+        <OverlaysSetting>
+            @if (style != null)
+            {
+                <VectorTileOverlay Id="Basemap" Style="@style" />
+            }
+        </OverlaysSetting>
+    </MapView>
+
+    <div style="position:absolute;top:12px;left:12px;width:260px;padding:11px 13px;background:rgba(255,255,255,.94);font:12.5px system-ui;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+        <div style="font-weight:600;margin-bottom:8px">Perspective &amp; 3D buildings</div>
+
+        <label style="display:block;margin-bottom:2px">Tilt - @pitch.ToString("0")&deg;</label>
+        <input type="range" min="0" max="85" step="1" value="@pitch" style="width:100%"
+               @oninput="@(e => pitch = Convert.ToDouble(e.Value))" />
+
+        <label style="display:block;margin:10px 0 2px">Rotate - @bearing.ToString("0")&deg;</label>
+        <input type="range" min="-180" max="180" step="1" value="@bearing" style="width:100%"
+               @oninput="@(e => bearing = Convert.ToDouble(e.Value))" />
+
+        <div style="margin-top:8px;display:flex;gap:6px">
+            <button style="padding:2px 8px;cursor:pointer" @onclick="@(() => { pitch = 60; bearing = -20; })">Look across</button>
+            <button style="padding:2px 8px;cursor:pointer" @onclick="@(() => { pitch = 0; bearing = 0; })">Straight down</button>
+        </div>
+
+        <div style="margin-top:10px;color:#555">
+            Midtown Manhattan. The buildings rise past zoom 14, lean with the perspective and
+            occlude each other. Right-drag on the map does the same as the sliders.
+        </div>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private MapStyle style;
+    private double pitch = 55;
+    private double bearing = -18;
+
+    protected override void OnInitialized()
+    {
+        style = new MapStyle(ThinkGeoVectorStyles.Light,
+            new ThinkGeoVectorTileSource(GlobalSettings.ThinkGeoApiKey));
+    }
+}

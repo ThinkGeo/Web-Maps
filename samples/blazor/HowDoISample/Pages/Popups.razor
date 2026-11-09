@@ -1,0 +1,42 @@
+@page "/popups"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10777290, 3908740))" Zoom="14">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            </OverlaysSetting>
+            <PopupOverlaySetting>
+                <PopupOverlay Id="Hotels" PopupSource="@hotels">
+                    <PopupSetting Context="hotel">
+                        <Popup Id="@("hotel-" + ((Feature)hotel).Id)" Position="@(((Feature)hotel).GetShape().GetCenterPoint())">
+                            <div style="font:12px system-ui;white-space:nowrap">@(((Feature)hotel).ColumnValues["NAME"])</div>
+                        </Popup>
+                    </PopupSetting>
+                </PopupOverlay>
+            </PopupOverlaySetting>
+        </MapView>
+    </div>
+    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Popups</div>
+        <div style="color:#555">A popup is a piece of the page the browser keeps anchored to a place on the map. The PopupOverlay makes one per item of its source - here the hotels of Frisco, read from a shapefile - and the content of each is ordinary markup. Close one with its corner.</div>
+        <div style="color:#555">@hotels.Count hotels.</div>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private List<Feature> hotels = new List<Feature>();
+
+    protected override void OnInitialized()
+    {
+        var source = new ShapeFileFeatureSource("./Data/Shapefile/Hotels.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+        source.Open();
+        hotels = source.GetAllFeatures(new[] { "NAME" }).ToList();
+        source.Close();
+    }
+}

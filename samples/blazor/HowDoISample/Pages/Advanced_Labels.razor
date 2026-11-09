@@ -1,0 +1,383 @@
+@page "/advanced-labels"
+@using System.Collections.ObjectModel
+@using System.Globalization
+@using System.Text.Json.Nodes
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10786000, 3916000))" Zoom="12">
+            <OverlaysSetting>
+                <VectorTileOverlay Id="Lessons" Style="@style" FeatureSources="@sources" SourceId="lessons" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:420px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
+        <div style="padding:6px 8px 4px;font-weight:600">labels - pick a lesson, or edit its document; the map follows</div>
+        <div style="padding:0 8px 6px;display:flex;flex-direction:column;gap:2px">
+            <label><input type="radio" name="lesson" checked="@(lesson == LessonCurved)" @onchange="@(() => Pick(LessonCurved))" /> Along a line - curved text</label>
+            <label><input type="radio" name="lesson" checked="@(lesson == LessonAnchors)" @onchange="@(() => Pick(LessonAnchors))" /> Anchors from the data</label>
+            <label><input type="radio" name="lesson" checked="@(lesson == LessonPriority)" @onchange="@(() => Pick(LessonPriority))" /> Priority - who survives the crowd</label>
+            <label><input type="radio" name="lesson" checked="@(lesson == LessonWrap)" @onchange="@(() => Pick(LessonWrap))" /> Wrap and transform</label>
+            <label><input type="radio" name="lesson" checked="@(lesson == LessonOptional)" @onchange="@(() => Pick(LessonOptional))" /> Icon stays, text yields</label>
+            <label><input type="radio" name="lesson" checked="@(lesson == LessonCjk)" @onchange="@(() => Pick(LessonCjk))" /> CJK writes vertically</label>
+        </div>
+        <textarea @bind="editor" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                  style="flex:1;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre;overflow:auto"></textarea>
+        <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>
+    </div>
+</div>
+
+@code {
+    // Everything a label will do, one lesson per document: bend along its line, anchor where
+    // its own data says, yield to a higher priority, wrap and recase, keep its icon when its
+    // name cannot fit, and write CJK vertically. The data is built in code to give each lesson
+    // exactly the situation it is about; the document sits beside the map, editable while it runs.
+
+    // symbol-placement: line lays the glyphs along the geometry, so the name bends with its parkway.
+    private const string LessonCurved = @"{
+  ""layers"": [
+    { ""type"": ""background"",
+      ""paint"": { ""background-color"": ""#F4F2EC"" } },
+    { ""type"": ""line"",
+      ""source-layer"": ""lessons"",
+      ""filter"": [""=="", [""get"", ""KIND""], ""curve""],
+      ""paint"": { ""line-color"": ""#A1887F"", ""line-width"": 5 } },
+    { ""type"": ""symbol"",
+      ""source-layer"": ""lessons"",
+      ""filter"": [""=="", [""get"", ""KIND""], ""curve""],
+      ""layout"": {
+          ""symbol-placement"": ""line"",
+          ""text-field"": [""get"", ""NAME""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 15 },
+      ""paint"": {
+          ""text-color"": ""#4E342E"",
+          ""text-halo-color"": ""#FFFFFF"",
+          ""text-halo-width"": 1.4 }
+    }
+  ]
+}";
+
+    // text-anchor read from each feature's own column: the grid position of every point matches
+    // the anchor it names, so the label placement explains itself. text-offset is editable in ems.
+    private const string LessonAnchors = @"{
+  ""layers"": [
+    { ""type"": ""background"",
+      ""paint"": { ""background-color"": ""#F4F2EC"" } },
+    { ""type"": ""circle"",
+      ""source-layer"": ""lessons"",
+      ""filter"": [""=="", [""get"", ""KIND""], ""anchor""],
+      ""paint"": { ""circle-radius"": 4, ""circle-color"": ""#1E88E5"" } },
+    { ""type"": ""symbol"",
+      ""source-layer"": ""lessons"",
+      ""filter"": [""=="", [""get"", ""KIND""], ""anchor""],
+      ""layout"": {
+          ""text-field"": [""get"", ""NAME""],
+          ""text-font"": [""Noto Sans Regular""],
+          ""text-anchor"": [""get"", ""ANCHOR""],
+          ""text-offset"": [0, 0],
+          ""text-size"": 12 },
+      ""paint"": {
+          ""text-color"": ""#37474F"",
+          ""text-halo-color"": ""#FFFFFF"",
+          ""text-halo-width"": 1.2 }
+    }
+  ]
+}";
+
+    // Too many labels for the space: symbol-sort-key decides who survives, lowest first. The top
+    // three ranks are red - watch them always win.
+    private const string LessonPriority = @"{
+  ""layers"": [
+    { ""type"": ""background"",
+      ""paint"": { ""background-color"": ""#F4F2EC"" } },
+    { ""type"": ""circle"",
+      ""source-layer"": ""lessons"",
+      ""filter"": [""=="", [""get"", ""KIND""], ""rank""],
+      ""paint"": { ""circle-radius"": 3, ""circle-color"": ""#90A4AE"" } },
+    { ""type"": ""symbol"",
+      ""source-layer"": ""lessons"",
+      ""filter"": [""=="", [""get"", ""KIND""], ""rank""],
+      ""layout"": {
+          ""symbol-sort-key"": [""to-number"", [""get"", ""RANK""]],
+          ""text-field"": [""get"", ""NAME""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 15 },
+      ""paint"": {
+          ""text-color"": [""step"", [""to-number"", [""get"", ""RANK""]],
+              ""#B71C1C"",
+              4, ""#37474F""],
+          ""text-halo-color"": ""#FFFFFF"",
+          ""text-halo-width"": 1.4 }
+    }
+  ]
+}";
+
+    // text-max-width wraps long names at eight ems; text-transform recases them without touching the data.
+    private const string LessonWrap = @"{
+  ""layers"": [
+    { ""type"": ""background"",
+      ""paint"": { ""background-color"": ""#F4F2EC"" } },
+    { ""type"": ""circle"",
+      ""source-layer"": ""lessons"",
+      ""filter"": [""=="", [""get"", ""KIND""], ""wrap""],
+      ""paint"": { ""circle-radius"": 4, ""circle-color"": ""#43A047"" } },
+    { ""type"": ""symbol"",
+      ""source-layer"": ""lessons"",
+      ""filter"": [""=="", [""get"", ""KIND""], ""wrap""],
+      ""layout"": {
+          ""text-field"": [""get"", ""NAME""],
+          ""text-font"": [""Noto Sans Regular""],
+          ""text-max-width"": 8,
+          ""text-transform"": ""uppercase"",
+          ""text-anchor"": ""top"",
+          ""text-offset"": [0, 0.5],
+          ""text-size"": 12 },
+      ""paint"": {
+          ""text-color"": ""#1B5E20"",
+          ""text-halo-color"": ""#FFFFFF"",
+          ""text-halo-width"": 1.2 }
+    }
+  ]
+}";
+
+    // Icon plus text, too crowded for every name: text-optional lets a name drop while its icon
+    // stays, so the place is still marked. Set it false and the crowded pairs vanish whole.
+    private const string LessonOptional = @"{
+  ""layers"": [
+    { ""type"": ""background"",
+      ""paint"": { ""background-color"": ""#F4F2EC"" } },
+    { ""type"": ""symbol"",
+      ""source-layer"": ""lessons"",
+      ""filter"": [""=="", [""get"", ""KIND""], ""poi""],
+      ""layout"": {
+          ""icon-image"": ""dot"",
+          ""text-field"": [""get"", ""NAME""],
+          ""text-font"": [""Noto Sans Regular""],
+          ""text-optional"": true,
+          ""text-anchor"": ""top"",
+          ""text-offset"": [0, 0.7],
+          ""text-size"": 13 },
+      ""paint"": {
+          ""text-color"": ""#4527A0"",
+          ""text-halo-color"": ""#FFFFFF"",
+          ""text-halo-width"": 1.2 }
+    }
+  ]
+}";
+
+    // A CJK name on a line running up the screen writes vertically on its own - upright characters,
+    // punctuation in vertical forms. No key asks for it; the script and the direction decide.
+    private const string LessonCjk = @"{
+  ""layers"": [
+    { ""type"": ""background"",
+      ""paint"": { ""background-color"": ""#F4F2EC"" } },
+    { ""type"": ""line"",
+      ""source-layer"": ""lessons"",
+      ""filter"": [""=="", [""get"", ""KIND""], ""cjk""],
+      ""paint"": { ""line-color"": ""#80CBC4"", ""line-width"": 5 } },
+    { ""type"": ""symbol"",
+      ""source-layer"": ""lessons"",
+      ""filter"": [""=="", [""get"", ""KIND""], ""cjk""],
+      ""layout"": {
+          ""symbol-placement"": ""line"",
+          ""text-field"": [""get"", ""NAME""],
+          ""text-font"": [""Noto Sans Regular""],
+          ""text-size"": 18 },
+      ""paint"": {
+          ""text-color"": ""#00695C"",
+          ""text-halo-color"": ""#FFFFFF"",
+          ""text-halo-width"": 1.4 }
+    }
+  ]
+}";
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private MapStyle style;
+    private string lesson = LessonCurved;
+    private string editor = LessonCurved;
+    private string status = "";
+    private bool ok = true;
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "lessons", BuildLessons() } };
+        style = Compose(lesson);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(100);
+        }
+        await FrameLesson();
+    }
+
+    // The document plus the one image it references: the dot the text-optional lesson keeps when a
+    // name yields. A point style drawn once becomes the icon.
+    private static MapStyle Compose(string json)
+    {
+        var composed = new MapStyle(json);
+        composed.Images.Add("dot", PointStyle.CreateSimpleCircleStyle(GeoColor.FromHtml("#5E35B1"), 10, GeoColors.White, 2));
+        return composed;
+    }
+
+    private async Task Pick(string chosen)
+    {
+        lesson = chosen;
+        editor = chosen;
+        style = Compose(chosen);
+        ok = true;
+        status = $"applied at {DateTime.Now:HH:mm:ss}";
+        await FrameLesson();
+    }
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit) return;
+
+        try
+        {
+            JsonNode.Parse(editor);
+            style = Compose(editor);
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r') + "   (the map is still drawing the last document that worked)";
+        }
+    }
+
+    // Each lesson has its own patch of ground, framed to show it whole.
+    private async Task FrameLesson()
+    {
+        if (map?.IsLoaded != true) return;
+
+        var (center, scale) =
+            lesson == LessonAnchors ? (new PointShape(-10770000, 3916000), 22000d) :
+            lesson == LessonPriority ? (new PointShape(-10786000, 3904000), 40000d) :
+            lesson == LessonWrap ? (new PointShape(-10770000, 3904000), 30000d) :
+            lesson == LessonOptional ? (new PointShape(-10786000, 3892000), 20000d) :
+            lesson == LessonCjk ? (new PointShape(-10770000, 3892000), 45000d) :
+            (new PointShape(-10786000, 3916000), 45000d);
+
+        await map.ZoomToAsync(center, scale);
+    }
+
+    // The lessons' data, crafted rather than loaded: winding lines for the text to bend along, a
+    // grid of points whose positions match the anchors they name, a crowd for priority to thin,
+    // long names to wrap, close-set places for text-optional, and a north-running line with a
+    // Chinese name.
+    private static InMemoryFeatureSource BuildLessons()
+    {
+        var features = new List<Feature>();
+
+        void Add(BaseShape shape, string kind, string name, string rank = "", string anchor = "")
+        {
+            var feature = new Feature(shape);
+            feature.ColumnValues["KIND"] = kind;
+            feature.ColumnValues["NAME"] = name;
+            feature.ColumnValues["RANK"] = rank;
+            feature.ColumnValues["ANCHOR"] = anchor;
+            features.Add(feature);
+        }
+
+        // Curved text: two parkways winding east-west.
+        Add(Winding(-10786000, 3917500, 1500, 0), "curve", "Meandering Creek Parkway");
+        Add(Winding(-10786000, 3914000, 1800, 1.2), "curve", "Old Mill Heritage Trail");
+
+        // Anchors: each point sits in the grid where its own anchor points.
+        var anchors = new[]
+        {
+            new[] { "top-left", "top", "top-right" },
+            new[] { "left", "center", "right" },
+            new[] { "bottom-left", "bottom", "bottom-right" },
+        };
+        for (var row = 0; row < 3; row++)
+        {
+            for (var col = 0; col < 3; col++)
+            {
+                var anchor = anchors[row][col];
+                Add(new PointShape(-10770000 + ((col - 1) * 1400), 3916000 - ((row - 1) * 1100)),
+                    "anchor", anchor, anchor: anchor);
+            }
+        }
+
+        // Priority: a spiral of ranked labels, far too many for the space.
+        for (var i = 1; i <= 12; i++)
+        {
+            var angle = i * 2.399963;
+            var radius = 350 + (i * 230);
+            Add(new PointShape(-10786000 + (radius * Math.Cos(angle)), 3904000 + (radius * Math.Sin(angle))),
+                "rank", "Rank " + i, rank: i.ToString(CultureInfo.InvariantCulture));
+        }
+
+        // Wrapping: names longer than anyone wants on one line, and one that is not.
+        Add(new PointShape(-10772000, 3904800), "wrap", "Frisco Heritage Botanical Conservatory and Community Arboretum");
+        Add(new PointShape(-10768000, 3903600), "wrap", "Panther Creek Environmental Education Center");
+        Add(new PointShape(-10770000, 3901800), "wrap", "City Hall");
+
+        // text-optional: places set close enough that not every name can fit.
+        var pois = new[]
+        {
+            "Coffee Roastery", "Corner Bakery", "Book Cellar", "Night Market", "Tea House",
+            "Vinyl Shop", "Print Studio", "Flower Cart", "Cheese Shop",
+        };
+        for (var i = 0; i < pois.Length; i++)
+        {
+            var angle = i * 2.399963;
+            var radius = 200 + (i * 160);
+            Add(new PointShape(-10786000 + (radius * Math.Cos(angle)), 3892000 + (radius * Math.Sin(angle))),
+                "poi", pois[i]);
+        }
+
+        // CJK vertical: the line runs north, so the name writes downward.
+        Add(WindingNorth(-10770000, 3892000), "cjk", "银杏河滨绿道");
+
+        var columns = new[]
+        {
+            new FeatureSourceColumn("NAME"), new FeatureSourceColumn("KIND"),
+            new FeatureSourceColumn("RANK"), new FeatureSourceColumn("ANCHOR"),
+        };
+        return new InMemoryFeatureSource(columns, features);
+    }
+
+    private static LineShape Winding(double centerX, double centerY, double amplitude, double phase)
+    {
+        var vertices = new Collection<Vertex>();
+        for (var i = 0; i <= 48; i++)
+        {
+            var t = i / 48.0;
+            vertices.Add(new Vertex(
+                centerX - 4200 + (t * 8400),
+                centerY + (amplitude * Math.Sin(phase + (t * Math.PI * 3)))));
+        }
+        return new LineShape(vertices);
+    }
+
+    private static LineShape WindingNorth(double centerX, double centerY)
+    {
+        var vertices = new Collection<Vertex>();
+        for (var i = 0; i <= 48; i++)
+        {
+            var t = i / 48.0;
+            vertices.Add(new Vertex(
+                centerX + (1200 * Math.Sin(t * Math.PI * 2.5)),
+                centerY - 4200 + (t * 8400)));
+        }
+        return new LineShape(vertices);
+    }
+}

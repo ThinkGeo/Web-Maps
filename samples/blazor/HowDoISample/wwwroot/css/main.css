@@ -494,23 +494,35 @@ pre {
 #output {
     height: calc(100% - 80px - 50px);
     border: 1px solid #555555;
+    display: flex;
+    flex-direction: row;
+    --code-width: 45%;
 }
 
-    #output > div {
-        display: none;
+    /* The sample has the whole width; the code, when shown, takes its share beside it. */
+    #output > #result-box {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 100%;
     }
 
-        #output > div.active {
-            display: block;
-            height: 100%;
-        }
+    #output > #razor-box {
+        flex: 0 0 var(--code-width);
+        min-width: 0;
+        height: 100%;
+        overflow: auto;
+    }
 
-main.split-output #output > div.active {
-    display: block;
-    float: left;
-    height: 100%;
-    width: 50%;
-}
+    #output > .splitter {
+        flex: 0 0 6px;
+        cursor: col-resize;
+        background: #444;
+        touch-action: none;
+    }
+
+        #output > .splitter:hover {
+            background: #888;
+        }
 
 #event-list {
     width: 40%;
@@ -910,3 +922,73 @@ main.split-output #output > div.active {
 .input-lg {
     font-size: 14px;
 }
+
+
+/*
+ * Sidebar groups: the group header and the samples under it used to share one colour,
+ * so a header read as just another sample. The header is now a quiet uppercase section
+ * label on a darker band, and the samples are indented under it.
+ */
+.menu-group-title {
+    cursor: pointer;
+    background-color: #333334;
+}
+
+    .menu-group-title .sub-arrow {
+        color: #9A9AA0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .menu-group-title .sub-arrow::before {
+        font-size: 1.4rem;
+        color: #9A9AA0;
+    }
+
+.menu-group.open > .menu-group-title {
+    background-color: #2E2E2F;
+}
+
+.menu-group-item > a {
+    padding-left: 2.5rem;
+}
+
+/*
+ * The search box at the top of the sidebar: every word typed has to appear in a sample's
+ * title, description or group, and the groups that still have samples open to show them.
+ */
+.sidebar-search {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+}
+
+    .sidebar-search input {
+        flex: 1;
+        min-width: 0;
+        height: 3rem;
+        padding: 0 0.75rem;
+        font-size: 1.3rem;
+        color: #E6E6E6;
+        background: #1F2124;
+        border: 1px solid #4A4D52;
+        border-radius: 3px;
+    }
+
+        .sidebar-search input::placeholder {
+            color: #7C7F85;
+        }
+
+        .sidebar-search input:focus {
+            outline: none;
+            border-color: #60B9E2;
+        }
+
+    .sidebar-search .hits {
+        color: #9A9AA0;
+        font-size: 1.15rem;
+        white-space: nowrap;
+    }

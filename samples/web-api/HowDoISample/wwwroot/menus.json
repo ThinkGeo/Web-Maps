@@ -1,0 +1,346 @@
+[
+  {
+    "id": "getting-started",
+    "title": "Getting Started",
+    "description": "A shapefile served as vector tiles and drawn in the browser.",
+    "source": "GettingStarted",
+    "preicon": "fas fa-file",
+    "group": "Getting Started"
+  },
+  {
+    "id": "vector-or-raster-tiles",
+    "title": "Vector Tiles or Raster Tiles",
+    "description": "One style, drawn as vector tiles in the browser or raster tiles on the server.",
+    "source": "Tiles",
+    "preicon": "fas fa-file",
+    "group": "Getting Started"
+  },
+  {
+    "id": "tile-cache",
+    "title": "Cache Tiles",
+    "description": "Raster or vector tiles from the server's cache or the browser's, against making them every time.",
+    "source": "Caching",
+    "preicon": "fas fa-hdd",
+    "group": "Getting Started"
+  },
+  {
+    "id": "leaflet-and-openlayers",
+    "title": "Leaflet and OpenLayers",
+    "description": "The same server under Leaflet and OpenLayers: PNG tiles, vector tiles and GeoJSON.",
+    "source": "Clients",
+    "preicon": "fas fa-columns",
+    "group": "Getting Started"
+  },
+  {
+    "id": "basemaps",
+    "title": "Basemaps",
+    "description": "Vector basemaps from a style URL, raster basemaps from an XYZ URL.",
+    "source": "",
+    "preicon": "fal fa-bezier-curve",
+    "group": "Maps from a Service"
+  },
+  {
+    "id": "wfs",
+    "title": "WFS",
+    "description": "Features from a WFS 2.0 service, served as vector tiles.",
+    "source": "Services",
+    "preicon": "fas fa-server",
+    "group": "Maps from a Service"
+  },
+  {
+    "id": "ogc-api-features",
+    "title": "OGC API Features",
+    "description": "Features from an OGC API Features service, served as vector tiles.",
+    "source": "Services",
+    "preicon": "fas fa-map-marker-alt",
+    "group": "Maps from a Service"
+  },
+  {
+    "id": "noaa-weather",
+    "title": "NOAA Weather Feeds",
+    "description": "Live NOAA weather stations and warnings.",
+    "source": "Services",
+    "preicon": "fas fa-cloud",
+    "group": "Maps from a Service"
+  },
+  {
+    "id": "wms",
+    "title": "WMS",
+    "description": "A WMS layer, requested tile by tile by the server.",
+    "source": "Services",
+    "preicon": "fas fa-cloud",
+    "group": "Maps from a Service"
+  },
+  {
+    "id": "wmts",
+    "title": "WMTS",
+    "description": "A WMTS layer on its own tile matrix set.",
+    "source": "Services",
+    "preicon": "fas fa-cloud",
+    "group": "Maps from a Service"
+  },
+  {
+    "id": "vector-file-formats",
+    "title": "Vector File Formats",
+    "description": "Shapefile, GeoJSON, KML, GPX, TAB and more.",
+    "source": "YourData",
+    "preicon": "fas fa-file-alt",
+    "group": "Your Data"
+  },
+  {
+    "id": "raster-file-formats",
+    "title": "Raster File Formats",
+    "description": "GeoTIFF, MrSID, JPEG2000, ECW and other rasters, drawn on the server.",
+    "source": "YourData",
+    "preicon": "fas fa-file-image",
+    "group": "Your Data"
+  },
+  {
+    "id": "databases",
+    "title": "Databases",
+    "description": "SQLite, GeoPackage, file geodatabase, PostGIS and SQL Server.",
+    "source": "YourData",
+    "preicon": "fas fa-database",
+    "group": "Your Data"
+  },
+  {
+    "id": "offline-tiles",
+    "title": "MBTiles and PMTiles",
+    "description": "Vector tiles from an MBTiles or PMTiles file; no internet needed.",
+    "source": "YourData",
+    "preicon": "fas fa-archive",
+    "group": "Your Data"
+  },
+  {
+    "id": "custom-feature-sources",
+    "title": "Custom Data Format",
+    "description": "A FeatureSource of your own that reads a CSV.",
+    "source": "Extending",
+    "preicon": "fas fa-puzzle-piece",
+    "group": "Your Data"
+  },
+  {
+    "id": "edit-features",
+    "title": "Edit and Save Features",
+    "description": "Draw and reshape parks in the browser; the server saves them into a shapefile.",
+    "source": "Editing",
+    "preicon": "fas fa-pencil-alt",
+    "group": "Your Data"
+  },
+  {
+    "id": "nautical-charts",
+    "title": "Nautical Charts",
+    "description": "An S-57 chart with S-52 styling, and a ship reading depths and hazards.",
+    "source": "NauticalCharts",
+    "preicon": "fas fa-file",
+    "group": "Your Data"
+  },
+  {
+    "id": "lane-level-navigation",
+    "title": "Lane-Level Navigation",
+    "description": "An OpenDRIVE HD map with a vehicle following its lanes.",
+    "source": "Navigation",
+    "preicon": "fas fa-road",
+    "group": "Your Data"
+  },
+  {
+    "id": "render-points-lines-and-polygons",
+    "title": "Points, Lines and Polygons",
+    "description": "Style and label points, lines and polygons by editing the style.json.",
+    "source": "Styling",
+    "preicon": "fas fa-draw-polygon",
+    "group": "Styling"
+  },
+  {
+    "id": "render-based-on-rules",
+    "title": "Style by Rules",
+    "description": "Value, class-break and filter styling with style expressions.",
+    "source": "Styling",
+    "preicon": "fas fa-project-diagram",
+    "group": "Styling"
+  },
+  {
+    "id": "us-demographic",
+    "title": "Choropleth Map",
+    "description": "US census data in classes, with a legend.",
+    "source": "Styling",
+    "preicon": "fas fa-fill-drip",
+    "group": "Styling"
+  },
+  {
+    "id": "advanced-labels",
+    "title": "Advanced Labels",
+    "description": "Labels along lines, priority, wrapping, icons and vertical text.",
+    "source": "Styling",
+    "preicon": "fas fa-font",
+    "group": "Styling"
+  },
+  {
+    "id": "hatch-styles",
+    "title": "Hatch Styles",
+    "description": "Every hatch pattern as a polygon fill.",
+    "source": "Styling",
+    "preicon": "fas fa-th",
+    "group": "Styling"
+  },
+  {
+    "id": "too-many-points",
+    "title": "Too Many Points",
+    "description": "Large point sets as a heatmap, clusters or dot density.",
+    "source": "Styling",
+    "preicon": "fas fa-palette",
+    "group": "Styling"
+  },
+  {
+    "id": "migrate-a-classic-layer",
+    "title": "Migrate a Classic Layer",
+    "description": "Classic FeatureLayers beside the style.json the translator writes for them.",
+    "source": "Styling",
+    "preicon": "fas fa-exchange-alt",
+    "group": "Styling"
+  },
+  {
+    "id": "isolines",
+    "title": "Isolines",
+    "description": "Contour lines interpolated from scattered points.",
+    "source": "Dynamic",
+    "preicon": "fas fa-water",
+    "group": "Styling"
+  },
+  {
+    "id": "dynamic-rendering",
+    "title": "Dynamic Rendering",
+    "description": "Population circles that change with a year slider.",
+    "source": "Dynamic",
+    "preicon": "fas fa-chart-line",
+    "group": "Styling"
+  },
+  {
+    "id": "shape-operations",
+    "title": "Shape Operations",
+    "description": "Buffer, union, intersect, simplify and more, run on the server.",
+    "source": "Shapes",
+    "preicon": "fas fa-shapes",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "shape-measurements",
+    "title": "Shape Measurements",
+    "description": "Area, length, centre and distance, measured on the server.",
+    "source": "Shapes",
+    "preicon": "fas fa-ruler",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "find-features-by-spatial-relation",
+    "title": "Spatial Queries",
+    "description": "Find features by spatial relation or by SQL.",
+    "source": "Shapes",
+    "preicon": "fas fa-vector-square",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "validate-topology",
+    "title": "Validate Topology",
+    "description": "25 topology rules, each with the shapes that break it.",
+    "source": "Shapes",
+    "preicon": "fas fa-check-double",
+    "group": "Shapes & Spatial Queries"
+  },
+  {
+    "id": "project-features",
+    "title": "Reproject Your Data",
+    "description": "Reproject shapes or a whole layer with a ProjectionConverter.",
+    "source": "Projections",
+    "preicon": "fas fa-globe-americas",
+    "group": "Projections"
+  },
+  {
+    "id": "measure-in-projection",
+    "title": "Measure in the Right Projection",
+    "description": "Drag Greenland south to see how Web Mercator distorts area.",
+    "source": "Projections",
+    "preicon": "fas fa-globe",
+    "group": "Projections"
+  },
+  {
+    "id": "any-projection-satellite",
+    "title": "Any Projection",
+    "description": "The world in Robinson, Mollweide and other projections.",
+    "source": "Projections",
+    "preicon": "fas fa-satellite",
+    "group": "Projections"
+  },
+  {
+    "id": "cross-the-dateline",
+    "title": "Cross the Dateline",
+    "description": "A route drawn across the 180° meridian.",
+    "source": "Projections",
+    "preicon": "fas fa-plane",
+    "group": "Projections"
+  },
+  {
+    "id": "adornments",
+    "title": "Adornments",
+    "description": "Legend, scale bar, compass, logo and graticule drawn on the server.",
+    "source": "Tools",
+    "preicon": "fas fa-tools",
+    "group": "Map Tools & Adornments"
+  },
+  {
+    "id": "popups-and-markers",
+    "title": "Popups and Markers",
+    "description": "Markers, popups, and a click that reads the feature's record.",
+    "source": "Tools",
+    "preicon": "fas fa-tools",
+    "group": "Map Tools & Adornments"
+  },
+  {
+    "id": "geocoding",
+    "title": "Geocoding",
+    "description": "Find an address, or the address at a point.",
+    "source": "Cloud",
+    "preicon": "fas fa-search-location",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "routing",
+    "title": "Routing",
+    "description": "A route through several stops, with turn-by-turn directions.",
+    "source": "Cloud",
+    "preicon": "fas fa-route",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "routing-service-area",
+    "title": "Service Area",
+    "description": "How far you can drive in 15 to 60 minutes.",
+    "source": "Cloud",
+    "preicon": "fas fa-bullseye",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "elevation",
+    "title": "Elevation",
+    "description": "Elevation of a point, line or area; a line draws a profile.",
+    "source": "Cloud",
+    "preicon": "fas fa-mountain",
+    "group": "ThinkGeo Cloud Services"
+  },
+  {
+    "id": "export-the-map",
+    "title": "Export the Map",
+    "description": "Save the map as an image, at screen size or larger.",
+    "source": "Printing",
+    "preicon": "fas fa-print",
+    "group": "Printing & Export"
+  },
+  {
+    "id": "printer-layout",
+    "title": "Print a Map",
+    "description": "A printable PDF sheet with map, title, legend and scale bar.",
+    "source": "PrinterLayout",
+    "preicon": "fas fa-file",
+    "group": "Printing & Export"
+  }
+]

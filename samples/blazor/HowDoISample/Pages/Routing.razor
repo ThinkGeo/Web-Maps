@@ -1,0 +1,157 @@
+@page "/routing"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10778000, 3912200))" Zoom="12" OnClick="@Clicked">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Marks" @ref="marks" StyleJson="@MarksStyle" FeatureSources="@sources" SourceId="marks" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:340px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui;overflow:auto">
+        <div style="font-weight:600">Routing</div>
+        <div style="color:#555">The stops go to RoutingCloudClient.GetRouteAsync, which answers with the route and its turn-by-turn segments. Click the map to add a stop; the route is asked for again.</div>
+        <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-sm btn-light" @onclick="ResetAsync" disabled="@busy">Start over</button>
+            <span style="color:#555">@status</span>
+        </div>
+        @foreach (var segment in segments)
+        {
+            <div style="cursor:pointer;padding:4px 6px;border-bottom:1px solid #e3e3e3;background:@(segment == picked ? "#eee6fb" : "transparent")" @onclick="() => PickAsync(segment)">
+                <div>@segment.Instruction</div>
+                <div style="color:#888;font-size:11px">@((segment.Distance / 1000).ToString("0.00")) km, @segment.Duration.ToString(@"m\:ss")</div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private const string MarksStyle = @"{
+  ""layers"": [
+    { ""type"": ""line"", ""source-layer"": ""route"",
+      ""layout"": { ""line-cap"": ""round"", ""line-join"": ""round"" },
+      ""paint"": { ""line-color"": ""#9370DB"", ""line-width"": 4 } },
+    { ""type"": ""line"", ""source-layer"": ""highlight"",
+      ""layout"": { ""line-cap"": ""round"", ""line-join"": ""round"" },
+      ""paint"": { ""line-color"": ""#FFD400"", ""line-width"": 8, ""line-opacity"": 0.9 } },
+    { ""type"": ""circle"", ""source-layer"": ""stops"",
+      ""paint"": { ""circle-radius"": 7, ""circle-color"": ""#6A3DB8"", ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 2 } },
+    { ""type"": ""symbol"", ""source-layer"": ""stops"",
+      ""layout"": { ""text-field"": [""get"", ""label""], ""text-font"": [""Noto Sans Bold""], ""text-size"": 12, ""text-offset"": [0, -1.3], ""text-anchor"": ""bottom"", ""text-allow-overlap"": true },
+      ""paint"": { ""text-color"": ""#3A1F70"", ""text-halo-color"": ""#FFFFFF"", ""text-halo-width"": 1.5 } }
+  ]
+}";
+
+    private static readonly PointShape[] FirstStops =
+    {
+        new PointShape(-10776986.85, 3908680.24),
+        new PointShape(-10776836.12, 3912348.04),
+        new PointShape(-10778917.01, 3909965.17),
+        new PointShape(-10779631.80, 3915721.82),
+    };
+
+    private MapView map;
+    private VectorTileOverlay marks;
+    private GeoCollection<FeatureSource> sources;
+    private readonly InMemoryFeatureSource route = new InMemoryFeatureSource();
+    private readonly InMemoryFeatureSource highlight = new InMemoryFeatureSource();
+    private readonly InMemoryFeatureSource stops = new InMemoryFeatureSource(new[] { new FeatureSourceColumn("label") }, Array.Empty<Feature>());
+    private readonly List<PointShape> waypoints = new List<PointShape>(FirstStops);
+    private RoutingCloudClient client;
+    private bool busy;
+    private string status = "";
+    private List<CloudRoutingSegment> segments = new List<CloudRoutingSegment>();
+    private CloudRoutingSegment picked;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "route", route }, { "highlight", highlight }, { "stops", stops } };
+        client = new RoutingCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        for (var attempt = 0; attempt < 80 && map?.IsLoaded != true; attempt++)
+        {
+            await Task.Delay(250);
+        }
+        await RouteAsync();
+        StateHasChanged();
+    }
+
+    private async Task Clicked(ClickedMapViewEventArgs args)
+    {
+        if (busy || waypoints.Count >= 12) return;
+        waypoints.Add(new PointShape(args.WorldX, args.WorldY));
+        await RouteAsync();
+    }
+
+    private async Task ResetAsync()
+    {
+        waypoints.Clear();
+        waypoints.AddRange(FirstStops);
+        await RouteAsync();
+    }
+
+    private async Task RouteAsync()
+    {
+        busy = true;
+        status = "asking ThinkGeo Cloud...";
+        StateHasChanged();
+        var result = await client.GetRouteAsync(waypoints, 3857, new CloudRoutingGetRouteOptions { TurnByTurn = true });
+        busy = false;
+        if (result.Exception != null)
+        {
+            status = result.Exception.Message;
+            return;
+        }
+
+        segments = result.RouteResult.Routes.SelectMany(part => part.Segments).ToList();
+        picked = null;
+        route.InternalFeatures.Clear();
+        foreach (var part in result.RouteResult.Routes)
+        {
+            route.InternalFeatures.Add(new Feature(part.Shape));
+        }
+        stops.InternalFeatures.Clear();
+        var index = 0;
+        foreach (var waypoint in result.RouteResult.Waypoints)
+        {
+            var label = index == 0 ? "Start" : index == result.RouteResult.Waypoints.Count - 1 ? "End" : "Stop " + index;
+            stops.InternalFeatures.Add(new Feature(new PointShape(waypoint.Coordinate), new Dictionary<string, string> { ["label"] = label }));
+            index++;
+        }
+        highlight.InternalFeatures.Clear();
+        await marks.RedrawAsync();
+
+        var length = result.RouteResult.Routes.Sum(part => part.Distance) / 1000;
+        var time = TimeSpan.FromSeconds(result.RouteResult.Routes.Sum(part => part.Duration.TotalSeconds));
+        status = $"{waypoints.Count} stops, {length:0.0} km, {time:h\\:mm\\:ss}; {segments.Count} segments - click one.";
+
+        var bounds = MapUtil.GetBoundingBoxOfItems(result.RouteResult.Routes.Select(part => part.Shape));
+        bounds.ScaleUp(20);
+        await map.ZoomToExtentAsync(bounds);
+    }
+
+    private async Task PickAsync(CloudRoutingSegment segment)
+    {
+        picked = segment;
+        highlight.InternalFeatures.Clear();
+        highlight.InternalFeatures.Add(new Feature(segment.Shape));
+        await marks.RedrawAsync();
+
+        var bounds = segment.Shape.GetBoundingBox();
+        bounds.ScaleUp(60);
+        if (bounds.Width < 400 || bounds.Height < 400)
+        {
+            bounds = new RectangleShape(bounds.GetCenterPoint().X - 200, bounds.GetCenterPoint().Y + 200, bounds.GetCenterPoint().X + 200, bounds.GetCenterPoint().Y - 200);
+        }
+        await map.ZoomToExtentAsync(bounds);
+    }
+}

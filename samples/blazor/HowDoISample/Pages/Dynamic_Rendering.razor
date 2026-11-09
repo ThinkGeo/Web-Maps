@@ -1,0 +1,199 @@
+@page "/dynamic-rendering"
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+@using System.Text.RegularExpressions
+@using System.Globalization
+@using System.Collections.ObjectModel
+@implements IDisposable
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10650000, 4770000))" Zoom="4">
+            <OverlaysSetting>
+                <VectorTileOverlay Id="States" StyleJson="@StatesStyleJson" FeatureSources="@states" SourceId="states" />
+                <VectorTileOverlay Id="Circles" StyleJson="@applied" FeatureSources="@circles" SourceId="circles" />
+            </OverlaysSetting>
+        </MapView>
+        <div style="position:absolute;left:14px;top:10px;font:bold 44px system-ui;color:rgba(40,40,40,.75);pointer-events:none">@year</div>
+    </div>
+    <div style="width:420px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
+        <div style="padding:8px 8px 4px;font-weight:600">style.json - edit it; the map follows</div>
+        <div style="padding:0 8px 6px;color:#555">One circle per state, its population for every year since @FirstYear carried as columns y@(FirstYear) to y@(LastYear). Moving the year only swaps the column the circle-radius and circle-color expressions read; the features never travel again.</div>
+        <div style="padding:0 8px 8px;display:flex;gap:8px;align-items:center">
+            <button class="btn btn-sm btn-light" style="width:64px" @onclick="TogglePlay">@(playing ? "Stop" : "Play")</button>
+            <input type="range" min="@FirstYear" max="@LastYear" step="1" value="@year" @oninput="YearDragged" style="flex:1" />
+        </div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                  style="flex:1;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre"></textarea>
+        <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>
+    </div>
+</div>
+
+@code {
+    private const int FirstYear = 1900;
+    private const int LastYear = 2024;
+    private static readonly Regex YearColumn = new Regex("\"y\\d{4}\"");
+
+    private const string StatesStyleJson = @"{
+  ""layers"": [
+    { ""type"": ""background"", ""paint"": { ""background-color"": ""#FFFFFF"" } },
+    { ""type"": ""fill"", ""source-layer"": ""states"",
+      ""paint"": { ""fill-color"": ""#F8F8F8"", ""fill-outline-color"": ""#B0B0B0"" } }
+  ]
+}";
+
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""circle"",
+      ""source-layer"": ""population"",
+      ""paint"": {
+          ""circle-radius"": [""interpolate"", [""linear""], [""sqrt"", [""to-number"", [""get"", ""y1950""]]],
+              0, 2,
+              6300, 42],
+          ""circle-color"": [""interpolate"", [""linear""], [""to-number"", [""get"", ""y1950""]],
+              0, ""#2C7BB6"",
+              5000000, ""#FFFFBF"",
+              20000000, ""#D7191C""],
+          ""circle-opacity"": 0.65,
+          ""circle-stroke-color"": ""#FFFFFF"",
+          ""circle-stroke-width"": 1 }
+    },
+
+    { ""type"": ""symbol"",
+      ""source-layer"": ""population"",
+      ""layout"": {
+          ""text-field"": [""get"", ""STATE_ABBR""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 10,
+          ""text-allow-overlap"": true },
+      ""paint"": { ""text-color"": ""#333333"" }
+    }
+  ]
+}";
+
+    private MapView map;
+    private GeoCollection<FeatureSource> states;
+    private GeoCollection<FeatureSource> circles;
+    private int year = 1950;
+    private bool playing;
+    private CancellationTokenSource player;
+    private string styleJson = StyleJson;
+    private string applied = StyleJson;
+    private string status = "";
+    private bool ok = true;
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        states = new GeoCollection<FeatureSource> { { "states", new ShapeFileFeatureSource("./Data/Shapefile/USStates_3857.shp") } };
+        circles = new GeoCollection<FeatureSource> { { "population", Population() } };
+    }
+
+    // A point at the middle of each state, with one column per year of population.
+    private static FeatureSource Population()
+    {
+        var byStateAndYear = new Dictionary<(string, int), string>();
+        foreach (var line in File.ReadLines("./Data/Csv/historical_state_population_by_year.csv"))
+        {
+            var parts = line.Split(',');
+            if (parts.Length == 3 && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var y)) byStateAndYear[(parts[0], y)] = parts[2];
+        }
+
+        var columns = new Collection<FeatureSourceColumn> { new FeatureSourceColumn("STATE_ABBR", "String", 2) };
+        for (var y = FirstYear; y <= LastYear; y++)
+        {
+            columns.Add(new FeatureSourceColumn("y" + y, "Integer", 12));
+        }
+
+        var shapefile = new ShapeFileFeatureSource("./Data/Shapefile/USStates_3857.shp");
+        shapefile.Open();
+        var features = new Collection<Feature>();
+        foreach (var state in shapefile.GetAllFeatures(new[] { "STATE_ABBR" }))
+        {
+            var abbreviation = state.ColumnValues["STATE_ABBR"];
+            var values = new Dictionary<string, string> { ["STATE_ABBR"] = abbreviation };
+            for (var y = FirstYear; y <= LastYear; y++)
+            {
+                values["y" + y] = byStateAndYear.TryGetValue((abbreviation, y), out var population) ? population : "0";
+            }
+            features.Add(new Feature(state.GetShape().GetCenterPoint(), values));
+        }
+        shapefile.Close();
+
+        return new InMemoryFeatureSource(columns, features);
+    }
+
+    private Task YearDragged(ChangeEventArgs args)
+    {
+        year = int.Parse((string)args.Value, CultureInfo.InvariantCulture);
+        return ShowYear();
+    }
+
+    // Every "yNNNN" in the document becomes the chosen year; the editor shows the same text
+    // the map draws.
+    private Task ShowYear()
+    {
+        styleJson = YearColumn.Replace(styleJson, "\"y" + year + "\"");
+        return Apply(0);
+    }
+
+    private async void TogglePlay()
+    {
+        if (playing)
+        {
+            player.Cancel();
+            return;
+        }
+
+        playing = true;
+        player = new CancellationTokenSource();
+        var token = player.Token;
+        try
+        {
+            if (year >= LastYear) year = FirstYear;
+            using var ticks = new PeriodicTimer(TimeSpan.FromMilliseconds(120));
+            while (year < LastYear && await ticks.WaitForNextTickAsync(token))
+            {
+                year++;
+                await ShowYear();
+                StateHasChanged();
+            }
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            playing = false;
+            StateHasChanged();
+        }
+    }
+
+    private Task EditorChanged() => Apply(400);
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task Apply(int delay)
+    {
+        var mine = ++edit;
+        if (delay > 0) await Task.Delay(delay);
+        if (mine != edit) return;
+
+        try
+        {
+            JsonNode.Parse(styleJson);
+            applied = styleJson;
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+
+    public void Dispose()
+    {
+        player?.Cancel();
+    }
+}

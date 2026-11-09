@@ -1,0 +1,98 @@
+﻿@page "/3d-terrain"
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-12509000, 4330000))" Zoom="12" Pitch="63">
+            <OverlaysSetting>
+                <ThinkGeoCloudRasterMapsOverlay Id="Aerial" MapType="ThinkGeoCloudRasterMapsMapType.Aerial_V2_X1"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Terrain" Style="@style" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:420px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
+        <div style="padding:6px 8px 4px;font-weight:600">style.json - edit it; the map follows</div>
+        <label style="padding:0 8px 6px;display:flex;align-items:center;gap:6px">
+            <input type="checkbox" checked="@terrain" @onchange="ToggleTerrain" /> terrain
+        </label>
+        <div style="padding:0 8px 6px;color:#555">Elevation: Terrain Tiles on AWS Open Data (USGS 3DEP, NASA SRTM and other public sources). Imagery: ThinkGeo Cloud.</div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                  style="flex:1;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre"></textarea>
+        <div style="padding:4px 8px 6px;color:@(applied ? "darkgreen" : "firebrick")">@status</div>
+    </div>
+</div>
+
+@code {
+    // The relief shading layer, reading the elevation source declared in code under "terrain-dem".
+    private const string ReliefJson = @"{
+  ""layers"": [
+    { ""id"": ""relief"",
+      ""type"": ""hillshade"",
+      ""source"": ""terrain-dem"",
+      ""paint"": { ""hillshade-exaggeration"": 0.4 } }
+  ]
+}";
+
+    private MapView map;
+    private MapStyle style;
+    private string styleJson = ReliefJson;
+    private string status = "";
+    private bool applied = true;
+    private bool terrain = true;
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        style = Compose();
+    }
+
+    // The AWS open terrarium tiles shape the ground; the aerial imagery beneath drapes over it.
+    private MapStyle Compose()
+    {
+        var composed = new MapStyle()
+            .AddSource("terrain-dem", new JsonObject
+            {
+                ["type"] = "raster-dem",
+                ["tiles"] = new JsonArray("https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"),
+                ["encoding"] = "terrarium",
+                ["tileSize"] = 256,
+                ["maxzoom"] = 15
+            })
+            .AddStyle(styleJson);
+        if (terrain)
+        {
+            composed.SetTerrain("terrain-dem", 1.35);
+        }
+        return composed;
+    }
+
+    private void ToggleTerrain(ChangeEventArgs e)
+    {
+        terrain = (bool)e.Value;
+        style = Compose();
+    }
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit) return;
+
+        try
+        {
+            style = Compose();
+            applied = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            applied = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+}

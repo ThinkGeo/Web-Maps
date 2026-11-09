@@ -1,0 +1,75 @@
+@page "/map-tool-controls"
+@using ThinkGeo.Core
+@using System.Globalization
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10778000, 3912000))" Zoom="12" OnMouseMove="@Moved">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            </OverlaysSetting>
+            <AdornmentOverlaySetting>
+                <AdornmentOverlay Id="Adornments" Layers="@adornments" />
+            </AdornmentOverlaySetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+        <div style="position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:6px 12px;background:rgba(255,255,255,.92);border-radius:4px;font:14px Consolas,monospace;box-shadow:0 1px 4px rgba(0,0,0,.25);white-space:nowrap">@coordinates</div>
+    </div>
+    <div style="width:320px;display:flex;flex-direction:column;gap:8px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Map tool controls</div>
+        <div style="color:#555">The zoom bar is a map tool of the Blazor map; the scale line and the logo are adornment layers; the coordinates under the pointer come from the map's OnMouseMove event, in whichever form you pick.</div>
+        <label>Coordinates as
+            <select @bind="format" style="font:13px system-ui;margin-left:6px">
+                <option value="LatLon">latitude, longitude</option>
+                <option value="DMS">degrees, minutes, seconds</option>
+                <option value="Meters">Web Mercator meters</option>
+            </select>
+        </label>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private GeoCollection<AdornmentLayer> adornments;
+    private string format = "LatLon";
+    private string coordinates = "move the pointer over the map";
+
+    protected override void OnInitialized()
+    {
+        adornments = new GeoCollection<AdornmentLayer>
+        {
+            { "scale", new ScaleLineAdornmentLayer { Projection = new Projection(3857), UnitSystem = ScaleLineUnitSystem.ImperialAndMetric } },
+            { "logo", new LogoAdornmentLayer(new GeoImage("./wwwroot/images/thinkgeo.png")) { Location = AdornmentLocation.LowerRight } },
+        };
+    }
+
+    private void Moved(MouseMovingMapViewEventArgs args)
+    {
+        if (format == "Meters")
+        {
+            coordinates = FormattableString.Invariant($"X {args.WorldX:N0}  Y {args.WorldY:N0}");
+            return;
+        }
+
+        var degrees = ProjectionConverter.Convert(3857, 4326, new PointShape(args.WorldX, args.WorldY));
+        coordinates = format == "DMS"
+            ? Dms(degrees.Y, "N", "S") + "  " + Dms(degrees.X, "E", "W")
+            : FormattableString.Invariant($"{degrees.Y:0.00000}, {degrees.X:0.00000}");
+    }
+
+    private static string Dms(double value, string positive, string negative)
+    {
+        var whole = Math.Abs(value);
+        var d = (int)whole;
+        var m = (int)((whole - d) * 60);
+        var s = ((whole - d) * 60 - m) * 60;
+        return FormattableString.Invariant($"{d}°{m:00}'{s:00.0}\"{(value >= 0 ? positive : negative)}");
+    }
+}

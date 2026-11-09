@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,48 +13,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.Core" Version="14.5.3" />
-    <PackageReference Include="ThinkGeo.Gdal" Version="14.5.3" />
-    <PackageReference Include="ThinkGeo.UI.Blazor" Version="14.5.3" />
+    <PackageReference Include="ThinkGeo.Core" Version="15.0.0" />
+    <PackageReference Include="ThinkGeo.Gdal" Version="15.0.0" />
+    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.0.0" />
+    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.0.0" />
+    <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.0.0" />
+    <PackageReference Include="ThinkGeo.PostgreSql" Version="15.0.0" />
+    <PackageReference Include="ThinkGeo.SqlServer" Version="15.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Pages\US_Demographic.razor">
+    <Content Update="Pages\*.razor">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Pages\Basic_Styling.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Draw_and_Modify_Geometries.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Error.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Vector_Basemaps.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Load_Feature_Source.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Load_Raster_Source.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Mark_the_Places.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Measure_Distance_ Area.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Balloon_Popup.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Raster_Basemaps.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Pages\Vehicle_Tracking.razor">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Data\**" Exclude="Data\temp\**;Data\**\*.json" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <Target Name="PublishRazorSources" AfterTargets="Publish">
+    <ItemGroup>
+      <RazorSourceFile Include="Pages\*.razor" />
+    </ItemGroup>
+    <Copy SourceFiles="@(RazorSourceFile)" DestinationFolder="$(PublishDir)Pages" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

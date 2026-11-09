@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hatch Styles</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        /* Every hatch at once: as many columns as the panel holds, so the wall never scrolls. */
+        #hatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(28px, 1fr)); gap: 3px; padding: 2px; }
+        .swatch { aspect-ratio: 1; padding: 0; border: 1px solid #bbb; border-radius: 3px; background: #fff url() 0 0 / 32px 32px repeat; cursor: pointer; }
+        .swatch:hover { border-color: #1a73e8; }
+        .swatch.on { outline: 2px solid #1a73e8; outline-offset: -1px; border-color: #1a73e8; }
+        #hovering { font-family: Consolas, monospace; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel editor-panel" style="width:470px">
+            <div class="controls">
+                <p>Point at a swatch to try it on the parks; click to keep it.</p>
+                <div id="hatches"></div>
+                <div id="hovering"></div>
+            </div>
+            <div class="editor">
+                <div class="head">style.json - edit it; the map follows</div>
+                <textarea id="style" spellcheck="false"></textarea>
+                <div class="status" id="status"></div>
+            </div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const layers = (hatch) => [
+            { type: 'fill', 'source-layer': 'parks', paint: { 'fill-pattern': 'hatch-' + hatch } },
+            { type: 'line', 'source-layer': 'parks', paint: { 'line-color': '#3F7F45', 'line-width': 1.5 } },
+            { type: 'symbol', 'source-layer': 'parks', minzoom: 15, layout: { 'text-field': ['get', 'NAME'], 'text-font': ['Noto Sans Bold'], 'text-size': 12 }, paint: { 'text-color': '#2F5F35', 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.5 } },
+        ];
+        const hatches = await tg.get('samples/styling/hatches');
+        const map = tg.createMap({ center: [-10777610, 3909120], zoom: 16 });
+        await tg.ready(map);
+        // A pattern image is fetched the first time a document names it.
+        const loaded = new Set();
+        const ensure = async (edited) => {
+            for (const layer of edited) {
+                const name = layer.paint && layer.paint['fill-pattern'];
+                if (typeof name === 'string' && name.startsWith('hatch-') && !loaded.has(name) && hatches.includes(name.slice(6))) {
+                    loaded.add(name);
+                    map.addImage(name, (await map.loadImage(tg.root + 'samples/styling/hatch.png?name=' + name.slice(6))).data);
+                }
+            }
+        };
+        let kept = 'DiagonalCross';
+        await ensure(layers(kept));
+        const overlay = tg.vectorOverlay(map, 'parks', layers(kept));
+        const styleEditor = tg.editor(document.getElementById('style'), document.getElementById('status'), tg.styleText(layers(kept)), async (edited) => {
+            await ensure(edited);
+            overlay.setLayers(edited);
+            const named = edited.map(l => l.paint && l.paint['fill-pattern']).find(n => typeof n === 'string' && n.startsWith('hatch-'));
+            if (named && hatches.includes(named.slice(6))) { kept = named.slice(6); mark(); }
+        });
+
+        // Pointing at a swatch puts that hatch on the map without touching the document; clicking
+        // writes it into the document, which is what the map then follows.
+        const grid = document.getElementById('hatches'), hovering = document.getElementById('hovering');
+        let shown = kept, pending = null;
+        const show = async (name) => {
+            if (shown === name) return;
+            shown = name;
+            hovering.textContent = name === kept ? name : name + '  (click to keep)';
+            pending = name;
+            await ensure(layers(name));
+            if (pending === name) overlay.setLayers(layers(name));
+        };
+        const mark = () => { for (const swatch of grid.children) swatch.classList.toggle('on', swatch.dataset.name === kept); hovering.textContent = kept; };
+        for (const name of hatches) {
+            const swatch = Object.assign(document.createElement('button'), { className: 'swatch', title: name });
+            swatch.dataset.name = name;
+            swatch.style.backgroundImage = `url(${tg.root}samples/styling/hatch.png?name=${name}&onWhite=true)`;
+            swatch.addEventListener('mouseenter', () => show(name));
+            swatch.addEventListener('click', () => { styleEditor.text = styleEditor.text.replace(/("fill-pattern"\s*:\s*"hatch-)([A-Za-z0-9_]+)(")/, `$1${name}$3`); });
+            grid.appendChild(swatch);
+        }
+        // Leaving the swatches puts back the one the document names.
+        grid.addEventListener('mouseleave', () => show(kept));
+        mark();
+    </script>
+</body>
+</html>

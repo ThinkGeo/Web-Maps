@@ -1,0 +1,75 @@
+﻿@page "/any-projection-satellite"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        @* A map in a projection of its own is drawn by the classic renderer; MapLibre draws web mercator only. *@
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter" Renderer="MapViewRenderer.OpenLayers"
+                 BackgroundColor="@(GeoColor.FromHtml("#DCE8EF"))"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(0, 0))" Zoom="2">
+            <OverlaysSetting>
+                <LayerOverlay Id="Aerial" @ref="overlay" Layers="@layers" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:300px;padding:10px;display:flex;flex-direction:column;gap:6px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Satellite imagery, any projection</div>
+        @foreach (var choice in Choices)
+        {
+            <label><input type="radio" name="projection" checked="@(chosen == choice.Key)" @onchange="@(() => Pick(choice.Key))" /> @choice.Key</label>
+        }
+        <div style="margin-top:6px;color:#555">The tiles come in Spherical Mercator; a projection converter on the layer warps every tile into the chosen projection as it is drawn on the server.</div>
+        <div style="margin-top:auto;font:11px Consolas,monospace;color:#444;word-break:break-all">@(Choices[chosen] ?? "EPSG:3857")</div>
+    </div>
+</div>
+
+@code {
+    private static readonly Dictionary<string, string> Choices = new Dictionary<string, string>
+    {
+        ["Spherical Mercator"] = null,
+        ["Robinson"] = "+proj=robin +datum=WGS84 +units=m +no_defs",
+        ["Mollweide"] = "+proj=moll +datum=WGS84 +units=m +no_defs",
+        ["Equal Area - Eckert IV"] = "+proj=eck4 +datum=WGS84 +units=m +no_defs",
+        ["Equal Area - Cylindrical"] = "+proj=cea +datum=WGS84 +units=m +no_defs",
+        ["Equal Area - Sinusoidal"] = "+proj=sinu +lon_0=0 +datum=WGS84 +units=m +no_defs",
+    };
+
+    private MapView map;
+    private LayerOverlay overlay;
+    private readonly GeoCollection<LayerBase> layers = new GeoCollection<LayerBase>();
+    private readonly AerialTilesLayer aerial = new AerialTilesLayer(GlobalSettings.ThinkGeoApiKey);
+    private string chosen = "Spherical Mercator";
+
+    protected override void OnInitialized()
+    {
+        layers.Add("Aerial", aerial);
+    }
+
+    private async Task Pick(string choice)
+    {
+        chosen = choice;
+        var projection = Choices[choice];
+        aerial.ProjectionConverter = projection == null ? null : new GdalProjectionConverter(3857, projection);
+        aerial.ProjectionConverter?.Open();
+        await overlay.RedrawAsync();
+        await map.ZoomToCenterAsync(2, new PointShape(0, 0));
+    }
+
+    // ThinkGeo Cloud's aerial tiles by API key - any XYZ raster service is drawn the same way.
+    private sealed class AerialTilesLayer : WebRasterXyzTileAsyncLayer
+    {
+        private readonly string apiKey;
+
+        public AerialTilesLayer(string apiKey)
+            : base(512, GeographyUnit.Meter, MaxExtents.SphericalMercator)
+        {
+            this.apiKey = apiKey;
+        }
+
+        protected override Task<string> GetImageUriAsyncCore(int zoomLevel, long x, long y, float resolutionFactor)
+        {
+            return Task.FromResult($"https://cloud.thinkgeo.com/api/v2/maps/raster/aerial/x1/3857/512/{zoomLevel}/{x}/{y}.jpeg?apikey={apiKey}");
+        }
+    }
+}

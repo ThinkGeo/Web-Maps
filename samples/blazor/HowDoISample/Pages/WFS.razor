@@ -1,0 +1,96 @@
+@page "/wfs"
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(544950, 6867650))" Zoom="17">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Parcels" StyleJson="@applied" FeatureSources="@sources" SourceId="features" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:420px;display:flex;flex-direction:column;background:#f6f6f4;border-left:1px solid #ccc;font:12px system-ui">
+        <div style="padding:8px 8px 4px;font-weight:600">style.json - edit it; the map follows</div>
+        <div style="padding:0 8px 6px;color:#555">Cadastral parcels of the Netherlands from PDOK's WFS 2.0 service. The server asks the service for the features each tile needs, cuts them, and the browser draws the tiles; the service is never called from the browser.</div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                  style="flex:1;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre"></textarea>
+        <div style="padding:4px 8px 6px;color:@(ok ? "darkgreen" : "firebrick")">@status</div>
+    </div>
+</div>
+
+@code {
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""fill"",
+      ""source-layer"": ""parcels"",
+      ""paint"": { ""fill-color"": ""rgba(255,140,0,0.18)"" } },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""parcels"",
+      ""paint"": {
+          ""line-color"": ""rgba(255,69,0,1)"",
+          ""line-width"": 2 }
+    },
+
+    { ""type"": ""symbol"",
+      ""source-layer"": ""parcels"",
+      ""layout"": {
+          ""text-field"": [""get"", ""perceelnummer""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 11 },
+      ""paint"": {
+          ""text-color"": ""rgba(150,40,0,1)"",
+          ""text-halo-color"": ""rgba(255,255,255,1)"",
+          ""text-halo-width"": 1.5 }
+    }
+  ]
+}";
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private string styleJson = StyleJson;
+    private string applied = StyleJson;
+    private string status = "";
+    private bool ok = true;
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        // An asynchronous source is added to a tile source's collection, which the overlay
+        // cuts from like any other; the collection wraps it for the cutter.
+        var parcels = new FeatureSourceVectorTileSource();
+        parcels.FeatureSources.Add("parcels", new WfsV2AsyncFeatureSource(
+            "https://service.pdok.nl/kadaster/kadastralekaart/wfs/v5_0", "kadastralekaart:Perceel")
+        {
+            TimeoutInSeconds = 120,
+            Crs = "urn:ogc:def:crs:EPSG::3857",
+        });
+        sources = parcels.FeatureSources;
+    }
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit) return;
+
+        try
+        {
+            JsonNode.Parse(styleJson);
+            applied = styleJson;
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+}

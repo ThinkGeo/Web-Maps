@@ -1,0 +1,82 @@
+@page "/zoom-to-extents"
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10778000, 3912000))" Zoom="11"
+                 OnCurrentExtentChanged="@(args => extent = args.CurrentExtent)">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Limits" StyleJson="@StyleJson" FeatureSources="@sources" SourceId="features" />
+            </OverlaysSetting>
+        </MapView>
+    </div>
+    <div style="width:340px;display:flex;flex-direction:column;gap:10px;padding:10px;background:#f6f6f4;border-left:1px solid #ccc;font:13px system-ui">
+        <div style="font-weight:600">Zoom to extents</div>
+        <div style="color:#555">Every way the map can be told where to look: a step in or out, a scale, the bounds of a layer, a point to centre on, a bearing. What it looks at now is read back below.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-light" @onclick="() => map.ZoomInAsync()">Zoom in</button>
+            <button class="btn btn-sm btn-light" @onclick="() => map.ZoomOutAsync()">Zoom out</button>
+            <button class="btn btn-sm btn-light" @onclick="ZoomToLimitsAsync">The city limits</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+            <span>Scale 1 :</span><input type="number" @bind="scale" style="width:90px" />
+            <button class="btn btn-sm btn-light" @onclick="() => map.ZoomToAsync(extent?.GetCenterPoint() ?? new PointShape(-10778000, 3912000), scale)">Go</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+            <span>Centre at</span><input type="number" step="0.0001" @bind="latitude" style="width:80px" /><input type="number" step="0.0001" @bind="longitude" style="width:86px" />
+            <button class="btn btn-sm btn-light" @onclick="CenterAsync">Go</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+            <span>Bearing</span><input type="range" min="0" max="359" @bind="bearing" @bind:event="oninput" @bind:after="() => map.SetBearingAsync(bearing)" style="flex:1" /><span style="width:36px">@bearing&deg;</span>
+        </div>
+        @if (extent != null)
+        {
+            <div style="font:12px Consolas,monospace;color:#444;white-space:pre">@Readout()</div>
+        }
+    </div>
+</div>
+
+@code {
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""fill"", ""source-layer"": ""limits"", ""paint"": { ""fill-color"": ""rgba(65,105,225,0.12)"" } },
+    { ""type"": ""line"", ""source-layer"": ""limits"", ""paint"": { ""line-color"": ""#4169E1"", ""line-width"": 2 } }
+  ]
+}";
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private ShapeFileFeatureSource limits;
+    private RectangleShape extent;
+    private double scale = 50000;
+    private double latitude = 33.15;
+    private double longitude = -96.82;
+    private double bearing;
+
+    protected override void OnInitialized()
+    {
+        limits = new ShapeFileFeatureSource("./Data/Shapefile/FriscoCityLimitsDivided.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+        sources = new GeoCollection<FeatureSource> { { "limits", limits } };
+    }
+
+    private async Task ZoomToLimitsAsync()
+    {
+        limits.Open();
+        var bounds = limits.GetBoundingBox();
+        limits.Close();
+        bounds.ScaleUp(10);
+        await map.ZoomToExtentAsync(bounds);
+    }
+
+    private Task CenterAsync() => map.SetCenterAsync(ProjectionConverter.Convert(4326, 3857, new PointShape(longitude, latitude)));
+
+    private string Readout()
+    {
+        var centre = ProjectionConverter.Convert(3857, 4326, extent.GetCenterPoint());
+        return FormattableString.Invariant($"centre  {centre.Y:0.00000}, {centre.X:0.00000}\nwidth   {extent.Width / 1000:0.00} km\nleft    {extent.UpperLeftPoint.X:0}\ntop     {extent.UpperLeftPoint.Y:0}\nright   {extent.LowerRightPoint.X:0}\nbottom  {extent.LowerRightPoint.Y:0}");
+    }
+}

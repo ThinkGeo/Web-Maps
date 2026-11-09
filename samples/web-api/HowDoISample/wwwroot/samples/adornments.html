@@ -23,7 +23,6 @@
             </select></label><label><input type="checkbox" id="styled"> own text styles</label></div>
             <label><input type="checkbox" id="compass" checked> Compass - true and magnetic north</label>
             <label style="padding-left:22px"><input type="checkbox" id="lean"> lean it with the ground</label>
-            <label><input type="checkbox" id="graticule"> Graticule, as tiles</label>
             <label>Pointer coordinates as <select id="format"><option value="LatLon">latitude, longitude</option><option value="DMS">degrees, minutes, seconds</option><option value="Meters">Web Mercator meters</option></select></label>
             <div class="status" id="status"></div>
         </aside>
@@ -45,7 +44,6 @@
             legend: () => show('legend', () => tg.adornments(map, 'legend')),
             scale: () => show('scale', () => tg.adornments(map, 'scale-' + document.getElementById('units').value + (document.getElementById('styled').checked ? '-styled' : ''))),
             compass: () => show('compass', () => tg.compass(map, 'compass', { lean: document.getElementById('lean').checked })),
-            graticule: () => show('graticule', () => tg.rasterOverlay(map, 'graticule')),
         };
         const status = document.getElementById('status');
         const report = () => { const on = Object.keys(apply).filter(id => document.getElementById(id).checked); tg.say(status, on.length ? 'Drawn on the server: ' + on.join(', ') : 'Nothing over the map but the map itself.'); };

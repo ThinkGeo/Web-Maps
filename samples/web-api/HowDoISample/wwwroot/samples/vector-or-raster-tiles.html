@@ -18,16 +18,14 @@
 <body>
     <div class="page">
         <div id="maps">
-            <div class="side"><div id="vector" class="map"></div><div class="tag">Vector tiles - the browser draws</div><div class="meter" id="vector-meter">no tiles yet</div></div>
-            <div class="side"><div id="raster" class="map"></div><div class="tag">Raster tiles - the server draws</div><div class="meter" id="raster-meter">no tiles yet</div></div>
+            <div class="side"><div id="vector" class="map"></div><div class="tag">Vector: browser draws</div><div class="meter" id="vector-meter">no tiles yet</div></div>
+            <div class="side"><div id="raster" class="map"></div><div class="tag">Raster: server draws</div><div class="meter" id="raster-meter">no tiles yet</div></div>
         </div>
         <aside class="panel narrow" style="width:340px">
-            <h2>Vector tiles or raster tiles</h2>
-            <p>One style.json - Frisco's zoning, parks, trails, streets and schools, as FeatureLayerTranslator wrote it from five classic layers - and one server, delivering it in two ways. Left: the data is cut into vector tiles at tiles/translated/ and the browser draws them with the document. Right: the same document is handed to the server at samples/tiles/style and drawn there by CpuTileRenderer over the same shapefiles into raster tiles at raster/style-…/, which the browser only shows. The two maps move together; move either one.</p>
             <label>Land zoned agricultural <input type="color" id="colour" value="#d7e3be"></label>
             <div class="row"><button class="btn" id="half">Zoom in half a level</button><button class="btn" id="turn">Turn 30°</button><button class="btn" id="straight">Straight again</button></div>
             <div class="status" id="status"></div>
-            <p>What to look for. A colour: the left map redraws from the data it already has, while you drag; the right sends the changed document to the server once you let go and waits for tiles drawn again. Half a zoom level: the left draws its labels again at their own size; the right shows the next level's tiles scaled down, labels and all, so its labels are smaller and sit where the server put them on each tile. A turn: the left's labels stay upright, the right's turn with the map. What each side fetched is counted at the bottom of each map.</p>
+            <p>Change the colour, zoom half a level or turn the map, and compare the two sides.</p>
         </aside>
     </div>
     <script src="../lib/maplibre-gl.js"></script>

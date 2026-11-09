@@ -21,9 +21,6 @@
             <img id="picture" alt="The exported picture">
         </div>
         <aside class="panel narrow" style="width:360px">
-            <h2>Export the map</h2>
-            <p>A picture of the map, to put in a report, an email or a slide. How big decides who can make it: at the size it is on screen the browser hands over its own canvas, and anything larger is drawn again on the server, which needs no browser at all and is therefore what a scheduled job or a report generator calls. A page to print, with a title block and a legend on it, is the next sample.</p>
-            <p>Reading the canvas takes two things: the map has to be made with preserveDrawingBuffer, and the read has to happen while a frame is actually there. A map that has settled has stopped painting and its buffer is empty, so a repaint is asked for and the canvas read in the render that follows; read it plainly and the picture comes back black.</p>
             <div class="row"><label>Size <select id="size">
                 <option value="screen">what is on screen</option>
                 <option value="1600" selected>1600 px wide</option>
@@ -55,8 +52,8 @@
         const arrange = () => {
             const canvas = map.getCanvas();
             document.getElementById('path').textContent = onScreen()
-                ? `The browser's own canvas, ${canvas.width} by ${canvas.height} pixels. Tilt, rotation and the globe come with it.`
-                : 'Drawn again on the server at the size asked for. Any resolution, north-up and flat, and no browser needed.';
+                ? `The browser's canvas, ${canvas.width} x ${canvas.height} px.`
+                : 'Drawn on the server, north-up, at any size.';
         };
         document.getElementById('size').addEventListener('change', arrange);
         map.on('resize', arrange);

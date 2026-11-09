@@ -15,7 +15,6 @@
     <div class="page">
         <div id="map"></div>
         <aside class="panel narrow" style="width:320px">
-            <h2>Any projection</h2>
             <div style="font-weight:600">Warp</div>
             <label><input type="radio" name="warp" value="browser" checked> in the browser - OpenLayers reprojects Spherical Mercator tiles</label>
             <label><input type="radio" name="warp" value="server"> on the server - the layer's projection converter draws tiles of the target grid</label>
@@ -24,7 +23,7 @@
             <label><input type="radio" name="source" value="geotiff"> World GeoTIFF, stored in WGS84</label>
             <div style="font-weight:600;margin-top:4px">Projection</div>
             <div id="choices" style="display:flex;flex-direction:column;gap:2px"></div>
-            <p>This page's map is OpenLayers: its view can be any projection proj4 knows, where MapLibre draws Web Mercator only. In the browser, the tiles arrive in Spherical Mercator and OpenLayers warps each one - so the poles, which Mercator never had, stay empty. On the server, the layer is drawn straight into the target projection's own tile grid by GdalProjectionConverter - the GeoTIFF is read there from its WGS84 file and reaches the poles - and the browser only shows the tiles.</p>
+            <p>Browser: OpenLayers warps Mercator tiles, so the poles stay empty. Server: tiles are drawn in the projection itself.</p>
             <div class="status" id="status"></div>
             <div id="proj" style="margin-top:auto;font:11px Consolas,monospace;color:#444;word-break:break-all"></div>
         </aside>

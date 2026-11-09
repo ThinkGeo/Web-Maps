@@ -38,12 +38,12 @@ html, body { height: 100%; margin: 0; font: 13px system-ui, sans-serif; color: #
     .panel.editor-panel { width: 340px !important; }
 }
 
-/* On a phone the two sit one above the other: the map keeps the top half and the panel scrolls
-   under it. A page whose panel is an editor needs the textarea to stop growing. */
+/* On a phone the two sit one above the other: the map keeps most of the screen and the panel
+   scrolls under it. A page whose panel is an editor needs the textarea to stop growing. */
 @media (max-width: 760px), (max-height: 460px) {
     .page { flex-direction: column; }
-    #map { flex: 1 1 auto; min-height: 50vh; }
-    .panel, .panel.narrow, .panel.editor-panel { width: auto !important; max-height: 50%; flex: 0 0 auto; border-left: 0; border-top: 1px solid #ccc; }
+    #map, #maps { flex: 1 1 auto; min-height: 60%; }
+    .panel, .panel.narrow, .panel.editor-panel { width: auto !important; max-height: 40%; flex: 0 0 auto; border-left: 0; border-top: 1px solid #ccc; }
     .editor { min-height: 0; }
     .editor textarea { min-height: 120px; }
     .panel .row { gap: 6px; }

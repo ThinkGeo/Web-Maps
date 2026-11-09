@@ -5,3 +5,18 @@
 #razor-box .code-file { position: sticky; top: 0; padding: 4px 10px; font: 12px Consolas, monospace; color: #9A9AA0; background: #1f2124; border-bottom: 1px solid #333; }
 #razor-box pre { margin: 0; padding: 10px; font: 12px Consolas, monospace; color: #e6e6e6; background: #1b1d20; white-space: pre; }
 .code-types a.active { font-weight: 700; }
+
+/* On a phone the title, its one-line description and the tabs sit tight above the sample, and
+   the sample takes the rest of the screen. */
+@media (max-width: 767px) {
+    .main { display: flex; flex-direction: column; height: calc(100vh - 48px); height: calc(100dvh - 48px); padding-top: 0; }
+    #child-page-title { height: auto; flex: 0 0 auto; padding: 6px 10px 6px; }
+    #child-page-title h1 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1.15rem; }
+    #child-page-title h1 .title { flex: 1; min-width: 0; }
+    #child-page-title .download-sample { float: none; margin: 0; padding: 3px 8px; font-size: 12px; white-space: nowrap; }
+    #sample-description { padding-right: 0 !important; margin: 3px 0 0; font-size: 12.5px; line-height: 1.35; color: #ccc; }
+    .embed-nav { flex: 0 0 auto; height: 34px; padding-left: 4px; }
+    .embed-nav .code-types { margin-top: 3px; }
+    .embed-nav .code-types a { padding: 6px 12px; font-size: 12px; }
+    #output { flex: 1 1 auto; min-height: 0; height: auto; }
+}

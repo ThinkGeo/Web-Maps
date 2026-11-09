@@ -37,7 +37,7 @@
         const apply = () => {
             const type = document.querySelector('input[name=proj]:checked').value;
             map.setProjection({ type });
-            tg.say(status, type === 'globe' ? 'On a globe the route is one unbroken line and there is no seam to cross.' : 'Web Mercator: the seam runs down 180 degrees, and the route still draws whole across it.');
+            tg.say(status, type === 'globe' ? 'On a globe there is no seam.' : 'Web Mercator: the route draws whole across 180°.');
         };
         for (const radio of document.querySelectorAll('input[name=proj]')) radio.addEventListener('change', apply);
         apply();

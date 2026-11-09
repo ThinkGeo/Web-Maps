@@ -12,8 +12,6 @@
         <div id="map"></div>
         <aside class="panel editor-panel">
             <div class="controls">
-                <h2>Reproject your data</h2>
-                <p>One class does both jobs. A ProjectionConverter turns coordinates from one system into another; put it on shapes you hold yourself and they come back in the map's system, or put it on a layer's FeatureSource and every feature it ever hands out arrives converted, so the tiles are cut and the style drawn as if the file had always been Web Mercator.</p>
                 <label><input type="radio" name="what" value="shapes" checked> Shapes I hold - a converter called on them</label>
                 <label><input type="radio" name="what" value="layer"> A whole layer - a converter on its source</label>
             </div>
@@ -25,7 +23,7 @@
             </div>
             <div id="layer-box" class="editor" style="display:none">
                 <div class="head">style.json - edit it; the map follows</div>
-                <div class="note">Frisco's zoning is stored in Texas state plane feet (EPSG:2276). The only line about projection is the converter on its FeatureSource; from then on the source hands out metres, the tiles are cut at tiles/zoning/ and the style draws them, with nothing here knowing the file was ever anything else.</div>
+                <div class="note">The zoning file is in EPSG:2276 feet; a converter on its source reprojects it.</div>
                 <textarea id="style" spellcheck="false"></textarea>
                 <div class="status" id="style-status"></div>
             </div>

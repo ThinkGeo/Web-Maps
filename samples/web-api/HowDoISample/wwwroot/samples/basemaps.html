@@ -11,7 +11,6 @@
     <div class="page">
         <div id="map"></div>
         <aside class="panel narrow" style="width:300px">
-            <h2>Basemaps from a service</h2>
             <div style="font-weight:600">Vector styles</div>
             <div id="vector" style="display:flex;flex-direction:column;gap:2px"></div>
             <label><input type="radio" name="basemap" id="custom-radio"> Any style URL</label>
@@ -21,7 +20,6 @@
             </div>
             <div style="font-weight:600;margin-top:4px">Raster tiles</div>
             <div id="raster" style="display:flex;flex-direction:column;gap:2px"></div>
-            <p>A vector basemap is a style URL: ThinkGeo Maps' light and dark are two styles over the same vector tiles, and Mapbox, Esri or TomTom work the same way, with their style URL and your key. A raster basemap is an XYZ tile URL declared as a raster source, which is how Azure Maps, Google Maps, HERE and others are served too. The browser fetches either directly; the server has no part in it.</p>
             <div id="status" style="margin-top:auto;font:11px Consolas,monospace;color:#444;word-break:break-all"></div>
         </aside>
     </div>

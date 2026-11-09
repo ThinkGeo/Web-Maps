@@ -95,9 +95,9 @@
             document.getElementById('radius-box').style.display = name === 'Within a distance' ? '' : 'none';
             document.getElementById('sql-box').style.display = sqlQuery ? '' : 'none';
             document.getElementById('grid').style.display = sqlQuery ? '' : 'none';
-            document.getElementById('hint').textContent = sqlQuery ? 'The table is the shapefile\'s own, named after the file, read through GDAL, whose OGR runs the SQL on the server. Select FID and the parcels light up.'
+            document.getElementById('hint').textContent = sqlQuery ? 'The table is named after the shapefile. Select FID to light up the parcels.'
                 : pointQuery ? 'Click the map to query somewhere else.'
-                : name === 'Touching' ? 'Touching is exact - the seed is one parcel\'s own edge. A line you draw yourself will almost always match nothing.'
+                : name === 'Touching' ? 'Touching needs an exact shared edge, so a drawn line rarely matches.'
                 : lineQuery ? 'Draw a line to query somewhere else.' : 'Draw a polygon to query somewhere else.';
             const frame = frames[name] || [[-10779430, 3914970], 18060];
             map.easeTo({ center: tg.toLngLat(frame[0][0], frame[0][1]), zoom: tg.zoomForScale(frame[1]) });

@@ -1,5 +1,4 @@
-# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-# Set up the base image; this code is automatically built when the Dockerfile is created.
+# The .NET 10 images are based on Ubuntu 24.04.
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 
 # Use the 'root' account to update APT and the SkiaSharp-related dependencies.
@@ -10,8 +9,7 @@ RUN apt-get install -y --no-install-recommends \
     libglib2.0-0t64 libharfbuzz0b libjpeg-turbo8 \
     libpng16-16t64 libx11-6 libxcb1 libxext6 libxrender1
 
-# Use 'app' account to build, publish and finalize the image 
-# these codes are automatically built when the Dockerfile is created. 
+# Switch back to the 'app' account to run the service.
 USER app
 WORKDIR /app
 EXPOSE 8080

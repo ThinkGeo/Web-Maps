@@ -3,8 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ThinkGeo.Core;
 using ThinkGeo.UI.WebApi;
 
-
-namespace WebSample.Controllers
+namespace WebApiSample.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -38,6 +37,5 @@ namespace WebSample.Controllers
 
             return File(imageBytes, "image/png");
         }
-
     }
 }

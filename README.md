@@ -11,7 +11,7 @@ If you're new to ThinkGeo's Web Maps, start with our Quick-Start Guides to set u
 ## Quick Start Guide
 The Quick Start Guide introduces ThinkGeo Web Maps by guiding you through setting up a visually appealing map using WebAPI or Blazor.
 
-- [Display a map in a WebAPI project using Leaflet or OpenLayer(.NET 8)](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/develop/quick-start-guide/QuickStartGuide_WebAPI?ref_type=heads)
+- [Display a map in a WebAPI project using Leaflet or OpenLayer(.NET 10)](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/develop/quick-start-guide/QuickStartGuide_WebAPI?ref_type=heads)
 - [Display a map in a Blazor project using Blazor(.NET 8)](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/develop/quick-start-guide/QuickStartGuide_Blazor?ref_type=heads)
 
 ## Samples

@@ -1,14 +1,14 @@
 # See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 # Set up the base image; this code is automatically built when the Dockerfile is created.
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 
 # Use the 'root' account to update APT and the SkiaSharp-related dependencies.
 USER root
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends \
     libfontconfig1 libfreetype6 libgl1-mesa-dev \
-    libglib2.0-0 libharfbuzz0b libjpeg62-turbo \
-    libpng16-16 libx11-6 libxcb1 libxext6 libxrender1
+    libglib2.0-0t64 libharfbuzz0b libjpeg-turbo8 \
+    libpng16-16t64 libx11-6 libxcb1 libxext6 libxrender1
 
 # Use 'app' account to build, publish and finalize the image 
 # these codes are automatically built when the Dockerfile is created. 
@@ -17,7 +17,7 @@ WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["WebApiSample/WebApiSample.csproj", "WebApiSample/"]

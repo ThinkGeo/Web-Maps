@@ -1,0 +1,232 @@
+﻿@page "/heatmap"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+@using System.Globalization
+@using System.Text.Json.Nodes
+@implements IDisposable
+
+@{
+    var initialCenter = new PointShape(-10778000, 3912500);
+}
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@initialCenter" Zoom="13" Bearing="0" Pitch="0">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light" ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Coyotes" Style="@style" FeatureSources="@sources" SourceId="features" />
+            </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@initialCenter" CenterButtonZoom="13" CenterButtonBearing="0" CenterButtonPitch="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@initialCenter" Zoom="13" Bearing="0" Pitch="0" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+    </div>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Heatmap</div>
+        <div style="color:#e5e5e5;font-size:11px;line-height:1.35;margin-bottom:8px">Explore coyote sighting density, adjust its paint, and compare unweighted with count-weighted sightings.</div>
+        <div style="font-weight:700;margin-bottom:4px">Heatmap weight</div>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px">
+            <label style="cursor:pointer"><input type="radio" name="weight" checked="@(weight == HeatEven)" @onchange="@(() => Pick(HeatEven))" /> Every sighting counts one</label>
+            <label style="cursor:pointer"><input type="radio" name="weight" checked="@(weight == HeatByCount)" @onchange="@(() => Pick(HeatByCount))" /> Weight by coyotes seen</label>
+        </div>
+        <div style="font-weight:700;margin-bottom:4px">Paint controls</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+            <label>heatmap-radius <span style="float:right">@radius.ToString("0", CultureInfo.InvariantCulture)px</span><input aria-label="heatmap-radius" type="range" min="4" max="60" step="1" value="@radius" @oninput="@(e => { radius = Number(e); Apply(); })" style="display:block;width:100%" /></label>
+            <label>heatmap-intensity <span style="float:right">@intensity.ToString("0.00", CultureInfo.InvariantCulture)</span><input aria-label="heatmap-intensity" type="range" min="0.1" max="3" step="0.05" value="@intensity" @oninput="@(e => { intensity = Number(e); Apply(); })" style="display:block;width:100%" /></label>
+            <label>heatmap-opacity <span style="float:right">@opacity.ToString("0.00", CultureInfo.InvariantCulture)</span><input aria-label="heatmap-opacity" type="range" min="0.1" max="1" step="0.05" value="@opacity" @oninput="@(e => { opacity = Number(e); Apply(); })" style="display:block;width:100%" /></label>
+        </div>
+        <div style="margin-top:8px;font-weight:700;margin-bottom:4px">heatmap-color</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px">
+            @foreach (var ramp in ColorRamps)
+            {
+                <label style="cursor:pointer"><input type="radio" name="ramp" checked="@(rampName == ramp.Key)" @onchange="@(() => { rampName = ramp.Key; Apply(); })" /> @ramp.Key</label>
+            }
+        </div>
+        <div style="font-weight:700;margin-bottom:4px">style.json - edit it; the map follows</div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                  style="flex:1;min-height:0;width:100%;box-sizing:border-box;font:10.5px/1.3 Consolas,monospace;padding:7px;border:1px solid #aaa;background:#fff;color:#111;resize:none;white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:hidden;overflow-y:auto"></textarea>
+        <div role="status" style="padding-top:5px;line-height:1.3;overflow-wrap:anywhere;color:@(ok ? "#baf1ba" : "#ffd0b8")">@status</div>
+    </div>
+</div>
+
+@code {
+    // The heatmap layer keeps an id: the paint controls name it.
+    private const string HeatLayerId = "coyote-heat";
+
+    private const string HeatEven = @"{
+  ""layers"": [
+    { ""id"": ""coyote-heat"",
+      ""type"": ""heatmap"",
+      ""source-layer"": ""Frisco_Coyote_Sightings"",
+      ""paint"": {
+          ""heatmap-radius"": 22,
+          ""heatmap-intensity"": 0.55,
+          ""heatmap-opacity"": 0.85 }
+    },
+
+    { ""type"": ""circle"",
+      ""source-layer"": ""Frisco_Coyote_Sightings"",
+      ""minzoom"": 13,
+      ""paint"": {
+          ""circle-radius"": 4,
+          ""circle-color"": ""#A0522D"" }
+    }
+  ]
+}";
+
+    private const string HeatByCount = @"{
+  ""layers"": [
+    { ""id"": ""coyote-heat"",
+      ""type"": ""heatmap"",
+      ""source-layer"": ""Frisco_Coyote_Sightings"",
+      ""paint"": {
+          ""heatmap-weight"": [""match"", [""get"", ""CoyoteCoun""], ""1"", 1, ""2"", 2, ""3"", 3, ""More than 3"", 5, 1],
+          ""heatmap-radius"": 22,
+          ""heatmap-intensity"": 0.55,
+          ""heatmap-opacity"": 0.85 }
+    },
+
+    { ""type"": ""circle"",
+      ""source-layer"": ""Frisco_Coyote_Sightings"",
+      ""minzoom"": 13,
+      ""paint"": {
+          ""circle-radius"": 4,
+          ""circle-color"": ""#A0522D"" }
+    }
+  ]
+}";
+
+    // heatmap-color as density stops, 0 (no data) to 1 (densest). Stop 0 is transparent in
+    // every ramp - it leaves the basemap visible where nothing was seen.
+    private static readonly Dictionary<string, (double Density, GeoColor Color)[]> ColorRamps = new Dictionary<string, (double, GeoColor)[]>
+    {
+        ["MapLibre default"] = new[]
+        {
+            (0.0, GeoColor.FromArgb(0, 0, 0, 255)),
+            (0.1, GeoColor.FromArgb(255, 65, 105, 225)),
+            (0.3, GeoColor.FromArgb(255, 0, 255, 255)),
+            (0.5, GeoColor.FromArgb(255, 0, 255, 0)),
+            (0.7, GeoColor.FromArgb(255, 255, 255, 0)),
+            (1.0, GeoColor.FromArgb(255, 255, 0, 0)),
+        },
+        ["Warm"] = new[]
+        {
+            (0.0, GeoColor.FromArgb(0, 255, 255, 178)),
+            (0.15, GeoColor.FromArgb(180, 255, 255, 178)),
+            (0.4, GeoColor.FromArgb(255, 254, 204, 92)),
+            (0.7, GeoColor.FromArgb(255, 253, 141, 60)),
+            (1.0, GeoColor.FromArgb(255, 189, 0, 38)),
+        },
+        ["Viridis"] = new[]
+        {
+            (0.0, GeoColor.FromArgb(0, 68, 1, 84)),
+            (0.25, GeoColor.FromArgb(255, 59, 82, 139)),
+            (0.5, GeoColor.FromArgb(255, 33, 145, 140)),
+            (0.75, GeoColor.FromArgb(255, 94, 201, 98)),
+            (1.0, GeoColor.FromArgb(255, 253, 231, 37)),
+        },
+        ["Blue to red"] = new[]
+        {
+            (0.0, GeoColor.FromArgb(0, 33, 102, 172)),
+            (0.2, GeoColor.FromArgb(255, 103, 169, 207)),
+            (0.4, GeoColor.FromArgb(255, 209, 229, 240)),
+            (0.6, GeoColor.FromArgb(255, 253, 219, 199)),
+            (0.8, GeoColor.FromArgb(255, 239, 138, 98)),
+            (1.0, GeoColor.FromArgb(255, 178, 24, 43)),
+        },
+    };
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private MapStyle style;
+    private string weight = HeatEven;
+    private string styleJson = HeatEven;
+    private string rampName = "MapLibre default";
+    private double radius = 22;
+    private double intensity = 0.55;
+    private double opacity = 0.85;
+    private string status = "";
+    private bool ok = true;
+    private int edit;
+    private bool disposed;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource>
+        {
+            { "Frisco_Coyote_Sightings", new ShapeFileFeatureSource("./Data/Shapefile/Frisco_Coyote_Sightings.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } },
+        };
+        Apply();
+    }
+
+    private void Pick(string chosen)
+    {
+        weight = chosen;
+        styleJson = chosen;
+        Apply();
+    }
+
+    // The editor's document, with the heat layer's paint set from the controls. A new
+    // document with the same layers is changed property by property in the browser.
+    private void Apply()
+    {
+        try
+        {
+            var document = JsonNode.Parse(styleJson).AsObject();
+            foreach (var layer in document["layers"].AsArray())
+            {
+                if (layer["id"]?.GetValue<string>() != HeatLayerId) continue;
+                var paint = layer["paint"]?.AsObject() ?? new JsonObject();
+                paint["heatmap-radius"] = radius;
+                paint["heatmap-intensity"] = intensity;
+                paint["heatmap-opacity"] = opacity;
+                paint["heatmap-color"] = ColorRamp(ColorRamps[rampName]);
+                layer["paint"] = paint;
+            }
+            style = new MapStyle().AddStyle(document.ToJsonString());
+            ok = true;
+            status = string.Format(CultureInfo.InvariantCulture, "\"{0}\": radius {1:0}, intensity {2:0.00}, opacity {3:0.00}, color {4} - applied at {5:HH:mm:ss}",
+                HeatLayerId, radius, intensity, opacity, rampName, DateTime.Now);
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+
+    private static JsonNode ColorRamp((double Density, GeoColor Color)[] stops)
+    {
+        var expression = new JsonArray("interpolate", new JsonArray("linear"), new JsonArray("heatmap-density"));
+        foreach (var stop in stops)
+        {
+            expression.Add(stop.Density);
+            expression.Add(StyleExpressions.Css(stop.Color));
+        }
+        return expression;
+    }
+
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit || disposed) return;
+        Apply();
+    }
+
+    private static double Number(ChangeEventArgs e) => double.Parse((string)e.Value, CultureInfo.InvariantCulture);
+
+    public void Dispose()
+    {
+        disposed = true;
+        edit++;
+    }
+}

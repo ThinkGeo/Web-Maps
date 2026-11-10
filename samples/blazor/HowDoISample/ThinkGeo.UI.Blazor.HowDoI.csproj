@@ -1,7 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net9.0-windows</TargetFramework>
+    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net9.0</TargetFramework>
+    <UseWPF Condition="'$(OS)' == 'Windows_NT'">true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
@@ -13,6 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.21" />
+    <PackageReference Include="ThinkGeo.Cad" Version="15.1.0-beta002" Condition="'$(OS)' == 'Windows_NT'" />
     <PackageReference Include="ThinkGeo.Core" Version="15.1.0-beta002" />
     <PackageReference Include="ThinkGeo.Gdal" Version="15.1.0-beta002" />
     <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.1.0-beta002" />
@@ -23,15 +27,26 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Pages\*.razor">
+    <ProjectReference Include="..\HowDoISample.Client\ThinkGeo.UI.Blazor.HowDoI.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Pages\**\*.razor">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Data\**" Exclude="Data\temp\**;Data\**\*.json" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <Target Name="PublishClientRazorSources" AfterTargets="Publish">
+    <ItemGroup>
+      <ClientRazorSourceFile Include="..\HowDoISample.Client\Pages\**\*.razor" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ClientRazorSourceFile)" DestinationFolder="$(PublishDir)ClientPages" SkipUnchangedFiles="true" />
+  </Target>
+
   <Target Name="PublishRazorSources" AfterTargets="Publish">
     <ItemGroup>
-      <RazorSourceFile Include="Pages\*.razor" />
+      <RazorSourceFile Include="Pages\**\*.razor" />
     </ItemGroup>
     <Copy SourceFiles="@(RazorSourceFile)" DestinationFolder="$(PublishDir)Pages" SkipUnchangedFiles="true" />
   </Target>

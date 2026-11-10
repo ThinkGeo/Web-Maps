@@ -6,7 +6,7 @@
     "href": "map-navigation",
     "source": "Map_Navigation",
     "preicon": "fas fa-location-arrow",
-    "group": "Map Navigation"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "restrict-map-extent",
@@ -15,7 +15,7 @@
     "href": "restrict-map-extent",
     "source": "Restrict_Map_Extent",
     "preicon": "fas fa-compress-arrows-alt",
-    "group": "Map Navigation"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "vehicle-navigation",
@@ -51,7 +51,16 @@
     "href": "overview-map",
     "source": "Overview_Map",
     "preicon": "far fa-map",
-    "group": "Map Navigation"
+    "group": "WebAssembly Compatible"
+  },
+  {
+    "id": "cross-the-dateline",
+    "title": "Cross the Dateline",
+    "description": "A Los Angeles to Shanghai great-circle route through the antimeridian, stored with continuous longitudes past -180 and drawn whole - no seam on the globe, one at 180 degrees in Web Mercator, the same data folded back into the world at the tile cut.",
+    "href": "cross-the-dateline",
+    "source": "Cross_The_Dateline",
+    "preicon": "fas fa-plane",
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "3d-terrain",
@@ -69,7 +78,7 @@
     "href": "perspective-and-3d",
     "source": "Perspective_And_3D",
     "preicon": "fas fa-cube",
-    "group": "3D & Camera"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "the-globe",
@@ -78,7 +87,7 @@
     "href": "the-globe",
     "source": "The_Globe",
     "preicon": "fas fa-globe-europe",
-    "group": "Projections"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "project-features",
@@ -87,7 +96,7 @@
     "href": "project-features",
     "source": "Project_Features",
     "preicon": "fas fa-globe-americas",
-    "group": "Projections"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "project-a-raster",
@@ -110,19 +119,10 @@
   {
     "id": "any-projection-satellite",
     "title": "Any Projection, Satellite Imagery",
-    "description": "ThinkGeo Cloud aerial tiles warped into Robinson, Mollweide, Eckert IV and other projections as they are drawn, by a projection converter on the layer, with the classic renderer.",
+    "description": "ThinkGeo Cloud aerial imagery is reprojected into the selected projection on the server with GDAL. OpenLayers displays the resulting raster tiles; unlike the WPF v15 sample, this does not warp cached imagery on the GPU.",
     "href": "any-projection-satellite",
     "source": "Any_Projection_Satellite",
     "preicon": "fas fa-satellite",
-    "group": "Projections"
-  },
-  {
-    "id": "cross-the-dateline",
-    "title": "Cross the Dateline",
-    "description": "A Los Angeles to Shanghai great-circle route through the antimeridian, stored with continuous longitudes past -180 and drawn whole - no seam on the globe, one at 180 degrees in Web Mercator, the same data folded back into the world at the tile cut.",
-    "href": "cross-the-dateline",
-    "source": "Cross_The_Dateline",
-    "preicon": "fas fa-plane",
     "group": "Projections"
   },
   {
@@ -132,7 +132,7 @@
     "href": "vector-map-providers",
     "source": "Vector_Map_Providers",
     "preicon": "fal fa-bezier-curve",
-    "group": "Maps from a Service - Vector"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "wfs",
@@ -155,7 +155,7 @@
   {
     "id": "noaa-weather-stations",
     "title": "NOAA Weather Stations",
-    "description": "NOAA's weather stations and their current readings, read live by NoaaWeatherStationFeatureSource and coloured by temperature.",
+    "description": "NOAA's weather stations and their current readings, read live by NoaaWeatherStationFeatureSource and colored by temperature.",
     "href": "noaa-weather-stations",
     "source": "NOAA_Weather_Stations",
     "preicon": "fas fa-thermometer-half",
@@ -164,7 +164,7 @@
   {
     "id": "noaa-weather-warnings",
     "title": "NOAA Weather Warnings",
-    "description": "The warnings NOAA has active right now, read by NoaaWeatherWarningsFeatureSource and coloured by severity.",
+    "description": "The warnings NOAA has active right now, read by NoaaWeatherWarningsFeatureSource and colored by severity.",
     "href": "noaa-weather-warnings",
     "source": "NOAA_Weather_Warnings",
     "preicon": "fas fa-exclamation-triangle",
@@ -177,12 +177,12 @@
     "href": "raster-map-providers",
     "source": "Raster_Map_Providers",
     "preicon": "fas fa-layer-group",
-    "group": "Maps from a Service - Raster"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "load-wms",
     "title": "WMS & WMTS",
-    "description": "Draw an OGC web service as the map: a WMS layer (mundialis OSM) and a WMTS layer (Swisstopo) requested tile by tile from their servers.",
+    "description": "Switch between a mundialis OpenStreetMap WMS and a Swisstopo WMTS, centered on Switzerland. Each service supplies raster tiles for the map.",
     "href": "work-with-ogc-services",
     "source": "Work_with_OGC_Services",
     "preicon": "fas fa-server",
@@ -245,7 +245,7 @@
   {
     "id": "timezone",
     "title": "Time Zone",
-    "description": "Click anywhere and TimeZoneCloudClient answers with the zone, the local time there and the zone's outline.",
+    "description": "Click the map to see the time zone, current local time, daylight saving status, and time zone boundary.",
     "href": "timezone",
     "source": "Timezone",
     "preicon": "far fa-clock",
@@ -263,7 +263,7 @@
   {
     "id": "color-utilities",
     "title": "Color Utilities",
-    "description": "ColorCloudClient hands back a family of colours that go together; six of them class Frisco's census block groups by housing units.",
+    "description": "ColorCloudClient returns a coordinated palette of six colors to classify Frisco's census block groups by housing units.",
     "href": "color-utilities",
     "source": "Color_Utilities",
     "preicon": "fas fa-palette",
@@ -272,7 +272,7 @@
   {
     "id": "vector-file-formats",
     "title": "Vector File Formats",
-    "description": "Open a vector file - a shapefile, GeoJSON, KML, GPX, MapInfo TAB, TinyGeo, an S-57 chart - or build features in code; reading the format is the only line that differs. The overlay cuts it into tiles and one editable style draws them all.",
+    "description": "Open a shapefile, GeoJSON, KML, GPX, MapInfo TAB, TinyGeo, CAD (DWG), GeoPDF, or S-57 chart, or build features in code. One editable style draws them all.",
     "href": "vector-file-formats",
     "source": "Vector_File_Formats",
     "preicon": "fas fa-file-alt",
@@ -281,7 +281,7 @@
   {
     "id": "raster-file-formats",
     "title": "Raster File Formats",
-    "description": "Open a raster file - a NAIP GeoTIFF, a plain JPEG with its world file, ECW, or anything else GDAL reads - through the raster layer named after the format, warped into the map's projection as it is drawn.",
+    "description": "Open a NAIP GeoTIFF, JPEG 2000, plain JPEG with a world file, MrSID, ECW, or another GDAL raster format. Each image is drawn over the same basemap in the map's projection.",
     "href": "raster-file-formats",
     "source": "Raster_File_Formats",
     "preicon": "fas fa-file-image",
@@ -290,7 +290,7 @@
   {
     "id": "databases",
     "title": "Databases",
-    "description": "Open a table from a database - SQLite, a GeoPackage, an Esri file geodatabase, PostgreSQL / PostGIS or SQL Server; the connection is the only line that differs.",
+    "description": "Compare tables from SQLite, a GeoPackage, an Esri file geodatabase, PostgreSQL / PostGIS and SQL Server. Each uses its own feature source and projection settings.",
     "href": "databases",
     "source": "Databases",
     "preicon": "fas fa-database",
@@ -299,7 +299,7 @@
   {
     "id": "offline-tiles",
     "title": "Offline Tiles",
-    "description": "Vector tiles kept in an MBTiles or PMTiles file on the server, served to the browser one tile at a time over the circuit - no tile server, no internet.",
+    "description": "Open local vector MBTiles or PMTiles, raster MBTiles or PMTiles, or a QGIS folder of z/x/y image tiles.",
     "href": "offline-tiles",
     "source": "Offline_Tiles",
     "preicon": "fas fa-archive",
@@ -357,7 +357,7 @@
     "href": "validate-topology",
     "source": "Validate_Topology",
     "preicon": "fas fa-check-double",
-    "group": "Shapes & Spatial Queries"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "style-layer-toggles",
@@ -366,7 +366,7 @@
     "href": "style-layer-toggles",
     "source": "Style_Layer_Toggles",
     "preicon": "fas fa-layer-group",
-    "group": "Styling"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "insert-under-labels",
@@ -375,7 +375,7 @@
     "href": "insert-under-labels",
     "source": "Insert_Under_Labels",
     "preicon": "fas fa-layer-group",
-    "group": "Styling"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "render-points-lines-and-polygons",
@@ -398,7 +398,7 @@
   {
     "id": "us-demographic",
     "title": "US Demographic Map",
-    "description": "A choropleth of the 2010 US census - each state coloured by the class its value falls in, with the breaks taken from the data. A step expression on the chosen column, drawn in the browser, with a legend read from the same breaks.",
+    "description": "A choropleth of the 2010 US census - each state colored by the class its value falls in, with the breaks taken from the data. A step expression on the chosen column, drawn in the browser, with a legend read from the same breaks.",
     "href": "us-demographic",
     "source": "US_Demographic",
     "preicon": "fas fa-fill-drip",
@@ -411,7 +411,7 @@
     "href": "advanced-labels",
     "source": "Advanced_Labels",
     "preicon": "fas fa-font",
-    "group": "Styling"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "heatmap",
@@ -425,11 +425,11 @@
   {
     "id": "display-cluster-points",
     "title": "Display Cluster Points",
-    "description": "Hundreds of points handed to the browser and grouped there - VectorTileOverlay.Cluster turns the source into a clustered one, and the style draws each cluster as a numbered circle that splits as the map zooms in.",
+    "description": "Simulated sightings grouped in the browser. Zoom in to split numbered cluster circles into individual points, or zoom out to merge them.",
     "href": "display-cluster-points",
     "source": "Display_Cluster_Points",
     "preicon": "fas fa-braille",
-    "group": "Styling"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "features-two-ways",
@@ -452,7 +452,7 @@
   {
     "id": "display-dot-density",
     "title": "Display Dot Density",
-    "description": "Owner- and renter-occupied housing as dots scattered inside each state, one per 25,000 units, generated once as data and coloured by the style.",
+    "description": "Owner- and renter-occupied housing as dots scattered inside each state, one per 25,000 units, generated once as data and colored by the style.",
     "href": "display-dot-density",
     "source": "Display_Dot_Density",
     "preicon": "fas fa-braille",
@@ -461,7 +461,7 @@
   {
     "id": "hatch-styles",
     "title": "Hatch Styles",
-    "description": "Every GeoHatchStyle drawn once by AreaStyle.CreateHatchStyle, added to the style's images, and tiled across the parks by fill-pattern.",
+    "description": "Every GeoHatchStyle drawn from the SDK's SVG hatch definition into a native-size image, previewed and tiled across the parks by fill-pattern.",
     "href": "hatch-styles",
     "source": "Hatch_Styles",
     "preicon": "fas fa-th",
@@ -479,7 +479,7 @@
   {
     "id": "isolines",
     "title": "Isolines",
-    "description": "Isolines over scattered readings: the field is interpolated on the server - inverse distance weighting over a grid - and traced into features there; the browser draws them, coloured, banded and labelled by level.",
+    "description": "GPU isolines over scattered mosquito readings: change the point count and interpolation settings, fill color bands, label contours, and export their geometry from the GPU field.",
     "href": "isolines",
     "source": "Isolines",
     "preicon": "fas fa-water",
@@ -488,7 +488,7 @@
   {
     "id": "wind-field",
     "title": "Wind as a Vector Field",
-    "description": "NDFD surface wind read from two GeoTIFF bands with GDAL and drawn as a field of arrows, each turned where the wind goes and sized and coloured by speed.",
+    "description": "NDFD surface wind read from two GeoTIFF bands with GDAL and drawn as a field of arrows, each turned where the wind goes and sized and colored by speed.",
     "href": "wind-field",
     "source": "Wind_Field",
     "preicon": "fas fa-wind",
@@ -497,16 +497,16 @@
   {
     "id": "nexrad-radar",
     "title": "NEXRAD Weather Radar",
-    "description": "Live US weather radar drawn over the basemap as a raster tile source the browser reads directly, animating the last hour of the national reflectivity mosaic from the Iowa Environmental Mesonet.",
+    "description": "Live US weather radar drawn over the basemap from six georeferenced images covering the last 25 minutes, refreshed every five minutes by the Iowa Environmental Mesonet.",
     "href": "nexrad-radar",
     "source": "Nexrad_Radar",
     "preicon": "fas fa-cloud-showers-heavy",
-    "group": "Dynamic Data"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "dynamic-rendering",
     "title": "Dynamic Rendering",
-    "description": "State populations since 1900 as circles that grow and change colour as a year slider moves; the features travel once and only the style expressions change.",
+    "description": "State populations since 1900 as circles that grow and change color as a year slider moves; the features travel once and only the style expressions change.",
     "href": "dynamic-rendering",
     "source": "Dynamic_Rendering",
     "preicon": "fas fa-chart-line",
@@ -515,7 +515,7 @@
   {
     "id": "legend",
     "title": "Legend",
-    "description": "A classic LegendAdornmentLayer, one item per class of the style, drawn on the server by the AdornmentOverlay and laid over the map.",
+    "description": "A population map of US states with a matching LegendAdornmentLayer showing the range represented by each color.",
     "href": "legend",
     "source": "Legend",
     "preicon": "fas fa-list-ul",
@@ -524,7 +524,7 @@
   {
     "id": "scale-line-and-scale-bar",
     "title": "Scale Line and Scale Bar",
-    "description": "The classic scale line and scale bar adornments, drawn again each time the map stops moving.",
+    "description": "Projected scale line and scale bar adornments that update while the map zooms, with selectable units and text styles.",
     "href": "scale-line-and-scale-bar",
     "source": "Scale_Line_And_Scale_Bar",
     "preicon": "fas fa-ruler-horizontal",
@@ -542,7 +542,7 @@
   {
     "id": "map-tool-controls",
     "title": "Map Tool Controls",
-    "description": "The zoom bar map tool, scale line and logo adornments, and the pointer's coordinates from OnMouseMove in the form you pick.",
+    "description": "Toggle pan and zoom, compass, home, logo, scale line and pointer coordinates; choose the coordinate format.",
     "href": "map-tool-controls",
     "source": "Map_Tool_Controls",
     "preicon": "fas fa-mouse-pointer",
@@ -555,7 +555,7 @@
     "href": "markers",
     "source": "Markers",
     "preicon": "fas fa-map-marker-alt",
-    "group": "Markers & Popups"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "popups",
@@ -573,7 +573,7 @@
     "href": "animated-marker",
     "source": "Animated_Marker",
     "preicon": "fas fa-broadcast-tower",
-    "group": "Markers & Popups"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "custom-feature-sources",
@@ -591,7 +591,7 @@
     "href": "mark-the-places",
     "source": "Mark_the_Places",
     "preicon": "fas fa-map-marked-alt",
-    "group": "Legacy"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "popup",
@@ -600,7 +600,7 @@
     "href": "balloon-popup",
     "source": "Balloon_Popup",
     "preicon": "far fa-comment-alt",
-    "group": "Legacy"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "draw",
@@ -618,7 +618,7 @@
     "href": "measure-distance-area",
     "source": "Measure_Distance_Area",
     "preicon": "fas fa-ruler",
-    "group": "Legacy"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "export-map",
@@ -627,7 +627,7 @@
     "href": "export-map",
     "source": "Export_Map",
     "preicon": "fas fa-camera",
-    "group": "Printing & Export"
+    "group": "WebAssembly Compatible"
   },
   {
     "id": "export-to-pdf",

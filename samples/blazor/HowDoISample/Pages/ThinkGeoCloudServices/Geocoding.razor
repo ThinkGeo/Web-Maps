@@ -1,0 +1,174 @@
+@page "/geocoding"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+@implements IDisposable
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Marks" @ref="marks" StyleJson="@MarksStyle" FeatureSources="@sources" SourceId="marks" />
+            </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom"
+                                    CenterButtonBearing="0" CenterButtonPitch="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+        @if (busy)
+        {
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:10px 16px;border-radius:6px;background:rgba(30,30,30,.85);color:white;font:14px system-ui;pointer-events:none">Searching...</div>
+        }
+    </div>
+    <div style="position:relative;z-index:10000;width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;background:dimgray;color:whitesmoke;font:13px system-ui;display:flex;flex-direction:column;min-height:0">
+        <div style="padding:8px 8px 4px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:6px;row-gap:5px;align-items:center">
+            <label for="geocoding-search" style="grid-column:1 / -1;margin:0">Search Text:</label>
+            <input id="geocoding-search" @bind="searchText" @bind:event="oninput" @onkeyup="@(args => args.Key == "Enter" ? SearchAsync() : Task.CompletedTask)" style="box-sizing:border-box;width:100%;min-width:0;padding:2px 4px;background:#fff;color:#222;border:1px solid #999;font:13px system-ui;grid-column:1 / -1" aria-label="Search Text" />
+
+            <label for="geocoding-max">Maximum Results:</label>
+            <input id="geocoding-max" type="number" min="1" max="100" @bind="maxResults" style="@SidebarInputStyle" />
+
+            <button style="grid-column:1 / -1;margin-top:4px;@SidebarButtonStyle" @onclick="SearchAsync" disabled="@busy">Search</button>
+            <div role="status" style="grid-column:1 / -1;min-height:18px;line-height:1.3">@status</div>
+        </div>
+        <div style="flex:1;min-height:0;overflow:auto;margin:0 8px 8px;border-top:1px solid #aaa">
+            @foreach (var location in found)
+            {
+                <div style="cursor:pointer;padding:6px 4px;border-bottom:1px solid #888;background:@(location == picked ? "#4b5e79" : "transparent")" @onclick="() => PickAsync(location)">
+                    <div style="font-weight:600">@location.LocationName</div>
+                    <div style="font-size:12px">Type: @location.LocationType</div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private const string SidebarInputStyle = "box-sizing:border-box;width:100%;min-width:0;padding:2px 4px;background:#fff;color:#222;border:1px solid #999;font:13px system-ui";
+    private const string SidebarButtonStyle = "border:2px solid #8a8a8a;background:#f6f6f4;color:#222;padding:2px 6px;cursor:pointer;font:13px system-ui";
+    private static readonly PointShape InitialCenter = new PointShape(-10778720, 3915154);
+    private const int InitialZoom = 11;
+
+    private const string MarksStyle = @"{
+  ""layers"": [
+    { ""type"": ""circle"", ""source-layer"": ""hits"",
+      ""paint"": { ""circle-radius"": 6, ""circle-color"": ""#D7301F"", ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 2 } },
+    { ""type"": ""circle"", ""source-layer"": ""picked"",
+      ""paint"": { ""circle-radius"": 11, ""circle-color"": ""rgba(215,48,31,0.25)"", ""circle-stroke-color"": ""#D7301F"", ""circle-stroke-width"": 2 } },
+    { ""type"": ""symbol"", ""source-layer"": ""picked"",
+      ""layout"": { ""text-field"": [""get"", ""name""], ""text-font"": [""Noto Sans Bold""], ""text-size"": 12, ""text-offset"": [0, 1.4], ""text-anchor"": ""top"" },
+      ""paint"": { ""text-color"": ""#7A1A0E"", ""text-halo-color"": ""#FFFFFF"", ""text-halo-width"": 1.5 } }
+  ]
+}";
+
+    private static readonly FeatureSourceColumn[] Columns = { new FeatureSourceColumn("name") };
+
+    private MapView map;
+    private VectorTileOverlay marks;
+    private GeoCollection<FeatureSource> sources;
+    private readonly InMemoryFeatureSource hits = new InMemoryFeatureSource(Columns, Array.Empty<Feature>());
+    private readonly InMemoryFeatureSource pickedMark = new InMemoryFeatureSource(Columns, Array.Empty<Feature>());
+    private GeocodingCloudClient client;
+    private string searchText = "6101 Frisco Square Blvd, Frisco, TX 75034";
+    private int maxResults = 100;
+    private bool busy;
+    private string status = "";
+    private List<CloudGeocodingLocation> found = new List<CloudGeocodingLocation>();
+    private CloudGeocodingLocation picked;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "hits", hits }, { "picked", pickedMark } };
+        client = new GeocodingCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
+    }
+
+    public void Dispose()
+    {
+        client?.Dispose();
+    }
+
+    private async Task SearchAsync()
+    {
+        if (busy) return;
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            status = "Please enter an address to search.";
+            return;
+        }
+        if (maxResults < 1 || maxResults > 100)
+        {
+            status = "Please enter a number between 1 and 100.";
+            return;
+        }
+
+        busy = true;
+        status = "Searching...";
+        try
+        {
+            var options = new CloudGeocodingOptions
+            {
+                MaxResults = maxResults,
+                ResultProjectionInSrid = 3857,
+                BBox = await map.GetCurrentExtentAsync()
+            };
+            var result = await client.SearchAsync(searchText.Trim(), options);
+            if (result.Exception != null)
+            {
+                status = result.Exception.Message;
+                return;
+            }
+
+            found = result.Locations?.ToList() ?? new List<CloudGeocodingLocation>();
+            status = $"Found {found.Count} locations.";
+            hits.InternalFeatures.Clear();
+            foreach (var location in found)
+            {
+                hits.InternalFeatures.Add(new Feature(location.LocationPoint, new Dictionary<string, string> { ["name"] = location.LocationName }));
+            }
+            pickedMark.InternalFeatures.Clear();
+            picked = null;
+            await marks.RedrawAsync();
+            if (found.Count > 0)
+            {
+                await PickAsync(found[0]);
+            }
+        }
+        catch (Exception exception)
+        {
+            status = exception.Message;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task PickAsync(CloudGeocodingLocation location)
+    {
+        picked = location;
+        pickedMark.InternalFeatures.Clear();
+        pickedMark.InternalFeatures.Add(new Feature(location.LocationPoint, new Dictionary<string, string> { ["name"] = location.LocationName }));
+        await marks.RedrawAsync();
+
+        var box = location.BoundingBox;
+        if (box != null && box.Width > 1 && box.Height > 1)
+        {
+            box = (RectangleShape)box.CloneDeep();
+            box.ScaleUp(40);
+            await map.ZoomToExtentAsync(box);
+        }
+        else
+        {
+            await map.ZoomToAsync(location.LocationPoint, 4500);
+        }
+    }
+}

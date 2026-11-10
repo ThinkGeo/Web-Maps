@@ -1,0 +1,235 @@
+@page "/vector-file-formats"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+@using System.Globalization
+@implements IDisposable
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10780300, 3915800))" Zoom="12">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                @if (sources != null)
+                {
+                    <VectorTileOverlay @key="format" Id="@("data-" + Array.IndexOf(Formats, format))" StyleJson="@applied" FeatureSources="@sources" SourceId="features" />
+                }
+            </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" CenterButtonCenter="@(new PointShape(-10780300, 3915800))" CenterButtonZoom="12" UseNavigationStyle="true" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+        @if (busy)
+        {
+            <div role="status" aria-label="Loading vector file" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:10px 16px;border-radius:6px;background:rgba(16,19,23,.91);color:white;font:13px system-ui;pointer-events:none;z-index:2">Loading @pendingFormat...</div>
+        }
+    </div>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Vector File Formats</div>
+        <div style="font-weight:700;margin-bottom:4px">File</div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+            @foreach (var name in Formats)
+            {
+                <label style="cursor:pointer"><input type="radio" name="format" checked="@(format == name)" disabled="@busy" @onchange="@(() => Pick(name))" /> @name</label>
+            }
+        </div>
+        <div style="border-top:1px solid #aaa;margin-top:10px;padding-top:8px;display:flex;flex-direction:column;flex:1;min-height:0">
+            <div style="font-weight:700;margin-bottom:4px">style.json - edit it; the map follows</div>
+            <textarea aria-label="style.json editor" @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                      style="flex:1;min-height:0;width:100%;box-sizing:border-box;resize:none;border:1px solid #aaa;background:#fff;color:#111;padding:7px;font:11.5px/1.35 Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:hidden;overflow-y:auto"></textarea>
+            <div role="status" style="padding-top:5px;line-height:1.3;overflow-wrap:anywhere;color:@(ok ? "#baf1ba" : "#ffd0b8")">@status</div>
+            <div style="color:#e5e5e5;font-size:11px;line-height:1.35;margin-top:5px">A FeatureSource reads the file, the overlay cuts it into tiles, and the style draws them. Only the source changes by format.</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""fill"",
+      ""source-layer"": ""data"",
+      ""filter"": [""=="", [""geometry-type""], ""Polygon""],
+      ""paint"": {
+          ""fill-color"": ""rgba(90,140,200,0.35)"",
+          ""fill-outline-color"": ""#2A4A7A"" }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""data"",
+      ""paint"": {
+          ""line-color"": ""#2A4A7A"",
+          ""line-width"": 2 }
+    },
+
+    { ""type"": ""circle"",
+      ""source-layer"": ""data"",
+      ""filter"": [""=="", [""geometry-type""], ""Point""],
+      ""paint"": {
+          ""circle-radius"": 4,
+          ""circle-color"": ""#C0392B"",
+          ""circle-stroke-color"": ""#FFFFFF"",
+          ""circle-stroke-width"": 1.5 }
+    }
+  ]
+}";
+
+    private static readonly string[] Formats =
+    {
+        "Shapefile", "GeoJSON", "KML", "GPX", "MapInfo TAB", "TinyGeo", "CAD (DWG)", "GeoPDF", "S-57 nautical chart", "In memory (built in code)"
+    };
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private string format = Formats[0];
+    private string styleJson = StyleJson;
+    private string applied = StyleJson;
+    private string status = "";
+    private bool ok = true;
+    private bool busy;
+    private bool disposed;
+    private string pendingFormat = "";
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "data", Open(format) } };
+        status = sources["data"].GetType().Name;
+    }
+
+    // The chosen file, read by whatever source understands it. Each converts from the plane its
+    // own format stores - a GPS track is degrees, a Texas cadastral file is state plane, a CAD
+    // drawing carries whatever the surveyor drew in.
+    private static FeatureSource Open(string name)
+    {
+        switch (name)
+        {
+            case "GeoJSON":
+                return new GeoJsonFeatureSource("./Data/GeoJson/pittsburghpacity-designated-historic-districts.geojson") { ProjectionConverter = new ProjectionConverter(4326, 3857) };
+            case "KML":
+                return new KmlGdalFeatureSource("./Data/Kml/Frisco.kml") { ProjectionConverter = new ProjectionConverter(4326, 3857) };
+            case "GPX":
+                return new GpxFeatureSource("./Data/Gpx/Hike_Bike.gpx") { ProjectionConverter = new ProjectionConverter(4326, 3857) };
+            case "MapInfo TAB":
+                return new TabFeatureSource("./Data/Tab/City_ETJ.tab") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+            case "TinyGeo":
+                return new TinyGeoFeatureSource("./Data/TinyGeo/Zoning.tgeo") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+            case "CAD (DWG)":
+#if WINDOWS
+                return new CadFeatureSource("./Data/CAD/Zipcodes.DWG") { ProjectionConverter = new ProjectionConverter(103376, 3857) };
+#else
+                throw new PlatformNotSupportedException("CAD (DWG) requires a Windows host.");
+#endif
+            case "GeoPDF":
+                return new GeoPdfGdalFeatureSource("./Data/GeoPdf/bangalore.pdf") { ProjectionConverter = new ProjectionConverter(4326, 3857) };
+            case "S-57 nautical chart":
+                return new NauticalChartsFeatureSource("./Data/S57/US1GC09M/US1GC09M.000") { ProjectionConverter = new ProjectionConverter(4326, 3857) };
+            case "In memory (built in code)":
+                return BuildInMemory();
+            default:
+                return new ShapeFileFeatureSource("./Data/Shapefile/Parks.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+        }
+    }
+
+    // Features made in code rather than read from a file - the same kind of source, drawn by the
+    // same style. The CSV holds x, y in the map's meters and a count.
+    private static FeatureSource BuildInMemory()
+    {
+        var features = new Collection<Feature>();
+        foreach (var line in File.ReadLines("./Data/Csv/Frisco_Mosquitos.csv"))
+        {
+            var parts = line.Split(',');
+            if (parts.Length < 2) continue;
+            features.Add(new Feature(double.Parse(parts[0], CultureInfo.InvariantCulture), double.Parse(parts[1], CultureInfo.InvariantCulture)));
+        }
+        return new InMemoryFeatureSource(Array.Empty<FeatureSourceColumn>(), features);
+    }
+
+    private async Task Pick(string name)
+    {
+        if (busy || disposed) return;
+        busy = true;
+        pendingFormat = name;
+        status = "Loading " + name + "...";
+        await InvokeAsync(StateHasChanged);
+        FeatureSource source;
+        RectangleShape bounds;
+        try
+        {
+            source = Open(name);
+            // Opening the file to ask where it is can be a lot of parsing, so it happens off
+            // the circuit's thread.
+            bounds = await Task.Run(() =>
+            {
+                source.Open();
+                try
+                {
+                    // This KML stores Web Mercator coordinates; GDAL reports its extent as degrees.
+                    return name == "KML"
+                        ? MapUtil.GetBoundingBoxOfItems(source.GetAllFeatures(ReturningColumnsType.NoColumns))
+                        : source.GetBoundingBox();
+                }
+                finally
+                {
+                    source.Close();
+                }
+            });
+            if (disposed) return;
+
+            format = name;
+            sources = new GeoCollection<FeatureSource> { { "data", source } };
+            ok = true;
+            status = source.GetType().Name;
+            await InvokeAsync(StateHasChanged);
+
+            if (bounds != null && bounds.Width > 0 && bounds.Height > 0)
+            {
+                bounds.ScaleUp(20);
+                await map.ZoomToExtentAsync(bounds);
+            }
+        }
+        catch (Exception exception)
+        {
+            while (exception.InnerException != null) exception = exception.InnerException;
+            ok = false;
+            status = "Unavailable: " + exception.Message.Split('\n')[0];
+        }
+        finally
+        {
+            busy = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit || disposed) return;
+
+        try
+        {
+            if (JsonNode.Parse(styleJson) is not JsonObject document || document["layers"] is not JsonArray)
+                throw new FormatException("The style needs a layers array.");
+            applied = styleJson;
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        edit++;
+    }
+}

@@ -1,0 +1,47 @@
+@page "/popups"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+
+<div class="map-container">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10777290, 3908740))" Zoom="14">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            </OverlaysSetting>
+            <PopupOverlaySetting>
+                <PopupOverlay Id="Hotels" PopupSource="@hotels">
+                    <PopupSetting Context="hotel">
+                        <Popup Id="@("hotel-" + ((Feature)hotel).Id)" Position="@(((Feature)hotel).GetShape().GetCenterPoint())">
+                            <div style="font:12px system-ui;white-space:nowrap">@(((Feature)hotel).ColumnValues["NAME"])</div>
+                        </Popup>
+                    </PopupSetting>
+                </PopupOverlay>
+            </PopupOverlaySetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-10777290, 3908740))" CenterButtonZoom="14" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Popups</div>
+        <div style="color:#e5e5e5;line-height:1.4">Hotel names are shown in popups anchored to their map locations. Close a popup with its corner button.</div>
+        <div role="status" style="margin-top:8px;color:#e5e5e5">@hotels.Count hotels</div>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private List<Feature> hotels = new List<Feature>();
+
+    protected override void OnInitialized()
+    {
+        var source = new ShapeFileFeatureSource("./Data/Shapefile/Hotels.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+        source.Open();
+        hotels = source.GetAllFeatures(new[] { "NAME" }).ToList();
+        source.Close();
+    }
+}

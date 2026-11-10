@@ -1,0 +1,240 @@
+@page "/color-utilities"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+@implements IDisposable
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@InitialCenter" Zoom="InitialZoom">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Housing" @ref="housingOverlay" StyleJson="@styleJson" FeatureSources="@sources" SourceId="features" />
+            </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom"
+                                    CenterButtonBearing="0" CenterButtonPitch="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+        @if (busy)
+        {
+            <div role="status" aria-label="Generating colors" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 18px;border-radius:6px;background:rgba(255,255,255,.92);box-shadow:0 1px 6px rgba(0,0,0,.25);color:#303638;font:13px system-ui">
+                    <img src="images/sample-loading-spinner.svg" alt="" width="64" height="64" />
+                    <span>Generating colors...</span>
+                </div>
+            </div>
+        }
+        <div style="position:absolute;right:12px;bottom:40px;padding:8px 10px;background:rgba(255,255,255,.92);border-radius:4px;font:12px system-ui;box-shadow:0 1px 4px rgba(0,0,0,.25)">
+            <div style="font-weight:600;margin-bottom:4px">Housing units per block group</div>
+            @for (var i = 0; i < colors.Count; i++)
+            {
+                <div><span style="display:inline-block;width:14px;height:10px;background:@colors[i];border:1px solid #888;vertical-align:middle"></span> @(i == colors.Count - 1 ? $"{Breaks[i]} and above" : $"{Breaks[i]} to under {Breaks[i + 1]}")</div>
+            }
+        </div>
+    </div>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;background:dimgray;color:whitesmoke;font:13px system-ui;display:flex;flex-direction:column;min-height:0;overflow:auto">
+        <div style="padding:8px 8px 4px;font-size:16px;font-weight:600">Generate and Apply a New Color Group</div>
+        <div style="padding:0 8px 8px">
+            <label for="color-family" style="display:block;margin-bottom:4px">Category:</label>
+            <select id="color-family" @bind="family" style="@SidebarInputStyle">
+                @foreach (var name in Families)
+                {
+                    <option value="@name">@name</option>
+                }
+            </select>
+            <div style="margin-top:6px;line-height:1.35;min-height:51px">@CategoryDescription</div>
+            <div style="font-weight:600;margin-top:8px">Base Color:</div>
+            <label style="display:flex;align-items:center;gap:5px;margin-top:6px">
+                <input type="radio" name="base-color-mode" value="Default" checked="@(baseColorMode == "Default")" @onchange="SelectDefaultColor" />Default Color:
+            </label>
+            <select aria-label="Default Color" @bind="defaultColor" disabled="@(baseColorMode != "Default")" style="@SidebarInputStyle;margin-top:4px">
+                @foreach (var name in DefaultColors)
+                {
+                    <option value="@name">@name</option>
+                }
+            </select>
+            <label style="display:flex;align-items:center;gap:5px;margin-top:8px">
+                <input type="radio" name="base-color-mode" value="Random" checked="@(baseColorMode == "Random")" @onchange="SelectRandomColor" />Random Color
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;margin-top:8px">
+                <input type="radio" name="base-color-mode" value="Specific" checked="@(baseColorMode == "Specific")" @onchange="SelectSpecificColor" />Specific Color:
+            </label>
+            <input aria-label="Specific Color" type="text" @bind="specificColor" @bind:event="oninput" disabled="@(baseColorMode != "Specific")"
+                   style="@SidebarInputStyle;margin-top:4px" />
+            <button style="width:100%;margin-top:10px;@SidebarButtonStyle" @onclick="GenerateAsync" disabled="@busy">Generate</button>
+            <div role="status" style="margin-top:7px;line-height:1.35;overflow-wrap:anywhere;color:@StatusColour">@status</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private const string SidebarInputStyle = "box-sizing:border-box;width:100%;min-width:0;padding:3px 5px;background:#fff;color:#222;border:1px solid #999;font:13px system-ui";
+    private const string SidebarButtonStyle = "border:2px solid #8a8a8a;background:#f6f6f4;color:#222;padding:2px 4px;cursor:pointer;font:13px system-ui";
+    private static readonly PointShape InitialCenter = new PointShape(-10777700, 3912400);
+    private const int InitialZoom = 11;
+    private static readonly string[] Families = { "Hue", "Triad", "Tetrad", "Quality", "Analogous", "Contrasting", "Complementary" };
+    private static readonly string[] DefaultColors = { "Red", "Orange", "Yellow", "Green", "Blue", "Purple" };
+    private static readonly int[] Breaks = { 0, 1000, 2000, 3000, 4000, 5000 };
+
+    private MapView map;
+    private VectorTileOverlay housingOverlay;
+    private GeoCollection<FeatureSource> sources;
+    private ColorCloudClient client;
+    private string family = "Hue";
+    private string baseColorMode = "Default";
+    private string defaultColor = "Red";
+    private string specificColor = "#AB2567";
+    private bool busy;
+    private bool disposed;
+    private bool generated;
+    private string status = "";
+    private void SelectDefaultColor() => baseColorMode = "Default";
+    private void SelectRandomColor() => baseColorMode = "Random";
+    private void SelectSpecificColor() => baseColorMode = "Specific";
+    private string StatusColour => busy ? "#e2e2e2" : generated ? "#c9f5d2" : "#ffd0d0";
+    private string CategoryDescription => family switch
+    {
+        "Hue" => "Get a family of colors with the same hue and sequential variances in lightness and saturation.",
+        "Analogous" => "Get a family of colors based on analogous hues.",
+        "Complementary" => "Get a family of colors based on complementary hues.",
+        "Contrasting" => "Get a family of colors based on contrasting hues.",
+        "Quality" => "Get a family of colors with qualitative variances in hue, but similar lightness and saturation.",
+        "Tetrad" => "Get a family of colors based on a harmonious tetrad of hues.",
+        _ => "Get a family of colors based on a harmonious triad of hues."
+    };
+    private List<string> colors = new List<string>();
+    private string styleJson = Style(new[] { "#EEEEEE" });
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource>
+        {
+            { "housing", new ShapeFileFeatureSource("./Data/Shapefile/Frisco 2010 Census Housing Units.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } }
+        };
+        client = new ColorCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GenerateAsync();
+        }
+    }
+
+    private async Task GenerateAsync()
+    {
+        if (busy || disposed) return;
+
+        GeoColor picked;
+        if (baseColorMode == "Specific" && !System.Text.RegularExpressions.Regex.IsMatch(specificColor?.Trim() ?? "", "^#[0-9a-fA-F]{6}$"))
+        {
+            generated = false;
+            status = "Enter a six-digit HTML color, such as #AB2567.";
+            return;
+        }
+
+        picked = baseColorMode switch
+        {
+            "Default" => defaultColor switch
+            {
+                "Red" => GeoColors.Red,
+                "Orange" => GeoColors.Orange,
+                "Yellow" => GeoColors.Yellow,
+                "Green" => GeoColors.Green,
+                "Blue" => GeoColors.Blue,
+                _ => GeoColors.Purple
+            },
+            "Specific" => GeoColor.FromHtml(specificColor.Trim()),
+            _ => null
+        };
+
+        busy = true;
+        status = "Generating colors...";
+        await InvokeAsync(StateHasChanged);
+        try
+        {
+            var got = await ColoursAsync(family, picked, Breaks.Length);
+            if (disposed) return;
+            var palette = got.Take(Breaks.Length).Reverse().Select(color => $"#{color.R:X2}{color.G:X2}{color.B:X2}").ToList();
+            if (palette.Count != Breaks.Length) throw new InvalidOperationException("The color service returned too few colors.");
+            colors = palette;
+            styleJson = Style(palette);
+            await InvokeAsync(StateHasChanged);
+            if (housingOverlay != null) await housingOverlay.RedrawAsync();
+            generated = true;
+            status = $"{colors.Count} colors in the {family.ToLowerInvariant()} family.";
+        }
+        catch (Exception exception)
+        {
+            generated = false;
+            status = exception.Message;
+        }
+        finally
+        {
+            busy = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        client?.Dispose();
+    }
+
+    // A family with a base color gives several sets - one per color of the family - and
+    // the sets are read in order; a hue or quality family is one set.
+    private async Task<IEnumerable<GeoColor>> ColoursAsync(string name, GeoColor color, int count)
+    {
+        switch (name)
+        {
+            case "Hue": return color == null ? await client.GetColorsInHueFamilyAsync(count) : await client.GetColorsInHueFamilyAsync(color, count);
+            case "Quality": return color == null ? await client.GetColorsInQualityFamilyAsync(count) : await client.GetColorsInQualityFamilyAsync(color, count);
+            case "Analogous": return Flat(color == null ? await client.GetColorsInAnalogousFamilyAsync(count) : await client.GetColorsInAnalogousFamilyAsync(color, count));
+            case "Complementary": return Flat(color == null ? await client.GetColorsInComplementaryFamilyAsync(count) : await client.GetColorsInComplementaryFamilyAsync(color, count));
+            case "Contrasting": return Flat(color == null ? await client.GetColorsInContrastingFamilyAsync(count) : await client.GetColorsInContrastingFamilyAsync(color, count));
+            case "Tetrad": return Flat(color == null ? await client.GetColorsInTetradFamilyAsync(count) : await client.GetColorsInTetradFamilyAsync(color, count));
+            default: return Flat(color == null ? await client.GetColorsInTriadFamilyAsync(count) : await client.GetColorsInTriadFamilyAsync(color, count));
+        }
+    }
+
+    private static IEnumerable<GeoColor> Flat(Dictionary<GeoColor, Collection<GeoColor>> sets) => sets.Values.SelectMany(set => set);
+
+    // The block groups classed by H_UNITS: a step expression with one color per break.
+    private static string Style(IReadOnlyList<string> palette)
+    {
+        if (palette.Count < 2)
+        {
+            return Fill("\"" + palette[0] + "\"");
+        }
+        var steps = "\"" + palette[0] + "\"";
+        for (var i = 1; i < palette.Count && i < Breaks.Length; i++)
+        {
+            steps += $", {Breaks[i]}, \"{palette[i]}\"";
+        }
+        return Fill(@"[""step"", [""to-number"", [""get"", ""H_UNITS""]], " + steps + "]");
+    }
+
+    private static string Fill(string color)
+    {
+        return @"{
+  ""layers"": [
+    { ""type"": ""fill"", ""source-layer"": ""housing"",
+      ""paint"": {
+          ""fill-color"": " + color + @",
+          ""fill-opacity"": 0.75,
+          ""fill-outline-color"": ""rgba(80,80,80,0.6)"" } }
+  ]
+}";
+    }
+}

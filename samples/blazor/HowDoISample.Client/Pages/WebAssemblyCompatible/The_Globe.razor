@@ -1,0 +1,143 @@
+@page "/the-globe"
+@rendermode InteractiveAuto
+@using ThinkGeo.Core
+@using System.Globalization
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(0, 0))" Zoom="2"
+                 DisplayProjection="@projection" Renderer="MapViewRenderer.MapLibre"
+                 OnCurrentExtentChanged="ExtentChanged" OnCurrentExtentChangedInAnimation="ExtentChanging"
+                 OnSizeChanged="SizeChanged">
+            <OverlaysSetting>
+                <ThinkGeoCloudRasterMapsOverlay Id="Basemap" MapType="ThinkGeoCloudRasterMapsMapType.Aerial_V1_X1"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft"
+                                    UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(0, 0))"
+                                    CenterButtonZoom="2" CenterButtonBearing="0" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+        <div aria-hidden="true" style="position:absolute;inset:0;background:#eeece8;opacity:@(mapFaded ? "1" : "0");transition:opacity 240ms ease-in-out;pointer-events:none"></div>
+    </div>
+
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;background:dimgray;color:whitesmoke;font:13px system-ui">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">The globe</div>
+        <div style="color:#e5e5e5;line-height:1.4;margin-bottom:10px">
+            A ball, from the same web-mercator satellite tiles a flat map is made of.
+            The projection changes how the map is drawn, not its data.
+        </div>
+
+        <label style="display:block;margin:6px 0;cursor:pointer">
+            <input type="radio" name="projection" checked="@(projection == DisplayProjection.Globe)" disabled="@changingProjection"
+                   @onchange="@(() => ChangeProjection(DisplayProjection.Globe))" />
+            Globe
+        </label>
+        <label style="display:block;margin:6px 0;cursor:pointer">
+            <input type="radio" name="projection" checked="@(projection == DisplayProjection.WebMercator)" disabled="@changingProjection"
+                   @onchange="@(() => ChangeProjection(DisplayProjection.WebMercator))" />
+            Web Mercator (what it flattens into)
+        </label>
+        <div style="border-top:1px solid #aaa;margin-top:10px;padding-top:8px">
+            <div style="font-weight:700;margin-bottom:4px">Zoom in and watch it let go</div>
+            <div style="line-height:1.35;margin-bottom:6px">Zoom toward the handover band to see the globe become a flat Mercator map.</div>
+            <div style="display:flex;gap:5px;margin-bottom:8px">
+                <button type="button" @onclick="() => FrameAsync(2)" disabled="@(!mapReady)" aria-pressed="@(selectedZoom == 2)" style="@PresetButtonStyle(2)">world</button>
+                <button type="button" @onclick="() => FrameAsync(7.5)" disabled="@(!mapReady)" aria-pressed="@(selectedZoom == 7.5)" style="@PresetButtonStyle(7.5)">the band</button>
+                <button type="button" @onclick="() => FrameAsync(12.7)" disabled="@(!mapReady)" aria-pressed="@(selectedZoom == 12.7)" style="@PresetButtonStyle(12.7)">past it</button>
+            </div>
+            <div style="font:11px/1.5 Consolas,monospace;white-space:nowrap">
+                <div>projection&nbsp; @ProjectionReadout()</div>
+                <div>zoom&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; @zoom.ToString("0.00", CultureInfo.InvariantCulture)</div>
+                <div>scale&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; @scale.ToString("N0", CultureInfo.InvariantCulture)</div>
+                <div>showing&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; @ShowingReadout()</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@implements IDisposable
+
+@code {
+    private bool disposed;
+    public void Dispose() => disposed = true;
+    private MapView map;
+    private DisplayProjection projection = DisplayProjection.Globe;
+    private bool mapFaded;
+    private bool changingProjection;
+    private bool mapReady;
+    private RectangleShape currentExtent;
+    private double viewportWidth;
+    private double viewportHeight;
+    private double zoom = 2;
+    private double scale;
+    private double selectedZoom = 2;
+
+    // The SDK zoom is one step above MapLibre's native zoom for this renderer.
+    // The bundled Globe preset hands over between native zoom 11 and 12.
+    private const double BaseResolution = 156543.03392804097;
+    private const double InchesPerMeter = 39.37007874015748;
+    private const double DotsPerInch = 96;
+    private static readonly PointShape Dallas = ProjectionConverter.Convert(4326, 3857, new PointShape(-96.7970, 32.7767));
+
+    private async Task FrameAsync(double targetZoom)
+    {
+        if (!mapReady || changingProjection) return;
+        var targetScale = BaseResolution * InchesPerMeter * DotsPerInch / Math.Pow(2, targetZoom);
+        await map.ZoomToAsync(targetZoom <= 2 ? new PointShape(0, 0) : Dallas, targetScale);
+        selectedZoom = targetZoom;
+    }
+
+    private string PresetButtonStyle(double targetZoom) =>
+        $"border:2px solid {(selectedZoom == targetZoom ? "#173f78" : "#8a8a8a")};background:{(selectedZoom == targetZoom ? "#e7effa" : "#f6f6f4")};padding:1px 6px;cursor:pointer";
+
+    private void ExtentChanged(CurrentExtentChangedMapViewEventArgs args) => UpdateReadout(args.CurrentExtent);
+
+    private void ExtentChanging(CurrentExtentChangedInAnimationMapViewEventArgs args) => UpdateReadout(args.CurrentExtent);
+
+    private void SizeChanged(SizeChangedMapViewEventArgs args)
+    {
+        viewportWidth = args.Width;
+        viewportHeight = args.Height;
+        UpdateReadout(currentExtent);
+    }
+
+    private void UpdateReadout(RectangleShape extent)
+    {
+        if (extent == null || viewportWidth <= 0 || viewportHeight <= 0) return;
+        currentExtent = extent;
+        mapReady = true;
+        zoom = Math.Log2(BaseResolution * viewportWidth / extent.Width);
+        scale = MapUtil.GetScale(GeographyUnit.Meter, extent, viewportWidth, viewportHeight);
+    }
+
+    private string ProjectionReadout() => projection == DisplayProjection.Globe ? "globe" : "web mercator";
+
+    private string ShowingReadout() => projection == DisplayProjection.WebMercator ? "flat map" :
+        zoom < 12 ? "a ball" : zoom < 13 ? "handover band" : "flat map";
+
+    private async Task ChangeProjection(DisplayProjection next)
+    {
+        if (disposed || changingProjection || next == projection) return;
+
+        changingProjection = true;
+        mapFaded = true;
+        StateHasChanged();
+        await Task.Delay(260);
+        if (disposed) return;
+
+        projection = next;
+        StateHasChanged();
+        await Task.Delay(180);
+        if (disposed) return;
+
+        mapFaded = false;
+        changingProjection = false;
+    }
+}

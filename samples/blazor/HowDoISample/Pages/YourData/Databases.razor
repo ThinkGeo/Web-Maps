@@ -1,0 +1,219 @@
+@page "/databases"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+@inject IJSRuntime JS
+@implements IDisposable
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@InitialCenter" Zoom="InitialZoom">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                @if (sources != null)
+                {
+                    <VectorTileOverlay @key="database" Id="@("data-" + Array.IndexOf(Databases_, database))" StyleJson="@applied" FeatureSources="@sources" SourceId="features" />
+                }
+            </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom"
+                                    CenterButtonBearing="0" CenterButtonPitch="0" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+        @if (busy)
+        {
+            <div @ref="loadingIndicator" role="status" aria-label="Loading database" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:10px 16px;border-radius:6px;background:rgba(16,19,23,.91);color:white;font:13px system-ui;pointer-events:none;z-index:2">Loading @pendingDatabase...</div>
+        }
+    </div>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Databases</div>
+        <div style="font-weight:700;margin-bottom:4px">Database</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+            @foreach (var name in Databases_)
+            {
+                <label style="cursor:pointer"><input type="radio" name="database" checked="@(database == name)" disabled="@busy" @onchange="@(() => Pick(name))" /> @name</label>
+            }
+        </div>
+        <div style="border-top:1px solid #aaa;margin-top:10px;padding-top:8px;display:flex;flex-direction:column;flex:1;min-height:0">
+            <div style="font-weight:700;margin-bottom:4px">style.json - edit it; the map follows</div>
+            <textarea aria-label="style.json editor" @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                      style="flex:1;min-height:0;width:100%;box-sizing:border-box;resize:none;border:1px solid #aaa;background:#fff;color:#111;padding:7px;font:11.5px/1.35 Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:hidden;overflow-y:auto"></textarea>
+            <div role="status" style="padding-top:5px;line-height:1.3;overflow-wrap:anywhere;color:@(ok ? "#baf1ba" : "#ffd0b8")">@status</div>
+            <div style="color:#e5e5e5;font-size:11px;line-height:1.35;margin-top:5px">The first three are file databases; the last two are database servers. One style draws each source.</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private static readonly PointShape InitialCenter = new PointShape(-10780300, 3915800);
+    private const int InitialZoom = 12;
+
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""fill"",
+      ""source-layer"": ""data"",
+      ""filter"": [""=="", [""geometry-type""], ""Polygon""],
+      ""paint"": {
+          ""fill-color"": ""rgba(90,140,200,0.35)"",
+          ""fill-outline-color"": ""#2A4A7A"" }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""data"",
+      ""paint"": {
+          ""line-color"": ""#2A4A7A"",
+          ""line-width"": 2 }
+    },
+
+    { ""type"": ""circle"",
+      ""source-layer"": ""data"",
+      ""filter"": [""=="", [""geometry-type""], ""Point""],
+      ""paint"": {
+          ""circle-radius"": 4,
+          ""circle-color"": ""#C0392B"",
+          ""circle-stroke-color"": ""#FFFFFF"",
+          ""circle-stroke-width"": 1.5 }
+    }
+  ]
+}";
+
+    private static readonly string[] Databases_ = { "SQLite", "GeoPackage", "Esri File Geodatabase", "PostgreSQL / PostGIS", "SQL Server" };
+
+    private MapView map;
+    private ElementReference loadingIndicator;
+    private GeoCollection<FeatureSource> sources;
+    private string database = Databases_[0];
+    private string styleJson = StyleJson;
+    private string applied = StyleJson;
+    private string status = "";
+    private bool ok = true;
+    private bool busy;
+    private bool disposed;
+    private string pendingDatabase = "";
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "data", Open(database) } };
+        status = sources["data"].GetType().Name;
+    }
+
+    // The chosen table, read by whatever source understands it. Each converts from the plane its
+    // own table stores.
+    private static FeatureSource Open(string name)
+    {
+        switch (name)
+        {
+            case "GeoPackage":
+                return new GdalFeatureSource("./Data/GeoPackage/mora_surficial_geology.gpkg") { ProjectionConverter = new ProjectionConverter(26910, 3857) };
+            case "Esri File Geodatabase":
+                return new FileGeoDatabaseFeatureSource("./Data/FileGeoDatabase/zoning.gdb", "zoning") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+            case "PostgreSQL / PostGIS":
+                return new PostgreSqlFeatureSource("User ID=ThinkGeoTest;Password=ThinkGeoTestPassword;Host=demodb.thinkgeo.com;Port=5432;Database=postgres;Pooling=true;", "countries", "gid", 4326) { ProjectionConverter = new ProjectionConverter(4326, 3857) };
+            case "SQL Server":
+                return new SqlServerFeatureSource("Server=demodb.thinkgeo.com;Database=thinkgeo;User Id=ThinkGeoTest;Password=ThinkGeoTestPassword;TrustServerCertificate=True;", "frisco_coyote_sightings", "id") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+            default:
+                return new SqliteFeatureSource("Data Source=" + Path.GetFullPath("./Data/SQLite/frisco-restaurants.sqlite") + ";", "restaurants", "id", "geometry") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+        }
+    }
+
+    private async Task Pick(string name)
+    {
+        if (busy || disposed) return;
+        busy = true;
+        pendingDatabase = name;
+        status = "Loading " + name + "...";
+        await InvokeAsync(StateHasChanged);
+        FeatureSource source;
+        RectangleShape bounds;
+        try
+        {
+            source = Open(name);
+            // Asking the table where it is can be a network round trip, so it happens off the
+            // circuit's thread.
+            bounds = await Task.Run(() =>
+            {
+                source.Open();
+                try
+                {
+                    return source.GetBoundingBox();
+                }
+                finally
+                {
+                    source.Close();
+                }
+            });
+            if (disposed) return;
+
+            database = name;
+            sources = new GeoCollection<FeatureSource> { { "data", source } };
+            ok = true;
+            status = source.GetType().Name;
+            await InvokeAsync(StateHasChanged);
+
+            if (bounds != null && bounds.Width > 0 && bounds.Height > 0)
+            {
+                bounds.ScaleUp(20);
+                await map.ZoomToExtentAsync(bounds);
+            }
+
+            // ZoomToExtentAsync only moves the camera. The replacement overlay still has
+            // server-side database queries and vector tiles to finish loading afterward.
+            await using var module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/vector-source-loading.js");
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(6));
+            var sourceId = $"data-{Array.IndexOf(Databases_, name)}::features";
+            var loaded = await module.InvokeAsync<bool>("waitForSource", timeout.Token, loadingIndicator, "map", sourceId, 300_000, true);
+            if (disposed) return;
+            if (!loaded)
+            {
+                ok = false;
+                status = "The database layer did not appear within 5 minutes.";
+            }
+        }
+        catch (Exception exception)
+        {
+            while (exception.InnerException != null) exception = exception.InnerException;
+            ok = false;
+            status = "Unavailable: " + exception.Message.Split('\n')[0];
+        }
+        finally
+        {
+            busy = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit || disposed) return;
+
+        try
+        {
+            if (JsonNode.Parse(styleJson) is not JsonObject document || document["layers"] is not JsonArray)
+                throw new FormatException("The style needs a layers array.");
+            applied = styleJson;
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        edit++;
+    }
+}

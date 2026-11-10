@@ -1,0 +1,173 @@
+@page "/"
+@page "/map-navigation"
+@rendermode InteractiveAuto
+@using System.Globalization
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="position:relative;flex:1;min-width:0">
+        @* Pan, zoom, rotate and tilt are built into the map. The readout follows the view. *@
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@EmpireStateBuildingPosition" Zoom="@InitialZoom" Bearing="@InitialBearing" Pitch="@pitch"
+                 OnCurrentExtentChanged="ExtentChanged"
+                 OnCurrentExtentChangedInAnimation="ExtentChanging">
+            <OverlaysSetting>
+                @if (basemapStyle != null)
+                {
+                    <VectorTileOverlay Id="Basemap" @ref="basemapOverlay" Style="@basemapStyle" />
+                }
+            </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft"
+                                    UseNavigationStyle="true"
+                                    CenterButtonCenter="@EmpireStateBuildingPosition"
+                                    CenterButtonZoom="19"
+                                    CenterButtonBearing="@InitialBearing"
+                                    CenterButtonPitch="@InitialPitch" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@EmpireStateBuildingPosition" Zoom="@InitialZoom"
+                                 Bearing="@InitialBearing" Pitch="@InitialPitch" />
+                </MapTools>
+            </MapToolsSetting>
+            <MarkerOverlaySetting>
+                <SimpleMarkerOverlay Id="EmpireStateBuilding">
+                    <MarkersSetting>
+                        <Marker Id="Empire State Building"
+                                Position="@EmpireStateBuildingPosition"
+                                Style="@EmpireStateBuildingStyle" />
+                    </MarkersSetting>
+                </SimpleMarkerOverlay>
+            </MarkerOverlaySetting>
+        </MapView>
+
+        @if (!string.IsNullOrEmpty(coordinateReadout))
+        {
+            <div style="position:absolute;bottom:10px;left:10px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 12px;border-radius:8px;background:rgba(0,0,0,.7);color:#d1d5db;font:13px/18px system-ui;white-space:nowrap">
+                <div>@coordinateReadout</div>
+                <div>@cameraReadout</div>
+            </div>
+        }
+
+        <div style="position:absolute;top:160px;right:12px;width:260px;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+            <div style="font-weight:600;margin-bottom:6px">Camera</div>
+
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer">
+                <input type="checkbox" checked="@buildingsVisible" disabled="@(basemapStyle == null)" @onchange="ToggleBuildings" />
+                3D Buildings
+            </label>
+
+            <label style="display:flex;align-items:center;gap:8px;margin-top:8px">
+                <span>Pitch</span>
+                <input type="range" min="0" max="80" step="1" value="@pitch" disabled="@(basemapStyle == null)"
+                       @onpointerdown="@(() => pitchSliderActive = true)"
+                       @onpointerup="@(() => pitchSliderActive = false)"
+                       @onchange="@(() => pitchSliderActive = false)"
+                       @onpointercancel="@(() => pitchSliderActive = false)"
+                       @onblur="@(() => pitchSliderActive = false)"
+                       @oninput="PitchChanged" style="flex:1;min-width:0" />
+                <span style="width:36px;text-align:right">@pitch.ToString("0")&deg;</span>
+            </label>
+
+            <button class="btn btn-sm btn-light" style="margin-top:8px" disabled="@(basemapStyle == null)"
+                    @onclick="ToggleTheme">@(darkTheme ? "Light Theme" : "Dark Theme")</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private const double InitialBearing = 30;
+    private const int InitialZoom = 16;
+    private const double InitialPitch = 45;
+
+    private static readonly PointShape EmpireStateBuildingPosition =
+        ProjectionConverter.Convert(4326, 3857, new PointShape(-73.9856654, 40.74843661));
+
+    private static readonly PointMarkerStyle EmpireStateBuildingStyle =
+        new PointMarkerStyle("images/empire_state_building.png", 0.5, 1, 0.1);
+
+    private MapView map;
+    private VectorTileOverlay basemapOverlay;
+    private MapStyle basemapStyle;
+    private string coordinateReadout = "";
+    private string cameraReadout = "";
+    private double initialExtentWidth;
+    private double pitch = InitialPitch;
+    private bool pitchSliderActive;
+    private bool buildingsVisible = true;
+    private bool darkTheme;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        await BuildBasemapStyleAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ExtentChanged(CurrentExtentChangedMapViewEventArgs e)
+    {
+        await map.WhenReady;
+
+        UpdateReadout(e.CurrentExtent, await map.GetBearingAsync());
+        if (!pitchSliderActive) pitch = await map.GetPitchAsync();
+    }
+
+    private void ExtentChanging(CurrentExtentChangedInAnimationMapViewEventArgs e)
+    {
+        UpdateReadout(e.CurrentExtent, e.Bearing);
+    }
+
+    private void UpdateReadout(RectangleShape currentExtent, double bearing)
+    {
+        var center = currentExtent.GetCenterPoint();
+        var lonLat = ProjectionConverter.Convert(3857, 4326, center);
+        coordinateReadout = string.Format(CultureInfo.InvariantCulture, "Center Point: (Lat: {0:N4}, Lon: {1:N4})", lonLat.Y, lonLat.X);
+
+        if (initialExtentWidth <= 0)
+        {
+            initialExtentWidth = currentExtent.Width;
+        }
+
+        var zoom = InitialZoom + Math.Log(initialExtentWidth / currentExtent.Width, 2);
+        var initialScale = map.ZoomScales[InitialZoom - 1];
+        var scale = initialScale / Math.Pow(2, zoom - InitialZoom);
+        var rotation = -bearing;
+        cameraReadout = string.Format(
+            CultureInfo.InvariantCulture,
+            "Rotation: {0:N0}   Zoom: {1:N2}   Scale: {2:N0}",
+            rotation,
+            zoom,
+            scale);
+    }
+
+    private void PitchChanged(ChangeEventArgs e)
+    {
+        pitch = double.Parse((string)e.Value, CultureInfo.InvariantCulture);
+    }
+
+    private async Task ToggleBuildings(ChangeEventArgs e)
+    {
+        buildingsVisible = (bool)e.Value;
+        basemapStyle.SetLayerVisibility("buildings-3d", buildingsVisible);
+        await basemapOverlay.RedrawAsync();
+    }
+
+    private async Task ToggleTheme()
+    {
+        darkTheme = !darkTheme;
+        await BuildBasemapStyleAsync();
+    }
+
+    private async Task BuildBasemapStyleAsync()
+    {
+        var styleUri = darkTheme ? ThinkGeoVectorStyles.Dark : ThinkGeoVectorStyles.Light;
+        var style = new MapStyle(
+            styleUri,
+            new ThinkGeoVectorTileSource(GlobalSettings.ThinkGeoApiKey));
+        await style.ResolveAsync();
+        style.SetLayerVisibility("buildings-3d", buildingsVisible);
+        basemapStyle = style;
+    }
+}

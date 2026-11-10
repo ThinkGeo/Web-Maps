@@ -13,13 +13,13 @@
   <!-- Every package of the set is pinned to one beta: the gallery shows what that build of the
        SDK does, and a mixed set would make it unclear which. -->
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.Core" Version="15.0.0" />
-    <PackageReference Include="ThinkGeo.UI.WebApi" Version="15.0.0" />
-    <PackageReference Include="ThinkGeo.Gdal" Version="15.0.0" />
-    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.0.0" />
-    <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.0.0" />
-    <PackageReference Include="ThinkGeo.PostgreSql" Version="15.0.0" />
-    <PackageReference Include="ThinkGeo.SqlServer" Version="15.0.0" />
+    <PackageReference Include="ThinkGeo.Core" Version="15.1.0-beta002" />
+    <PackageReference Include="ThinkGeo.UI.WebApi" Version="15.1.0-beta002" />
+    <PackageReference Include="ThinkGeo.Gdal" Version="15.1.0-beta002" />
+    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.1.0-beta002" />
+    <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.1.0-beta002" />
+    <PackageReference Include="ThinkGeo.PostgreSql" Version="15.1.0-beta002" />
+    <PackageReference Include="ThinkGeo.SqlServer" Version="15.1.0-beta002" />
   </ItemGroup>
 
   <!-- The sample data, copied next to the binaries on build and publish and read from there

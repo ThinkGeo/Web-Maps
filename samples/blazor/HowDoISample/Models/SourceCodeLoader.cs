@@ -19,19 +19,12 @@ namespace ThinkGeo.UI.Blazor.HowDoI
             if (string.IsNullOrWhiteSpace(sample) || !Regex.IsMatch(sample, "^[A-Za-z0-9_]+$"))
                 return string.Empty;
 
-            var folders = new[]
-            {
-                Path.Combine(contentRoot, "Pages"),
-                Path.GetFullPath(Path.Combine(contentRoot, "..", "HowDoISample.Client", "Pages")),
-                Path.Combine(contentRoot, "ClientPages")
-            };
-            foreach (var folder in folders)
-            {
-                if (!Directory.Exists(folder)) continue;
+            var folder = Path.Combine(contentRoot, "Pages");
+            if (!Directory.Exists(folder))
+                return string.Empty;
 
-                foreach (var file in Directory.EnumerateFiles(folder, sample + ".razor", SearchOption.AllDirectories))
-                    return await File.ReadAllTextAsync(file);
-            }
+            foreach (var file in Directory.EnumerateFiles(folder, sample + ".razor", SearchOption.AllDirectories))
+                return await File.ReadAllTextAsync(file);
             return string.Empty;
         }
     }

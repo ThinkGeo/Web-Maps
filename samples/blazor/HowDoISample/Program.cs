@@ -1,13 +1,11 @@
 using Microsoft.AspNetCore.SignalR;
 using ThinkGeo.UI.Blazor.HowDoI;
-using ThinkGeo.UI.Blazor.HowDoI.Client;
 using ThinkGeo.UI.Blazor.HowDoI.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
-    .AddInteractiveWebAssemblyComponents();
+    .AddInteractiveServerComponents();
 builder.Services.Configure<HubOptions>(options => options.MaximumReceiveMessageSize = 16 * 1024 * 1024);
 builder.Services.AddSingleton<MenuService>();
 builder.Services.AddSingleton<DemographicMapService>();
@@ -16,11 +14,7 @@ builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-else
+if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/error", createScopeForErrors: true);
 }
@@ -41,8 +35,6 @@ app.MapGet("/source/{sample}", async (string sample, SourceCodeLoader loader) =>
 });
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
-    .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(ClientAssemblyMarker).Assembly);
+    .AddInteractiveServerRenderMode();
 
 app.Run();

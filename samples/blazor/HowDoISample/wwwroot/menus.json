@@ -6,7 +6,7 @@
     "href": "map-navigation",
     "source": "Map_Navigation",
     "preicon": "fas fa-location-arrow",
-    "group": "WebAssembly Compatible"
+    "group": "Map Navigation"
   },
   {
     "id": "restrict-map-extent",
@@ -15,7 +15,7 @@
     "href": "restrict-map-extent",
     "source": "Restrict_Map_Extent",
     "preicon": "fas fa-compress-arrows-alt",
-    "group": "WebAssembly Compatible"
+    "group": "Map Navigation"
   },
   {
     "id": "vehicle-navigation",
@@ -51,16 +51,7 @@
     "href": "overview-map",
     "source": "Overview_Map",
     "preicon": "far fa-map",
-    "group": "WebAssembly Compatible"
-  },
-  {
-    "id": "cross-the-dateline",
-    "title": "Cross the Dateline",
-    "description": "A Los Angeles to Shanghai great-circle route through the antimeridian, stored with continuous longitudes past -180 and drawn whole - no seam on the globe, one at 180 degrees in Web Mercator, the same data folded back into the world at the tile cut.",
-    "href": "cross-the-dateline",
-    "source": "Cross_The_Dateline",
-    "preicon": "fas fa-plane",
-    "group": "WebAssembly Compatible"
+    "group": "Map Navigation"
   },
   {
     "id": "3d-terrain",
@@ -78,7 +69,7 @@
     "href": "perspective-and-3d",
     "source": "Perspective_And_3D",
     "preicon": "fas fa-cube",
-    "group": "WebAssembly Compatible"
+    "group": "3D & Camera"
   },
   {
     "id": "the-globe",
@@ -87,7 +78,7 @@
     "href": "the-globe",
     "source": "The_Globe",
     "preicon": "fas fa-globe-europe",
-    "group": "WebAssembly Compatible"
+    "group": "Projections"
   },
   {
     "id": "project-features",
@@ -96,7 +87,7 @@
     "href": "project-features",
     "source": "Project_Features",
     "preicon": "fas fa-globe-americas",
-    "group": "WebAssembly Compatible"
+    "group": "Projections"
   },
   {
     "id": "project-a-raster",
@@ -126,13 +117,22 @@
     "group": "Projections"
   },
   {
+    "id": "cross-the-dateline",
+    "title": "Cross the Dateline",
+    "description": "A Los Angeles to Shanghai great-circle route through the antimeridian, stored with continuous longitudes past -180 and drawn whole - no seam on the globe, one at 180 degrees in Web Mercator, the same data folded back into the world at the tile cut.",
+    "href": "cross-the-dateline",
+    "source": "Cross_The_Dateline",
+    "preicon": "fas fa-plane",
+    "group": "Projections"
+  },
+  {
     "id": "vector-map-providers",
     "title": "Vector Map Providers",
     "description": "The hosted vector maps, each a style: ThinkGeo Maps light and dark over the same tiles, OpenFreeMap and any other server by its style URL alone.",
     "href": "vector-map-providers",
     "source": "Vector_Map_Providers",
     "preicon": "fal fa-bezier-curve",
-    "group": "WebAssembly Compatible"
+    "group": "Maps from a Service - Vector"
   },
   {
     "id": "wfs",
@@ -177,7 +177,7 @@
     "href": "raster-map-providers",
     "source": "Raster_Map_Providers",
     "preicon": "fas fa-layer-group",
-    "group": "WebAssembly Compatible"
+    "group": "Maps from a Service - Raster"
   },
   {
     "id": "load-wms",
@@ -357,7 +357,7 @@
     "href": "validate-topology",
     "source": "Validate_Topology",
     "preicon": "fas fa-check-double",
-    "group": "WebAssembly Compatible"
+    "group": "Shapes & Spatial Queries"
   },
   {
     "id": "style-layer-toggles",
@@ -366,7 +366,7 @@
     "href": "style-layer-toggles",
     "source": "Style_Layer_Toggles",
     "preicon": "fas fa-layer-group",
-    "group": "WebAssembly Compatible"
+    "group": "Styling"
   },
   {
     "id": "insert-under-labels",
@@ -375,7 +375,7 @@
     "href": "insert-under-labels",
     "source": "Insert_Under_Labels",
     "preicon": "fas fa-layer-group",
-    "group": "WebAssembly Compatible"
+    "group": "Styling"
   },
   {
     "id": "render-points-lines-and-polygons",
@@ -411,7 +411,7 @@
     "href": "advanced-labels",
     "source": "Advanced_Labels",
     "preicon": "fas fa-font",
-    "group": "WebAssembly Compatible"
+    "group": "Styling"
   },
   {
     "id": "heatmap",
@@ -429,7 +429,7 @@
     "href": "display-cluster-points",
     "source": "Display_Cluster_Points",
     "preicon": "fas fa-braille",
-    "group": "WebAssembly Compatible"
+    "group": "Styling"
   },
   {
     "id": "features-two-ways",
@@ -501,7 +501,7 @@
     "href": "nexrad-radar",
     "source": "Nexrad_Radar",
     "preicon": "fas fa-cloud-showers-heavy",
-    "group": "WebAssembly Compatible"
+    "group": "Dynamic Data"
   },
   {
     "id": "dynamic-rendering",
@@ -555,7 +555,7 @@
     "href": "markers",
     "source": "Markers",
     "preicon": "fas fa-map-marker-alt",
-    "group": "WebAssembly Compatible"
+    "group": "Markers & Popups"
   },
   {
     "id": "popups",
@@ -573,7 +573,7 @@
     "href": "animated-marker",
     "source": "Animated_Marker",
     "preicon": "fas fa-broadcast-tower",
-    "group": "WebAssembly Compatible"
+    "group": "Markers & Popups"
   },
   {
     "id": "custom-feature-sources",
@@ -591,7 +591,7 @@
     "href": "mark-the-places",
     "source": "Mark_the_Places",
     "preicon": "fas fa-map-marked-alt",
-    "group": "WebAssembly Compatible"
+    "group": "Legacy"
   },
   {
     "id": "popup",
@@ -600,7 +600,7 @@
     "href": "balloon-popup",
     "source": "Balloon_Popup",
     "preicon": "far fa-comment-alt",
-    "group": "WebAssembly Compatible"
+    "group": "Legacy"
   },
   {
     "id": "draw",
@@ -618,7 +618,7 @@
     "href": "measure-distance-area",
     "source": "Measure_Distance_Area",
     "preicon": "fas fa-ruler",
-    "group": "WebAssembly Compatible"
+    "group": "Legacy"
   },
   {
     "id": "export-map",
@@ -627,7 +627,7 @@
     "href": "export-map",
     "source": "Export_Map",
     "preicon": "fas fa-camera",
-    "group": "WebAssembly Compatible"
+    "group": "Printing & Export"
   },
   {
     "id": "export-to-pdf",

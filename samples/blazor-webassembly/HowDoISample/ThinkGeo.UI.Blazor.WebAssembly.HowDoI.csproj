@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ThinkGeo.UI.Blazor.HowDoI</RootNamespace>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+    <!-- SkiaSharp's native library is linked into the app's WebAssembly; this needs the wasm-tools workload. -->
+    <WasmBuildNative>true</WasmBuildNative>
+    <WasmLinkIcalls>false</WasmLinkIcalls>
+    <!-- SQLite, which ThinkGeo.Core brings along, has two varargs functions WebAssembly cannot call; these samples never use SQLite. -->
+    <NoWarn>$(NoWarn);WASM0001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.14" PrivateAssets="all" />
+    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="4.154.0" />
+    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.1.0-beta002" />
+  </ItemGroup>
+
+</Project>

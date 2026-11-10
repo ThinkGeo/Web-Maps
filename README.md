@@ -20,6 +20,7 @@ We have a number of samples for both WebAPI and Blazor that show off ThinkGeo We
 
 - [HowDoI Sample - WebAPI](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/samples/web-api)
 - [HowDoI Sample - Blazor](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/samples/blazor/HowDoISample)
+- [HowDoI Sample - Blazor WebAssembly](https://gitlab.com/thinkgeo/public/thinkgeo-web-maps/-/tree/master/samples/blazor-webassembly/HowDoISample): a few of the Blazor samples running entirely in the browser; needs the `wasm-tools` workload
 
 ## More Resources:
 - [ThinkGeo Web Edition Online Docs](https://docs.thinkgeo.com/products/desktop-maps/quickstart/)

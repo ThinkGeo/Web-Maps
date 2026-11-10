@@ -11,6 +11,7 @@ Repository root: `.`
 - `quick-start-guide/QuickStartGuide_Blazor/BlazorSample.sln`
 - `quick-start-guide/QuickStartGuide_WebAPI/WebApiSample.sln`
 - `samples/blazor/HowDoISample/ThinkGeo.UI.Blazor.HowDoI.sln`
+- `samples/blazor-webassembly/HowDoISample/ThinkGeo.UI.Blazor.WebAssembly.HowDoI.sln` (needs the `wasm-tools` workload)
 - `samples/web-api/HowDoISample/ThinkGeo.UI.WebApi.HowDoI.csproj`
 
 ## 3) Main Areas

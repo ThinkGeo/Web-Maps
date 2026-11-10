@@ -15,6 +15,8 @@ This sample makes use of the following NuGet packages:
 
 The project references the 15.0 prerelease packages. The basemaps need a ThinkGeo Cloud key: the one in `Shared/GlobalSettings.cs` is a demo key limited to basemap tiles, so get a free key of your own at https://cloud.thinkgeo.com and put it there.
 
+CAD (DWG) files open only when the sample is built on Windows. To run it on Linux, build it on Linux or in a Docker container: a build made on Windows does not start there.
+
 ### ThinkGeo Blazor Resources
 
 [ThinkGeo Blazor - Quickstart and API Docs](https://docs.thinkgeo.com/products/web-maps/v12.0/quickstart/#quick-start-display-a-simple-map-on-blazor)

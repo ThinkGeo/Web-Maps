@@ -6,14 +6,14 @@
 <!--You can control the width and height in CSS too, if you like. -->
 <MapView Id="demomap" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter" Zoom="3" Width="800" Height="600">
     <OverlaysSetting>
-        <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="ThinkGeo.Core.ThinkGeoCloudRasterMapsMapType.Aerial" ApiKey="PIbGd76RyHKod99KptWTeb-Jg9JUPEPUBFD3SZJYLDE~"></ThinkGeoCloudRasterMapsOverlay>
+        <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="ThinkGeo.Core.ThinkGeoCloudRasterMapsMapType.Aerial_V2_X1" ApiKey="PIbGd76RyHKod99KptWTeb-Jg9JUPEPUBFD3SZJYLDE~"></ThinkGeoCloudRasterMapsOverlay>
         <!-- Add one more Overlay for hosting point FeatureLayer -->
         <LayerOverlay Id="PointOverlay" Layers="@layers"></LayerOverlay>
     </OverlaysSetting>
 </MapView>
 
 @code {
-    GeoCollection<Layer> layers = new GeoCollection<Layer>();
+    GeoCollection<LayerBase> layers = new GeoCollection<LayerBase>();
 
     protected override void OnInitialized()
     {

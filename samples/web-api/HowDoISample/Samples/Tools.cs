@@ -5,7 +5,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
     /// <summary>
     /// Map Tools and Adornments: classic adornment layers - legend, scale line and bar, compass -
     /// drawn on the server as one picture the size of the map, laid over it and drawn again
-    /// whenever the view settles; a graticule drawn as tiles; and the popups the browser keeps.
+    /// whenever the view settles; and the popups the browser keeps.
     /// </summary>
     public class Tools : ISampleGroup
     {
@@ -88,21 +88,6 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 declination.MagneticNorthLineStyle.OuterPen.Width = 5f;
                 var overlay = new AdornmentOverlay();
                 overlay.Layers.Add("declination", declination);
-                return overlay;
-            });
-
-            // A graticule is a feature layer, its lines and labels made for each extent it is
-            // asked for; it is drawn tile by tile like any layer.
-            catalog.Raster("graticule", () =>
-            {
-                var graticule = new GraticuleFeatureLayer
-                {
-                    GraticuleLineStyle = new LineStyle(new GeoPen(GeoColor.FromArgb(150, GeoColors.Navy), 1)),
-                    GraticuleTextFont = new GeoFont("Times", 12, DrawingFontStyles.Bold),
-                };
-                graticule.FeatureSource.ProjectionConverter = new ProjectionConverter(4326, 3857);
-                var overlay = new LayerOverlay();
-                overlay.Layers.Add(graticule);
                 return overlay;
             });
         }

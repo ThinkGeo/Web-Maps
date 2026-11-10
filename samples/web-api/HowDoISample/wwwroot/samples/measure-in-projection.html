@@ -17,8 +17,7 @@
     <div class="page">
         <div id="map"></div>
         <aside class="panel narrow" style="width:380px">
-            <h2>Measure in the right projection</h2>
-            <p><b>Take hold of Greenland and drag it south.</b> It never changes size. All that changes is the latitude Web Mercator is stretching it at, and the figures below.</p>
+            <p><b>Drag Greenland south.</b> Its real size never changes; only Web Mercator's stretch does.</p>
             <div class="row"><button class="btn" id="equator">To the equator</button><button class="btn" id="home">Put it back</button><span id="where" style="font-family:Consolas,monospace;color:#555"></span></div>
             <div style="margin-top:4px">
                 <div class="fact"><span>On the ground, always</span><b id="truth">-</b></div>
@@ -26,9 +25,7 @@
                 <div class="fact"><span>Web Mercator says, at home</span><b id="athome">-</b></div>
             </div>
             <div style="text-align:center;margin-top:8px"><span class="blow" id="blow">-</span><div id="blow-note" style="color:#555"></div></div>
-            <p>Web Mercator keeps angles and pays for it with scale: a degree of longitude is drawn at the width it has at the equator no matter how far north you are, so everything is stretched by 1/cos(latitude) and an area comes out too big by the square of that. At Greenland's latitude that square is better than ten.</p>
-            <p>The grey outline is where Greenland belongs. The server sends its coastline once, flattened about its own middle by an equal-area projection; the page lays those same metres back down at whatever latitude you drag to, so the copy covers identical ground at every stop. Only what Web Mercator makes of it moves.</p>
-            <p>So a web map is the wrong place to take a measurement. Compute an area or a length in a projection chosen for the job: an equal-area one anywhere, or the local grid the records are kept in.</p>
+            <p>Measure in an equal-area or local projection, never in Web Mercator.</p>
             <div class="status" id="status"></div>
         </aside>
     </div>

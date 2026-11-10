@@ -329,7 +329,8 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 trails.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
 
                 var streets = Layer("Streets.shp", "streets");
-                streets.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(new LineStyle(new GeoPen(GeoColors.DimGray, 6), new GeoPen(GeoColors.WhiteSmoke, 4)));
+                GeoPen Road(GeoColor color, float width) => new GeoPen(color, width) { StartCap = DrawingLineCap.Round, EndCap = DrawingLineCap.Round };
+                streets.ZoomLevelSet.ZoomLevel01.CustomStyles.Add(new LineStyle(Road(GeoColors.DimGray, 6), Road(GeoColors.WhiteSmoke, 4)));
                 streets.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
                 streets.ZoomLevelSet.ZoomLevel17.CustomStyles.Add(new TextStyle("FULL_NAME", new GeoFont("Arial", 11, DrawingFontStyles.Bold | DrawingFontStyles.Strikeout), new GeoSolidBrush(GeoColors.MidnightBlue)) { HaloPen = new GeoPen(GeoColors.White, 2) });
                 streets.ZoomLevelSet.ZoomLevel17.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;

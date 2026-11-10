@@ -49,7 +49,7 @@
             isolines.setLayers(layers);
             isolines.setData(r.isolines);
             points.setData(document.getElementById('show-points').checked ? r.points : null);
-            tg.say(status, `${r.count.toLocaleString()} points, ${r.levels.length} levels - IDW on the server: a ${r.resolution}x${r.resolution} grid and ${r.featureCount.toLocaleString()} isoline features in ${r.ms.toLocaleString()} ms; the browser draws them`);
+            tg.say(status, `${r.count.toLocaleString()} points, ${r.levels.length} levels, ${r.featureCount.toLocaleString()} isolines in ${r.ms.toLocaleString()} ms`);
             if (!framed) { framed = true; tg.fit(map, r.bounds, 30); }
         };
         for (const id of ['points', 'fill', 'labels', 'show-points', 'levels', 'width', 'power']) document.getElementById(id).addEventListener('change', apply);

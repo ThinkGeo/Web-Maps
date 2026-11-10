@@ -43,7 +43,7 @@
             document.getElementById('legend-name').textContent = c.name;
             document.getElementById('legend-unit').textContent = ` (${c.unit})`;
             const legend = [`< ${fmt(c.breaks[0], c.divisor)}`, ...c.breaks.slice(0, -1).map((b, i) => `${fmt(b, c.divisor)} – ${fmt(c.breaks[i + 1], c.divisor)}`), `≥ ${fmt(c.breaks[3], c.divisor)}`];
-            tg.say(document.getElementById('status'), `${c.name}, in ${c.unit}; the five classes come from breaks the server worked out over the whole table`);
+            tg.say(document.getElementById('status'), `${c.name}, in ${c.unit}`);
             document.getElementById('legend').innerHTML = legend.map((text, i) => `<div style="display:flex;align-items:center;gap:7px;margin:2px 0"><span style="width:16px;height:16px;background:${colors[i]};border:1px solid #999;flex:none"></span><span>${text}</span></div>`).reverse().join('');
         };
         const list = document.getElementById('categories');

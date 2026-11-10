@@ -16,8 +16,6 @@
     <div class="page">
         <div id="map"></div>
         <aside class="panel narrow" style="width:340px">
-            <h2>WMS</h2>
-            <p>A WMS draws to order. The server hands it the exact extent and pixel size of every tile it is cutting and gets a picture back, so any layer the service names can be drawn at any scale. The browser only ever receives PNG tiles from raster/wms-&hellip;/.</p>
             <div id="layers" style="display:flex;flex-direction:column;gap:2px"></div>
             <div class="row"><button class="btn" id="europe">Europe</button><button class="btn" id="alps">The Alps</button></div>
             <div class="status" id="status"></div>
@@ -27,7 +25,6 @@
                 <div style="margin:6px 0 2px;color:#555">Every layer it advertises</div>
                 <div class="names" id="names"></div>
             </div>
-            <p>None of this reaches the browser. MapLibre has no WMS client, only a generic raster source, so the capabilities, layer names, styles and the twenty-odd projections on offer are read by the server alone.</p>
         </aside>
     </div>
     <script src="../lib/maplibre-gl.js"></script>

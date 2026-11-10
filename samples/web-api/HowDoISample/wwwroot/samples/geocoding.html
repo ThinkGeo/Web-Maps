@@ -11,7 +11,6 @@
     <div class="page">
         <div id="map"></div>
         <aside class="panel narrow" style="width:340px">
-            <h2>Geocoding, both directions</h2>
             <label><input type="radio" name="way" value="forward" checked> A name in, a place out</label>
             <label><input type="radio" name="way" value="reverse"> A place in, a name out</label>
             <p id="note" style="margin-top:2px"></p>
@@ -36,8 +35,8 @@
         // Two cloud clients, one on each side of the same question. Either way the browser only
         // ever talks to this server, and the credentials never leave it.
         const notes = {
-            forward: 'An address or a place name goes to the server, where GeocodingCloudClient.SearchAsync asks ThinkGeo Cloud; every match comes back as a point, a bounding box and its properties.',
-            reverse: 'A point and a search radius go to the server, where ReverseGeocodingCloudClient.SearchPointAsync answers with the best match and whatever else lies inside the radius. Click the map, or type a latitude and longitude.',
+            forward: 'Type an address or a place name.',
+            reverse: 'Click the map, or type a latitude and longitude.',
         };
 
         const map = tg.createMap({ center: [-10778720, 3915154], zoom: 11 });

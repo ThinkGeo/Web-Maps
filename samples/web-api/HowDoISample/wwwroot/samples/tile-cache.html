@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cache Tiles</title>
+    <link rel="stylesheet" href="../lib/maplibre-gl.css">
+    <link rel="stylesheet" href="../css/samples.css">
+    <style>
+        .meter { font: 12px Consolas, monospace; white-space: pre; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div id="map"></div>
+        <aside class="panel narrow">
+            <p>Ask for the same tiles again and see where each one comes from.</p>
+            <label><input type="radio" name="kind" value="raster" checked> Raster tiles, drawn on the server</label>
+            <label><input type="radio" name="kind" value="vector"> Vector tiles, cut on the server</label>
+            <label><input type="checkbox" id="server" checked> Server cache (FileRasterTileCache, FileTileCache)</label>
+            <label><input type="checkbox" id="browser"> Browser cache (Cache-Control: max-age)</label>
+            <div class="row"><button class="btn primary" id="again">Ask again</button><button class="btn" id="clear">Clear the server cache</button></div>
+            <div class="meter" id="meter"></div>
+            <div class="status" id="status"></div>
+        </aside>
+    </div>
+    <script src="../lib/maplibre-gl.js"></script>
+    <script type="module">
+        import * as tg from '../js/tg.js';
+
+        const map = tg.createMap({ center: [-10779000, 3913500], zoom: 14, basemap: null, background: '#EAE8E2' });
+        await tg.ready(map);
+
+        // The style FeatureLayerTranslator wrote for the same layers, to draw the vector tiles with.
+        const translated = await tg.get('samples/styling/translated-style');
+        for (const name of translated.images) map.addImage(name, (await map.loadImage(tg.root + 'samples/styling/translated-image/' + encodeURIComponent(name))).data);
+        // Vector tiles are fetched here rather than in the map's worker, so the page can see them.
+        maplibregl.addProtocol('tg', async (params) => {
+            const response = await fetch(params.url.replace('tg://', tg.root));
+            return { data: response.status === 204 ? new ArrayBuffer(0) : await response.arrayBuffer() };
+        });
+
+        const option = () => ({
+            kind: document.querySelector('input[name=kind]:checked').value,
+            server: document.getElementById('server').checked,
+            browser: document.getElementById('browser').checked,
+        });
+        let shown = null;
+        const show = () => {
+            if (shown) shown.remove();
+            const { kind, server, browser } = option();
+            const path = `samples/caching/${kind}/${server}/${browser}/{z}/{x}/{y}`;
+            if (kind === 'vector') {
+                shown = tg.vectorOverlay(map, 'tiles', translated.style.layers, { tiles: ['tg://' + path] });
+                return;
+            }
+            map.addSource('tiles', { type: 'raster', tiles: [tg.root + path], tileSize: 512 });
+            map.addLayer({ id: 'tiles', type: 'raster', source: 'tiles' });
+            shown = { remove: () => { map.removeLayer('tiles'); map.removeSource('tiles'); } };
+        };
+
+        // Where each tile came from: the browser's cache sends nothing over the network; otherwise
+        // the server's Server-Timing header says whether its cache had the tile.
+        let stats;
+        const meter = () => {
+            const made = option().kind === 'raster' ? 'drawn on the server ' : 'cut on the server   ';
+            const line = (label, s) => `${label}${String(s.count).padStart(4)} tiles ${s.count ? (s.ms / s.count).toFixed(0).padStart(6) : '     -'} ms`;
+            document.getElementById('meter').textContent = [line(made, stats.made), line('from server cache   ', stats.cache), line('from browser cache  ', stats.browser)].join('\n');
+        };
+        const reset = () => { stats = { made: { count: 0, ms: 0 }, cache: { count: 0, ms: 0 }, browser: { count: 0, ms: 0 } }; meter(); };
+        new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+                if (!entry.name.includes('/samples/caching/')) continue;
+                const timing = entry.serverTiming && entry.serverTiming[0];
+                if (entry.transferSize === 0 && entry.decodedBodySize > 0) { stats.browser.count++; stats.browser.ms += entry.duration; }
+                else if (timing) { const s = stats[timing.description === 'cache' ? 'cache' : 'made']; s.count++; s.ms += timing.duration; }
+                meter();
+            }
+        }).observe({ type: 'resource' });
+
+        for (const input of document.querySelectorAll('input')) input.addEventListener('change', () => { reset(); show(); });
+        document.getElementById('again').addEventListener('click', show);
+        document.getElementById('clear').addEventListener('click', async () => {
+            await tg.post('samples/caching/clear');
+            tg.say(document.getElementById('status'), 'server cache cleared');
+        });
+        reset();
+        show();
+    </script>
+</body>
+</html>

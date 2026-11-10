@@ -41,7 +41,7 @@
                         <span>clusterRadius</span><input type="range" id="cluster-radius" min="20" max="120" step="5" value="55"><span id="cluster-radius-value">55px</span>
                         <span>clusterMaxZoom</span><input type="range" id="cluster-max" min="4" max="16" step="1" value="12"><span id="cluster-max-value">12</span>
                     </div>
-                    <div class="note" style="padding:4px 0">These two belong to the source, not the style, so changing either rebuilds the source and the browser groups the points again.</div>
+                    <div class="note" style="padding:4px 0">Changing these rebuilds the source.</div>
                 </div>
             </div>
             <div class="editor">
@@ -63,9 +63,9 @@
             dots: { center: [-10650000, 4600000], zoom: 4 },
         };
         const where = {
-            heatmap: 'The server cuts the sightings into tiles at tiles/coyotes/; the browser works out the density of whatever arrives and paints it. Nothing is counted on the server.',
-            cluster: 'The server hands over every point at once as GeoJSON; the browser does the grouping, and redoes it at every zoom. No tile is cut.',
-            dots: 'The server scatters the dots inside each state as real features and cuts them into tiles at tiles/dots/. The style only gives them a colour.',
+            heatmap: 'Tiles from the server; the browser paints the density.',
+            cluster: 'All points as GeoJSON; the browser groups them at every zoom.',
+            dots: 'The server places the dots and cuts them into tiles.',
         };
 
         const heatLayers = (weighted) => [

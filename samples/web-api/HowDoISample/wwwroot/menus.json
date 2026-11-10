@@ -2,7 +2,7 @@
   {
     "id": "getting-started",
     "title": "Getting Started",
-    "description": "A shapefile on the server is served as vector tiles the browser draws with one style rule. Fit the map to the layer's extent, go to a scale, and keep it inside Frisco.",
+    "description": "A shapefile served as vector tiles and drawn in the browser.",
     "source": "GettingStarted",
     "preicon": "fas fa-file",
     "group": "Getting Started"
@@ -10,15 +10,31 @@
   {
     "id": "vector-or-raster-tiles",
     "title": "Vector Tiles or Raster Tiles",
-    "description": "One style.json served two ways, side by side: vector tiles the browser draws, or raster tiles the server draws from the same document.",
+    "description": "One style, drawn as vector tiles in the browser or raster tiles on the server.",
     "source": "Tiles",
     "preicon": "fas fa-file",
     "group": "Getting Started"
   },
   {
+    "id": "tile-cache",
+    "title": "Cache Tiles",
+    "description": "Raster or vector tiles from the server's cache or the browser's, against making them every time.",
+    "source": "Caching",
+    "preicon": "fas fa-hdd",
+    "group": "Getting Started"
+  },
+  {
+    "id": "leaflet-and-openlayers",
+    "title": "Leaflet and OpenLayers",
+    "description": "The same server under Leaflet and OpenLayers: PNG tiles, vector tiles and GeoJSON.",
+    "source": "Clients",
+    "preicon": "fas fa-columns",
+    "group": "Getting Started"
+  },
+  {
     "id": "basemaps",
     "title": "Basemaps",
-    "description": "ThinkGeo Maps, OpenFreeMap or any style URL as a vector basemap; ThinkGeo Cloud or OpenStreetMap as raster tiles.",
+    "description": "Vector basemaps from a style URL, raster basemaps from an XYZ URL.",
     "source": "",
     "preicon": "fal fa-bezier-curve",
     "group": "Maps from a Service"
@@ -26,7 +42,7 @@
   {
     "id": "wfs",
     "title": "WFS",
-    "description": "Parcels from a WFS 2.0 service, fetched by the server tile by tile and drawn in the browser.",
+    "description": "Features from a WFS 2.0 service, served as vector tiles.",
     "source": "Services",
     "preicon": "fas fa-server",
     "group": "Maps from a Service"
@@ -34,7 +50,7 @@
   {
     "id": "ogc-api-features",
     "title": "OGC API Features",
-    "description": "Places from an OGC API Features service, projected on the server and cut into tiles.",
+    "description": "Features from an OGC API Features service, served as vector tiles.",
     "source": "Services",
     "preicon": "fas fa-map-marker-alt",
     "group": "Maps from a Service"
@@ -42,7 +58,7 @@
   {
     "id": "noaa-weather",
     "title": "NOAA Weather Feeds",
-    "description": "NOAA's stations and its active warnings, read live on the server by a FeatureSource and cut into tiles like any file.",
+    "description": "Live NOAA weather stations and warnings.",
     "source": "Services",
     "preicon": "fas fa-cloud",
     "group": "Maps from a Service"
@@ -50,7 +66,7 @@
   {
     "id": "wms",
     "title": "WMS",
-    "description": "A WMS draws to order: the server asks it for the exact extent of every tile, and reads the layers, formats and projections it advertises.",
+    "description": "A WMS layer, requested tile by tile by the server.",
     "source": "Services",
     "preicon": "fas fa-cloud",
     "group": "Maps from a Service"
@@ -58,7 +74,7 @@
   {
     "id": "wmts",
     "title": "WMTS",
-    "description": "A WMTS hands over tiles cut in advance on a fixed matrix set, so the server has to ask on the ladder each layer was cut against.",
+    "description": "A WMTS layer on its own tile matrix set.",
     "source": "Services",
     "preicon": "fas fa-cloud",
     "group": "Maps from a Service"
@@ -66,7 +82,7 @@
   {
     "id": "vector-file-formats",
     "title": "Vector File Formats",
-    "description": "Shapefile, GeoJSON, KML, GPX, TAB, TinyGeo, WKB or features built in code, drawn by one style in the browser or on the server.",
+    "description": "Shapefile, GeoJSON, KML, GPX, TAB and more.",
     "source": "YourData",
     "preicon": "fas fa-file-alt",
     "group": "Your Data"
@@ -74,7 +90,7 @@
   {
     "id": "raster-file-formats",
     "title": "Raster File Formats",
-    "description": "GeoTIFF, JPEG, MrSID, JPEG2000, ECW or anything GDAL reads, drawn on the server and warped into the map's projection.",
+    "description": "GeoTIFF, MrSID, JPEG2000, ECW and other rasters, drawn on the server.",
     "source": "YourData",
     "preicon": "fas fa-file-image",
     "group": "Your Data"
@@ -82,7 +98,7 @@
   {
     "id": "databases",
     "title": "Databases",
-    "description": "SQLite, GeoPackage, file geodatabase, PostGIS or SQL Server tables, drawn by one style in the browser or on the server.",
+    "description": "SQLite, GeoPackage, file geodatabase, PostGIS and SQL Server.",
     "source": "YourData",
     "preicon": "fas fa-database",
     "group": "Your Data"
@@ -90,7 +106,7 @@
   {
     "id": "offline-tiles",
     "title": "MBTiles and PMTiles",
-    "description": "Vector tiles kept in an archive file on the server and handed to the browser one at a time; no tile server, no internet.",
+    "description": "Vector tiles from an MBTiles or PMTiles file; no internet needed.",
     "source": "YourData",
     "preicon": "fas fa-archive",
     "group": "Your Data"
@@ -98,15 +114,23 @@
   {
     "id": "custom-feature-sources",
     "title": "Custom Data Format",
-    "description": "A FeatureSource of your own: one overridden method reads a CSV, and the map treats it like any shapefile.",
+    "description": "A FeatureSource of your own that reads a CSV.",
     "source": "Extending",
     "preicon": "fas fa-puzzle-piece",
     "group": "Your Data"
   },
   {
+    "id": "edit-features",
+    "title": "Edit and Save Features",
+    "description": "Draw and reshape parks in the browser; the server saves them into a shapefile.",
+    "source": "Editing",
+    "preicon": "fas fa-pencil-alt",
+    "group": "Your Data"
+  },
+  {
     "id": "nautical-charts",
     "title": "Nautical Charts",
-    "description": "An S-57 chart drawn with its S-52 styling on the server, and a ship under way asking the chart at every step about depth, aids and hazards.",
+    "description": "An S-57 chart with S-52 styling, and a ship reading depths and hazards.",
     "source": "NauticalCharts",
     "preicon": "fas fa-file",
     "group": "Your Data"
@@ -114,7 +138,7 @@
   {
     "id": "lane-level-navigation",
     "title": "Lane-Level Navigation",
-    "description": "An OpenDRIVE HD map of Wolfsburg read on the server, lane by lane, with a vehicle guided along it and the lane instructions it passes.",
+    "description": "An OpenDRIVE HD map with a vehicle following its lanes.",
     "source": "Navigation",
     "preicon": "fas fa-road",
     "group": "Your Data"
@@ -122,7 +146,7 @@
   {
     "id": "render-points-lines-and-polygons",
     "title": "Points, Lines and Polygons",
-    "description": "Style and label points, lines and polygons from three shapefiles; edit the style.json and the map follows.",
+    "description": "Style and label points, lines and polygons by editing the style.json.",
     "source": "Styling",
     "preicon": "fas fa-draw-polygon",
     "group": "Styling"
@@ -130,7 +154,7 @@
   {
     "id": "render-based-on-rules",
     "title": "Style by Rules",
-    "description": "Value, class-break, filter and boolean styling as one mechanism: an expression in the layer's paint.",
+    "description": "Value, class-break and filter styling with style expressions.",
     "source": "Styling",
     "preicon": "fas fa-project-diagram",
     "group": "Styling"
@@ -138,7 +162,7 @@
   {
     "id": "us-demographic",
     "title": "Choropleth Map",
-    "description": "The 2010 census classed with breaks taken from the data, and a legend read from the same breaks.",
+    "description": "US census data in classes, with a legend.",
     "source": "Styling",
     "preicon": "fas fa-fill-drip",
     "group": "Styling"
@@ -146,7 +170,7 @@
   {
     "id": "advanced-labels",
     "title": "Advanced Labels",
-    "description": "Six label lessons: text along a line, anchors from a column, priority, wrapping, icons that stay, vertical CJK.",
+    "description": "Labels along lines, priority, wrapping, icons and vertical text.",
     "source": "Styling",
     "preicon": "fas fa-font",
     "group": "Styling"
@@ -154,7 +178,7 @@
   {
     "id": "hatch-styles",
     "title": "Hatch Styles",
-    "description": "Every GeoHatchStyle drawn by AreaStyle.CreateHatchStyle and tiled across the parks as a fill pattern.",
+    "description": "Every hatch pattern as a polygon fill.",
     "source": "Styling",
     "preicon": "fas fa-th",
     "group": "Styling"
@@ -162,7 +186,7 @@
   {
     "id": "too-many-points",
     "title": "Too Many Points",
-    "description": "More points than pixels, answered three ways. A heatmap, clusters and dot density, each splitting the work between server and browser differently.",
+    "description": "Large point sets as a heatmap, clusters or dot density.",
     "source": "Styling",
     "preicon": "fas fa-palette",
     "group": "Styling"
@@ -170,7 +194,7 @@
   {
     "id": "migrate-a-classic-layer",
     "title": "Migrate a Classic Layer",
-    "description": "Five classic FeatureLayers drawn on the server beside the style.json FeatureLayerTranslator wrote for them, with what could not carry over.",
+    "description": "Classic FeatureLayers beside the style.json the translator writes for them.",
     "source": "Styling",
     "preicon": "fas fa-exchange-alt",
     "group": "Styling"
@@ -178,7 +202,7 @@
   {
     "id": "isolines",
     "title": "Isolines",
-    "description": "Scattered readings interpolated on the server and traced into isolines the browser draws, coloured and labelled by level.",
+    "description": "Contour lines interpolated from scattered points.",
     "source": "Dynamic",
     "preicon": "fas fa-water",
     "group": "Styling"
@@ -186,7 +210,7 @@
   {
     "id": "dynamic-rendering",
     "title": "Dynamic Rendering",
-    "description": "State populations since 1900 as circles that grow with a year slider; the features travel once, only the style changes.",
+    "description": "Population circles that change with a year slider.",
     "source": "Dynamic",
     "preicon": "fas fa-chart-line",
     "group": "Styling"
@@ -194,7 +218,7 @@
   {
     "id": "shape-operations",
     "title": "Shape Operations",
-    "description": "Buffer, union, intersect, difference, simplify, convex hull, split and snap, run on the server and animated as the parameter changes.",
+    "description": "Buffer, union, intersect, simplify and more, run on the server.",
     "source": "Shapes",
     "preicon": "fas fa-shapes",
     "group": "Shapes & Spatial Queries"
@@ -202,7 +226,7 @@
   {
     "id": "shape-measurements",
     "title": "Shape Measurements",
-    "description": "Area, length, centre, the shortest line to a point and a stretch along a line, measured on the server.",
+    "description": "Area, length, centre and distance, measured on the server.",
     "source": "Shapes",
     "preicon": "fas fa-ruler",
     "group": "Shapes & Spatial Queries"
@@ -210,7 +234,7 @@
   {
     "id": "find-features-by-spatial-relation",
     "title": "Spatial Queries",
-    "description": "Draw a shape and find the parcels that contain, cross, touch, intersect or lie within a distance of it, or query the table by SQL.",
+    "description": "Find features by spatial relation or by SQL.",
     "source": "Shapes",
     "preicon": "fas fa-vector-square",
     "group": "Shapes & Spatial Queries"
@@ -218,7 +242,7 @@
   {
     "id": "validate-topology",
     "title": "Validate Topology",
-    "description": "Twenty-five topology rules checked with TopologyValidator, each drawn with the shapes that break it.",
+    "description": "25 topology rules, each with the shapes that break it.",
     "source": "Shapes",
     "preicon": "fas fa-check-double",
     "group": "Shapes & Spatial Queries"
@@ -226,7 +250,7 @@
   {
     "id": "project-features",
     "title": "Reproject Your Data",
-    "description": "One ProjectionConverter, two places to put it: called on shapes you hold, or set on a layer's source so every feature it hands out arrives in the map's system.",
+    "description": "Reproject shapes or a whole layer with a ProjectionConverter.",
     "source": "Projections",
     "preicon": "fas fa-globe-americas",
     "group": "Projections"
@@ -234,7 +258,7 @@
   {
     "id": "measure-in-projection",
     "title": "Measure in the Right Projection",
-    "description": "Take hold of Greenland and drag it to the equator. It covers the same ground the whole way down; only what Web Mercator makes of it shrinks.",
+    "description": "Drag Greenland south to see how Web Mercator distorts area.",
     "source": "Projections",
     "preicon": "fas fa-globe",
     "group": "Projections"
@@ -242,7 +266,7 @@
   {
     "id": "any-projection-satellite",
     "title": "Any Projection",
-    "description": "The world in Robinson, Mollweide, Equal Earth and more on an OpenLayers map, warped in the browser or on the server.",
+    "description": "The world in Robinson, Mollweide and other projections.",
     "source": "Projections",
     "preicon": "fas fa-satellite",
     "group": "Projections"
@@ -250,7 +274,7 @@
   {
     "id": "cross-the-dateline",
     "title": "Cross the Dateline",
-    "description": "A great-circle route across the antimeridian, drawn whole on the globe and folded back into the world at the tile cut.",
+    "description": "A route drawn across the 180° meridian.",
     "source": "Projections",
     "preicon": "fas fa-plane",
     "group": "Projections"
@@ -258,7 +282,7 @@
   {
     "id": "adornments",
     "title": "Adornments",
-    "description": "Legend, scale line and bar, compass, logo and graticule drawn on the server and laid over the map; the compass turns with it.",
+    "description": "Legend, scale bar and compass drawn on the server.",
     "source": "Tools",
     "preicon": "fas fa-tools",
     "group": "Map Tools & Adornments"
@@ -266,7 +290,7 @@
   {
     "id": "popups-and-markers",
     "title": "Popups and Markers",
-    "description": "Things the browser pins to a place outside the tiles, and a click that asks the server what record lies underneath.",
+    "description": "Markers, popups, and a click that reads the feature's record.",
     "source": "Tools",
     "preicon": "fas fa-tools",
     "group": "Map Tools & Adornments"
@@ -274,7 +298,7 @@
   {
     "id": "geocoding",
     "title": "Geocoding",
-    "description": "An address or place name goes to GeocodingCloudClient; every match comes back as a point with its bounds.",
+    "description": "Find an address, or the address at a point.",
     "source": "Cloud",
     "preicon": "fas fa-search-location",
     "group": "ThinkGeo Cloud Services"
@@ -282,7 +306,7 @@
   {
     "id": "routing",
     "title": "Routing",
-    "description": "Stops go to RoutingCloudClient and the route comes back with turn-by-turn segments.",
+    "description": "A route through several stops, with turn-by-turn directions.",
     "source": "Cloud",
     "preicon": "fas fa-route",
     "group": "ThinkGeo Cloud Services"
@@ -290,7 +314,7 @@
   {
     "id": "routing-service-area",
     "title": "Service Area",
-    "description": "How far 15 to 60 minutes of driving reach from a point, one polygon per limit.",
+    "description": "How far you can drive in 15 to 60 minutes.",
     "source": "Cloud",
     "preicon": "fas fa-bullseye",
     "group": "ThinkGeo Cloud Services"
@@ -298,23 +322,15 @@
   {
     "id": "elevation",
     "title": "Elevation",
-    "description": "A point, line or area is sampled by ElevationCloudClient; a line's samples draw as a profile.",
+    "description": "Elevation of a point, line or area; a line draws a profile.",
     "source": "Cloud",
     "preicon": "fas fa-mountain",
     "group": "ThinkGeo Cloud Services"
   },
   {
-    "id": "color-utilities",
-    "title": "Color Utilities",
-    "description": "ColorCloudClient hands back a family of colours that go together; six of them class Frisco's block groups.",
-    "source": "Cloud",
-    "preicon": "fas fa-palette",
-    "group": "ThinkGeo Cloud Services"
-  },
-  {
     "id": "export-the-map",
     "title": "Export the Map",
-    "description": "A picture of the map for a report or an email: at screen size the browser's own canvas, larger than that drawn again on the server, which needs no browser.",
+    "description": "Save the map as an image, at screen size or larger.",
     "source": "Printing",
     "preicon": "fas fa-print",
     "group": "Printing & Export"
@@ -322,7 +338,7 @@
   {
     "id": "printer-layout",
     "title": "Print a Map",
-    "description": "A zoning plan sheet laid out on the server: vector basemap, zoning, title block, legend, scale bar, north arrow, parcel table and notes placed in inches on the paper, exported as PDF.",
+    "description": "A printable PDF sheet with map, title, legend and scale bar.",
     "source": "PrinterLayout",
     "preicon": "fas fa-file",
     "group": "Printing & Export"

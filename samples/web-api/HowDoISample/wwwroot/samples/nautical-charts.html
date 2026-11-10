@@ -17,8 +17,6 @@
     <div class="page">
         <div id="map"></div>
         <aside class="panel narrow" style="width:340px">
-            <h2>Nautical charts</h2>
-            <p>An S-57 chart of Chicago Harbor drawn by the NauticalChartsFeatureLayer with its embedded S-52 styling - depth areas coloured by the safety depths, contours, lights, buoys - on the server into tiles at raster/nautical-chart/. The browser has the picture; the chart's objects stay on the server, and a ship under way asks it at every step what the water it is in holds.</p>
             <div class="row"><label>Draft <input type="number" id="draft" min="1" max="20" step="0.5" value="6.5" style="width:60px"> m</label><button class="btn primary" id="sail">Sail</button><button class="btn" id="draw">Draw a route</button></div>
             <div class="row"><span>Status</span><span class="pill" id="status-pill">docked</span></div>
             <div class="fact"><span>Charted depth</span><b id="depth">-</b></div>

@@ -119,12 +119,18 @@ namespace ThinkGeo.UI.WebApi.HowDoI
         private static string DocumentFile(string layers)
         {
             var path = Path.Combine(Path.GetTempPath(), "howdoi-" + StyledTiles.IdOf("features", layers, null) + ".json");
-            if (!File.Exists(path))
+            lock (DocumentLock)
             {
-                File.WriteAllText(path, StyledTiles.Document("features", layers, "http://localhost/none/{z}/{x}/{y}.mvt"));
+                if (!File.Exists(path))
+                {
+                    File.WriteAllText(path, StyledTiles.Document("features", layers, "http://localhost/none/{z}/{x}/{y}.mvt"));
+                }
             }
             return path;
         }
+
+        // The first requests after a start arrive together and would write the same file at once.
+        private static readonly object DocumentLock = new();
 
         protected override void OpenCore()
         {

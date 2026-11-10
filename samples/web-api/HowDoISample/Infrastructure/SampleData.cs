@@ -2,7 +2,7 @@ using ThinkGeo.Core;
 
 namespace ThinkGeo.UI.WebApi.HowDoI
 {
-    /// <summary>Where the sample data is: next to the binaries, copied there from the Blazor gallery's Data folder on build.</summary>
+    /// <summary>Where the sample data is: next to the binaries, copied there from the Data folder on build.</summary>
     public static class SampleData
     {
         public static string Path(string relative) => System.IO.Path.Combine(AppContext.BaseDirectory, "Data", relative.Replace('/', System.IO.Path.DirectorySeparatorChar));

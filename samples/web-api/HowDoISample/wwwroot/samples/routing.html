@@ -11,8 +11,7 @@
     <div class="page">
         <div id="map"></div>
         <aside class="panel narrow" style="width:340px">
-            <h2>Routing</h2>
-            <p>The stops go to the server, where RoutingCloudClient answers with the route and its turn-by-turn segments. Click the map to add a stop; the route is asked for again. Ask for the best order and the same client is called through GetOptimizedRouteAsync instead, which puts the stops in the order that makes the shortest round trip before routing through them.</p>
+            <p>Click the map to add a stop.</p>
             <label><input type="checkbox" id="optimize"> Let the server pick the best order</label>
             <div class="row"><button class="btn" id="reset">Start over</button><span class="status" id="status"></span></div>
             <div class="list" id="segments"></div>

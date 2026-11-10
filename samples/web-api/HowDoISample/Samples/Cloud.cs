@@ -15,13 +15,6 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
 
         public void Register(OverlayCatalog catalog)
         {
-            // The census block groups the Colour Utilities page classes.
-            catalog.Vector("housing", () =>
-            {
-                var tiles = new FeatureSourceVectorTileSource();
-                tiles.FeatureSources.Add("housing", SampleData.Frisco("Frisco 2010 Census Housing Units.shp"));
-                return new VectorTileOverlay(tiles);
-            });
         }
 
         public void MapEndpoints(IEndpointRouteBuilder app)
@@ -219,39 +212,6 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                     lowest,
                 });
             });
-
-            // ColorCloudClient hands back a family of colours that go together, from a colour
-            // given or one it picks. A family with a base colour gives several sets - one per
-            // colour of the family - and the sets are read in order; a hue or quality family is
-            // one set.
-            app.MapPost("/samples/cloud/colors", async (HttpRequest request) =>
-            {
-                var body = await Body(request);
-                var family = body.GetProperty("family").GetString();
-                var count = body.GetProperty("count").GetInt32();
-                var colour = body.TryGetProperty("color", out var given) && given.ValueKind == JsonValueKind.String ? GeoColor.FromHtml(given.GetString()) : null;
-                var client = new ColorCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
-                try
-                {
-                    IEnumerable<GeoColor> colours;
-                    switch (family)
-                    {
-                        case "Hue": colours = colour == null ? await client.GetColorsInHueFamilyAsync(count) : await client.GetColorsInHueFamilyAsync(colour, count); break;
-                        case "Quality": colours = colour == null ? await client.GetColorsInQualityFamilyAsync(count) : await client.GetColorsInQualityFamilyAsync(colour, count); break;
-                        case "Analogous": colours = Flat(colour == null ? await client.GetColorsInAnalogousFamilyAsync(count) : await client.GetColorsInAnalogousFamilyAsync(colour, count)); break;
-                        case "Complementary": colours = Flat(colour == null ? await client.GetColorsInComplementaryFamilyAsync(count) : await client.GetColorsInComplementaryFamilyAsync(colour, count)); break;
-                        case "Contrasting": colours = Flat(colour == null ? await client.GetColorsInContrastingFamilyAsync(count) : await client.GetColorsInContrastingFamilyAsync(colour, count)); break;
-                        case "Tetrad": colours = Flat(colour == null ? await client.GetColorsInTetradFamilyAsync(count) : await client.GetColorsInTetradFamilyAsync(colour, count)); break;
-                        default: colours = Flat(colour == null ? await client.GetColorsInTriadFamilyAsync(count) : await client.GetColorsInTriadFamilyAsync(colour, count)); break;
-                    }
-                    return Results.Json(new { colors = colours.Take(count).Select(c => $"#{c.R:X2}{c.G:X2}{c.B:X2}") });
-                }
-                catch (Exception exception)
-                {
-                    return Results.Problem(exception.Message, statusCode: 502);
-                }
-            });
-
         }
 
         private static async Task<JsonElement> Body(HttpRequest request)
@@ -272,7 +232,5 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             }
             return bounds;
         }
-
-        private static IEnumerable<GeoColor> Flat(Dictionary<GeoColor, System.Collections.ObjectModel.Collection<GeoColor>> sets) => sets.Values.SelectMany(set => set);
     }
 }

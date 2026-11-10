@@ -11,8 +11,6 @@
     <div class="page">
         <div id="map"></div>
         <aside class="panel narrow">
-            <h2>Getting started</h2>
-            <p>The smallest map this Web API serves. Frisco's parks are read from a shapefile on the server, cut into vector tiles at tiles/getting-started/ as the map asks for them, and drawn by the browser with one style layer. Drag to pan, use the wheel to zoom, right-drag to rotate. The readout shows both: the browser works in zoom levels and ThinkGeo in scales; zoomForScale and scaleForZoom convert between them.</p>
             <div class="row"><button class="btn" id="in">Zoom in</button><button class="btn" id="out">Zoom out</button><button class="btn" id="fit">Back to the parks</button></div>
             <div class="row"><span>Go to scale 1 :</span><input type="number" id="scale" value="20000" style="width:90px"><button class="btn" id="go-scale">Go</button></div>
             <label><input type="checkbox" id="inside"> Keep the map inside Frisco</label>
@@ -33,7 +31,7 @@
 
         // The tiles arrive as the map asks for them; this is what the browser has in hand.
         const status = document.getElementById('status');
-        map.on('idle', () => tg.say(status, `${map.queryRenderedFeatures({ layers: ['getting-started-0'] }).length} parks in view, from tiles the server cut when the map asked`));
+        map.on('idle', () => tg.say(status, `${map.queryRenderedFeatures({ layers: ['getting-started-0'] }).length} parks in view`));
 
         document.getElementById('in').addEventListener('click', () => map.zoomIn());
         document.getElementById('out').addEventListener('click', () => map.zoomOut());

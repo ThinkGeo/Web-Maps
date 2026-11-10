@@ -31,8 +31,8 @@
         import * as tg from '../js/tg.js';
 
         const notes = {
-            record: 'The parks are tiles, so the browser has only the shapes it was sent, not the records behind them. The click goes to the server, which finds the park containing that point, reads every column of its record, and the popup is ordinary markup built from the answer.',
-            pins: 'A popup and a marker are both pieces of the page the browser keeps pinned to a place, drawn outside the tiles. One popup stands open over each hotel, read from a shapefile on the server; a marker is an image whose tip sits at its own point. Click the map to drop one, and click a marker for its details.',
+            record: 'Click a park: the server looks up its record.',
+            pins: 'Click the map to drop a marker; click a marker for its details.',
         };
         const parkLayers = [{ type: 'fill', 'source-layer': 'parks', paint: { 'fill-color': 'rgba(147,112,219,0.2)', 'fill-outline-color': '#9370DB' } }];
 

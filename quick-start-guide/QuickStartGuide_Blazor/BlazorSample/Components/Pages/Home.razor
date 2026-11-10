@@ -16,7 +16,7 @@
     protected override void OnInitialized()
     {
         // Create the point layer for capitals.
-        ShapeFileFeatureLayer capitalFeatureLayer = new ShapeFileFeatureLayer("./Data/capital.shp");
+        ShapeFileFeatureLayer capitalFeatureLayer = new ShapeFileFeatureLayer(Path.Combine(AppContext.BaseDirectory, "Data", "capital.shp"));
         // Create the "Mercator projection" and apply it to the layer to match the background map.
         capitalFeatureLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(Projection.GetWgs84ProjString(), Projection.GetSphericalMercatorProjString());
 

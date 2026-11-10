@@ -7,7 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.1.0-beta002" />
+    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.1.0-beta003" />
+  </ItemGroup>
+
+  <!-- The sample data is copied next to the app on build and publish, where the code reads it. -->
+  <ItemGroup>
+    <None Update="Data\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

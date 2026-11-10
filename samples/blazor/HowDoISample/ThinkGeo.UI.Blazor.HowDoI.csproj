@@ -1,9 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net10.0-windows</TargetFramework>
-    <TargetFramework Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
-    <UseWPF Condition="'$(OS)' == 'Windows_NT'">true</UseWPF>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
@@ -15,14 +13,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.Cad" Version="15.1.0-beta002" Condition="'$(OS)' == 'Windows_NT'" />
-    <PackageReference Include="ThinkGeo.Core" Version="15.1.0-beta002" />
-    <PackageReference Include="ThinkGeo.Gdal" Version="15.1.0-beta002" />
-    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.1.0-beta002" />
-    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.1.0-beta002" />
-    <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.1.0-beta002" />
-    <PackageReference Include="ThinkGeo.PostgreSql" Version="15.1.0-beta002" />
-    <PackageReference Include="ThinkGeo.SqlServer" Version="15.1.0-beta002" />
+    <PackageReference Include="ThinkGeo.Cad" Version="15.1.0-beta003" />
+    <!-- DWG files on Linux, for a build on Linux or one published for a Linux runtime. -->
+    <PackageReference Include="ThinkGeo.Cad.Dependency.Linux" Version="15.1.0-beta001" Condition="'$(OS)' != 'Windows_NT' or $(RuntimeIdentifier.StartsWith('linux'))" />
+    <PackageReference Include="ThinkGeo.Core" Version="15.1.0-beta003" />
+    <PackageReference Include="ThinkGeo.Gdal" Version="15.1.0-beta003" />
+    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.1.0-beta003" />
+    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.1.0-beta003" />
+    <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.1.0-beta003" />
+    <PackageReference Include="ThinkGeo.PostgreSql" Version="15.1.0-beta003" />
+    <PackageReference Include="ThinkGeo.SqlServer" Version="15.1.0-beta003" />
   </ItemGroup>
 
   <ItemGroup>

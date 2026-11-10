@@ -119,11 +119,7 @@
             case "TinyGeo":
                 return new TinyGeoFeatureSource("./Data/TinyGeo/Zoning.tgeo") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
             case "CAD (DWG)":
-#if WINDOWS
                 return new CadFeatureSource("./Data/CAD/Zipcodes.DWG") { ProjectionConverter = new ProjectionConverter(103376, 3857) };
-#else
-                throw new PlatformNotSupportedException("CAD (DWG) requires a Windows host.");
-#endif
             case "GeoPDF":
                 return new GeoPdfGdalFeatureSource("./Data/GeoPdf/bangalore.pdf") { ProjectionConverter = new ProjectionConverter(4326, 3857) };
             case "S-57 nautical chart":

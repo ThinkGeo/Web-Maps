@@ -49,6 +49,8 @@
 </div>
 
 @code {
+    // Markers made in code: Blazor warns (BL0005) about setting a component's parameters, which is safe here.
+#pragma warning disable BL0005
     private static readonly PointShape InitialCenter = new PointShape(-10774380, 3907010);
     private const int InitialZoom = 9;
     private static readonly PointShape InitialSearchPoint = new PointShape(-10776836.14, 3912350.71);

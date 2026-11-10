@@ -18,7 +18,7 @@
 
     private readonly CancellationTokenSource disposal = new();
     private ElementReference indicator;
-    private IJSObjectReference? module;
+    private IJSObjectReference module;
     private bool loading = true;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

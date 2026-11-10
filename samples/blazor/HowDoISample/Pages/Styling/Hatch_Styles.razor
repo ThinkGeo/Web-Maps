@@ -122,7 +122,7 @@
     private static (byte[] Png, int Width, int Height) RenderHatchTile(GeoHatchStyle hatchStyle)
     {
         var brush = new GeoHatchBrush(hatchStyle, GeoColors.Black);
-        var (svgPath, width, height) = brush.GetHatchPatternSvg(hatchStyle);
+        var (svgPath, width, height) = brush.GetHatchPatternSvg();
         using var path = SKPath.ParseSvgPathData(svgPath);
         if (path == null) throw new FormatException($"Could not draw {hatchStyle} hatch pattern.");
         using var bitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul));

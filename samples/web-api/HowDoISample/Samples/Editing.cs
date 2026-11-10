@@ -15,6 +15,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
     {
         private static readonly string Copies = Path.Combine(Path.GetTempPath(), "howdoi-edits");
         private static readonly ConcurrentDictionary<string, object> Locks = new();
+        private const long MaxCopiesSize = 100 * 1024 * 1024;
 
         public void Register(OverlayCatalog catalog)
         {
@@ -70,6 +71,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                     }
                     var result = parks.CommitTransaction();
                     parks.Close();
+                    RemoveOldCopies();
                     return Results.Json(new { saved = result.TotalSuccessCount, failed = result.TotalFailureCount });
                 }
             });
@@ -111,12 +113,21 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
             return new ShapeFileFeatureSource(Path.Combine(folder, "Parks.shp"), access) { ProjectionConverter = new ProjectionConverter(2276, 3857) };
         }
 
+        // Copies left alone for a day go, then the oldest ones until all of them fit in 100 MB.
+        // A copy someone is reading or saving right now is skipped.
         private static void RemoveOldCopies()
         {
             if (!Directory.Exists(Copies)) return;
-            foreach (var folder in Directory.GetDirectories(Copies).Where(folder => Directory.GetLastWriteTimeUtc(folder) < DateTime.UtcNow.AddDays(-1)))
+            var copies = new DirectoryInfo(Copies).GetDirectories()
+                .Select(folder => (Folder: folder, Size: folder.GetFiles().Sum(file => file.Length)))
+                .OrderBy(copy => copy.Folder.LastWriteTimeUtc).ToList();
+            var total = copies.Sum(copy => copy.Size);
+            foreach (var copy in copies)
             {
-                try { Directory.Delete(folder, true); } catch (IOException) { }
+                if (copy.Folder.LastWriteTimeUtc >= DateTime.UtcNow.AddDays(-1) && total <= MaxCopiesSize) break;
+                var gate = Locks.GetOrAdd(copy.Folder.Name, _ => new object());
+                if (!Monitor.TryEnter(gate)) continue;
+                try { copy.Folder.Delete(true); total -= copy.Size; } catch (IOException) { } finally { Monitor.Exit(gate); }
             }
         }
 

@@ -38,6 +38,8 @@
 </div>
 
 @code {
+    // Markers made in code: Blazor warns (BL0005) about setting a component's parameters, which is safe here.
+#pragma warning disable BL0005
     // The pin's tip is at the bottom middle of the image: half way across, all the way down.
     private static readonly PointMarkerStyle PinStyle = new PointMarkerStyle("images/map-pin.svg", 0.5, 1, 1);
 

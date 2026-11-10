@@ -23,6 +23,8 @@
 </div>
 
 @code {
+    // Markers made in code: Blazor warns (BL0005) about setting a component's parameters, which is safe here.
+#pragma warning disable BL0005
     private static readonly PointMarkerStyle Pulsing = new PointMarkerStyle("images/beacon.svg", 0.5, 0.5, 1);
     private static readonly PointMarkerStyle Still = new PointMarkerStyle("images/beacon-still.svg", 0.5, 0.5, 1);
     private static readonly (string Id, PointShape At)[] Places =

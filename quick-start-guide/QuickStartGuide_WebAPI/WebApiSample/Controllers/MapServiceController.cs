@@ -12,13 +12,13 @@ namespace WebSample.Controllers
     {
         [Route("{z}/{x}/{y}")]
         [HttpGet]
-        public IActionResult GetTile(int z, int x, int y)
+        public async Task<IActionResult> GetTile(int z, int x, int y)
         {
             // Create the LayerOverlay for displaying the map.
             LayerOverlay capitalOverlay = new LayerOverlay();
 
             // Create the point layer for capitals.
-            ShapeFileFeatureLayer capitalFeatureLayer = new ShapeFileFeatureLayer(Path.Combine(AppContext.BaseDirectory, "../../../Data/capital.shp"));
+            ShapeFileFeatureLayer capitalFeatureLayer = new ShapeFileFeatureLayer(Path.Combine(AppContext.BaseDirectory, "Data", "capital.shp"));
             // Create the "Mercator projection" and apply it to the layer to match the background map.
             capitalFeatureLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(Projection.GetWgs84ProjString(), Projection.GetSphericalMercatorProjString());
 
@@ -32,21 +32,11 @@ namespace WebSample.Controllers
             capitalFeatureLayer.DrawingMarginInPixel = 300;
             capitalOverlay.Layers.Add("street", capitalFeatureLayer);
 
-            using (GeoImage image = new GeoImage(256, 256))
-            {
-                GeoCanvas geoCanvas = GeoCanvas.CreateDefaultGeoCanvas();
-                RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
-                geoCanvas.BeginDrawing(image, boundingBox, GeographyUnit.Meter);
+            // Draw the overlay into a 256 x 256 PNG for the tile's extent.
+            RectangleShape boundingBox = WebApiExtentHelper.GetBoundingBoxForXyz(x, y, z, GeographyUnit.Meter);
+            byte[] imageBytes = await capitalOverlay.GetImageAsync(256, 256, boundingBox, HttpContext.RequestAborted);
 
-                if (capitalOverlay != null)
-                {
-                    capitalOverlay.Draw(geoCanvas);
-                }
-                geoCanvas.EndDrawing();
-                byte[] imageBytes = image.GetImageBytes(GeoImageFormat.Png);
-
-                return File(imageBytes, "image/png");
-            }
+            return File(imageBytes, "image/png");
         }
 
     }

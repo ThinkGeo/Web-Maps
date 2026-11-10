@@ -14,4 +14,8 @@
     <PackageReference Include="ThinkGeo.UI.WebApi" Version="15.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

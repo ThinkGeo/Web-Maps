@@ -1,13 +1,10 @@
 # The .NET 10 images are based on Ubuntu 24.04.
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 
-# Use the 'root' account to update APT and the SkiaSharp-related dependencies.
+# Use the 'root' account to install fontconfig, which SkiaSharp needs; it brings FreeType and the DejaVu fonts too.
 USER root
 RUN apt-get update
-RUN apt-get install -y --no-install-recommends \
-    libfontconfig1 libfreetype6 libgl1-mesa-dev \
-    libglib2.0-0t64 libharfbuzz0b libjpeg-turbo8 \
-    libpng16-16t64 libx11-6 libxcb1 libxext6 libxrender1
+RUN apt-get install -y --no-install-recommends libfontconfig1
 
 # Switch back to the 'app' account to run the service.
 USER app

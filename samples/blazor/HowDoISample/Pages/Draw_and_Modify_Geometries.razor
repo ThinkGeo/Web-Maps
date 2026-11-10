@@ -83,7 +83,8 @@
     BlazorTrackMode trackMode = BlazorTrackMode.None;
     bool isDeletingFeature;
 
-    string accessId = Guid.NewGuid().ToString();
+    // What Save keeps, as GeoJSON, for as long as the page is open.
+    List<string> savedGeoJsons = new List<string>();
 
     string GetCss(BlazorTrackMode mode) => mode == trackMode && !isDeletingFeature ? "active" : string.Empty;
 
@@ -165,14 +166,9 @@
     private Collection<Feature> GetFeatures()
     {
         Collection<Feature> features = new Collection<Feature>();
-        string jsonFilePath = $"./Data/Temp/{accessId}.json";
-        if (System.IO.File.Exists(jsonFilePath))
+        foreach (string geojson in savedGeoJsons)
         {
-            string[] geojsons = System.IO.File.ReadAllLines(jsonFilePath);
-            foreach (string geojson in geojsons)
-            {
-                features.Add(Feature.CreateFeatureFromGeoJson(geojson));
-            }
+            features.Add(Feature.CreateFeatureFromGeoJson(geojson));
         }
         return features;
     }
@@ -222,7 +218,7 @@
             features.Add(feature);
         }
 
-        // Update the local saved features for a specific access id.
+        // Keep the saved features for this page.
         SaveFeatures(features);
         ReloadData();
     }
@@ -241,16 +237,6 @@
 
     private void SaveFeatures(Collection<Feature> features)
     {
-        string jsonFilePath = $"./Data/Temp/{accessId}.json";
-        System.IO.Directory.CreateDirectory("./Data/Temp");
-        using (StreamWriter streamWriter = new StreamWriter(jsonFilePath, false))
-        {
-
-            foreach (Feature feature in features)
-            {
-                streamWriter.WriteLine(feature.GetGeoJson());
-            }
-            streamWriter.Close();
-        }
+        savedGeoJsons = features.Select(feature => feature.GetGeoJson()).ToList();
     }
 }

@@ -15,7 +15,7 @@ This sample makes use of the following NuGet packages:
 
 The project references the 15.0 prerelease packages. The basemaps need a ThinkGeo Cloud key: the one in `Shared/GlobalSettings.cs` is a demo key limited to basemap tiles, so get a free key of your own at https://cloud.thinkgeo.com and put it there.
 
-On Linux, CAD (DWG) files are read with ThinkGeo.Cad.Dependency.Linux, which the project adds when it is built on Linux or published for Linux (`dotnet publish -r linux-x64`).
+On Linux, CAD (DWG) files and the GDAL formats need ThinkGeo.Cad.Dependency.Linux and ThinkGeo.Gdal.Dependency.Linux, which the project adds when it is built on Linux or published for Linux (`dotnet publish -r linux-x64`).
 
 ### ThinkGeo Blazor Resources
 

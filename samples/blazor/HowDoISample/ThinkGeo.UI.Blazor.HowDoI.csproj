@@ -13,17 +13,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ThinkGeo.Cad" Version="15.1.0-beta003" />
+    <PackageReference Include="ThinkGeo.Cad" Version="15.1.0-beta005" />
     <!-- The Linux libraries of CAD (DWG) and GDAL, for a build on Linux or one published for a Linux runtime. -->
-    <PackageReference Include="ThinkGeo.Cad.Dependency.Linux" Version="15.1.0-beta002" Condition="'$(OS)' != 'Windows_NT' or $(RuntimeIdentifier.StartsWith('linux'))" />
+    <PackageReference Include="ThinkGeo.Cad.Dependency.Linux" Version="15.1.0-beta003" Condition="'$(OS)' != 'Windows_NT' or $(RuntimeIdentifier.StartsWith('linux'))" />
     <PackageReference Include="ThinkGeo.Gdal.Dependency.Linux" Version="15.0.0" Condition="'$(OS)' != 'Windows_NT' or $(RuntimeIdentifier.StartsWith('linux'))" />
-    <PackageReference Include="ThinkGeo.Core" Version="15.1.0-beta003" />
-    <PackageReference Include="ThinkGeo.Gdal" Version="15.1.0-beta003" />
-    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.1.0-beta003" />
-    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.1.0-beta003" />
-    <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.1.0-beta003" />
-    <PackageReference Include="ThinkGeo.PostgreSql" Version="15.1.0-beta003" />
-    <PackageReference Include="ThinkGeo.SqlServer" Version="15.1.0-beta003" />
+    <PackageReference Include="ThinkGeo.Core" Version="15.1.0-beta005" />
+    <PackageReference Include="ThinkGeo.Gdal" Version="15.1.0-beta005" />
+    <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.1.0-beta005" />
+    <PackageReference Include="ThinkGeo.FileGeoDatabase" Version="15.1.0-beta005" />
+    <PackageReference Include="ThinkGeo.NauticalCharts" Version="15.1.0-beta005" />
+    <PackageReference Include="ThinkGeo.PostgreSql" Version="15.1.0-beta005" />
+    <PackageReference Include="ThinkGeo.SqlServer" Version="15.1.0-beta005" />
   </ItemGroup>
 
   <ItemGroup>

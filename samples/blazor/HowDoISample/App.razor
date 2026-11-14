@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ThinkGeo Web UI for Blazor Samples - Build Better Maps Faster</title>
-    <base href="/" />
+    <base href="@BaseHref" />
     <link rel="stylesheet" href="css/lib/bootstrap/bootstrap.min.css" />
     <link href="css/font-awesome.min.css" rel="stylesheet" />
     <link href="css/main.css" rel="stylesheet" />
@@ -40,7 +40,7 @@
                 codeButton.classList.toggle('code-button-active', opening);
                 codeButton.setAttribute('aria-pressed', String(opening));
                 if (opening && !pane.dataset.loaded) {
-                    const response = await fetch('/source/' + encodeURIComponent(codeButton.dataset.source));
+                    const response = await fetch('source/' + encodeURIComponent(codeButton.dataset.source));
                     const code = document.getElementById('razor-source');
                     code.textContent = response.ok
                         ? await response.text() : 'Source unavailable.';
@@ -67,3 +67,12 @@
     </script>
 </body>
 </html>
+
+@code {
+    // The gallery is hosted as an IIS application under /blazor; locally it runs at the root. Every
+    // script, style and route is relative to this base, so it follows the request's path base.
+    [CascadingParameter]
+    private Microsoft.AspNetCore.Http.HttpContext HttpContext { get; set; }
+
+    private string BaseHref => (HttpContext?.Request.PathBase.Value ?? string.Empty) + "/";
+}

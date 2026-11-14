@@ -165,7 +165,7 @@
             flightReference = DotNetObjectReference.Create(this);
             var points = route.Select(point => new[] { point.Lon, point.Lat }).ToArray();
             flightReady = await flightModule.InvokeAsync<bool>("initializeFlight", mapId, points,
-                "/images/dateline_aircraft.svg", flightReference, 45000);
+                "images/dateline_aircraft.svg", flightReference, 45000);
             if (!flightReady)
             {
                 styleOk = false;

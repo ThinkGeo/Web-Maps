@@ -5,9 +5,9 @@ namespace ThinkGeo.UI.Blazor.HowDoI
 {
     public static class DemographicStyleTextFormatter
     {
-        public static string GetFormatedStringForLegendItem(string columnName, double value)
+        public static string GetFormattedStringForLegendItem(string columnName, double value)
         {
-            string aliasUnitString = GetFormatedString(columnName, value);
+            string aliasUnitString = GetFormattedString(columnName, value);
             string[] subStrings = aliasUnitString.Split(new string[] { ": " }, StringSplitOptions.None);
 
             if (subStrings[subStrings.Length - 1].Contains("%"))
@@ -22,7 +22,7 @@ namespace ThinkGeo.UI.Blazor.HowDoI
             return aliasUnitString;
         }
 
-        public static string GetFormatedString(string columnName, double value)
+        public static string GetFormattedString(string columnName, double value)
         {
             string result = string.Empty;
             switch (columnName)
@@ -67,40 +67,40 @@ namespace ThinkGeo.UI.Blazor.HowDoI
                     result = string.Format("Multiracial : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
                     break;
                 case "Under5":
-                    result = string.Format("<= 5 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
+                    result = string.Format("Under 5 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
                     break;
                 case "5to9":
-                    result = string.Format("5 ~ 10 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
+                    result = string.Format("5-9 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
                     break;
                 case "10to14":
-                    result = string.Format("10 ~ 15 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
+                    result = string.Format("10-14 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
                     break;
                 case "15to17":
-                    result = string.Format("15 ~ 18 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
+                    result = string.Format("15-17 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
                     break;
                 case "18to24":
-                    result = string.Format("18 ~ 25 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
+                    result = string.Format("18-24 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
                     break;
                 case "25to34":
-                    result = string.Format("25 ~ 35 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
+                    result = string.Format("25-34 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
                     break;
                 case "35to44":
-                    result = string.Format("35 ~ 45 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
+                    result = string.Format("35-44 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
                     break;
                 case "45to54":
-                    result = string.Format("45 ~ 55 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
+                    result = string.Format("45-54 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
                     break;
                 case "55to64":
-                    result = string.Format("55 ~ 65 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
+                    result = string.Format("55-64 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
                     break;
                 case "65to74":
-                    result = string.Format("65 ~ 75 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
+                    result = string.Format("65-74 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
                     break;
                 case "75to84":
-                    result = string.Format("75 ~ 85 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
+                    result = string.Format("75-84 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
                     break;
                 case "over85":
-                    result = string.Format(">= 85 : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
+                    result = string.Format("85 and over : {0}%", value.ToString("N2", CultureInfo.InvariantCulture));
                     break;
                 default:
                     result = columnName + " : " + value.ToString("N0", CultureInfo.InvariantCulture);

@@ -1,0 +1,362 @@
+@page "/find-features-by-spatial-relation"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+@using System.Collections.ObjectModel
+@using System.Globalization
+@implements IDisposable
+
+@{
+    var initialCenter = new PointShape(-10779430, 3914970);
+}
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 OnReady="MapReadyAsync"
+                 Center="@initialCenter" Zoom="15" Bearing="0" Pitch="0" OnClick="@MapClicked">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Zoning" StyleJson="@applied" FeatureSources="@zoningSources" SourceId="features" />
+                <VectorTileOverlay Id="Marks" @ref="marks" Style="@markStyle" FeatureSources="@markSources" SourceId="marks" />
+            </OverlaysSetting>
+            <EditOverlaySetting>
+                <EditOverlay TrackMode="@trackMode" OnFeatureDrawn="@Drawn" />
+            </EditOverlaySetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@initialCenter" CenterButtonZoom="15" CenterButtonBearing="0" CenterButtonPitch="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@initialCenter" Zoom="15" Bearing="0" Pitch="0" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+        @if (busy)
+        {
+            <div role="status" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:10px 16px;border-radius:6px;background:rgba(30,30,30,.85);color:white;font:13px system-ui;pointer-events:none;z-index:2">Finding related features...</div>
+        }
+    </div>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Find Features by Spatial Relation</div>
+        <div style="font-weight:700;margin-bottom:4px">Relation</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+            @foreach (var name in Relations)
+            {
+                <label style="cursor:pointer"><input type="radio" name="relation" checked="@(relation == name)" disabled="@busy" @onchange="@(() => Choose(name))" /> @name</label>
+            }
+            @if (relation == "Within a distance")
+            {
+                <label style="margin-top:4px">Distance (meters): @radius
+                    <input type="range" min="100" max="2000" value="@radius" style="width:100%" disabled="@busy" @oninput="@RadiusChanged" />
+                </label>
+            }
+        </div>
+        <div style="margin-top:10px;color:#e5e5e5;font-size:11px;line-height:1.35">@hint</div>
+        <div style="margin-top:5px;font-weight:700;color:#baf1ba">@result</div>
+        <div style="border-top:1px solid #aaa;margin-top:10px;padding-top:8px;display:flex;flex-direction:column;flex:1;min-height:0">
+            <div style="font-weight:700;margin-bottom:4px">style.json - edit it; the map follows</div>
+            <textarea aria-label="style.json editor" @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
+                      style="flex:1;min-height:0;width:100%;box-sizing:border-box;resize:none;border:1px solid #aaa;background:#fff;color:#111;padding:7px;font:11.5px/1.35 Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:hidden;overflow-y:auto"></textarea>
+            <div role="status" style="padding-top:5px;line-height:1.3;overflow-wrap:anywhere;color:@(ok ? "#baf1ba" : "#ffd0b8")">@status</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""fill"",
+      ""source-layer"": ""zoning"",
+      ""paint"": {
+          ""fill-color"": ""rgba(147,112,219,0.35)"",
+          ""fill-outline-color"": ""#6A4FA3"" }
+    }
+  ]
+}";
+
+    private static readonly string[] Relations =
+    {
+        "Containing", "Crossing", "Disjoint", "Intersecting", "Overlapping", "Touching", "Within the shape", "Within a distance"
+    };
+
+    private MapView map;
+    private VectorTileOverlay marks;
+    private GeoCollection<FeatureSource> zoningSources;
+    private GeoCollection<FeatureSource> markSources;
+    private MapStyle markStyle;
+    private readonly InMemoryFeatureSource query = new InMemoryFeatureSource();
+    private readonly InMemoryFeatureSource matches = new InMemoryFeatureSource();
+    private ShapeFileFeatureSource zoning;
+    private ShapeFileFeatureSource native;
+    private QueryTools zoningQuery;
+    private QueryTools nativeQuery;
+    private ProjectionConverter outward;
+    private BlazorTrackMode trackMode = BlazorTrackMode.None;
+    private string relation = Relations[0];
+    private BaseShape seed;
+    private double radius = 500;
+    private string hint = "";
+    private string result = "";
+    private string styleJson = StyleJson;
+    private string applied = StyleJson;
+    private string status = "";
+    private bool ok = true;
+    private bool busy;
+    private bool disposed;
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        zoningSources = new GeoCollection<FeatureSource>
+        {
+            { "zoning", new ShapeFileFeatureSource("./Data/Shapefile/Zoning.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) } }
+        };
+        zoning = new ShapeFileFeatureSource("./Data/Shapefile/Zoning.shp") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+        // Touching is exact, so it is asked in the file's own plane and the answer converted out.
+        native = new ShapeFileFeatureSource("./Data/Shapefile/Zoning.shp");
+        outward = new ProjectionConverter(2276, 3857);
+        outward.Open();
+        zoningQuery = new QueryTools(zoning);
+        nativeQuery = new QueryTools(native);
+
+        markSources = new GeoCollection<FeatureSource> { { "query", query }, { "matches", matches } };
+        markStyle = new MapStyle()
+            .AddFillLayer("matches", "marks", "matches", new FillPaint(new GeoColor(90, GeoColors.MidnightBlue), outlineColor: GeoColors.MidnightBlue))
+            .AddLineLayer("matches-edge", "marks", "matches", new LinePaint(GeoColors.MidnightBlue, 2f))
+            .AddLineLayer("query-edge", "marks", "query", new LinePaint(GeoColors.Black, 2f))
+            .AddSymbolLayer("query-point", "marks", "query",
+                new SymbolLayout(SymbolPlacement.Point, TextAnchor.Center, "Noto Sans Regular", iconAllowOverlap: true, iconRotationAlignment: SymbolRotationAlignment.Viewport),
+                new SymbolPaint(GeoColors.Black), imageName: "pin", filter: StyleExpressions.GeometryType(WellKnownType.Point));
+        markStyle.Images.Add("pin", PointStyle.CreateSimpleCircleStyle(GeoColors.Black, 8, GeoColors.White, 2));
+
+        Show();
+    }
+
+    private async Task MapReadyAsync()
+    {
+        if (!disposed)
+        {
+            await FrameAsync();
+            await RunGuardedAsync(Seed(), fromSeed: true);
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task Choose(string name)
+    {
+        if (busy || disposed) return;
+        busy = true;
+        await InvokeAsync(StateHasChanged);
+        try
+        {
+            relation = name;
+            Show();
+            await FrameAsync();
+            await RunAsync(Seed(), fromSeed: true);
+        }
+        finally
+        {
+            busy = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void Show()
+    {
+        var pointQuery = relation == "Containing" || relation == "Within a distance";
+        var lineQuery = relation == "Crossing" || relation == "Touching";
+        hint = pointQuery ? "Click the map to query somewhere else."
+            : relation == "Touching" ? "Touching is exact - the seed is one parcel's own edge. A line you draw yourself will almost always match nothing."
+            : lineQuery ? "Draw a line to query somewhere else."
+            : "Draw a polygon to query somewhere else.";
+        trackMode = pointQuery ? BlazorTrackMode.None : lineQuery ? BlazorTrackMode.LineString : BlazorTrackMode.Polygon;
+    }
+
+    private Task FrameAsync()
+    {
+        switch (relation)
+        {
+            case "Crossing": return map.ZoomToAsync(new PointShape(-10776670, 3914800), 27870);
+            case "Disjoint": return map.ZoomToAsync(new PointShape(-10778020, 3914693), 32900);
+            case "Intersecting": return map.ZoomToAsync(new PointShape(-10777924, 3914325), 11220);
+            case "Overlapping": return map.ZoomToAsync(new PointShape(-10777891, 3914206), 26200);
+            case "Touching": return map.ZoomToAsync(new PointShape(-10776520, 3919250), 18060);
+            case "Within the shape": return map.ZoomToAsync(new PointShape(-10778569, 3914000), 33100);
+            default: return map.ZoomToAsync(new PointShape(-10779430, 3914970), 18060);
+        }
+    }
+
+    private BaseShape Seed()
+    {
+        switch (relation)
+        {
+            case "Crossing": return new LineShape("LINESTRING(-10774628 3914024,-10776902 3915582,-10778030 3914368,-10778708 3914445)");
+            case "Disjoint": return new PolygonShape("POLYGON((-10780418 3915973,-10780428 3913422,-10775737 3913413,-10775612 3915954,-10780418 3915973))");
+            case "Intersecting": return new PolygonShape("POLYGON((-10778718 3914865,-10778746 3913709,-10777103 3913766,-10777179 3914942,-10778718 3914865))");
+            case "Overlapping": return new PolygonShape("POLYGON((-10779549 3915352,-10777495 3915859,-10776214 3914827,-10776081 3913384,-10777906 3912553,-10779702 3914110,-10779549 3915352))");
+            case "Touching": return TouchingSeed();
+            case "Within the shape": return new PolygonShape("POLYGON((-10779148 3916088,-10779960 3913862,-10777189 3911913,-10777179 3915754,-10779148 3916088))");
+            default: return new PointShape(-10779430, 3914970);
+        }
+    }
+
+    // One edge of the first parcel, in the file's own plane.
+    private BaseShape TouchingSeed()
+    {
+        native.Open();
+        MultipolygonShape first;
+        try
+        {
+            first = (MultipolygonShape)native.GetAllFeatures(ReturningColumnsType.NoColumns).First().GetShape();
+        }
+        finally
+        {
+            native.Close();
+        }
+        var vertices = first.Polygons.First().OuterRing.Vertices;
+        return new LineShape(new Collection<Vertex> { vertices[0], vertices[1] });
+    }
+
+    private Task MapClicked(ClickedMapViewEventArgs args)
+    {
+        if (trackMode != BlazorTrackMode.None) return Task.CompletedTask;
+        return RunGuardedAsync(new PointShape(args.WorldX, args.WorldY));
+    }
+
+    private async Task Drawn(FeatureDrawnEditOverlayEventArgs args)
+    {
+        if (busy || disposed) return;
+        busy = true;
+        await InvokeAsync(StateHasChanged);
+        try
+        {
+        map.EditOverlay.Features.Clear();
+        await RunAsync(args.DrawnFeature.GetShape());
+        }
+        finally
+        {
+            busy = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private Task RadiusChanged(ChangeEventArgs args)
+    {
+        radius = double.Parse((string)args.Value, CultureInfo.InvariantCulture);
+        return RunGuardedAsync(seed, fromSeed: true);
+    }
+
+    private async Task RunGuardedAsync(BaseShape shape, bool fromSeed = false)
+    {
+        if (shape == null || busy || disposed) return;
+        busy = true;
+        await InvokeAsync(StateHasChanged);
+        try
+        {
+            await RunAsync(shape, fromSeed);
+        }
+        finally
+        {
+            busy = false;
+            if (!disposed) await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task RunAsync(BaseShape shape, bool fromSeed = false)
+    {
+        if (shape == null) return;
+        seed = shape;
+
+        if (relation == "Touching")
+        {
+            var asked = fromSeed ? shape : outward.ConvertToInternalProjection(shape);
+            native.Open();
+            List<Feature> touching;
+            try
+            {
+                touching = nativeQuery.GetFeaturesTouching(asked, ReturningColumnsType.NoColumns).ToList();
+            }
+            finally
+            {
+                native.Close();
+            }
+            await PaintAsync(outward.ConvertToExternalProjection(asked), touching.Select(feature => outward.ConvertToExternalProjection(feature)).ToList());
+            result = touching.Count + " features touching the query shape";
+            return;
+        }
+
+        zoning.Open();
+        List<Feature> list;
+        string verb;
+        try
+        {
+            IEnumerable<Feature> found;
+            switch (relation)
+            {
+                case "Crossing": found = zoningQuery.GetFeaturesCrossing(shape, ReturningColumnsType.NoColumns); verb = "crossing"; break;
+                case "Disjoint": found = zoningQuery.GetFeaturesDisjointed(shape, ReturningColumnsType.NoColumns); verb = "disjoint from"; break;
+                case "Intersecting": found = zoningQuery.GetFeaturesIntersecting(shape, ReturningColumnsType.NoColumns); verb = "intersecting"; break;
+                case "Overlapping": found = zoningQuery.GetFeaturesOverlapping(shape, ReturningColumnsType.NoColumns); verb = "overlapping"; break;
+                case "Within the shape": found = zoningQuery.GetFeaturesWithin(shape, ReturningColumnsType.NoColumns); verb = "within"; break;
+                case "Within a distance":
+                    found = zoningQuery.GetFeaturesWithinDistanceOf(shape, GeographyUnit.Meter, DistanceUnit.Meter, radius, ReturningColumnsType.NoColumns);
+                    verb = "within " + (int)radius + " m of";
+                    break;
+                default: found = zoningQuery.GetFeaturesContaining(shape, ReturningColumnsType.NoColumns); verb = "containing"; break;
+            }
+            list = found.ToList();
+        }
+        finally
+        {
+            zoning.Close();
+        }
+
+        await PaintAsync(shape, list);
+        result = list.Count + " features " + verb + " the query shape";
+    }
+
+    private async Task PaintAsync(BaseShape asked, IEnumerable<Feature> found)
+    {
+        query.InternalFeatures.Clear();
+        query.InternalFeatures.Add(new Feature(asked));
+        matches.InternalFeatures.Clear();
+        foreach (var feature in found)
+        {
+            matches.InternalFeatures.Add(feature);
+        }
+        await marks.RedrawAsync();
+    }
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit || disposed) return;
+
+        try
+        {
+            if (JsonNode.Parse(styleJson) is not JsonObject document || document["layers"] is not JsonArray)
+                throw new FormatException("The style needs a layers array.");
+            applied = styleJson;
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        edit++;
+        outward?.Close();
+    }
+}

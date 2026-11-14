@@ -1,0 +1,250 @@
+@page "/isolines"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+@using ThinkGeo.UI.Blazor
+@using System.Diagnostics
+@using System.Globalization
+@using System.Collections.ObjectModel
+@implements IDisposable
+
+<div class="map-container">
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter" Width="100" Height="100"
+             MapViewSizeUnitType="MapViewSizeUnitType.Percentage" Center="@center" Zoom="12">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            <VectorTileOverlay Id="GpuIsolines" @ref="overlay" StyleJson="@EmptyStyle" Isolines="@isolineOptions" />
+            <VectorTileOverlay Id="Measurements" @ref="pointOverlay" StyleJson="@PointStyle"
+                               FeatureSources="@pointSources" SourceId="measurements"
+                               IsVisible="@(showPoints && currentPoints.Count <= MaxDrawnDataPoints)" />
+            @if (exportedSources != null)
+            {
+                <VectorTileOverlay Id="ExportedIsolines" StyleJson="@ExportStyle"
+                                   FeatureSources="@exportedSources" SourceId="exports" />
+            }
+        </OverlaysSetting>
+        <MapToolsSetting><MapTools>
+            <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                            CenterButtonCenter="@center" CenterButtonZoom="12" />
+        </MapTools></MapToolsSetting>
+    </MapView>
+    <div style="position:absolute;top:12px;right:12px;width:300px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Isolines</div>
+        <div style="color:#e5e5e5;line-height:1.4">Mosquito readings are interpolated on the GPU and drawn as colored contours.</div>
+        <label style="display:block;margin-top:9px">Data points
+            <select aria-label="Data points" value="@pointSelection" @onchange="PointsChanged" style="display:block;width:100%;margin-top:3px">
+                <option value="0">@seedPoints.Count points (real sample data)</option>
+                <option value="1000">1,000 points (synthetic)</option>
+                <option value="10000">10,000 points (synthetic)</option>
+            </select>
+        </label>
+        <label style="display:block;margin-top:8px"><input type="checkbox" checked="@fillBands" @onchange="FillChanged" /> Fill bands</label>
+        <label style="display:block;margin-top:4px"><input type="checkbox" checked="@showLabels" @onchange="LabelsChanged" /> Labels</label>
+        <label style="display:block;margin-top:4px"><input type="checkbox" checked="@showPoints" @onchange="PointsVisibleChanged" /> Data points (up to 2,000)</label>
+        <label style="display:block;margin-top:9px">Levels: @levelCount
+            <input aria-label="Levels" type="range" min="2" max="60" step="1" value="@levelCount" @onchange="LevelsChanged" style="display:block;width:100%" />
+        </label>
+        <label style="display:block;margin-top:5px">Width: @lineWidth.ToString("0.#", CultureInfo.InvariantCulture) px
+            <input aria-label="Width" type="range" min="1" max="8" step="0.5" value="@lineWidth.ToString(CultureInfo.InvariantCulture)" @onchange="WidthChanged" style="display:block;width:100%" />
+        </label>
+        <label style="display:block;margin-top:5px">Power: @power.ToString("0.#", CultureInfo.InvariantCulture)
+            <input aria-label="Power" type="range" min="1" max="4" step="0.5" value="@power.ToString(CultureInfo.InvariantCulture)" @onchange="PowerChanged" style="display:block;width:100%" />
+        </label>
+        <label style="display:block;margin-top:5px">Search radius: @radiusFactor.ToString("0.0", CultureInfo.InvariantCulture) × data width
+            <input aria-label="Search radius" type="range" min="0" max="1.5" step="0.1" value="@radiusFactor.ToString(CultureInfo.InvariantCulture)" @onchange="RadiusChanged" style="display:block;width:100%" />
+        </label>
+        <button class="btn btn-sm btn-light" style="margin-top:10px" @onclick="ExportFeatures" disabled="@exporting">Export features</button>
+        <div role="status" style="margin-top:8px;color:#e5e5e5;line-height:1.35">@status</div>
+    </div>
+</div>
+
+@code {
+    private const int MaxDrawnDataPoints = 2000;
+    private const string EmptyStyle = "{\"version\":8,\"sources\":{},\"layers\":[]}";
+    private const string PointStyle = "{\"layers\":[{\"type\":\"circle\",\"source-layer\":\"points\",\"paint\":{\"circle-radius\":5.5,\"circle-color\":\"#222222\",\"circle-stroke-color\":\"#ffffff\",\"circle-stroke-width\":2}}]}";
+    private const string ExportStyle = "{\"layers\":[{\"type\":\"line\",\"source-layer\":\"lines\",\"paint\":{\"line-color\":\"#111111\",\"line-width\":1.5,\"line-dasharray\":[3,3]}}]}";
+
+    private MapView map;
+    private VectorTileOverlay overlay;
+    private VectorTileOverlay pointOverlay;
+    private Dictionary<PointShape, double> seedPoints;
+    private Dictionary<PointShape, double> currentPoints;
+    private readonly Dictionary<int, Dictionary<PointShape, double>> syntheticCache = new();
+    private RectangleShape dataBounds;
+    private PointShape center;
+    private readonly InMemoryFeatureSource pointSource = new();
+    private GeoCollection<FeatureSource> pointSources;
+    private GeoCollection<FeatureSource> exportedSources;
+    private IsolineOverlayOptions isolineOptions;
+    private int pointSelection;
+    private int levelCount = 25;
+    private float lineWidth = 3;
+    private double power = 2;
+    private double radiusFactor;
+    private bool fillBands;
+    private bool showLabels = true;
+    private bool showPoints = true;
+    private bool exporting;
+    private bool disposed;
+    private string status = "Preparing GPU isolines...";
+
+    protected override void OnInitialized()
+    {
+        seedPoints = LoadCsv("./Data/Csv/Frisco_Mosquitos.csv");
+        currentPoints = seedPoints;
+        dataBounds = new RectangleShape(seedPoints.Keys.Min(p => p.X), seedPoints.Keys.Max(p => p.Y),
+            seedPoints.Keys.Max(p => p.X), seedPoints.Keys.Min(p => p.Y));
+        center = dataBounds.GetCenterPoint();
+        pointSources = new GeoCollection<FeatureSource> { { "points", pointSource } };
+        RefreshPoints();
+        ApplyOptions();
+    }
+
+    private void ApplyOptions()
+    {
+        var levels = IsoLineLayer.GetIsoLineLevels(currentPoints, levelCount).Distinct().OrderBy(value => value).ToArray();
+        var colors = GeoColor.GetColorsInQualityFamily(GeoColors.Blue, GeoColors.Red,
+            levels.Length, ColorWheelDirection.Clockwise).ToArray();
+        var extent = (RectangleShape)dataBounds.CloneDeep();
+        extent.ScaleUp(5);
+        isolineOptions ??= new IsolineOverlayOptions();
+        isolineOptions.Points = currentPoints;
+        isolineOptions.Levels = levels.Select((value, index) => new ThinkGeo.Core.Styling.ColorStop(value, colors[index])).ToArray();
+        isolineOptions.Extent = extent;
+        isolineOptions.Power = power;
+        isolineOptions.SearchRadius = radiusFactor * dataBounds.Width;
+        isolineOptions.LineWidthInPixel = lineWidth;
+        isolineOptions.FillOpacity = fillBands ? 0.45f : 0f;
+        isolineOptions.ShowLabels = showLabels;
+        isolineOptions.LabelEveryNthLevel = 2;
+        isolineOptions.FieldResolution = currentPoints.Count >= 10000 ? 256 : 512;
+        status = string.Format(CultureInfo.InvariantCulture,
+            "{0:N0} points, {1} levels - GPU field and contours", currentPoints.Count, levels.Length);
+    }
+
+    private async Task Redraw()
+    {
+        exportedSources = null;
+        ApplyOptions();
+        if (overlay == null) return;
+        try
+        {
+            await overlay.RedrawAsync();
+        }
+        catch (Exception exception) { status = "GPU isolines unavailable: " + exception.Message.Split('\n')[0]; }
+    }
+
+    private async Task PointsChanged(ChangeEventArgs args)
+    {
+        pointSelection = int.Parse((string)args.Value, CultureInfo.InvariantCulture);
+        if (pointSelection == 0) currentPoints = seedPoints;
+        else if (syntheticCache.TryGetValue(pointSelection, out var cached)) currentPoints = cached;
+        else
+        {
+            currentPoints = await Task.Run(() => SyntheticPoints(pointSelection));
+            syntheticCache[pointSelection] = currentPoints;
+        }
+        RefreshPoints();
+        if (pointOverlay != null) await pointOverlay.RedrawAsync();
+        await Redraw();
+    }
+
+    private Task FillChanged(ChangeEventArgs args) { fillBands = args.Value is true; return Redraw(); }
+    private Task LabelsChanged(ChangeEventArgs args) { showLabels = args.Value is true; return Redraw(); }
+    private Task PointsVisibleChanged(ChangeEventArgs args) { showPoints = args.Value is true; return Task.CompletedTask; }
+    private Task LevelsChanged(ChangeEventArgs args) { levelCount = (int)Number(args); return Redraw(); }
+    private Task WidthChanged(ChangeEventArgs args) { lineWidth = (float)Number(args); return Redraw(); }
+    private Task PowerChanged(ChangeEventArgs args) { power = Number(args); return Redraw(); }
+    private Task RadiusChanged(ChangeEventArgs args) { radiusFactor = Number(args); return Redraw(); }
+
+    private void RefreshPoints()
+    {
+        pointSource.InternalFeatures.Clear();
+        if (currentPoints.Count > MaxDrawnDataPoints) return;
+        foreach (var point in currentPoints.Keys) pointSource.InternalFeatures.Add(new Feature(point));
+    }
+
+    private async Task ExportFeatures()
+    {
+        if (overlay == null || exporting) return;
+        exporting = true;
+        status = "Reading the GPU field and tracing isolines...";
+        try
+        {
+            var snapshot = await overlay.GetIsolineFieldAsync();
+            var levels = isolineOptions.Levels.Select(stop => stop.Value).ToList();
+            var watch = Stopwatch.StartNew();
+            var result = await Task.Run(() =>
+            {
+                var matrix = new GridCell[snapshot.Height, snapshot.Width];
+                var cellWidth = snapshot.Extent.Width / snapshot.Width;
+                var cellHeight = snapshot.Extent.Height / snapshot.Height;
+                for (var row = 0; row < snapshot.Height; row++)
+                for (var column = 0; column < snapshot.Width; column++)
+                {
+                    var x = snapshot.Extent.MinX + (column + 0.5) * cellWidth;
+                    var y = snapshot.Extent.MaxY - (row + 0.5) * cellHeight;
+                    matrix[row, column] = new GridCell(x, y,
+                        snapshot.Values[(snapshot.Height - 1 - row) * snapshot.Width + column]);
+                }
+                var features = IsoLineLayer.GetIsoFeatures(matrix, levels, "Value", IsoLineType.LinesOnly, -9999);
+                var vertices = features.Sum(feature => feature.GetShape() switch
+                {
+                    LineShape line => line.Vertices.Count,
+                    MultilineShape lines => lines.Lines.Sum(line => line.Vertices.Count),
+                    _ => 0
+                });
+                return (features, vertices);
+            });
+            watch.Stop();
+            if (disposed) return;
+            exportedSources = new GeoCollection<FeatureSource>
+            {
+                { "lines", new InMemoryFeatureSource(new[] { new FeatureSourceColumn("Value") }, result.features) }
+            };
+            status = string.Format(CultureInfo.InvariantCulture,
+                "Exported {0:N0} features / {1:N0} vertices from the {2}x{3} GPU field in {4:N0} ms; dashed black lines show the geometry.",
+                result.features.Count, result.vertices, snapshot.Width, snapshot.Height, watch.ElapsedMilliseconds);
+        }
+        catch (Exception exception) { status = "Export failed: " + exception.Message.Split('\n')[0]; }
+        finally { exporting = false; }
+    }
+
+    private Dictionary<PointShape, double> SyntheticPoints(int count)
+    {
+        var random = new Random(42);
+        var seeds = seedPoints.ToList();
+        var synthetic = new Dictionary<PointShape, double>(count);
+        while (synthetic.Count < count)
+        {
+            var x = dataBounds.MinX + random.NextDouble() * dataBounds.Width;
+            var y = dataBounds.MinY + random.NextDouble() * dataBounds.Height;
+            double top = 0, bottom = 0;
+            foreach (var seed in seeds)
+            {
+                var dx = x - seed.Key.X; var dy = y - seed.Key.Y;
+                var weight = 1.0 / (dx * dx + dy * dy + 1.0);
+                top += weight * seed.Value; bottom += weight;
+            }
+            synthetic[new PointShape(x, y)] = top / bottom + (random.NextDouble() - 0.5) * 12.0;
+        }
+        return synthetic;
+    }
+
+    private static Dictionary<PointShape, double> LoadCsv(string path)
+    {
+        var result = new Dictionary<PointShape, double>();
+        foreach (var line in File.ReadLines(path))
+        {
+            var parts = line.Split(',');
+            if (parts.Length < 3) continue;
+            result[new PointShape(double.Parse(parts[0], CultureInfo.InvariantCulture),
+                double.Parse(parts[1], CultureInfo.InvariantCulture))] =
+                double.Parse(parts[2], CultureInfo.InvariantCulture);
+        }
+        return result;
+    }
+
+    private static double Number(ChangeEventArgs args) => double.Parse((string)args.Value, CultureInfo.InvariantCulture);
+    public void Dispose() => disposed = true;
+}

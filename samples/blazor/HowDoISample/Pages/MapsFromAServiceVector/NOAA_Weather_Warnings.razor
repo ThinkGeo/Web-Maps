@@ -1,0 +1,119 @@
+@page "/noaa-weather-warnings"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Warnings" StyleJson="@applied" FeatureSources="@sources" SourceId="features" />
+            </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom"
+                                    CenterButtonBearing="0" CenterButtonPitch="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+        <VectorSourceLoadingIndicator MapId="map" SourceId="Warnings::features" Label="Loading NOAA weather warnings..." />
+    </div>
+    <div style="width:320px;flex:0 0 320px;box-sizing:border-box;margin-left:10px;background:dimgray;color:whitesmoke;font:13px system-ui;display:flex;flex-direction:column;min-height:0">
+        <div style="padding:8px 8px 4px;font-size:16px;font-weight:600">style.json - edit it; the map follows</div>
+        <div style="padding:0 8px 7px;font-size:12px;line-height:1.35">The warnings NOAA has active right now, read by NoaaWeatherWarningsFeatureSource: polygons colored by their SEVERITY column and labeled by EVENT. On a quiet day there may be few.</div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false" wrap="soft"
+                  aria-label="style.json editor"
+                  style="flex:1;min-height:0;width:100%;box-sizing:border-box;background:#fff;color:#222;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre-wrap;overflow-wrap:anywhere"></textarea>
+        <div style="padding:4px 8px 6px;color:@(ok ? "#c9f5d2" : "#ffd0d0")">@status</div>
+    </div>
+</div>
+
+@code {
+    private static readonly PointShape InitialCenter = new PointShape(-10807050, 5045070);
+    private const int InitialZoom = 4;
+
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""fill"",
+      ""source-layer"": ""warnings"",
+      ""paint"": {
+          ""fill-color"": [""match"", [""get"", ""SEVERITY""],
+              ""Extreme"", ""rgba(215,25,28,0.40)"",
+              ""Severe"", ""rgba(244,109,67,0.40)"",
+              ""Moderate"", ""rgba(253,174,97,0.35)"",
+              ""Minor"", ""rgba(171,217,233,0.35)"",
+              ""rgba(150,150,150,0.30)""] }
+    },
+
+    { ""type"": ""line"",
+      ""source-layer"": ""warnings"",
+      ""paint"": {
+          ""line-color"": [""match"", [""get"", ""SEVERITY""],
+              ""Extreme"", ""rgba(215,25,28,1)"",
+              ""Severe"", ""rgba(244,109,67,1)"",
+              ""Moderate"", ""rgba(253,174,97,1)"",
+              ""Minor"", ""rgba(171,217,233,1)"",
+              ""rgba(150,150,150,1)""],
+          ""line-width"": 1.5 }
+    },
+
+    { ""type"": ""symbol"",
+      ""source-layer"": ""warnings"",
+      ""layout"": {
+          ""text-field"": [""get"", ""EVENT""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 11,
+          ""text-max-width"": 16 },
+      ""paint"": {
+          ""text-color"": ""rgba(60,60,60,1)"",
+          ""text-halo-color"": ""rgba(255,255,255,1)"",
+          ""text-halo-width"": 1.5 }
+    }
+  ]
+}";
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private string styleJson = StyleJson;
+    private string applied = StyleJson;
+    private string status = "";
+    private bool ok = true;
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource>
+        {
+            { "warnings", new NoaaWeatherWarningsFeatureSource { ProjectionConverter = new ProjectionConverter(4326, 3857) } }
+        };
+    }
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit) return;
+
+        try
+        {
+            JsonNode.Parse(styleJson);
+            applied = styleJson;
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+}

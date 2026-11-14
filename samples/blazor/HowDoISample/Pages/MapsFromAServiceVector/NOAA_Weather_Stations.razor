@@ -1,0 +1,111 @@
+@page "/noaa-weather-stations"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+@using System.Text.Json.Nodes
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+                <VectorTileOverlay Id="Stations" StyleJson="@applied" FeatureSources="@sources" SourceId="features" />
+            </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom"
+                                    CenterButtonBearing="0" CenterButtonPitch="0" />
+                    <CompassMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="10" />
+                    <HomeMapTool Location="ZoomBarLocation.UpperRight" OffsetX="10" OffsetY="60"
+                                 Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0" />
+                </MapTools>
+            </MapToolsSetting>
+        </MapView>
+        <VectorSourceLoadingIndicator MapId="map" SourceId="Stations::features" Label="Loading NOAA weather stations..." />
+    </div>
+    <div style="width:320px;flex:0 0 320px;box-sizing:border-box;margin-left:10px;background:dimgray;color:whitesmoke;font:13px system-ui;display:flex;flex-direction:column;min-height:0">
+        <div style="padding:8px 8px 4px;font-size:16px;font-weight:600">style.json - edit it; the map follows</div>
+        <div style="padding:0 8px 7px;font-size:12px;line-height:1.35">NOAA's weather stations and their current readings, read live by NoaaWeatherStationFeatureSource and cut into tiles like any other source. Each dot is colored by its Temperature column.</div>
+        <textarea @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false" wrap="soft"
+                  aria-label="style.json editor"
+                  style="flex:1;min-height:0;width:100%;box-sizing:border-box;background:#fff;color:#222;font:11.5px Consolas,monospace;padding:6px;border:0;border-top:1px solid #ccc;resize:none;white-space:pre-wrap;overflow-wrap:anywhere"></textarea>
+        <div style="padding:4px 8px 6px;color:@(ok ? "#c9f5d2" : "#ffd0d0")">@status</div>
+    </div>
+</div>
+
+@code {
+    private static readonly PointShape InitialCenter = new PointShape(-10807050, 5045070);
+    private const int InitialZoom = 4;
+
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""circle"",
+      ""source-layer"": ""stations"",
+      ""paint"": {
+          ""circle-radius"": 4.5,
+          ""circle-color"": [""step"", [""to-number"", [""get"", ""Temperature""]],
+              ""rgba(69,117,180,1)"",
+              32, ""rgba(145,191,219,1)"",
+              50, ""rgba(255,255,191,1)"",
+              70, ""rgba(252,141,89,1)"",
+              85, ""rgba(215,48,39,1)""],
+          ""circle-stroke-color"": ""rgba(255,255,255,1)"",
+          ""circle-stroke-width"": 1.5 }
+    },
+
+    { ""type"": ""symbol"",
+      ""source-layer"": ""stations"",
+      ""minzoom"": 7,
+      ""layout"": {
+          ""text-field"": [""concat"", [""get"", ""Temperature""], ""°""],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-size"": 10,
+          ""text-offset"": [0, 1.1] },
+      ""paint"": {
+          ""text-color"": ""#333333"",
+          ""text-halo-color"": ""#FFFFFF"",
+          ""text-halo-width"": 1 }
+    }
+  ]
+}";
+
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private string styleJson = StyleJson;
+    private string applied = StyleJson;
+    private string status = "";
+    private bool ok = true;
+    private int edit;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource>
+        {
+            { "stations", new NoaaWeatherStationFeatureSource { ProjectionConverter = new ProjectionConverter(4326, 3857) } }
+        };
+    }
+
+    // A document that does not parse changes nothing; the map keeps the last one that did.
+    private async Task EditorChanged()
+    {
+        var mine = ++edit;
+        await Task.Delay(400);
+        if (mine != edit) return;
+
+        try
+        {
+            JsonNode.Parse(styleJson);
+            applied = styleJson;
+            ok = true;
+            status = $"applied at {DateTime.Now:HH:mm:ss}";
+        }
+        catch (Exception exception)
+        {
+            ok = false;
+            status = "not applied - " + exception.Message.Split('\n')[0].TrimEnd('\r');
+        }
+    }
+}

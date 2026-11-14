@@ -1,0 +1,154 @@
+﻿@page "/wind-field"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+@using OSGeo.GDAL
+@using OSGeo.OSR
+@using System.Globalization
+@using System.Text.Json.Nodes
+
+<div class="map-container">
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@InitialCenter" Zoom="5">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light" ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            @if (style != null)
+            {
+                <VectorTileOverlay Id="Wind" @ref="overlay" Style="@style" />
+            }
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="5" />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Wind as a Vector Field</div>
+        <div style="color:#e5e5e5;line-height:1.4">The same NDFD field can draw animated particles or magnitude-scaled arrows.</div>
+        <label style="display:flex;align-items:center;gap:6px;margin-top:9px;cursor:pointer">
+            <input type="checkbox" checked="@arrows" @onchange="ModeChanged" /> Show arrows
+        </label>
+        <div role="status" style="margin-top:8px;color:#e5e5e5">@status</div>
+    </div>
+</div>
+
+@code {
+    private static readonly PointShape InitialCenter = new PointShape(-10631010, 4539146);
+
+    private MapView map;
+    private VectorTileOverlay overlay;
+    private VectorFieldSource field;
+    private MapStyle style;
+    private bool arrows;
+    private string status = "Loading NDFD surface wind data...";
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            LoadField();
+            style = new MapStyle().AddParticleFlow(field);
+            status = "NDFD surface wind - 65k particles advected, color is speed";
+        }
+        catch (Exception exception)
+        {
+            status = "Wind data unavailable: " + exception.Message.Split('\n')[0];
+        }
+    }
+
+    private async Task ModeChanged(ChangeEventArgs args)
+    {
+        arrows = args.Value is bool value && value;
+        if (style == null || overlay == null) return;
+
+        if (arrows)
+        {
+            style.RemoveParticleFlow(field).AddVectorField(field, new VectorFieldStyle { MaxArrows = 3000 });
+            status = "The same field as magnitude-scaled arrows";
+        }
+        else
+        {
+            style.RemoveVectorField(field).AddParticleFlow(field);
+            status = "NDFD surface wind - 65k particles advected, color is speed";
+        }
+
+        await overlay.RedrawAsync();
+    }
+
+    // Two GeoTIFF bands - wind speed and the direction it comes from - read with GDAL and
+    // handed over as one field. The style animates it: tracer particles are advected through
+    // it and leave fading trails, which is the same call and the same look the desktop
+    // renderer gives it.
+    private void LoadField()
+    {
+        GdalManager.ConfigureGdal();
+        var speeds = ReadFirstBand("./Data/Ndfd/ds.wspd.tif", out var width, out var height, out var extent, out var proj4);
+        var from = ReadFirstBand("./Data/Ndfd/ds.wdir.tif", out _, out _, out _, out _);
+
+        // Meteorological direction is where the wind comes FROM; a particle goes the other way.
+        var towards = new float[from.Length];
+        for (var index = 0; index < from.Length; index++)
+        {
+            towards[index] = float.IsNaN(from[index]) ? float.NaN : (from[index] + 180f) % 360f;
+        }
+
+        var values = new FlowVector[height, width];
+        for (var row = 0; row < height; row++)
+        {
+            for (var column = 0; column < width; column++)
+            {
+                var index = row * width + column;
+                values[row, column] = FlowVector.FromSpeedDirection(speeds[index], towards[index]);
+            }
+        }
+        field = new VectorFieldSource(values, extent, new ThinkGeo.Core.Projection(proj4));
+        status = string.Format(CultureInfo.InvariantCulture, "{0} x {1} field, 65,536 particles", width, height);
+    }
+
+    private static float[] ReadFirstBand(string path, out int width, out int height, out RectangleShape extent, out string proj4)
+    {
+        var dataset = Gdal.Open(path, Access.GA_ReadOnly) ?? throw new InvalidOperationException("GDAL could not open " + path);
+        try
+        {
+            width = dataset.RasterXSize;
+            height = dataset.RasterYSize;
+            var transform = new double[6];
+            dataset.GetGeoTransform(transform);
+            var x1 = transform[0] + width * transform[1] + height * transform[2];
+            var y1 = transform[3] + width * transform[4] + height * transform[5];
+            extent = new RectangleShape(Math.Min(transform[0], x1), Math.Max(transform[3], y1), Math.Max(transform[0], x1), Math.Min(transform[3], y1));
+
+            var wkt = dataset.GetProjection();
+            var reference = new SpatialReference(string.Empty);
+            reference.ImportFromWkt(ref wkt);
+            reference.ExportToProj4(out proj4);
+            reference.Dispose();
+
+            var band = dataset.GetRasterBand(1);
+            try
+            {
+                var values = new float[width * height];
+                band.ReadRaster(0, 0, width, height, values, width, height, 0, 0);
+                band.GetNoDataValue(out var noData, out var hasNoData);
+                if (hasNoData != 0)
+                {
+                    for (var i = 0; i < values.Length; i++)
+                    {
+                        if (values[i] == (float)noData) values[i] = float.NaN;
+                    }
+                }
+                return values;
+            }
+            finally
+            {
+                band.Dispose();
+            }
+        }
+        finally
+        {
+            dataset.Dispose();
+        }
+    }
+}

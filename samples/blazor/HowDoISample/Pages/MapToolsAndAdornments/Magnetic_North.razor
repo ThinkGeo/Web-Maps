@@ -1,0 +1,52 @@
+@page "/magnetic-north"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+
+<div class="map-container" style="display:flex">
+    <div style="flex:1;min-width:0;position:relative">
+        <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+                 Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+                 Center="@(new PointShape(-10779700, 3912000))" Zoom="14">
+            <OverlaysSetting>
+                <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                                ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            </OverlaysSetting>
+            <MapToolsSetting>
+                <MapTools>
+                    <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                    CenterButtonCenter="@(new PointShape(-10779700, 3912000))" CenterButtonZoom="14" />
+                </MapTools>
+            </MapToolsSetting>
+            <AdornmentOverlaySetting>
+                <AdornmentOverlay Id="Adornments" Layers="@adornments" />
+            </AdornmentOverlaySetting>
+        </MapView>
+    </div>
+    <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0">
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Magnetic North</div>
+        <div style="color:#e5e5e5;font-size:11px;line-height:1.35;margin-bottom:8px">The upper-right adornment shows true north, magnetic north, and their declination at the map center. Pan the map to see the values update.</div>
+        <div style="color:#e5e5e5;font-size:11px;line-height:1.35">The v15 sample logo appears in the lower right.</div>
+    </div>
+</div>
+
+@code {
+    private MapView map;
+    private GeoCollection<AdornmentLayer> adornments;
+
+    protected override void OnInitialized()
+    {
+        var declination = new MagneticDeclinationAdornmentLayer(AdornmentLocation.UpperRight) { Projection = new Projection(3857) };
+        declination.TrueNorthPointStyle.SymbolSize = 25;
+        declination.TrueNorthLineStyle.InnerPen.Width = 2f;
+        declination.TrueNorthLineStyle.OuterPen.Width = 5f;
+        declination.MagneticNorthLineStyle.InnerPen.Width = 2f;
+        declination.MagneticNorthLineStyle.OuterPen.Width = 5f;
+
+        adornments = new GeoCollection<AdornmentLayer>
+        {
+            { "declination", declination },
+            { "logo", new LogoAdornmentLayer(new GeoImage("./wwwroot/images/generic-logo.png"))
+                { Location = AdornmentLocation.LowerRight, XOffsetInPixel = -10, YOffsetInPixel = -50 } },
+        };
+    }
+}

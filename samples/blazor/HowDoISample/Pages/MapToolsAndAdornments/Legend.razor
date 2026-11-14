@@ -1,0 +1,77 @@
+@page "/legend"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+
+<div class="map-container">
+    <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@InitialCenter" Zoom="3">
+        <OverlaysSetting>
+            <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                            ApiKey="@GlobalSettings.ThinkGeoApiKey" />
+            <VectorTileOverlay Id="States" StyleJson="@StyleJson" FeatureSources="@sources" SourceId="features" />
+        </OverlaysSetting>
+        <AdornmentOverlaySetting>
+            <AdornmentOverlay Id="Adornments" Layers="@adornments" />
+        </AdornmentOverlaySetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="3" />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+    <div style="position:absolute;top:12px;right:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;padding:10px 12px;background:rgba(30,30,30,.85);color:whitesmoke;font:13px system-ui;border-radius:4px">
+        <div style="font-weight:600;margin-bottom:6px">Legend</div>
+        <div style="color:#e5e5e5;line-height:1.4">US states are colored by 1990 population. The legend on the map shows the population range for each matching color.</div>
+    </div>
+</div>
+
+@code {
+    private static readonly (double From, string Color, GeoColor Fill)[] Classes =
+    {
+        (0, "#B0C4DE", GeoColor.FromHtml("#B0C4DE")),
+        (2_000_000, "#87CEFA", GeoColor.FromHtml("#87CEFA")),
+        (6_000_000, "#4169E1", GeoColor.FromHtml("#4169E1")),
+        (12_000_000, "#00008B", GeoColor.FromHtml("#00008B")),
+    };
+
+    private const string StyleJson = @"{
+  ""layers"": [
+    { ""type"": ""background"", ""paint"": { ""background-color"": ""#DDE8F0"" } },
+    { ""type"": ""fill"", ""source-layer"": ""states"",
+      ""paint"": {
+          ""fill-color"": [""step"", [""to-number"", [""get"", ""POP1990""]],
+              ""#B0C4DE"", 2000000, ""#87CEFA"", 6000000, ""#4169E1"", 12000000, ""#00008B""],
+          ""fill-outline-color"": ""#696969"" } }
+  ]
+}";
+
+    private static readonly PointShape InitialCenter = new(-10650000, 4600000);
+    private MapView map;
+    private GeoCollection<FeatureSource> sources;
+    private GeoCollection<AdornmentLayer> adornments;
+
+    protected override void OnInitialized()
+    {
+        sources = new GeoCollection<FeatureSource> { { "states", new ShapeFileFeatureSource("./Data/Shapefile/USStates_3857.shp") } };
+
+        var legend = new LegendAdornmentLayer
+        {
+            Title = new LegendItem { TextStyle = new TextStyle("Population 1990", new GeoFont("Arial", 10, DrawingFontStyles.Bold), GeoBrushes.Black) },
+            Location = AdornmentLocation.LowerLeft,
+        };
+        for (var i = 0; i < Classes.Length; i++)
+        {
+            var text = i == Classes.Length - 1
+                ? FormattableString.Invariant($"over {Classes[i].From / 1_000_000:0}M")
+                : FormattableString.Invariant($"{Classes[i].From / 1_000_000:0}M to {Classes[i + 1].From / 1_000_000:0}M");
+            legend.LegendItems.Add(new LegendItem
+            {
+                ImageStyle = new AreaStyle(GeoPens.DimGray, new GeoSolidBrush(Classes[i].Fill)),
+                TextStyle = new TextStyle(text, new GeoFont("Arial", 9), GeoBrushes.Black),
+            });
+        }
+        adornments = new GeoCollection<AdornmentLayer> { { "legend", legend } };
+    }
+}

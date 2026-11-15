@@ -1,0 +1,232 @@
+@media (max-width: 1230px) {
+    #child-page-title {
+        height: 100px;
+    }
+
+    #output {
+        height: calc(100% - 100px - 50px);
+    }
+
+    .bottom-center {
+        bottom: 2.5em;
+    }
+
+    .vehicle-tracking .ol-zoom {
+        bottom: 2.5em;
+        right: 0.5em;
+        top: unset;
+        left: unset;
+    }
+}
+
+@media (max-width: 1100px) {
+    .navbar-nav {
+        display: none;
+    }
+
+    main.split-output #output > div.active {
+        float: none;
+        width: auto;
+    }
+
+    .bottom-center .description {
+        font-size: 1.3rem;
+    }
+
+    #stylings li {
+        height: 25px;
+    }
+
+    .icon-group {
+        width: 34px;
+    }
+
+        .icon-group a {
+            padding: 4px 0px 4px 0px;
+            margin: 0px 0px 4px 0px;
+        }
+
+            .icon-group a:first-child {
+                padding: 4px 0px 4px 0px;
+            }
+
+            .icon-group a span {
+                padding: 6px 6px;
+                border-left: none;
+                border-top: 1px solid #c6c7c8;
+            }
+
+    .raster-basemaps .icon-group {
+        width: 75px;
+    }
+
+        .raster-basemaps .icon-group a {
+            display: block;
+        }
+
+            .raster-basemaps .icon-group a span {
+                display: block;
+            }
+
+    .vehicle-tracking .ol-zoom {
+        bottom: 4.5em;
+        right: 0.5em;
+        top: unset;
+        left: unset;
+    }
+
+    .vehicle-tracking .icon-group {
+        width: 147px;
+    }
+
+    .vehicle-left-panel {
+        width: 170px;
+    }
+
+        .vehicle-left-panel .measure-tool-bar {
+            background: transparent;
+        }
+
+            .vehicle-left-panel .measure-tool-bar .list-inline:first-child {
+                width: 130px;
+                background: #fff;
+            }
+
+            .vehicle-left-panel .measure-tool-bar .list-inline {
+                padding: 5px 5px;
+                background: #fff;
+            }
+
+        .vehicle-left-panel .vehicle-list {
+            display: none;
+        }
+
+    .vehicle-tracking-bottom-box {
+        display: block;
+    }
+}
+
+@media (max-width: 880px) {
+    #child-page-title {
+        height: 120px;
+    }
+
+    #output {
+        height: calc(100% - 120px - 50px);
+    }
+
+    .bottom-center {
+        bottom: 3.5em;
+    }
+
+    .vehicle-tracking .ol-zoom {
+        bottom: 5.5em;
+        right: 0.5em;
+        top: unset;
+        left: unset;
+    }
+
+    .vehicle-tracking-bottom-box {
+        bottom: 69px;
+    }
+
+    .vehicle-tracking-bottom-box-show {
+        bottom: 239px;
+    }
+}
+
+@media (max-width: 767px) {
+    body {
+        padding-top: 48px;
+    }
+
+    .navbar {
+        height: 48px;
+    }
+
+    .navbar-brand {
+        height: 48px;
+        width: 48px;
+        background-size: 48px;
+    }
+
+    .navbar-text h4 {
+        font-size: 1rem;
+        margin-bottom: 0;
+    }
+
+    .sidebar {
+        top: 48px;
+        width: 100%;
+        height: 500px;
+        transition: height 0.1s ease-in-out;
+        max-height: 80vh;
+    }
+
+    .main {
+        padding-left: 0;
+        padding-top: 5px;
+    }
+
+    .navbar-text h6 {
+        display: none;
+    }
+
+    .navbar-toggler {
+        display: inline-block;
+    }
+
+    .collapse:not(.show) {
+        display: none;
+    }
+
+    .collapsing {
+        height: 0px;
+    }
+
+    .main {
+        max-height: calc(100vh - 48px);
+    }
+
+    #child-page-title > p {
+        display: none;
+    }
+
+    .tab-content {
+        height: calc(100% - 59px);
+    }
+}
+
+@media (max-width: 400px) {
+    .navbar-text h4 {
+        font-size: 1.15rem;
+        margin-bottom: 0;
+    }
+
+    #child-page-title h1 {
+        font-size: 1.8rem;
+    }
+
+    .navbar-toggler span {
+        font-size: 1rem;
+    }
+
+    .navbar-toggler {
+        margin-right: 0.8rem !important;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .navbar-brand {
+        margin-right: 0.5rem;
+    }
+}
+
+@media (max-width: 350px) {
+    .nav-tabs .nav-link {
+        font-size: 1.3rem;
+    }
+
+    .tab-content {
+        height: calc(100% - 54px);
+    }
+}

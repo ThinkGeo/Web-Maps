@@ -19,4 +19,10 @@
     <PackageReference Include="ThinkGeo.UI.Blazor" Version="15.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The gallery and Code panel read bundled resources without a server endpoint. -->
+    <EmbeddedResource Include="wwwroot\menus.json" />
+    <EmbeddedResource Include="Pages\*.razor" Exclude="Pages\_Imports.razor" />
+  </ItemGroup>
+
 </Project>

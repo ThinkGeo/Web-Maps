@@ -7,7 +7,7 @@ html, body {
 #app {
     display: grid;
     grid-template-columns: 200px 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
     height: 100%;
 }
 
@@ -29,20 +29,21 @@ header a {
     text-decoration: none;
 }
 
-nav {
+#app > nav {
     display: flex;
     flex-direction: column;
     background: #2f343d;
+    overflow-y: auto;
 }
 
-nav a {
+#app > nav a {
     padding: 10px 16px;
     color: #d6d9de;
     text-decoration: none;
     font-size: 14px;
 }
 
-nav a.active {
+#app > nav a.active {
     background: #3d4450;
     color: white;
 }
@@ -50,6 +51,7 @@ nav a.active {
 main {
     position: relative;
     min-width: 0;
+    min-height: 0;
 }
 
 .map-container {
@@ -61,6 +63,22 @@ main {
 .loading {
     padding: 16px;
 }
+
+.bottom-center {
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.description { font-size: 20px; }
+.opacity-50 { opacity: .5; }
+.draw-edit-tool-bar { position: absolute; border-radius: 2px; }
+.icon-group { border: 1px solid #e7e5df; background: #f8f9fa; width: fit-content; }
+.icon-group img { width: 20px; }
+.icon-group a { display: inline-block; padding: 5px 0; cursor: pointer; color: #000; text-decoration: none; }
+.icon-group a:first-child { padding-left: 4px; }
+.icon-group a span { padding: 0 6px; border-left: 1px solid #c6c7c8; }
+.icon-group a.active { background-color: #c6c7c8; }
 
 #blazor-error-ui {
     display: none;
@@ -83,8 +101,12 @@ main {
         grid-column: 1;
     }
 
-    nav {
+    #app > nav {
         flex-direction: row;
         overflow-x: auto;
+    }
+
+    #app > nav a {
+        flex-shrink: 0;
     }
 }

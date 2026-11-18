@@ -1,34 +1,37 @@
-﻿@page "/"
+@page "/"
 @rendermode InteractiveServer
 
-<!--You can control the width and height in CSS too, if you like. -->
-<MapView Id="demomap" MapUnit="@ThinkGeo.Core.GeographyUnit.Meter" Zoom="3" Width="800" Height="600">
+<MapView Id="map" MapUnit="GeographyUnit.Meter" Center="@(new PointShape(0, 2000000))" Zoom="2" Width="900" Height="600">
     <OverlaysSetting>
-        <ThinkGeoCloudRasterMapsOverlay Id="RasterOverlay" MapType="ThinkGeo.Core.ThinkGeoCloudRasterMapsMapType.Aerial_V2_X1" ApiKey="PIbGd76RyHKod99KptWTeb-Jg9JUPEPUBFD3SZJYLDE~"></ThinkGeoCloudRasterMapsOverlay>
-        <!--Add one more Overlay for hosting capital FeatureLayer. -->
-        <LayerOverlay Id="capitalOverlay" Layers="@layers"></LayerOverlay>
+        <ThinkGeoCloudVectorMapsOverlay Id="basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
+                                        ApiKey="SGjwpxF60knqZi3R0A9RRE3GqiuRA1LsnxHMot7rJ58~" />
+        <VectorTileOverlay Id="capitals" FeatureSources="@capitals" StyleJson="@capitalsJson" />
     </OverlaysSetting>
 </MapView>
 
 @code {
-    GeoCollection<LayerBase> layers = new GeoCollection<LayerBase>();
-
-    protected override void OnInitialized()
+    // Read the shapefile; the overlay cuts it into vector tiles as the browser asks for them.
+    // The file is in decimal degrees (EPSG:4326); the map is Web Mercator (EPSG:3857),
+    // so the source reprojects as it reads. The key is the tiles' "source-layer" name.
+    private readonly GeoCollection<FeatureSource> capitals = new GeoCollection<FeatureSource>
     {
-        // Create the point layer for capitals.
-        ShapeFileFeatureLayer capitalFeatureLayer = new ShapeFileFeatureLayer(Path.Combine(AppContext.BaseDirectory, "Data", "capital.shp"));
-        // Create the "Mercator projection" and apply it to the layer to match the background map.
-        capitalFeatureLayer.FeatureSource.ProjectionConverter = new ProjectionConverter(Projection.GetWgs84ProjString(), Projection.GetSphericalMercatorProjString());
+        { "WorldCapitals", new ShapeFileFeatureSource(Path.Combine(AppContext.BaseDirectory, "Data", "WorldCapitals.shp"))
+            {
+                ProjectionConverter = new ProjectionConverter(4326, 3857)
+            }
+        }
+    };
 
-        // Create the point style for positions.
-        capitalFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultPointStyle = new PointStyle(PointSymbolType.Circle, 4, new GeoSolidBrush(GeoColor.FromHtml("#21FF00")), new GeoPen(GeoColor.FromHtml("#ffffff"), 1));
-        // Create the labeling style for capitals.
-        capitalFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle = new TextStyle("CITY_NAME", new GeoFont("Arial", 14), new GeoSolidBrush(GeoColor.FromHtml("#21FF00")));
-        capitalFeatureLayer.ZoomLevelSet.ZoomLevel01.DefaultTextStyle.YOffsetInPixel = 5;
-        capitalFeatureLayer.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
-        // Set DrawingMarginPercentage to a proper value to avoid some labels are cut-off
-        capitalFeatureLayer.DrawingMarginInPixel = 300;
-
-        layers.Add(capitalFeatureLayer);
-    }
+    // A style document for the capitals: white circles with a black outline.
+    private const string capitalsJson = @"{
+  ""layers"": [
+    { ""type"": ""circle"",
+      ""source-layer"": ""WorldCapitals"",
+      ""paint"": {
+          ""circle-radius"": 4,
+          ""circle-color"": ""#FFFFFF"",
+          ""circle-stroke-color"": ""#000000"",
+          ""circle-stroke-width"": 2 } }
+  ]
+}";
 }

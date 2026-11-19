@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ThinkGeo Web API Quick Start</title>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css">
+    <style>html, body, #map { margin: 0; height: 100%; }</style>
+</head>
+<body>
+<div id="map"></div>
+<script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
+<script>
+    const cloudApiKey = "SGjwpxF60knqZi3R0A9RRE3GqiuRA1LsnxHMot7rJ58~";
+    const map = new maplibregl.Map({
+        container: "map",
+        style: "https://cdn.thinkgeo.com/worldstreets-gl-styles/latest/light.json",
+        center: [0, 20],
+        zoom: 1,
+        transformRequest: url => ({ url: url.replace("{key}", cloudApiKey) })
+    });
+    map.on("load", () => {
+        map.addSource("capitals", {
+            type: "vector",
+            tiles: [location.origin + "/tiles/capitals/{z}/{x}/{y}"]
+        });
+        map.addLayer({
+            id: "capitals", type: "circle", source: "capitals",
+            "source-layer": "WorldCapitals",
+            paint: {
+                "circle-radius": 4, "circle-color": "#FFFFFF",
+                "circle-stroke-color": "#000000", "circle-stroke-width": 2
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,21 +1,26 @@
+using ThinkGeo.Core;
+using ThinkGeo.UI.WebApi;
+
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers();
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
 var app = builder.Build();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Read decimal degrees and reproject to Web Mercator for vector tiles.
+var capitals = new FeatureSourceVectorTileSource();
+capitals.FeatureSources.Add(new ShapeFileFeatureSource(
+    Path.Combine(AppContext.BaseDirectory, "Data", "WorldCapitals.shp"))
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    ProjectionConverter = new ProjectionConverter(4326, 3857)
+});
+var capitalsOverlay = new VectorTileOverlay("capitals", capitals);
 
-// Specify the URLs that the application will listen on
-app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
+app.MapGet("/tiles/capitals/{z:int}/{x:int}/{y:int}", async (
+    int z, int x, int y, HttpResponse response, CancellationToken cancellationToken) =>
+{
+    var tile = await capitalsOverlay.GetTileAsync(z, x, y, cancellationToken);
+    if (tile == null) return Results.NoContent();
+    response.Headers.ContentEncoding = "gzip";
+    return Results.Bytes(tile, "application/vnd.mapbox-vector-tile");
+});
 app.Run();

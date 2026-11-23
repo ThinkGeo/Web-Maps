@@ -398,7 +398,7 @@
   {
     "id": "advanced-labels",
     "title": "Advanced Labels",
-    "description": "Six label lessons on crafted data - text bends along its line, anchors from its own column, yields to priority, wraps and recases, keeps its icon when the name cannot fit, and writes CJK vertically. Each is a style.json beside the map, editable while it runs.",
+    "description": "Seven label lessons on crafted data - text bends along its line, anchors from its own column, yields to priority, wraps and recases, keeps its icon when the name cannot fit, writes CJK vertically, and joins several columns into one label. Each is a style.json beside the map, editable while it runs.",
     "href": "advanced-labels",
     "source": "Advanced_Labels",
     "preicon": "fas fa-font",
@@ -429,15 +429,6 @@
     "href": "features-two-ways",
     "source": "Features_Two_Ways",
     "preicon": "fas fa-columns",
-    "group": "Styling"
-  },
-  {
-    "id": "create-a-multi-column-text-style",
-    "title": "Create a Multi-Column Text Style",
-    "description": "Label world capitals with their name and population from two columns, using a concat expression in text-field.",
-    "href": "create-a-multi-column-text-style",
-    "source": "Create_A_Multi_Column_Text_Style",
-    "preicon": "fas fa-font",
     "group": "Styling"
   },
   {

@@ -522,15 +522,6 @@
     "group": "Legacy"
   },
   {
-    "id": "popup",
-    "title": "Popup",
-    "description": "Shows how to display a popup balloon with images and descriptions included.",
-    "href": "balloon-popup",
-    "source": "Balloon_Popup",
-    "preicon": "far fa-comment-alt",
-    "group": "Legacy"
-  },
-  {
     "id": "draw",
     "title": "Draw and Modify Geometries",
     "description": "Shows how to draw and modify the geometries loaded on the map.",

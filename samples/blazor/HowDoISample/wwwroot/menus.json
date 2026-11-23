@@ -468,15 +468,6 @@
     "group": "Dynamic Data"
   },
   {
-    "id": "legend",
-    "title": "Legend",
-    "description": "A population map of US states with a matching LegendAdornmentLayer showing the range represented by each color.",
-    "href": "legend",
-    "source": "Legend",
-    "preicon": "fas fa-list-ul",
-    "group": "Map Tools & Adornments"
-  },
-  {
     "id": "scale-line-and-scale-bar",
     "title": "Scale Line and Scale Bar",
     "description": "Projected scale line and scale bar adornments that update while the map zooms, with selectable units and text styles.",

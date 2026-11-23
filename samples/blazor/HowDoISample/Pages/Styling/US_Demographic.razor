@@ -22,6 +22,9 @@
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
                 <VectorTileOverlay Id="States" StyleJson="@style" FeatureSources="@states" SourceId="states" />
             </OverlaysSetting>
+            <AdornmentOverlaySetting>
+                <AdornmentOverlay Id="Adornments" @ref="legendOverlay" Layers="@adornments" />
+            </AdornmentOverlaySetting>
             <MapToolsSetting>
                 <MapTools>
                     <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
@@ -43,16 +46,7 @@
                 <label style="cursor:pointer"><input type="radio" name="cat" checked="@(category == c)" @onchange="@(() => Pick(c))" /> @c.Name</label>
             }
         </div>
-        <div style="border-top:1px solid #aaa;padding-top:8px">
-            <div style="font-weight:700;margin-bottom:5px">@category.Name<span style="color:#ddd;font-weight:400"> (@category.Unit)</span></div>
-            @for (var i = Colors.Length - 1; i >= 0; i--)
-            {
-                <div style="display:flex;align-items:center;gap:7px;margin:2px 0">
-                    <span style="width:16px;height:16px;background:@Colors[i];border:1px solid #999;flex:none"></span>
-                    <span>@legend[i]</span>
-                </div>
-            }
-        </div>
+        <div style="border-top:1px solid #aaa;padding-top:8px;line-height:1.4">The map's SDK legend shows the selected measure and its five value ranges. Each color uses the same quintile breaks as the map.</div>
     </div>
 </div>
 
@@ -75,6 +69,8 @@
     private const string CensusPath = "./Data/usStatesCensus2010.shp";
 
     private MapView map;
+    private AdornmentOverlay legendOverlay;
+    private readonly GeoCollection<AdornmentLayer> adornments = new();
     private GeoCollection<FeatureSource> states;
     private Category category = Categories[0];
     private Dictionary<string, double[]> valuesByColumn;
@@ -112,10 +108,12 @@
         Compose();
     }
 
-    private void Pick(Category chosen)
+    private async Task Pick(Category chosen)
     {
         category = chosen;
         Compose();
+        await map.WhenReady;
+        await legendOverlay.RedrawAsync();
     }
 
     // The four class breaks are the data's own quintiles, so each class holds about a fifth of
@@ -148,6 +146,25 @@
             legend[i + 1] = Fmt(breaks[i]) + " – " + Fmt(breaks[i + 1]);
         }
         legend[4] = "≥ " + Fmt(breaks[3]);
+
+        var sdkLegend = new LegendAdornmentLayer
+        {
+            Title = new LegendItem
+            {
+                TextStyle = new TextStyle($"{category.Name} ({category.Unit})", new GeoFont("Arial", 10, DrawingFontStyles.Bold), GeoBrushes.Black)
+            },
+            Location = AdornmentLocation.LowerLeft,
+        };
+        for (var i = Colors.Length - 1; i >= 0; i--)
+        {
+            sdkLegend.LegendItems.Add(new LegendItem
+            {
+                ImageStyle = new AreaStyle(GeoPens.DimGray, new GeoSolidBrush(GeoColor.FromHtml(Colors[i]))),
+                TextStyle = new TextStyle(legend[i], new GeoFont("Arial", 9), GeoBrushes.Black),
+            });
+        }
+        adornments.Clear();
+        adornments.Add("legend", sdkLegend);
     }
 
     private string Fmt(double raw)

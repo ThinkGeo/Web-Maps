@@ -36,6 +36,7 @@
         <label><input type="checkbox" checked="@showZoomBar" @onchange="@(e => ToggleTool(MapToolKind.ZoomBar, e))" /> Display Pan Zoom Bar</label>
         <label><input type="checkbox" checked="@showCompass" @onchange="@(e => ToggleTool(MapToolKind.Compass, e))" /> Display Compass</label>
         <label><input type="checkbox" checked="@showHome" @onchange="@(e => ToggleTool(MapToolKind.Home, e))" /> Display Home</label>
+        <label><input type="checkbox" checked="@showMagneticNorth" @onchange="ToggleMagneticNorth" /> Display Magnetic North</label>
         <label><input type="checkbox" checked="@showLogo" @onchange="ToggleLogo" /> Display Logo</label>
         <label><input type="checkbox" checked="@showScaleLine" @onchange="ToggleScaleLine" /> Display Scale Line</label>
         <label><input type="checkbox" checked="@showCoordinates" @onchange="ToggleCoordinates" /> Display Mouse Coordinate</label>
@@ -54,6 +55,8 @@
     private GeoCollection<AdornmentLayer> adornments;
     private ScaleLineAdornmentLayer scaleLine;
     private LogoAdornmentLayer logo;
+    private MagneticDeclinationAdornmentLayer magneticNorth;
+    private bool showMagneticNorth = true;
     private bool showZoomBar = true;
     private bool showCompass = true;
     private bool showHome = true;
@@ -69,10 +72,18 @@
             { Projection = new Projection(3857), UnitSystem = ScaleLineUnitSystem.ImperialAndMetric, YOffsetInPixel = -45 };
         logo = new LogoAdornmentLayer(new GeoImage("./wwwroot/images/generic-logo.png"))
             { Location = AdornmentLocation.LowerRight, XOffsetInPixel = -10, YOffsetInPixel = -50 };
+        magneticNorth = new MagneticDeclinationAdornmentLayer(AdornmentLocation.UpperRight)
+            { Projection = new Projection(3857), XOffsetInPixel = -70, YOffsetInPixel = 10 };
+        magneticNorth.TrueNorthPointStyle.SymbolSize = 25;
+        magneticNorth.TrueNorthLineStyle.InnerPen.Width = 2f;
+        magneticNorth.TrueNorthLineStyle.OuterPen.Width = 5f;
+        magneticNorth.MagneticNorthLineStyle.InnerPen.Width = 2f;
+        magneticNorth.MagneticNorthLineStyle.OuterPen.Width = 5f;
         adornments = new GeoCollection<AdornmentLayer>
         {
             { "scale", scaleLine },
             { "logo", logo },
+            { "magnetic-north", magneticNorth },
         };
     }
 
@@ -92,6 +103,13 @@
     {
         showLogo = (bool)args.Value;
         logo.IsVisible = showLogo;
+        await adornmentOverlay.RedrawAsync();
+    }
+
+    private async Task ToggleMagneticNorth(ChangeEventArgs args)
+    {
+        showMagneticNorth = (bool)args.Value;
+        magneticNorth.IsVisible = showMagneticNorth;
         await adornmentOverlay.RedrawAsync();
     }
 

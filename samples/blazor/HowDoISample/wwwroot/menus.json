@@ -551,7 +551,7 @@
   {
     "id": "markers",
     "title": "Markers",
-    "description": "Images the browser keeps pinned to places, from a SimpleMarkerOverlay: click the map to drop one, click a marker for its details.",
+    "description": "Add and remove markers, switch a pulsing SVG marker on or off, and tilt the map to see markers stay anchored to their places.",
     "href": "markers",
     "source": "Markers",
     "preicon": "fas fa-map-marker-alt",
@@ -564,15 +564,6 @@
     "href": "popups",
     "source": "Popups",
     "preicon": "far fa-comment-alt",
-    "group": "Markers & Popups"
-  },
-  {
-    "id": "animated-marker",
-    "title": "Animated Marker",
-    "description": "A marker whose SVG image animates itself in the browser; a button swaps it for a still one.",
-    "href": "animated-marker",
-    "source": "Animated_Marker",
-    "preicon": "fas fa-broadcast-tower",
     "group": "Markers & Popups"
   },
   {

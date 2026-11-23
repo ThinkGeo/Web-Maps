@@ -549,30 +549,12 @@
     "group": "Legacy"
   },
   {
-    "id": "export-map",
-    "title": "Export the Map as an Image",
-    "description": "Save the current map view as a PNG - the map's own WebGL canvas, read back at screen resolution and handed to the browser to download.",
-    "href": "export-map",
-    "source": "Export_Map",
-    "preicon": "fas fa-camera",
-    "group": "Printing & Export"
-  },
-  {
     "id": "export-to-pdf",
-    "title": "Export to PDF",
-    "description": "Two ways onto a PDF page: the browser's picture of the map as raster, or the extent drawn again on the server as vector - paths and text - through PdfGeoCanvas.",
+    "title": "Map Export",
+    "description": "Export the current map as PNG or PDF, or render an aerial map image on the server at a chosen size.",
     "href": "export-to-pdf",
     "source": "Export_To_Pdf",
     "preicon": "far fa-file-pdf",
-    "group": "Printing & Export"
-  },
-  {
-    "id": "draw-the-map-on-an-image",
-    "title": "Draw the Map on an Image",
-    "description": "No map control: layers drawn straight into a GeoImage on the server with a GeoCanvas, shown and saved as a picture.",
-    "href": "draw-the-map-on-an-image",
-    "source": "Draw_The_Map_On_An_Image",
-    "preicon": "far fa-image",
     "group": "Printing & Export"
   }
 ]

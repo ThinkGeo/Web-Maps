@@ -74,7 +74,7 @@
   {
     "id": "project-features",
     "title": "Project Features",
-    "description": "Reprojects features written in decimal degrees into the Spherical Mercator the map is in, and draws them in the browser.",
+    "description": "Project features into Web Mercator through their data source, an explicit ProjectionConverter call, or the ThinkGeo Cloud. Compare the results on the map and inspect the converted WKT.",
     "href": "project-features",
     "source": "Project_Features",
     "preicon": "fas fa-globe-americas",
@@ -87,15 +87,6 @@
     "href": "project-a-raster",
     "source": "Project_A_Raster",
     "preicon": "fas fa-globe",
-    "group": "Projections"
-  },
-  {
-    "id": "setting-the-projection-of-a-layer",
-    "title": "Setting the Projection of a Layer",
-    "description": "A shapefile in Texas state plane feet drawn on a Web Mercator map: a ProjectionConverter on the source and nothing else changes.",
-    "href": "setting-the-projection-of-a-layer",
-    "source": "Setting_The_Projection_Of_A_Layer",
-    "preicon": "fas fa-ruler-combined",
     "group": "Projections"
   },
   {
@@ -240,15 +231,6 @@
     "href": "timezone",
     "source": "Timezone",
     "preicon": "far fa-clock",
-    "group": "ThinkGeo Cloud Services"
-  },
-  {
-    "id": "projection-cloud-services",
-    "title": "Projection",
-    "description": "Well known text in latitude and longitude goes to ProjectionCloudClient and comes back in the map's meters.",
-    "href": "projection-cloud-services",
-    "source": "Projection_Cloud_Services",
-    "preicon": "fas fa-globe",
     "group": "ThinkGeo Cloud Services"
   },
   {

@@ -164,19 +164,10 @@
   {
     "id": "geocoding",
     "title": "Geocoding",
-    "description": "An address or a place name goes to GeocodingCloudClient and every match comes back as a point with its bounding box; pick one and the map goes there.",
+    "description": "Find locations by address, or click the map to find nearby addresses, roads and places.",
     "href": "geocoding",
     "source": "Geocoding",
     "preicon": "fas fa-search-location",
-    "group": "ThinkGeo Cloud Services"
-  },
-  {
-    "id": "reverse-geocoding",
-    "title": "Reverse Geocoding",
-    "description": "Click the map and ReverseGeocodingCloudClient answers with the nearest address, the places, roads and addresses within a radius.",
-    "href": "reverse-geocoding",
-    "source": "Reverse_Geocoding",
-    "preicon": "fas fa-map-pin",
     "group": "ThinkGeo Cloud Services"
   },
   {

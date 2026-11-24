@@ -135,21 +135,12 @@
     "group": "Maps from a Service - Vector"
   },
   {
-    "id": "noaa-weather-stations",
-    "title": "NOAA Weather Stations",
-    "description": "NOAA's weather stations and their current readings, read live by NoaaWeatherStationFeatureSource and colored by temperature.",
-    "href": "noaa-weather-stations",
-    "source": "NOAA_Weather_Stations",
-    "preicon": "fas fa-thermometer-half",
-    "group": "Maps from a Service - Vector"
-  },
-  {
-    "id": "noaa-weather-warnings",
-    "title": "NOAA Weather Warnings",
-    "description": "The warnings NOAA has active right now, read by NoaaWeatherWarningsFeatureSource and colored by severity.",
-    "href": "noaa-weather-warnings",
-    "source": "NOAA_Weather_Warnings",
-    "preicon": "fas fa-exclamation-triangle",
+    "id": "noaa-weather",
+    "title": "NOAA Weather",
+    "description": "Switch between live weather stations colored by temperature and active warnings colored by severity; edit each style while the map runs.",
+    "href": "noaa-weather",
+    "source": "NOAA_Weather",
+    "preicon": "fas fa-cloud",
     "group": "Maps from a Service - Vector"
   },
   {

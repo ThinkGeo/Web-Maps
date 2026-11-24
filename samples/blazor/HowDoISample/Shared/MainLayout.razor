@@ -65,6 +65,7 @@
     {
         var menus = MenuService.GetMenus();
         var path = Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0];
+        if (string.IsNullOrEmpty(path.Trim('/'))) path = "map-navigation";
         currentMenu = menus.FirstOrDefault(menu => menu.Href.Trim('/') == path.Trim('/')) ?? menus.FirstOrDefault();
     }
 }

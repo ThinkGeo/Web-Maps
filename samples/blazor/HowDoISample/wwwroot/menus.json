@@ -173,28 +173,10 @@
   {
     "id": "routing",
     "title": "Routing",
-    "description": "Stops go to RoutingCloudClient.GetRouteAsync and the route comes back with its turn-by-turn segments; click the map to add a stop.",
+    "description": "Visit stops in order, optimize a round trip, or find the areas reachable within 15 to 60 minutes.",
     "href": "routing",
     "source": "Routing",
     "preicon": "fas fa-route",
-    "group": "ThinkGeo Cloud Services"
-  },
-  {
-    "id": "routing-service-area",
-    "title": "Routing: Service Area",
-    "description": "How far 15, 30, 45 and 60 minutes of driving reach from a point, one polygon per limit from RoutingCloudClient.GetServiceAreaAsync.",
-    "href": "routing-service-area",
-    "source": "Routing_Service_Area",
-    "preicon": "fas fa-bullseye",
-    "group": "ThinkGeo Cloud Services"
-  },
-  {
-    "id": "routing-traveling-salesperson",
-    "title": "Routing: Traveling Salesperson",
-    "description": "Stops in no particular order go to RoutingCloudClient.GetOptimizedRouteAsync, which answers with the order of the shortest round trip.",
-    "href": "routing-traveling-salesperson",
-    "source": "Routing_Traveling_Salesperson",
-    "preicon": "fas fa-random",
     "group": "ThinkGeo Cloud Services"
   },
   {

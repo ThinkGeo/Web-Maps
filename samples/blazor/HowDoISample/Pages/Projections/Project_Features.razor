@@ -1,16 +1,18 @@
 ﻿@page "/project-features"
 @rendermode InteractiveServer
 @using ThinkGeo.Core
+@using System.Text.Json.Nodes
+@implements IDisposable
 
 <div class="map-container" style="display:flex">
     <div style="flex:1;min-width:0;position:relative">
         <MapView Id="map" @ref="map" MapUnit="GeographyUnit.Meter"
                  Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
-                 Center="@(new PointShape(-10779580, 3915255))" Zoom="18">
+                 Center="@(new PointShape(-10779580, 3915255))" Zoom="18" OnReady="MapReadyAsync">
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
-                <VectorTileOverlay Id="Reprojected" @ref="overlay" Style="@style" FeatureSources="@sources" SourceId="app" />
+                <VectorTileOverlay Id="Reprojected" @ref="overlay" Style="@(mode == ProjectionMode.Source ? sourceMapStyle : style)" FeatureSources="@(mode == ProjectionMode.Source ? sourceLayers : sources)" SourceId="app" />
             </OverlaysSetting>
             <MapToolsSetting>
                 <MapTools>
@@ -27,13 +29,29 @@
     </div>
     <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;gap:8px;min-height:0;background:dimgray;color:whitesmoke;font:13px system-ui">
         <div style="font-size:16px;font-weight:600">Reprojecting Features and Coordinates</div>
-        <div style="display:flex;flex-direction:column;gap:4px">
-            <button type="button" style="@SidebarButtonStyle" @onclick="ReprojectFeature">Reproject and Display a Feature</button>
-            <button type="button" style="@SidebarButtonStyle" @onclick="ReprojectMultipleFeatures">Reproject and Display Multiple Features</button>
-        </div>
-        <textarea @bind="wkt" spellcheck="false" wrap="soft" aria-label="WKT features"
-                  style="height:340px;flex:0 0 340px;min-width:0;width:100%;box-sizing:border-box;background:#fff;color:#222;font:12px Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;overflow-y:hidden;resize:none"></textarea>
-        <div style="color:#ffd0d0">@error</div>
+        <div style="font-weight:600">Who projects the features</div>
+        <label><input type="radio" name="projection-mode" checked="@(mode == ProjectionMode.Source)" disabled="@busy" @onchange="@(() => ChangeModeAsync(ProjectionMode.Source))" /> The source, as it reads them</label>
+        <label><input type="radio" name="projection-mode" checked="@(mode == ProjectionMode.Local)" disabled="@busy" @onchange="@(() => ChangeModeAsync(ProjectionMode.Local))" /> Convert the geometry explicitly</label>
+        <label><input type="radio" name="projection-mode" checked="@(mode == ProjectionMode.Cloud)" disabled="@busy" @onchange="@(() => ChangeModeAsync(ProjectionMode.Cloud))" /> The ThinkGeo Cloud</label>
+        @if (mode == ProjectionMode.Source)
+        {
+            <div>The shapefile is in Texas state plane feet (EPSG:2276). Its source carries a ProjectionConverter and returns features in Web Mercator (EPSG:3857).</div>
+            <div style="font-weight:600">style.json - edit it; the map follows</div>
+            <textarea @bind="sourceStyle" @bind:event="oninput" @bind:after="SourceStyleChanged" aria-label="Source style.json editor" spellcheck="false"
+                      style="flex:1;min-height:150px;width:100%;box-sizing:border-box;font:10.5px/1.3 Consolas,monospace;padding:7px;border:1px solid #aaa;background:#fff;color:#111;resize:none;white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:hidden;overflow-y:auto"></textarea>
+        }
+        else
+        {
+        <div>Enter one WKT feature per line in longitude and latitude (EPSG:4326). Click Project and display to convert every entered feature to Web Mercator (EPSG:3857) and replace the previous map results.</div>
+        <div style="font-weight:600">Input WKT — one feature per line</div>
+        <textarea @bind="wkt" disabled="@busy" spellcheck="false" wrap="soft" aria-label="WKT features"
+                  style="height:180px;min-width:0;width:100%;box-sizing:border-box;background:#fff;color:#222;font:12px Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;resize:vertical"></textarea>
+        <button type="button" style="@SidebarButtonStyle" disabled="@(busy || !ready)" @onclick="ReprojectMultipleFeatures">@(busy ? "Projecting..." : "Project and display")</button>
+        <div style="font-weight:600">Projected WKT — EPSG:3857</div>
+        <textarea readonly aria-label="Projected WKT output" style="flex:1;min-height:100px;width:100%;box-sizing:border-box;background:dimgray;color:white;font:12px Consolas,monospace;resize:none">@projectedWkt</textarea>
+        }
+        <div role="status" style="color:#c9f5d2">@status</div>
+        <div role="status" style="color:#ffd0d0">@error</div>
     </div>
 </div>
 
@@ -46,6 +64,30 @@
     private GeoCollection<FeatureSource> sources;
     private MapStyle style;
     private string error = "";
+    private enum ProjectionMode { Source, Local, Cloud }
+    private ProjectionMode mode = ProjectionMode.Source;
+    private MapStyle sourceMapStyle;
+    private GeoCollection<FeatureSource> sourceLayers;
+    private RectangleShape sourceBounds;
+    private ProjectionCloudClient client;
+    private bool busy;
+    private bool disposed;
+    private bool ready;
+    private bool framePending;
+    private string status = "";
+    private string projectedWkt = "";
+    private const string SourceStyle = @"{
+  ""layers"": [
+    { ""type"": ""fill"",
+      ""source-layer"": ""zoning"",
+      ""paint"": {
+          ""fill-color"": ""rgba(147,112,219,0.2)"",
+          ""fill-outline-color"": ""#9370DB"" }
+    }
+  ]
+}";
+    private string sourceStyle = SourceStyle;
+    private string appliedSourceStyle = SourceStyle;
     private string wkt = "POINT(-96.834516 33.150083)\n\n"
         + "LINESTRING(-96.83559 33.149,-96.835866046134 33.1508413556856,-96.835793626491 33.1508974965687,-96.8336008970734 33.1511063402186,-96.83356 33.15109,-96.83328 33.14922)\n\n"
         + "POLYGON((-96.83582 33.1508,-96.83578 33.15046,-96.83353 33.15068,-96.83358 33.15102,-96.83582 33.1508))";
@@ -53,6 +95,15 @@
     protected override void OnInitialized()
     {
         sources = new GeoCollection<FeatureSource> { { "shapes", reprojected } };
+        var zoning = new ShapeFileFeatureSource("./Data/Shapefile/Zoning.shp")
+        { ProjectionConverter = new ProjectionConverter(2276, 3857) };
+        sourceLayers = new GeoCollection<FeatureSource> { { "zoning", zoning } };
+        sourceMapStyle = new MapStyle(SourceStyle);
+        zoning.Open();
+        try { sourceBounds = zoning.GetBoundingBox(); }
+        finally { zoning.Close(); }
+        sourceBounds.ScaleUp(50);
+        client = new ProjectionCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
 
         // A point is drawn from a named picture; a star has no shape of its own in the style
         // specification, so the point style is drawn once and registered under that name.
@@ -65,20 +116,61 @@
         style.Images.Add("star", new PointStyle(PointSymbolType.Star, 24, GeoBrushes.MediumPurple, GeoPens.Purple));
     }
 
+    private async Task MapReadyAsync()
+    {
+        ready = true;
+        await map.ZoomToExtentAsync(sourceBounds);
+    }
+
+    private Task ChangeModeAsync(ProjectionMode selected)
+    {
+        if (busy || disposed || !ready) return Task.CompletedTask;
+        mode = selected;
+        error = status = projectedWkt = "";
+        reprojected.InternalFeatures.Clear();
+        framePending = true;
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!framePending || disposed) return;
+        framePending = false;
+        if (mode == ProjectionMode.Source) await map.ZoomToExtentAsync(sourceBounds);
+        else
+        {
+            await overlay.RedrawAsync();
+            await map.ZoomToAsync(new PointShape(-10779580, 3915255), new ZoomLevelSet().ZoomLevel18.Scale);
+        }
+    }
+
+    private void SourceStyleChanged()
+    {
+        try
+        {
+            if (JsonNode.Parse(sourceStyle) is not JsonObject document || document["layers"] is not JsonArray)
+                throw new FormatException("The style needs a layers array.");
+            appliedSourceStyle = sourceStyle;
+            sourceMapStyle = new MapStyle(appliedSourceStyle);
+            error = "";
+            status = "Style applied.";
+        }
+        catch (Exception exception) { error = "Style not applied: " + exception.Message; }
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        client?.Dispose();
+    }
+
     // Decimal degrees (4326) to the Spherical Mercator (3857) the map is in.
     private static Collection<Feature> Reproject(IEnumerable<Feature> decimalDegreeFeatures)
     {
         var converter = new ProjectionConverter(4326, 3857);
         converter.Open();
-        var sphericalMercatorFeatures = converter.ConvertToExternalProjection(decimalDegreeFeatures);
-        converter.Close();
-        return sphericalMercatorFeatures;
-    }
-
-    private Task ReprojectFeature()
-    {
-        var decimalDegreeFeature = new Feature(-96.834516, 33.150083);
-        return ShowAsync(Reproject(new[] { decimalDegreeFeature }));
+        try { return converter.ConvertToExternalProjection(decimalDegreeFeatures); }
+        finally { converter.Close(); }
     }
 
     private Task ReprojectMultipleFeatures()
@@ -98,7 +190,34 @@
             }
         }
         error = "";
-        return ShowAsync(Reproject(decimalDegreeFeatures));
+        if (decimalDegreeFeatures.Count == 0)
+        {
+            error = "Enter at least one WKT feature.";
+            return Task.CompletedTask;
+        }
+        return ProjectAsync(decimalDegreeFeatures);
+    }
+
+    private async Task ProjectAsync(IEnumerable<Feature> features)
+    {
+        if (busy || disposed || !ready || mode == ProjectionMode.Source) return;
+        busy = true;
+        error = "";
+        status = "Projecting features...";
+        await InvokeAsync(StateHasChanged);
+        try
+        {
+            var results = mode == ProjectionMode.Cloud
+                ? await client.ProjectAsync(new Collection<Feature>(features.ToList()), 4326, 3857)
+                : Reproject(features);
+            if (disposed) return;
+            if (results.Count == 0) throw new InvalidOperationException("No projected features were returned.");
+            await ShowAsync(results);
+            projectedWkt = string.Join("\n", results.Select(feature => feature.GetWellKnownText()));
+            status = $"{results.Count} feature{(results.Count == 1 ? "" : "s")} projected and displayed.";
+        }
+        catch (Exception exception) { if (!disposed) { error = "Projection failed: " + exception.Message; status = ""; } }
+        finally { busy = false; if (!disposed) await InvokeAsync(StateHasChanged); }
     }
 
     private async Task ShowAsync(Collection<Feature> features)

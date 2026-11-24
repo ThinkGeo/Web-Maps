@@ -80,7 +80,7 @@
 
     private static readonly string[] Relations =
     {
-        "Containing", "Crossing", "Disjoint", "Intersecting", "Overlapping", "Touching", "Within the shape", "Within a distance"
+        "Containing", "Crossing", "Disjoint", "Intersecting", "Overlapping", "Touching", "Within the shape", "Within a distance", "Equal"
     };
 
     private MapView map;
@@ -169,11 +169,12 @@
     {
         var pointQuery = relation == "Containing" || relation == "Within a distance";
         var lineQuery = relation == "Crossing" || relation == "Touching";
-        hint = pointQuery ? "Click the map to query somewhere else."
+        hint = relation == "Equal" ? "Click a zoning parcel to find topologically equal features. The result includes the selected parcel itself."
+            : pointQuery ? "Click the map to query somewhere else."
             : relation == "Touching" ? "Touching is exact - the seed is one parcel's own edge. A line you draw yourself will almost always match nothing."
             : lineQuery ? "Draw a line to query somewhere else."
             : "Draw a polygon to query somewhere else.";
-        trackMode = pointQuery ? BlazorTrackMode.None : lineQuery ? BlazorTrackMode.LineString : BlazorTrackMode.Polygon;
+        trackMode = pointQuery || relation == "Equal" ? BlazorTrackMode.None : lineQuery ? BlazorTrackMode.LineString : BlazorTrackMode.Polygon;
     }
 
     private Task FrameAsync()
@@ -185,6 +186,7 @@
             case "Intersecting": return map.ZoomToAsync(new PointShape(-10777924, 3914325), 11220);
             case "Overlapping": return map.ZoomToAsync(new PointShape(-10777891, 3914206), 26200);
             case "Touching": return map.ZoomToAsync(new PointShape(-10776520, 3919250), 18060);
+            case "Equal": return map.ZoomToAsync(new PointShape(-10776520, 3919250), 18060);
             case "Within the shape": return map.ZoomToAsync(new PointShape(-10778569, 3914000), 33100);
             default: return map.ZoomToAsync(new PointShape(-10779430, 3914970), 18060);
         }
@@ -199,6 +201,10 @@
             case "Intersecting": return new PolygonShape("POLYGON((-10778718 3914865,-10778746 3913709,-10777103 3913766,-10777179 3914942,-10778718 3914865))");
             case "Overlapping": return new PolygonShape("POLYGON((-10779549 3915352,-10777495 3915859,-10776214 3914827,-10776081 3913384,-10777906 3912553,-10779702 3914110,-10779549 3915352))");
             case "Touching": return TouchingSeed();
+            case "Equal":
+                native.Open();
+                try { return native.GetAllFeatures(ReturningColumnsType.NoColumns).First().GetShape(); }
+                finally { native.Close(); }
             case "Within the shape": return new PolygonShape("POLYGON((-10779148 3916088,-10779960 3913862,-10777189 3911913,-10777179 3915754,-10779148 3916088))");
             default: return new PointShape(-10779430, 3914970);
         }
@@ -270,6 +276,38 @@
     {
         if (shape == null) return;
         seed = shape;
+
+        if (relation == "Equal")
+        {
+            // Compare in the file's original coordinates to avoid reprojection rounding.
+            var asked = fromSeed ? shape : outward.ConvertToInternalProjection(shape);
+            List<Feature> equal;
+            native.Open();
+            try
+            {
+                if (asked is PointShape)
+                {
+                    asked = nativeQuery.GetFeaturesContaining(asked, ReturningColumnsType.NoColumns)
+                        .FirstOrDefault()?.GetShape();
+                }
+                equal = asked == null ? new List<Feature>()
+                    : nativeQuery.GetFeaturesTopologicalEqual(asked, ReturningColumnsType.NoColumns).ToList();
+            }
+            finally { native.Close(); }
+
+            if (asked == null)
+            {
+                query.InternalFeatures.Clear();
+                matches.InternalFeatures.Clear();
+                await marks.RedrawAsync();
+                result = "No zoning parcel contains this location.";
+                return;
+            }
+            await PaintAsync(outward.ConvertToExternalProjection(asked),
+                equal.Select(feature => outward.ConvertToExternalProjection(feature)).ToList());
+            result = equal.Count + " topologically equal features (including the selected parcel)";
+            return;
+        }
 
         if (relation == "Touching")
         {

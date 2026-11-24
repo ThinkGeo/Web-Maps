@@ -26,7 +26,20 @@
         </MapView>
     </div>
     <div style="width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;padding:8px;display:flex;flex-direction:column;gap:8px;background:dimgray;color:whitesmoke;font:13px system-ui;min-height:0;overflow:auto">
-        <div style="font-size:16px;font-weight:600">Export to PDF</div>
+        <div style="font-size:16px;font-weight:600">Map Export</div>
+        <label for="export-kind">Output</label>
+        <select id="export-kind" @bind="kind" @bind:after="ClearPreview" disabled="@busy" style="width:100%;padding:4px;font:13px system-ui">
+            <option value="png">Current map as PNG</option>
+            <option value="pdf">PDF document</option>
+            <option value="server">Server-rendered PNG</option>
+        </select>
+        @if (kind == "png")
+        {
+            <div>Pan or zoom the map, then download its current browser canvas at screen resolution.</div>
+            <button class="btn btn-sm btn-light" @onclick="DownloadPngAsync" disabled="@busy">Download map PNG</button>
+        }
+        else if (kind == "pdf")
+        {
         <div style="color:#e5e5e5;line-height:1.4">Export the current view as a raster image or redraw map features as a sharp vector PDF.</div>
         <label for="pdf-title">Page title</label>
         <input id="pdf-title" @bind="title" style="box-sizing:border-box;width:100%;font:13px system-ui;padding:3px 6px" />
@@ -34,11 +47,25 @@
             <button class="btn btn-sm btn-light" @onclick="PrintRasterAsync" disabled="@busy">Print as raster</button>
             <button class="btn btn-sm btn-light" @onclick="PrintVectorAsync" disabled="@busy">Print as vector</button>
         </div>
+        }
+        else
+        {
+            <div>Draw aerial imagery and zoning on the server without reading the browser canvas. This uses the current map extent, fitted to a square image; its appearance differs from the street basemap.</div>
+            <label>Image size (px)
+                <input type="number" min="200" max="2000" step="100" @bind="size" disabled="@busy" style="box-sizing:border-box;width:100%" />
+            </label>
+            <button class="btn btn-sm btn-light" @onclick="DrawImageAsync" disabled="@busy">Render PNG on server</button>
+        }
         <div role="status" style="color:#e5e5e5">@status</div>
         @if (pdfUrl != null)
         {
             <a class="btn btn-sm btn-light" download="@fileName" href="@pdfUrl">Save @fileName</a>
             <iframe title="PDF preview" src="@pdfUrl" style="width:100%;flex:1;min-height:300px;border:1px solid #ccc;background:#fff"></iframe>
+        }
+        @if (pngUrl != null)
+        {
+            <a class="btn btn-sm btn-light" download="frisco-server-map.png" href="@pngUrl">Save PNG</a>
+            <img src="@pngUrl" alt="Map rendered on the server" style="width:100%;height:auto;border:1px solid #ccc" />
         }
     </div>
 </div>
@@ -62,6 +89,73 @@
     private string status = "";
     private string pdfUrl;
     private string fileName;
+    private string kind = "pdf";
+    private int size = 800;
+    private string pngUrl;
+
+    private void ClearPreview()
+    {
+        pdfUrl = pngUrl = null;
+        status = "";
+    }
+
+    private async Task DownloadPngAsync()
+    {
+        if (busy) return;
+        busy = true;
+        try
+        {
+            await map.WhenReady;
+            await map.ExportImageAsync("thinkgeo-map.png");
+            status = $"Saved thinkgeo-map.png at {DateTime.Now:HH:mm:ss}.";
+        }
+        catch (Exception exception) { status = "Export failed: " + exception.Message; }
+        finally { busy = false; }
+    }
+
+    private async Task DrawImageAsync()
+    {
+        if (busy) return;
+        if (size < 200 || size > 2000) { status = "Choose an image size between 200 and 2000 pixels."; return; }
+        busy = true;
+        status = "Rendering image on the server...";
+        pngUrl = null;
+        await InvokeAsync(StateHasChanged);
+        ShapeFileFeatureLayer zoning = null;
+        ThinkGeoRasterMapsAsyncLayer aerial = null;
+        try
+        {
+            await map.WhenReady;
+            var currentExtent = await map.GetCurrentExtentAsync();
+            zoning = new ShapeFileFeatureLayer("./Data/Shapefile/Zoning.shp")
+                { FeatureSource = { ProjectionConverter = new ProjectionConverter(2276, 3857) } };
+            zoning.ZoomLevelSet.ZoomLevel01.DefaultAreaStyle = new AreaStyle(new GeoPen(GeoColors.Blue, 1.5f), new GeoSolidBrush(GeoColor.FromArgb(40, GeoColors.Blue)));
+            zoning.ZoomLevelSet.ZoomLevel01.ApplyUntilZoomLevel = ApplyUntilZoomLevel.Level20;
+            zoning.Open();
+            aerial = new ThinkGeoRasterMapsAsyncLayer(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret, ThinkGeoCloudRasterMapsMapType.Aerial_V2_X1);
+            await aerial.OpenAsync();
+            using var picture = new GeoImage(size, size);
+            var canvas = GeoCanvas.CreateDefaultGeoCanvas();
+            canvas.BeginDrawing(picture, MapUtil.GetDrawingExtent(currentExtent, size, size), GeographyUnit.Meter);
+            try
+            {
+                var labels = new Collection<SimpleCandidate>();
+                await aerial.DrawAsync(canvas, labels);
+                canvas.Flush();
+                zoning.Draw(canvas, labels);
+            }
+            finally { canvas.EndDrawing(); }
+            pngUrl = "export/" + ExportStore.Put(picture.GetImageBytes(GeoImageFormat.Png), "image/png");
+            status = $"Rendered {size} by {size} pixels.";
+        }
+        catch (Exception exception) { status = "Rendering failed: " + exception.Message; }
+        finally
+        {
+            zoning?.Close();
+            if (aerial != null) await aerial.CloseAsync();
+            busy = false;
+        }
+    }
 
     protected override void OnInitialized()
     {

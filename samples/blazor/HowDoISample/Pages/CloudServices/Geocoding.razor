@@ -1,4 +1,4 @@
-@page "/reverse-geocoding"
+@page "/geocoding"
 @rendermode InteractiveServer
 @using ThinkGeo.Core
 @implements IDisposable
@@ -11,7 +11,7 @@
             <OverlaysSetting>
                 <ThinkGeoCloudVectorMapsOverlay Id="Basemap" MapType="ThinkGeoCloudVectorMapsMapType.Light"
                                                 ApiKey="@GlobalSettings.ThinkGeoApiKey" />
-                <VectorTileOverlay Id="Marks" @ref="marks" StyleJson="@MarksStyle" FeatureSources="@sources" SourceId="marks" />
+                <VectorTileOverlay Id="Marks" @ref="marks" StyleJson="@(reverseMode ? MarksStyle : ForwardStyle)" FeatureSources="@sources" SourceId="marks" />
             </OverlaysSetting>
             <PopupOverlaySetting>
                 <PopupOverlay Id="Best">
@@ -39,6 +39,36 @@
         }
     </div>
     <div style="position:relative;z-index:10000;width:270px;flex:0 0 270px;box-sizing:border-box;margin-left:10px;background:dimgray;color:whitesmoke;font:13px system-ui;display:flex;flex-direction:column;min-height:0">
+        <div style="padding:8px;display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:16px;font-weight:600">Geocoding</div>
+            <label><input type="radio" name="geocoding-mode" checked="@(!reverseMode)" disabled="@busy" @onchange="() => ChangeModeAsync(false)" /> Address to location</label>
+            <label><input type="radio" name="geocoding-mode" checked="@reverseMode" disabled="@busy" @onchange="() => ChangeModeAsync(true)" /> Location to address</label>
+            <div>@(reverseMode ? "Click the map or enter coordinates to find nearby addresses and places." : "Enter an address, then select a result to locate it on the map.")</div>
+        </div>
+        @if (!reverseMode)
+        {
+        <div style="padding:8px 8px 4px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:6px;row-gap:5px;align-items:center">
+            <label for="geocoding-search" style="grid-column:1 / -1;margin:0">Search Text:</label>
+            <input id="geocoding-search" @bind="searchText" @bind:event="oninput" @onkeyup="@(args => args.Key == "Enter" ? ForwardSearchAsync() : Task.CompletedTask)" style="box-sizing:border-box;width:100%;min-width:0;padding:2px 4px;background:#fff;color:#222;border:1px solid #999;font:13px system-ui;grid-column:1 / -1" aria-label="Search Text" />
+
+            <label for="geocoding-max">Maximum Results:</label>
+            <input id="geocoding-max" type="number" min="1" max="100" @bind="maxResults" style="@SidebarInputStyle" />
+
+            <button style="grid-column:1 / -1;margin-top:4px;@SidebarButtonStyle" @onclick="ForwardSearchAsync" disabled="@busy">Search</button>
+            <div role="status" style="grid-column:1 / -1;min-height:18px;line-height:1.3">@status</div>
+        </div>
+        <div style="flex:1;min-height:0;overflow:auto;margin:0 8px 8px;border-top:1px solid #aaa">
+            @foreach (var location in found)
+            {
+                <div style="cursor:pointer;padding:6px 4px;border-bottom:1px solid #888;background:@(location == forwardPicked ? "#4b5e79" : "transparent")" @onclick="() => ForwardPickAsync(location)">
+                    <div style="font-weight:600">@location.LocationName</div>
+                    <div style="font-size:12px">Type: @location.LocationType</div>
+                </div>
+            }
+        </div>
+        }
+        else
+        {
         <div style="padding:8px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:6px;row-gap:6px;align-items:center">
             <label for="reverse-coordinates" style="grid-column:1 / -1;margin:0">Location (latitude, longitude):</label>
             <input id="reverse-coordinates" @bind="coordinates" @bind:event="oninput" @onkeyup="@(args => args.Key == "Enter" ? SearchAsync() : Task.CompletedTask)"
@@ -77,6 +107,7 @@
                 }
             </div>
         </div>
+        }
     </div>
 </div>
 
@@ -102,6 +133,27 @@
   ]
 }";
 
+    private const string ForwardStyle = @"{
+  ""layers"": [
+    { ""type"": ""circle"", ""source-layer"": ""hits"",
+      ""paint"": { ""circle-radius"": 6, ""circle-color"": ""#D7301F"", ""circle-stroke-color"": ""#FFFFFF"", ""circle-stroke-width"": 2 } },
+    { ""type"": ""circle"", ""source-layer"": ""forward-picked"",
+      ""paint"": { ""circle-radius"": 11, ""circle-color"": ""rgba(215,48,31,0.25)"", ""circle-stroke-color"": ""#D7301F"", ""circle-stroke-width"": 2 } },
+    { ""type"": ""symbol"", ""source-layer"": ""forward-picked"",
+      ""layout"": { ""text-field"": [""get"", ""name""], ""text-font"": [""Noto Sans Bold""], ""text-size"": 12, ""text-offset"": [0, 1.4], ""text-anchor"": ""top"" },
+      ""paint"": { ""text-color"": ""#7A1A0E"", ""text-halo-color"": ""#FFFFFF"", ""text-halo-width"": 1.5 } }
+  ]
+}";
+    private static readonly FeatureSourceColumn[] Columns = { new FeatureSourceColumn("name") };
+    private bool reverseMode;
+    private readonly InMemoryFeatureSource hits = new InMemoryFeatureSource(Columns, Array.Empty<Feature>());
+    private readonly InMemoryFeatureSource forwardPickedMark = new InMemoryFeatureSource(Columns, Array.Empty<Feature>());
+    private GeocodingCloudClient forwardClient;
+    private string searchText = "6101 Frisco Square Blvd, Frisco, TX 75034";
+    private List<CloudGeocodingLocation> found = new List<CloudGeocodingLocation>();
+    private CloudGeocodingLocation forwardPicked;
+
+
     private MapView map;
     private VectorTileOverlay marks;
     private GeoCollection<FeatureSource> sources;
@@ -113,7 +165,7 @@
     private int maxResults = 100;
     private bool busy;
     private bool disposed;
-    private string status = "Click the map or enter coordinates to search.";
+    private string status = "";
     private string coordinates = "33.150083, -96.834516";
     private PointShape bestAt;
     private string bestText = "";
@@ -123,7 +175,8 @@
 
     protected override void OnInitialized()
     {
-        sources = new GeoCollection<FeatureSource> { { "asked", asked }, { "picked", pickedMark }, { "center", center } };
+        sources = new GeoCollection<FeatureSource> { { "asked", asked }, { "picked", pickedMark }, { "center", center }, { "hits", hits }, { "forward-picked", forwardPickedMark } };
+        forwardClient = new GeocodingCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
         client = new ReverseGeocodingCloudClient(GlobalSettings.ThinkGeoCloudClientId, GlobalSettings.ThinkGeoCloudClientSecret);
     }
 
@@ -131,11 +184,12 @@
     {
         disposed = true;
         client?.Dispose();
+        forwardClient?.Dispose();
     }
 
     private Task Clicked(ClickedMapViewEventArgs args)
     {
-        if (busy || disposed) return Task.CompletedTask;
+        if (!reverseMode || busy || disposed) return Task.CompletedTask;
         var degrees = ProjectionConverter.Convert(3857, 4326, new PointShape(args.WorldX, args.WorldY));
         coordinates = FormattableString.Invariant($"{degrees.Y:0.000000}, {degrees.X:0.000000}");
         return AskAsync(new PointShape(args.WorldX, args.WorldY));
@@ -249,6 +303,98 @@
         catch (Exception exception)
         {
             if (!disposed) status = exception.Message;
+        }
+    }
+    private async Task ChangeModeAsync(bool reverse)
+    {
+        if (busy || disposed || reverseMode == reverse) return;
+        reverseMode = reverse;
+        status = "";
+        bestAt = null;
+        bestText = "";
+        picked = null;
+        forwardPicked = null;
+        found.Clear();
+        foreach (var list in nearby.Values) list.Clear();
+        foreach (var source in new[] { asked, center, pickedMark, hits, forwardPickedMark })
+            source.InternalFeatures.Clear();
+        await map.WhenReady;
+        await marks.RedrawAsync();
+    }
+    private async Task ForwardSearchAsync()
+    {
+        if (busy || disposed) return;
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            status = "Please enter an address to search.";
+            return;
+        }
+        if (maxResults < 1 || maxResults > 100)
+        {
+            status = "Please enter a number between 1 and 100.";
+            return;
+        }
+
+        busy = true;
+        status = "Searching...";
+        try
+        {
+            var options = new CloudGeocodingOptions
+            {
+                MaxResults = maxResults,
+                ResultProjectionInSrid = 3857,
+                BBox = await map.GetCurrentExtentAsync()
+            };
+            var result = await forwardClient.SearchAsync(searchText.Trim(), options);
+            if (result.Exception != null)
+            {
+                status = result.Exception.Message;
+                return;
+            }
+
+            if (disposed) return;
+            found = result.Locations?.ToList() ?? new List<CloudGeocodingLocation>();
+            status = $"Found {found.Count} locations.";
+            hits.InternalFeatures.Clear();
+            foreach (var location in found)
+            {
+                hits.InternalFeatures.Add(new Feature(location.LocationPoint, new Dictionary<string, string> { ["name"] = location.LocationName }));
+            }
+            forwardPickedMark.InternalFeatures.Clear();
+            forwardPicked = null;
+            await marks.RedrawAsync();
+            if (found.Count > 0)
+            {
+                await ForwardPickAsync(found[0]);
+            }
+        }
+        catch (Exception exception)
+        {
+            status = exception.Message;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task ForwardPickAsync(CloudGeocodingLocation location)
+    {
+        forwardPicked = location;
+        forwardPickedMark.InternalFeatures.Clear();
+        forwardPickedMark.InternalFeatures.Add(new Feature(location.LocationPoint, new Dictionary<string, string> { ["name"] = location.LocationName }));
+        await marks.RedrawAsync();
+
+        var box = location.BoundingBox;
+        if (box != null && box.Width > 1 && box.Height > 1)
+        {
+            box = (RectangleShape)box.CloneDeep();
+            box.ScaleUp(40);
+            await map.ZoomToExtentAsync(box);
+        }
+        else
+        {
+            await map.ZoomToAsync(location.LocationPoint, 4500);
         }
     }
 }

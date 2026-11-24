@@ -80,10 +80,8 @@
     protected override void OnInitialized()
     {
         menus = menuService.GetMenus();
-        var currentUri = navigationManager.Uri;
-        var lastSlashIndex = currentUri.LastIndexOf('/') + 1;
-        var queryStringIndex = currentUri.IndexOf('?');
-        var currentPath = queryStringIndex == -1 ? currentUri.Substring(lastSlashIndex) : currentUri.Substring(lastSlashIndex, queryStringIndex - lastSlashIndex);
+        var currentPath = navigationManager.ToBaseRelativePath(navigationManager.Uri).Split('?', '#')[0].Trim('/');
+        if (string.IsNullOrEmpty(currentPath)) currentPath = "map-navigation";
         currentMenu = menus.FirstOrDefault(p => currentPath == p.Href) ?? menus[0];
 
         // The group the current sample sits in starts open, so a link into a sample lands on it.

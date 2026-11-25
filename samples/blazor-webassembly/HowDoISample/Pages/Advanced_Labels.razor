@@ -56,6 +56,7 @@
             <label style="cursor:pointer"><input type="radio" name="lesson" disabled="@busy" checked="@(lesson == LessonWrap)" @onchange="@(() => Pick(LessonWrap))" /> Wrap and transform</label>
             <label style="cursor:pointer"><input type="radio" name="lesson" disabled="@busy" checked="@(lesson == LessonOptional)" @onchange="@(() => Pick(LessonOptional))" /> Icon stays, text yields</label>
             <label style="cursor:pointer"><input type="radio" name="lesson" disabled="@busy" checked="@(lesson == LessonCjk)" @onchange="@(() => Pick(LessonCjk))" /> CJK writes vertically</label>
+            <label style="cursor:pointer"><input type="radio" name="lesson" disabled="@busy" checked="@(lesson == LessonColumns)" @onchange="@(() => Pick(LessonColumns))" /> Several columns in one label - concat</label>
         </div>
         <div style="font-weight:700;margin-bottom:4px">style.json - edit it; the map follows</div>
         <textarea @bind="editor" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
@@ -229,6 +230,26 @@
   ]
 }";
 
+    // Join two feature columns into one label, matching the WPF v15 lesson.
+    private const string LessonColumns = @"{
+  ""layers"": [
+    { ""type"": ""background"",
+      ""paint"": { ""background-color"": ""#F4F2EC"" } },
+    { ""type"": ""circle"", ""source-layer"": ""lessons"",
+      ""filter"": [""=="", [""get"", ""KIND""], ""town""],
+      ""paint"": { ""circle-radius"": 4, ""circle-color"": ""#BCAAA4"" } },
+    { ""type"": ""symbol"", ""source-layer"": ""lessons"",
+      ""filter"": [""=="", [""get"", ""KIND""], ""town""],
+      ""layout"": {
+          ""text-field"": [""concat"", [""get"", ""NAME""], ""\n"",
+              ""Population: "", [""get"", ""POPULATION""]],
+          ""text-font"": [""Noto Sans Bold""],
+          ""text-anchor"": ""top"", ""text-offset"": [0, 0.6], ""text-size"": 12 },
+      ""paint"": { ""text-color"": ""#4E342E"", ""text-halo-color"": ""#FFFFFF"",
+          ""text-halo-width"": 1.2 } }
+  ]
+}";
+
     private MapView map;
     private GeoCollection<FeatureSource> sources;
     private MapStyle style;
@@ -330,6 +351,11 @@
     {
         if (disposed) return;
         await map.WhenReady;
+        if (lesson == LessonColumns)
+        {
+            await map.ZoomToExtentAsync(new RectangleShape(-10789800, 3882400, -10782400, 3877600));
+            return;
+        }
         var (center, scale) = FrameFor(lesson);
 
         await map.ZoomToAsync(center, scale);
@@ -363,6 +389,7 @@
             chosenLesson == LessonWrap ? (new PointShape(-10770000, 3904000), 30000d) :
             chosenLesson == LessonOptional ? (new PointShape(-10786000, 3892000), 20000d) :
             chosenLesson == LessonCjk ? (new PointShape(-10770000, 3892000), 45000d) :
+            chosenLesson == LessonColumns ? (new PointShape(-10786000, 3880000), 30000d) :
             (new PointShape(-10786000, 3916000), 45000d);
 
     public void Dispose()
@@ -379,13 +406,14 @@
     {
         var features = new List<Feature>();
 
-        void Add(BaseShape shape, string kind, string name, string rank = "", string anchor = "")
+        void Add(BaseShape shape, string kind, string name, string rank = "", string anchor = "", string population = "")
         {
             var feature = new Feature(shape);
             feature.ColumnValues["KIND"] = kind;
             feature.ColumnValues["NAME"] = name;
             feature.ColumnValues["RANK"] = rank;
             feature.ColumnValues["ANCHOR"] = anchor;
+            feature.ColumnValues["POPULATION"] = population;
             features.Add(feature);
         }
 
@@ -441,10 +469,16 @@
         // CJK vertical: the line runs north, so the name writes downward.
         Add(WindingNorth(-10770000, 3892000), "cjk", "银杏河滨绿道");
 
+        Add(new PointShape(-10788000, 3881200), "town", "Cedar Hill", population: "48200");
+        Add(new PointShape(-10783800, 3881600), "town", "Maple Grove", population: "12750");
+        Add(new PointShape(-10788400, 3878400), "town", "Stone Ridge", population: "3900");
+        Add(new PointShape(-10784000, 3878800), "town", "Willow Bend", population: "27600");
+
         var columns = new[]
         {
             new FeatureSourceColumn("NAME"), new FeatureSourceColumn("KIND"),
             new FeatureSourceColumn("RANK"), new FeatureSourceColumn("ANCHOR"),
+            new FeatureSourceColumn("POPULATION"),
         };
         return new InMemoryFeatureSource(columns, features);
     }

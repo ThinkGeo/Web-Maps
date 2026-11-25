@@ -2,14 +2,14 @@
 
 Ten focused samples running entirely in the browser as a standalone Blazor WebAssembly app.
 
-The gallery covers Map Navigation, Vector Map Providers, Raster Map Providers, Render Points, Lines and Polygons,
+The gallery covers Vector Map Providers, Raster Map Providers, Render Points, Lines and Polygons, Heatmap,
 Advanced Labels, Markers & Popups, Cluster Points, Project Features, Measure Distance and Area, and PNG export.
 Markers & Popups includes static and animated markers, removal, animation controls and rich detail popups.
 Advanced Labels includes seven lessons, including multi-column town labels. The basic styling lesson uses small
 in-memory datasets. The larger server gallery is in `../../blazor/HowDoISample`.
 
 The app uses the server gallery's header, a flat list of sample names, sample descriptions and resizable Code
-panel. The index route opens Map Navigation. These 10 samples appear in the menu; `wwwroot/menus.json`
+panel. The index route opens Vector Map Providers. These 10 samples appear in the menu; `wwwroot/menus.json`
 and the sample Razor sources are embedded at build time so the gallery and Code panel need no server endpoints.
 The sidebar follows direct links and browser history, and collapses behind the navigation button on small screens.
 

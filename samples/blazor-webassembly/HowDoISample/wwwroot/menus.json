@@ -1,14 +1,5 @@
 [
   {
-    "id": "map-navigation",
-    "title": "Map Navigation",
-    "description": "Navigate midtown Manhattan with the gestures built into the map - drag to pan, the wheel to zoom, right-drag to rotate and tilt - while the center is read back in latitude and longitude.",
-    "href": "map-navigation",
-    "source": "Map_Navigation",
-    "preicon": "fas fa-location-arrow",
-    "group": "Map Navigation"
-  },
-  {
     "id": "vector-map-providers",
     "title": "Vector Map Providers",
     "description": "The hosted vector maps, each a style: ThinkGeo Maps light and dark over the same tiles, OpenFreeMap and any other server by its style URL alone.",
@@ -33,6 +24,15 @@
     "href": "render-points-lines-and-polygons",
     "source": "Render_Points_Lines_And_Polygons",
     "preicon": "fas fa-paint-brush",
+    "group": "Styling"
+  },
+  {
+    "id": "heatmap",
+    "title": "Heatmap",
+    "description": "Explore browser-rendered density from 180 simulated observations. Change weights, radius, intensity, opacity and color ramps.",
+    "href": "heatmap",
+    "source": "Heatmap",
+    "preicon": "fas fa-fire",
     "group": "Styling"
   },
   {

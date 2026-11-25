@@ -9,15 +9,6 @@
     "group": "Maps from a Service - Vector"
   },
   {
-    "id": "raster-map-providers",
-    "title": "Raster Map Providers",
-    "description": "The hosted raster maps: ThinkGeo Cloud light, dark, aerial and hybrid, and OpenStreetMap as a raster source in a style document.",
-    "href": "raster-map-providers",
-    "source": "Raster_Map_Providers",
-    "preicon": "fas fa-layer-group",
-    "group": "Maps from a Service - Raster"
-  },
-  {
     "id": "render-points-lines-and-polygons",
     "title": "Render Points, Lines and Polygons",
     "description": "Style your own points, lines and polygons in the browser using small in-memory datasets and an editable style document.",
@@ -79,14 +70,5 @@
     "source": "Measure_Distance_Area",
     "preicon": "fas fa-ruler",
     "group": "Map Tools & Adornments"
-  },
-  {
-    "id": "export-map",
-    "title": "Export the Map as an Image",
-    "description": "Save the current map view as a PNG - the map's own WebGL canvas, read back at screen resolution and handed to the browser to download.",
-    "href": "export-map",
-    "source": "Export_Map",
-    "preicon": "fas fa-camera",
-    "group": "Printing & Export"
   }
 ]

@@ -20,7 +20,7 @@
     <script type="module">
         import * as tg from '../js/tg.js';
 
-        const formats = ['GeoTIFF - NAIP aerial', 'Plain JPEG + world file', 'MrSID - aerial in state plane feet', 'JPEG2000 - world', 'ECW - world imagery', 'Anything else GDAL reads'];
+        const formats = ['GeoTIFF - NAIP aerial', 'Plain JPEG + world file', 'MrSID - aerial in state plane feet', 'JPEG2000 - world', 'Anything else GDAL reads'];
         const map = tg.createMap({ center: [-10780597, 3916063], zoom: 14 });
         await tg.ready(map);
         let overlay = null;

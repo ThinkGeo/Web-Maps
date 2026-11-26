@@ -74,7 +74,7 @@
   {
     "id": "raster-file-formats",
     "title": "Raster File Formats",
-    "description": "Open a NAIP GeoTIFF, JPEG 2000, plain JPEG with a world file, MrSID, ECW, or another GDAL raster format. Each image is drawn over the same basemap in the map's projection.",
+    "description": "Open a NAIP GeoTIFF, JPEG 2000, plain JPEG with a world file, MrSID, or another GDAL raster format. Each image is drawn over the same basemap in the map's projection.",
     "href": "raster-file-formats",
     "source": "Raster_File_Formats",
     "preicon": "fas fa-file-image",

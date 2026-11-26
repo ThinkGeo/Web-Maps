@@ -13,7 +13,7 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
     public class YourData : ISampleGroup
     {
         public static readonly string[] VectorFormats = { "Shapefile", "GeoJSON", "KML", "GPX", "MapInfo TAB", "TinyGeo", "WKB", "In memory" };
-        public static readonly string[] RasterFormats = { "GeoTIFF - NAIP aerial", "Plain JPEG + world file", "MrSID - aerial in state plane feet", "JPEG2000 - world", "ECW - world imagery", "Anything else GDAL reads" };
+        public static readonly string[] RasterFormats = { "GeoTIFF - NAIP aerial", "Plain JPEG + world file", "MrSID - aerial in state plane feet", "JPEG2000 - world", "Anything else GDAL reads" };
         public static readonly string[] Databases = { "SQLite", "GeoPackage", "Esri File Geodatabase", "PostgreSQL / PostGIS", "SQL Server" };
         public static readonly string[] Archives = { "pmtiles", "mbtiles" };
 
@@ -147,7 +147,6 @@ namespace ThinkGeo.UI.WebApi.HowDoI.Samples
                 // The MrSID's own projection is read from its .prj; the converter warps every tile of it into the map's meters.
                 case "MrSID - aerial in state plane feet": return new MrSidGdalRasterLayer(SampleData.Path("MrSid/US380AndGeeRoad.sid")) { ImageSource = { ProjectionConverter = new GdalProjectionConverter(Projection.ConvertWktToProjString(File.ReadAllText(SampleData.Path("MrSid/US380AndGeeRoad.prj"))), Projection.GetGoogleMapProjString()) } };
                 case "JPEG2000 - world": return new Jpeg2000GdalRasterLayer(SampleData.Path("Jpeg2000/World.jp2"), SampleData.Path("Jpeg2000/World.j2w"));   // placed by its world file, already in the map's meters
-                case "ECW - world imagery": return new EcwGdalRasterLayer(SampleData.Path("World.ecw")) { ImageSource = { ProjectionConverter = new GdalProjectionConverter(4326, 3857) } };
                 case "Anything else GDAL reads": return new GdalRasterLayer(SampleData.Path("GeoTiff/World.tif")) { ImageSource = { ProjectionConverter = new GdalProjectionConverter(4326, 3857) } };
                 default: return new GeoTiffRasterLayer(SampleData.Path("GeoTiff/m_3309650_sw_14_1_20160911_20161121.tif"));
             }

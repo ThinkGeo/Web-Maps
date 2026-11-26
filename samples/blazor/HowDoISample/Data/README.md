@@ -21,7 +21,7 @@ Where the data under this folder comes from.
 | `Csv/vehicle-route.csv` | Vehicle Navigation, Custom Feature Sources | A GPS trace through Lower Manhattan |
 | `Ndfd/ds.wspd.tif`, `ds.wdir.tif` | Wind as a Vector Field | NOAA National Digital Forecast Database wind speed and direction, converted from GRIB (public domain) |
 | `OpenDrive/` | Lane-Level Navigation | DLR HD map of Wolfsburg, CC BY 4.0 - see `OpenDrive/README.md` |
-| `GeoTiff/World.tif`, `World.ecw` | Project a Raster, Raster File Formats | ThinkGeo sample world imagery |
+| `GeoTiff/World.tif` | Project a Raster, Raster File Formats | ThinkGeo sample world imagery |
 | `GeoTiff/m_3309650_*.tif`, `Jpg/m_3309650_*.jpg` | Raster File Formats | USDA National Agriculture Imagery Program aerial photo of Frisco, 2016 (public domain) |
 | `Shapefile/Frisco 2010 Census Housing Units` | Color Utilities | Frisco census block groups with 2010 housing-unit counts, City of Frisco open data (EPSG:2276) |
 | `Pmtiles/frisco.pmtiles`, `style.json` | Offline Tiles | Frisco cut from Protomaps (OpenStreetMap data, ODbL) with the Protomaps light style |

@@ -51,7 +51,7 @@
     private const int InitialZoom = 14;
     private static readonly string[] Formats =
     {
-        "GeoTIFF - NAIP aerial", "JPEG 2000 - the same aerial", "Plain JPEG + world file", "MrSID - world imagery", "ECW - world imagery", "Anything else GDAL reads"
+        "GeoTIFF - NAIP aerial", "JPEG 2000 - the same aerial", "Plain JPEG + world file", "MrSID - world imagery", "Anything else GDAL reads"
     };
 
     private MapView map;
@@ -81,8 +81,6 @@
                 return new GdalRasterLayer("./Data/Jpg/m_3309650_sw_14_1_20160911_20161121.jpg");
             case "MrSID - world imagery":
                 return new MrSidGdalRasterLayer("./Data/MrSid/World.sid") { ImageSource = { ProjectionConverter = new GdalProjectionConverter(4326, 3857) } };
-            case "ECW - world imagery":
-                return new EcwGdalRasterLayer("./Data/World.ecw") { ImageSource = { ProjectionConverter = new GdalProjectionConverter(4326, 3857) } };
             case "Anything else GDAL reads":
                 return new GdalRasterLayer("./Data/GeoTiff/World.tif") { ImageSource = { ProjectionConverter = new GdalProjectionConverter(4326, 3857) } };
             default:

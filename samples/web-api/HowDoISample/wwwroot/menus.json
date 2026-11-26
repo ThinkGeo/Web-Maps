@@ -90,7 +90,7 @@
   {
     "id": "raster-file-formats",
     "title": "Raster File Formats",
-    "description": "GeoTIFF, MrSID, JPEG2000, ECW and other rasters, drawn on the server.",
+    "description": "GeoTIFF, MrSID, JPEG2000 and other rasters, drawn on the server.",
     "source": "YourData",
     "preicon": "fas fa-file-image",
     "group": "Your Data"

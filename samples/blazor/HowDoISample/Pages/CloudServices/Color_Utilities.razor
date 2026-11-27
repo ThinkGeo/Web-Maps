@@ -127,6 +127,7 @@
     {
         if (firstRender)
         {
+            await map.WhenReady;
             await GenerateAsync();
         }
     }

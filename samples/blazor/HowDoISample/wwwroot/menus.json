@@ -92,7 +92,7 @@
   {
     "id": "databases",
     "title": "Databases",
-    "description": "Compare tables from SQLite, a GeoPackage, an Esri file geodatabase, PostgreSQL / PostGIS and SQL Server. Each uses its own feature source and projection settings.",
+    "description": "Display data from SQLite and GeoPackage files using their respective feature sources and projection settings.",
     "href": "databases",
     "source": "Databases",
     "preicon": "fas fa-database",

@@ -45,7 +45,7 @@
             <textarea aria-label="style.json editor" @bind="styleJson" @bind:event="oninput" @bind:after="EditorChanged" spellcheck="false"
                       style="flex:1;min-height:0;width:100%;box-sizing:border-box;resize:none;border:1px solid #aaa;background:#fff;color:#111;padding:7px;font:11.5px/1.35 Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;overflow-x:hidden;overflow-y:auto"></textarea>
             <div role="status" style="padding-top:5px;line-height:1.3;overflow-wrap:anywhere;color:@(ok ? "#baf1ba" : "#ffd0b8")">@status</div>
-            <div style="color:#e5e5e5;font-size:11px;line-height:1.35;margin-top:5px">The first three are file databases; the last two are database servers. One style draws each source.</div>
+            <div style="color:#e5e5e5;font-size:11px;line-height:1.35;margin-top:5px">One style draws both file database sources.</div>
         </div>
     </div>
 </div>
@@ -83,7 +83,7 @@
   ]
 }";
 
-    private static readonly string[] Databases_ = { "SQLite", "GeoPackage", "Esri File Geodatabase", "PostgreSQL / PostGIS", "SQL Server" };
+    private static readonly string[] Databases_ = { "SQLite", "GeoPackage" };
 
     private MapView map;
     private ElementReference loadingIndicator;
@@ -112,12 +112,6 @@
         {
             case "GeoPackage":
                 return new GdalFeatureSource("./Data/GeoPackage/mora_surficial_geology.gpkg") { ProjectionConverter = new ProjectionConverter(26910, 3857) };
-            case "Esri File Geodatabase":
-                return new FileGeoDatabaseFeatureSource("./Data/FileGeoDatabase/zoning.gdb", "zoning") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
-            case "PostgreSQL / PostGIS":
-                return new PostgreSqlFeatureSource("User ID=ThinkGeoTest;Password=ThinkGeoTestPassword;Host=demodb.thinkgeo.com;Port=5432;Database=postgres;Pooling=true;", "countries", "gid", 4326) { ProjectionConverter = new ProjectionConverter(4326, 3857) };
-            case "SQL Server":
-                return new SqlServerFeatureSource("Server=demodb.thinkgeo.com;Database=thinkgeo;User Id=ThinkGeoTest;Password=ThinkGeoTestPassword;TrustServerCertificate=True;", "frisco_coyote_sightings", "id") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
             default:
                 return new SqliteFeatureSource("Data Source=" + Path.GetFullPath("./Data/SQLite/frisco-restaurants.sqlite") + ";", "restaurants", "id", "geometry") { ProjectionConverter = new ProjectionConverter(2276, 3857) };
         }

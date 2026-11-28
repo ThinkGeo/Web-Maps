@@ -1,0 +1,61 @@
+@page "/wms"
+@page "/work-with-ogc-services"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+
+<div class="map-container" style="position:relative">
+    <MapView Id="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0">
+        <OverlaysSetting>
+            @if (style != null)
+            {
+                <VectorTileOverlay Id="Basemap" Style="@style" RasterTileSource="@imagery" RasterSourceId="imagery" />
+            }
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom"
+                                CenterButtonBearing="0" CenterButtonPitch="0" />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+    @if (error != null)
+    {
+        <div role="alert" style="position:absolute;top:12px;right:12px;background:white;padding:8px">@error</div>
+    }
+
+</div>
+
+@code {
+    private static readonly PointShape InitialCenter = new(-10500000, 4500000);
+    private const int InitialZoom = 4;
+    private MapStyle style;
+    private WmsRasterTileSource imagery;
+    private string error;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        try
+        {
+            imagery = new WmsRasterTileSource(new Uri("https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi"));
+            imagery.Client.ActiveLayerNames.Add("VIIRS_NOAA20_CorrectedReflectance_TrueColor");
+            imagery.Client.OutputFormat = "image/png";
+            imagery.Client.Parameters["TIME"] = DateTime.UtcNow.AddDays(-2).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+            var vector = new ThinkGeoVectorTileSource(GlobalSettings.ThinkGeoApiKey);
+            await vector.OpenAsync();
+            var composed = new MapStyle().AddStyle(ThinkGeoVectorStyles.Dark, vector)
+                .AddRaster(imagery, sourceId: "imagery", slot: StyleLayerSlot.AboveFills);
+            await composed.ResolveAsync();
+            style = composed;
+        }
+        catch (Exception exception)
+        {
+            error = "Unable to load the map: " + exception.Message;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+}

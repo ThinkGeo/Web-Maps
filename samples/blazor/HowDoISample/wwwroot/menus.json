@@ -55,10 +55,19 @@
   },
   {
     "id": "load-wms",
-    "title": "WMS & WMTS",
-    "description": "Switch between a mundialis OpenStreetMap WMS and a Swisstopo WMTS, centered on Switzerland. Each service supplies raster tiles for the map.",
-    "href": "work-with-ogc-services",
-    "source": "Work_with_OGC_Services",
+    "title": "WMS",
+    "description": "View NASA GIBS true-color imagery from two days ago beneath roads and labels on a dark basemap.",
+    "href": "wms",
+    "source": "WMS",
+    "preicon": "fas fa-server",
+    "group": "Maps from a Service - Raster"
+  },
+  {
+    "id": "load-wmts",
+    "title": "WMTS",
+    "description": "Explore the Swiss national map served by swisstopo over WMTS.",
+    "href": "wmts",
+    "source": "WMTS",
     "preicon": "fas fa-server",
     "group": "Maps from a Service - Raster"
   },

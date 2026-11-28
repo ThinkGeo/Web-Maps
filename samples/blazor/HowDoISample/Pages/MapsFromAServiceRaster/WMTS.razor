@@ -1,0 +1,33 @@
+@page "/wmts"
+@rendermode InteractiveServer
+@using ThinkGeo.Core
+
+<div class="map-container" style="position:relative">
+    <MapView Id="map" MapUnit="GeographyUnit.Meter"
+             Width="100" Height="100" MapViewSizeUnitType="MapViewSizeUnitType.Percentage"
+             Center="@InitialCenter" Zoom="InitialZoom" Bearing="0" Pitch="0">
+        <OverlaysSetting>
+            <WmtsTileOverlay Id="WmtsOverlay"
+                             ServerUri="@wmtsUri"
+                             ActiveLayerName="ch.swisstopo.pixelkarte-farbe-pk25.noscale"
+                             ActiveStyleName="ch.swisstopo.pixelkarte-farbe-pk25.noscale"
+                             TileMatrixSetName="3857_18"
+                             OutputFormat="image/jpeg"
+                             TileHeight="256" TileWidth="256" />
+        </OverlaysSetting>
+        <MapToolsSetting>
+            <MapTools>
+                <ZoomBarMapTool Location="ZoomBarLocation.UpperLeft" UseNavigationStyle="true"
+                                CenterButtonCenter="@InitialCenter" CenterButtonZoom="InitialZoom"
+                                CenterButtonBearing="0" CenterButtonPitch="0" />
+            </MapTools>
+        </MapToolsSetting>
+    </MapView>
+
+</div>
+
+@code {
+    private static readonly PointShape InitialCenter = new(930000, 5900000);
+    private const int InitialZoom = 11;
+    private readonly Uri wmtsUri = new Uri("https://wmts.geo.admin.ch/EPSG/3857/1.0.0/WMTSCapabilities.xml");
+}
